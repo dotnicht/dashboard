@@ -41,10 +41,10 @@ gulp.task('scss',
 gulp.task('scripts',
     function(cb) {
         pump([
-                gulp.src(paths.js),
-                
+            gulp.src(paths.webroot + "js/site.js"),
+                concat('site.min.js'),
                 uglify(),
-                gulp.dest(paths.webroot+'js')
+                gulp.dest(paths.webroot+'js/')
             ],
             cb
         );
@@ -54,6 +54,6 @@ gulp.task('watch',
     function() {
         gulp.watch(paths.scss, ['scss', 'min:site.css']);
         gulp.watch(paths.webroot + "css/site.css", ['min:site.css']);
-        gulp.watch(paths.script, ['scripts']);
+        gulp.watch(paths.webroot + "js/site.js", ['scripts']);
     });
 gulp.task("default", ["scripts", "scss"]);
