@@ -262,5 +262,7 @@ __pycache__/
 
 
 #Minification files
-*.min.css
-*.min.js
+**/*.min.css
+wwwroot/
+InvestorDashboard/wwwroot/js/site.min.js
+InvestorDashboard/wwwroot/js/site.js
