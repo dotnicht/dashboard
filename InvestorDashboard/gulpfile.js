@@ -19,16 +19,16 @@ paths.minCss = paths.webroot + "css/**/*.min.css";
 paths.ts = paths.webroot + "src/**/*.ts";
 paths.scss = paths.webroot + "scss/*.scss";
 
-gulp.task('mincss',
+gulp.task('min:site.css',
     function() {
-        return gulp.src(paths.css)
+        return gulp.src(paths.webroot+"css/site.css")
             .pipe(concat('site.min.css'))
             .pipe(minify({ debug: true },
                 function(details) {
                     console.log(details.name + ': ' + details.stats.originalSize);
                     console.log(details.name + ': ' + details.stats.minifiedSize);
                 }))
-            .pipe(gulp.dest(paths.webroot));
+            .pipe(gulp.dest(paths.webroot+"css"));
     });
 gulp.task('scss',
     function() {
@@ -52,8 +52,8 @@ gulp.task('scripts',
 
 gulp.task('watch',
     function() {
-        gulp.watch(paths.scss, ['scss']);
-        gulp.watch(paths.css, ['mincss']);
+        gulp.watch(paths.scss, ['scss', 'min:site.css']);
+        gulp.watch(paths.webroot + "css/site.css", ['min:site.css']);
         gulp.watch(paths.script, ['scripts']);
     });
 gulp.task("default", ["scripts", "scss"]);
