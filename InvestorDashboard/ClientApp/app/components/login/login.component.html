@@ -1,0 +1,35 @@
+<md-card>
+  <md-card-title>Login</md-card-title>
+  <md-card-content>
+    <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login() :
+        (!email.valid); (!password.valid)">
+      <div>
+        <md-form-field>
+          <input mdInput id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel" required>
+        </md-form-field>
+        <md-form-field>
+          <input mdInput id="password" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password" #password="ngModel"
+            required>
+        </md-form-field>
+      </div>
+      <div>
+        <div class="errorMessage" *ngIf="f.submitted && !email.valid">
+          Email is required
+        </div>
+        <div class="errorMessage" *ngIf="f.submitted && !password.valid">
+          Password is required
+        </div>
+      </div>
+      <div>
+        <md-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
+          Remember me
+        </md-checkbox>
+      </div>
+      <div>
+        <button type="submit" md-raised-button color="primary">
+            <span>Login</span>
+          </button>
+      </div>
+    </form>
+  </md-card-content>
+</md-card>
