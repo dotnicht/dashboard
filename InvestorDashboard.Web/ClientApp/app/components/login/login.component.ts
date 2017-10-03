@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity, DialogType } from '../../services/alert.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { Utilities } from '../../services/utilities';
+import { MdDialog } from '@angular/material';
 
 @Component({
     selector: 'app-login',
@@ -12,16 +13,33 @@ import { Utilities } from '../../services/utilities';
 })
 export class LoginComponent implements OnInit, OnDestroy {
 
-
     userLogin = new UserLogin();
     isLoading = false;
     formResetToggle = true;
     modalClosedCallback: () => void;
     loginStatusSubscription: any;
 
+    dialogConfig = {
+        disableClose: false,
+        panelClass: 'custom-overlay-pane-class',
+        hasBackdrop: true,
+        backdropClass: '',
+        width: '',
+        height: '',
+        position: {
+          top: '',
+          bottom: '',
+          left: '',
+          right: ''
+        },
+        data: {
+          message: 'Jazzy jazz jazz'
+        }
+      };
+
     @Input() isModal = false;
 
-    constructor(private alertService: AlertService, private authService: AuthService, private configurations: ConfigurationService) { }
+    constructor(private alertService: AlertService, private authService: AuthService, private configurations: ConfigurationService, private dialog: MdDialog) { }
 
     ngOnInit(): void {
         this.userLogin.rememberMe = this.authService.rememberMe;
@@ -60,8 +78,12 @@ export class LoginComponent implements OnInit, OnDestroy {
 
                     if (!this.isModal) {
                         this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
+
+                        let dialogRef = this.dialog.open(TestDialog, this.dialogConfig);
                     }
                     else {
+                        let dialogRef = this.dialog.open(TestDialog, this.dialogConfig);
+                        
                         this.alertService.showMessage('Login', `Session for ${user.userName} restored!`, MessageSeverity.success);
                         setTimeout(() => {
                             this.alertService.showStickyMessage('Session Restored', 'Please try your last operation again', MessageSeverity.default);
@@ -116,4 +138,25 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.formResetToggle = true;
         });
     }
+
+
+}
+
+@Component({
+    selector: 'demo-iframe-dialog',
+    styles: [
+        `iframe {
+        width: 100px;
+      }`
+    ],
+    template: `
+      <h2 md-dialog-title>Success</h2>
+  
+      <md-dialog-content>
+        Success login!
+      </md-dialog-content>
+    `
+})
+export class TestDialog {
+
 }

@@ -1,6 +1,6 @@
 
 import { NgModule } from '@angular/core';
-import { LoginComponent } from '../../components/login/login.component';
+import { LoginComponent, TestDialog } from '../../components/login/login.component';
 import { RegisterComponent } from '../../components/register/register.component';
 import { RouterModule, PreloadAllModules } from '@angular/router';
 import {
@@ -35,7 +35,8 @@ export class Material { }
   declarations: [
     LoginComponent,
     RegisterComponent,
-    EqualValidator
+    EqualValidator,
+    TestDialog
   ],
   imports: [
     CommonModule,
@@ -74,7 +75,8 @@ export class Material { }
     LocalStoreManager,
     AppTranslationService,
     EndpointFactory
-  ]
+  ],
+  entryComponents: [TestDialog]
 })
 export class UserManageModule {
 }
