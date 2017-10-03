@@ -266,3 +266,4 @@ __pycache__/
 wwwroot/
 InvestorDashboard/wwwroot/js/site.min.js
 InvestorDashboard/wwwroot/js/site.js
+.vscode/
