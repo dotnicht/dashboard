@@ -1,25 +1,23 @@
+using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
+using InvestorDashboard.Business;
+using InvestorDashboard.DataAccess.Models;
+using InvestorDashboard.Web.Extensions;
+using InvestorDashboard.Web.Models.AccountViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using AspCoreServer.Models;
-using AspCoreServer.Models.AccountViewModels;
-using AspCoreServer.Extensions;
-using AspCoreServer.Services;
-using AspNet.Security.OpenIdConnect.Extensions;
-using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
-using OpenIddict.Core;
 
-namespace AspCoreServer.Controllers
+namespace InvestorDashboard.Web.Controllers
 {
   //[Authorize]
   [Route("[controller]/[action]")]
@@ -28,13 +26,13 @@ namespace AspCoreServer.Controllers
     private readonly IOptions<IdentityOptions> _identityOptions;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailService _emailSender;
     private readonly ILogger _logger;
 
     public AccountController(
       UserManager<ApplicationUser> userManager,
       SignInManager<ApplicationUser> signInManager,
-      IEmailSender emailSender,
+      IEmailService emailSender,
       ILogger<AccountController> logger,
       IOptions<IdentityOptions> identityOptions)
     {
@@ -47,7 +45,6 @@ namespace AspCoreServer.Controllers
 
     [TempData]
     public string ErrorMessage { get; set; }
-
 
     //[HttpPost("~/connect/token")]
     //[Produces("application/json")]
@@ -119,8 +116,6 @@ namespace AspCoreServer.Controllers
           });
         }
 
-
-
         // Create a new authentication ticket.
         var ticket = await CreateTicketAsync(request, user);
 
@@ -180,7 +175,6 @@ namespace AspCoreServer.Controllers
 
       //ticket.HasScope();
 
-
       //if (!request.IsRefreshTokenGrantType())
       //{
       // Set the list of scopes granted to the client application.
@@ -224,13 +218,10 @@ namespace AspCoreServer.Controllers
         //  destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
         //}
 
-
         claim.SetDestinations(destinations);
       }
 
-
       var identity = principal.Identity as ClaimsIdentity;
-
 
       if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
       {
@@ -259,7 +250,6 @@ namespace AspCoreServer.Controllers
       //    identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber,
       //      OpenIdConnectConstants.Destinations.IdentityToken);
       //}
-
 
       return ticket;
     }
@@ -433,42 +423,6 @@ namespace AspCoreServer.Controllers
       return View();
     }
 
-    //[HttpGet]
-    //[AllowAnonymous]
-    //public IActionResult Register(string returnUrl = null)
-    //{
-    //  ViewData["ReturnUrl"] = returnUrl;
-    //  return View();
-    //}
-
-    //[HttpPost]
-    //[AllowAnonymous]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
-    //{
-    //  ViewData["ReturnUrl"] = returnUrl;
-    //  if (ModelState.IsValid)
-    //  {
-    //    var user = new ApplicationUser {UserName = model.Email, Email = model.Email};
-    //    var result = await _userManager.CreateAsync(user, model.Password);
-    //    if (result.Succeeded)
-    //    {
-    //      _logger.LogInformation("User created a new account with password.");
-
-    //      var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-    //      var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-    //      await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
-
-    //      await _signInManager.SignInAsync(user, isPersistent: false);
-    //      _logger.LogInformation("User created a new account with password.");
-    //      return RedirectToLocal(returnUrl);
-    //    }
-    //    AddErrors(result);
-    //  }
-
-    //  // If we got this far, something failed, redisplay form
-    //  return View(model);
-    //}\
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Register( [FromBody] RegisterViewModel model)

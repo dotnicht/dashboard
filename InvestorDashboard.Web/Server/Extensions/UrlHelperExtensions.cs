@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AspCoreServer.Controllers;
+using InvestorDashboard.Web.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AspCoreServer.Extensions
+namespace InvestorDashboard.Web.Extensions
 {
   public static class UrlHelperExtensions
   {

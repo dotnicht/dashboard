@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AspCoreServer.Models.ManageViewModels
+namespace InvestorDashboard.Web.Models.ManageViewModels
 {
     public class EnableAuthenticatorViewModel
     {

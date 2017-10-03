@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Routing;
+using System;
 
-namespace AspCoreServer.Server.Helpers
+namespace InvestorDashboard.Web.Server.Helpers
 {
-    public class FormValueRequiredAttribute : ActionMethodSelectorAttribute
+  [AttributeUsageAttribute(AttributeTargets.All, AllowMultiple = false)]
+  public class FormValueRequiredAttribute : ActionMethodSelectorAttribute
   {
     private readonly string _name;
 
@@ -17,27 +15,27 @@ namespace AspCoreServer.Server.Helpers
       _name = name;
     }
 
-    public override bool IsValidForRequest(RouteContext context, ActionDescriptor action)
+    public override bool IsValidForRequest(RouteContext routeContext, ActionDescriptor action)
     {
-      if (string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase) ||
-          string.Equals(context.HttpContext.Request.Method, "HEAD", StringComparison.OrdinalIgnoreCase) ||
-          string.Equals(context.HttpContext.Request.Method, "DELETE", StringComparison.OrdinalIgnoreCase) ||
-          string.Equals(context.HttpContext.Request.Method, "TRACE", StringComparison.OrdinalIgnoreCase))
+      if (string.Equals(routeContext.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase) ||
+          string.Equals(routeContext.HttpContext.Request.Method, "HEAD", StringComparison.OrdinalIgnoreCase) ||
+          string.Equals(routeContext.HttpContext.Request.Method, "DELETE", StringComparison.OrdinalIgnoreCase) ||
+          string.Equals(routeContext.HttpContext.Request.Method, "TRACE", StringComparison.OrdinalIgnoreCase))
       {
         return false;
       }
 
-      if (string.IsNullOrEmpty(context.HttpContext.Request.ContentType))
+      if (string.IsNullOrEmpty(routeContext.HttpContext.Request.ContentType))
       {
         return false;
       }
 
-      if (!context.HttpContext.Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+      if (!routeContext.HttpContext.Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
       {
         return false;
       }
 
-      return !string.IsNullOrEmpty(context.HttpContext.Request.Form[_name]);
+      return !string.IsNullOrEmpty(routeContext.HttpContext.Request.Form[_name]);
     }
   }
 }

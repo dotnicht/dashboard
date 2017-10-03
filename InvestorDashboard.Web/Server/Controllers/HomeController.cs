@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
 using System;
 
-namespace AspCoreServer.Controllers
+namespace InvestorDashboard.Web.Controllers
 {
   public class HomeController : Controller
   {

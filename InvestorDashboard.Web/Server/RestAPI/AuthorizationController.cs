@@ -1,18 +1,10 @@
-
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using AspCoreServer.Models;
-using AspCoreServer.Server.Helpers;
-using AspCoreServer.Server.Models.AuthorizationViewModels;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
+using InvestorDashboard.DataAccess.Models;
+using InvestorDashboard.Web.Models;
+using InvestorDashboard.Web.Server.Helpers;
+using InvestorDashboard.Web.Server.Models.AuthorizationViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -20,8 +12,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace AspCoreServer.Server.RestAPI
+namespace InvestorDashboard.Web.Server.RestAPI
 {
   [Route("[controller]/[action]")]
   public class AuthorizationController : Controller
@@ -142,7 +139,7 @@ namespace AspCoreServer.Server.RestAPI
       }
     #endregion
 
-    #region Password, authorization code and refresh token flows
+      #region Password, authorization code and refresh token flows
     // Note: to support non-interactive flows like password,
     // you must provide your own token endpoint action:
 

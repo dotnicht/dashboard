@@ -1,12 +1,7 @@
-
-
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using AspCoreServer.Data;
-using AspCoreServer.Models;
-using AspCoreServer.Services;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,24 +14,16 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
-using TradeAnaliticsV2.Server.Services;
+using InvestorDashboard.DataAccess;
+using InvestorDashboard.DataAccess.Models;
+using InvestorDashboard.Business;
 
-namespace AspCoreServer
+namespace InvestorDashboard.Web
 {
   public class Startup
   {
+    public IConfigurationRoot Configuration { get; }
 
-    public static void Main(string[] args)
-    {
-      var host = new WebHostBuilder()
-          .UseKestrel()
-          .UseContentRoot(Directory.GetCurrentDirectory())
-          .UseIISIntegration()
-          .UseStartup<Startup>()
-          .Build();
-
-      host.Run();
-    }
     public Startup(IHostingEnvironment env)
     {
       var builder = new ConfigurationBuilder()
@@ -47,18 +34,18 @@ namespace AspCoreServer
       Configuration = builder.Build();
     }
 
-    public IConfigurationRoot Configuration { get; }
-
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+      DependencyInjectionConfiguration.Configure(services);
+
       // Add framework services.
       services.AddMvc();
       services.AddNodeServices();
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
-          options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("InvestorDashboard"));
+          options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("InvestorDashboard.DataAccess"));
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.
@@ -94,17 +81,18 @@ namespace AspCoreServer
       });
 
       services.AddAuthentication()
-        .AddGoogle(options =>
-        {
-          options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
-          options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
-        })
 
-        .AddTwitter(options =>
-        {
-          options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
-          options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
-        })
+        //.AddGoogle(options =>
+        //{
+        //  options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
+        //  options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
+        //})
+
+        //.AddTwitter(options =>
+        //{
+        //  options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
+        //  options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
+        //})
 
         .AddOAuthValidation();
 
@@ -155,8 +143,8 @@ namespace AspCoreServer
       });
 
       // Add application services.
-      services.AddTransient<IEmailSender, AuthMessageSender>();
-      services.AddTransient<ISmsSender, AuthMessageSender>();
+      //services.AddTransient<IEmailSender, AuthMessageSender>();
+      //services.AddTransient<ISmsSender, AuthMessageSender>();
 
       // Register the Swagger generator, defining one or more Swagger documents
       services.AddSwaggerGen(c =>
@@ -190,8 +178,6 @@ namespace AspCoreServer
         });
 
         // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
-
-
 
         app.MapWhen(x => !x.Request.Path.Value.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase), builder =>
         {
@@ -228,6 +214,7 @@ namespace AspCoreServer
       // Note: in a real world application, this step should be part of a setup script.
       InitializeAsync(app.ApplicationServices, CancellationToken.None).GetAwaiter().GetResult();
     }
+
     private async Task InitializeAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
       // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
@@ -272,6 +259,18 @@ namespace AspCoreServer
           await manager.CreateAsync(application, cancellationToken);
         }
       }
+    }
+
+    public static void Main(string[] args)
+    {
+      var host = new WebHostBuilder()
+          .UseKestrel()
+          .UseContentRoot(Directory.GetCurrentDirectory())
+          .UseIISIntegration()
+          .UseStartup<Startup>()
+          .Build();
+
+      host.Run();
     }
   }
 }

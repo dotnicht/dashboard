@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AspCoreServer.Models.AccountViewModels
+namespace InvestorDashboard.Web.Models.AccountViewModels
 {
   public class RegisterViewModel
   {
