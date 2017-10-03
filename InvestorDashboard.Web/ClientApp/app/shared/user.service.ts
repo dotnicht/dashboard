@@ -2,7 +2,7 @@
 import { Http, URLSearchParams } from '@angular/http';
 import { APP_BASE_HREF } from '@angular/common';
 import { ORIGIN_URL } from './constants/baseurl.constants';
-import { IUser } from '../models/User';
+import { IUser } from '../models/user.model';
 import { TransferHttp } from '../../modules/transfer-http/transfer-http';
 import { Observable } from 'rxjs/Observable';
 

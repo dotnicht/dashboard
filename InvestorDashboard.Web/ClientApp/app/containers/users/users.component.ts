@@ -3,7 +3,7 @@
     // animation imports
     trigger, state, style, transition, animate, Inject
 } from '@angular/core';
-import { IUser } from '../../models/User';
+import { IUser } from '../../models/user.model';
 import { UserService } from '../../shared/user.service';
 
 @Component({

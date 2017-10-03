@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { Response, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
-import { UserRegister } from '../models/User';
+import { UserRegister } from '../models/user.model';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/throw';

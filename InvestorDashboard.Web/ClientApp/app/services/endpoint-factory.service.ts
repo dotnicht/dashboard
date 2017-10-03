@@ -17,7 +17,7 @@ import 'rxjs/add/operator/catch';
 
 import { AuthService } from './auth.service';
 import { ConfigurationService } from './configuration.service';
-import { UserLogin } from '../models/User';
+import { UserLogin } from '../models/user.model';
 
 
 @Injectable()

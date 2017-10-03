@@ -19,7 +19,7 @@ import { ConfigurationService } from './configuration.service';
 import { DBkeys } from './db-Keys';
 import { JwtHelper } from './jwt-helper';
 import { Utilities } from './utilities';
-import { UserLogin, User } from '../models/User';
+import { UserLogin, User } from '../models/user.model';
 import { Permission, PermissionNames, PermissionValues } from '../models/permission.model';
 
 @Injectable()
@@ -174,7 +174,7 @@ export class AuthService {
       decodedIdToken.jobtitle,
       decodedIdToken.phone,
       Array.isArray(decodedIdToken.role) ? decodedIdToken.role : [decodedIdToken.role]);
-      
+
     user.isEnabled = true;
 
     console.log(user);

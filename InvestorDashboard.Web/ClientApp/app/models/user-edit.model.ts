@@ -6,7 +6,7 @@
 // ==> Gun4Hire: contact@ebenmonney.com
 // ======================================
 
-import { User } from './User';
+import { User } from './user.model';
 
 
 export class UserEdit extends User {

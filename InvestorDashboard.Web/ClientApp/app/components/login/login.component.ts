@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { UserLogin } from '../../models/User';
+import { UserLogin } from '../../models/user.model';
 import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity, DialogType } from '../../services/alert.service';
 import { ConfigurationService } from '../../services/configuration.service';
