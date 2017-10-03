@@ -2,7 +2,7 @@
   <md-card-title>Register</md-card-title>
   <md-card-content>
     <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
-        {{password.errors | json}}
+      {{password.errors | json}}
       <div>
         <md-form-field>
           <input mdInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
@@ -17,7 +17,7 @@
       </div>
       <md-form-field>
         <input mdInput autocomplete="off" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password"
-          #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$_%&*])).{8,}$" >
+          #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$_%&*])).{8,}$">
         <md-error *ngIf="password.invalid && (password.dirty || password.touched)">
           <div *ngIf="password.errors.required">Password is <strong>required</strong></div>
           <div *ngIf="password.errors.minlength">Min length is 8</div>
@@ -28,7 +28,7 @@
         <input mdInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel"
           placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
         <md-error *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)">
-                Password mismatch
+          Password mismatch
         </md-error>
 
       </md-form-field>
@@ -36,6 +36,10 @@
       <div>
         <button type="submit" [disabled]="!f.form.valid" md-raised-button color="primary">
                   <span>Register</span>
+                </button>
+        <span>or</span>
+        <button type="button" [routerLink]="['/login']" md-raised-button color="primary">
+                  <span>Login</span>
                 </button>
       </div>
     </form>

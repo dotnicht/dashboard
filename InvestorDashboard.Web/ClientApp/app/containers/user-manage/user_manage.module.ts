@@ -35,7 +35,8 @@ export class Material { }
     CommonModule,
     Material,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterModule
     // ,
     // RouterModule.forRoot([
     //   {
