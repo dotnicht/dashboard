@@ -7,7 +7,7 @@
 // ======================================
 
 import { Injectable } from '@angular/core';
-import { Router, NavigationExtras } from "@angular/router";
+import { Router, NavigationExtras } from '@angular/router';
 import { Http, Headers, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
@@ -17,14 +17,14 @@ import 'rxjs/add/operator/map';
 
 import { AccountEndpoint } from './account-endpoint.service';
 import { AuthService } from './auth.service';
-import { User } from '../models/user.model';
+import { User } from '../models/User';
 import { Role } from '../models/role.model';
 import { Permission, PermissionNames, PermissionValues } from '../models/permission.model';
 import { UserEdit } from '../models/user-edit.model';
 
 
 
-export type RolesChangedOperation = "add" | "delete" | "modify";
+export type RolesChangedOperation = 'add' | 'delete' | 'modify';
 export type RolesChangedEventArg = { roles: Role[] | string[], operation: RolesChangedOperation };
 
 
@@ -32,9 +32,9 @@ export type RolesChangedEventArg = { roles: Role[] | string[], operation: RolesC
 @Injectable()
 export class AccountService {
 
-    public static readonly roleAddedOperation: RolesChangedOperation = "add";
-    public static readonly roleDeletedOperation: RolesChangedOperation = "delete";
-    public static readonly roleModifiedOperation: RolesChangedOperation = "modify";
+    public static readonly roleAddedOperation: RolesChangedOperation = 'add';
+    public static readonly roleDeletedOperation: RolesChangedOperation = 'delete';
+    public static readonly roleModifiedOperation: RolesChangedOperation = 'modify';
 
     private _rolesChanged = new Subject<RolesChangedEventArg>();
 

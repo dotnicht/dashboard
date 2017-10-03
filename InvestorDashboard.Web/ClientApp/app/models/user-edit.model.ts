@@ -1,0 +1,27 @@
+﻿// ======================================
+// Author: Ebenezer Monney
+// Email:  info@ebenmonney.com
+// Copyright (c) 2017 www.ebenmonney.com
+// 
+// ==> Gun4Hire: contact@ebenmonney.com
+// ======================================
+
+import { User } from './User';
+
+
+export class UserEdit extends User {
+    public currentPassword: string;
+    public newPassword: string;
+    public confirmPassword: string;
+
+    constructor(currentPassword?: string, newPassword?: string, confirmPassword?: string) {
+        super();
+
+        this.currentPassword = currentPassword;
+        this.newPassword = newPassword;
+        this.confirmPassword = confirmPassword;
+    }
+
+   
+
+}
