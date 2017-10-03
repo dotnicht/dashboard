@@ -14,6 +14,12 @@ import { CommonModule } from '@angular/common';
 import { EqualValidator } from '../../directives/equal-validator.directive';
 import { RegisterService } from '../../services/register.service';
 import { AuthService } from '../../services/auth.service';
+import { AlertService } from '../../services/alert.service';
+import { ConfigurationService } from '../../services/configuration.service';
+import { LocalStoreManager } from '../../services/local-store-manager.service';
+import { AppTranslationService, TranslateLanguageLoader } from '../../services/app-translation.service';
+import { EndpointFactory } from '../../services/endpoint-factory.service';
+import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
 
 @NgModule({
   exports: [
@@ -36,7 +42,13 @@ export class Material { }
     Material,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule
+    RouterModule,
+    TranslateModule.forRoot({
+      loader: {
+          provide: TranslateLoader,
+          useClass: TranslateLanguageLoader
+      }
+  })
     // ,
     // RouterModule.forRoot([
     //   {
@@ -56,7 +68,12 @@ export class Material { }
   ],
   providers: [
     RegisterService,
-    AuthService
+    AuthService,
+    AlertService,
+    ConfigurationService,
+    LocalStoreManager,
+    AppTranslationService,
+    EndpointFactory
   ]
 })
 export class UserManageModule {

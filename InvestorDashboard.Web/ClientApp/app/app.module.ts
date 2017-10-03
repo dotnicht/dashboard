@@ -92,15 +92,6 @@ import { AppRoutingModule, routingComponents } from './app.routing';
 })
 export class MaterialModule { }
 
-export function createTranslateLoader(http: Http, baseHref) {
-    // Temporary Azure hack
-    if (baseHref === null && typeof window !== 'undefined') {
-        baseHref = window.location.origin;
-    }
-    // i18n files are in `wwwroot/assets/`
-    return new TranslateHttpLoader(http, `${baseHref}/assets/i18n/`, '.json');
-}
-
 @NgModule({
     declarations: [
         AppComponent,
@@ -118,22 +109,13 @@ export function createTranslateLoader(http: Http, baseHref) {
 
         Ng2BootstrapModule.forRoot(), // You could also split this up if you don't want the Entire Module imported
 
-        TransferHttpModule, // Our Http TransferData method
+        TransferHttpModule // Our Http TransferData method
 
-        // i18n support
-        TranslateModule.forRoot({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: (createTranslateLoader),
-                deps: [Http, [ORIGIN_URL]]
-            }
-        })
 
     ],
     providers: [
         LinkService,
-        ConnectionResolver,
-        TranslateModule
+        ConnectionResolver
     ]
 })
 export class AppModuleShared {
