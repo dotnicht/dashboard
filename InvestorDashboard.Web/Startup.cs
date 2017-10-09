@@ -1,8 +1,8 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
+using InvestorDashboard.Business;
+using InvestorDashboard.Business.ConfigurationSections;
+using InvestorDashboard.DataAccess;
+using InvestorDashboard.DataAccess.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -14,9 +14,10 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
-using InvestorDashboard.DataAccess;
-using InvestorDashboard.DataAccess.Models;
-using InvestorDashboard.Business;
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Web
 {
@@ -37,7 +38,12 @@ namespace InvestorDashboard.Web
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+      services.Configure<KeyVault>(Configuration.GetSection("KeyVault"));
+
       DependencyInjectionConfiguration.Configure(services);
+
+      var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
+      keyVaultService.Initialize().Wait();
 
       // Add framework services.
       services.AddMvc();
@@ -45,7 +51,7 @@ namespace InvestorDashboard.Web
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
-          options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("InvestorDashboard.DataAccess"));
+          options.UseSqlServer(keyVaultService.ConnectionString, b => b.MigrationsAssembly("InvestorDashboard.DataAccess"));
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.
@@ -64,16 +70,16 @@ namespace InvestorDashboard.Web
         // User settings
         options.User.RequireUniqueEmail = true;
 
-        //    //// Password settings
-        //    //options.Password.RequireDigit = true;
-        //    //options.Password.RequiredLength = 8;
-        //    //options.Password.RequireNonAlphanumeric = false;
-        //    //options.Password.RequireUppercase = true;
-        //    //options.Password.RequireLowercase = false;
+        // Password settings
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = false;
 
-        //    //// Lockout settings
-        //    //options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
-        //    //options.Lockout.MaxFailedAccessAttempts = 10;
+        // Lockout settings
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+        options.Lockout.MaxFailedAccessAttempts = 10;
 
         options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
         options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
@@ -81,19 +87,6 @@ namespace InvestorDashboard.Web
       });
 
       services.AddAuthentication()
-
-        //.AddGoogle(options =>
-        //{
-        //  options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
-        //  options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
-        //})
-
-        //.AddTwitter(options =>
-        //{
-        //  options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
-        //  options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
-        //})
-
         .AddOAuthValidation();
 
       // Register the OpenIddict services.
@@ -141,10 +134,6 @@ namespace InvestorDashboard.Web
         options.UseJsonWebTokens();
         options.AddEphemeralSigningKey();
       });
-
-      // Add application services.
-      //services.AddTransient<IEmailSender, AuthMessageSender>();
-      //services.AddTransient<ISmsSender, AuthMessageSender>();
 
       // Register the Swagger generator, defining one or more Swagger documents
       services.AddSwaggerGen(c =>

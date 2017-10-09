@@ -6,6 +6,9 @@ namespace InvestorDashboard.DataAccess
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        //public DbSet<Payment> Payments { get; set; }
+        //public DbSet<WalletAddress> WalletAddresses { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

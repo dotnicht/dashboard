@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Business.Implementation
 {
-    public class EmailService : IEmailService
+    internal class EmailService : IEmailService
     {
         public Task SendEmailConfirmationAsync(string email, string link)
         {

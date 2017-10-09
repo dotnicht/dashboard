@@ -13,8 +13,9 @@ namespace InvestorDashboard.Business
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddTransient<IConfigurationService, ConfigurationService>();
             services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IKeyVaultService, KeyVaultService>();
+            services.AddTransient<IBitGoService, BitGoService>();
         }
     }
 }
