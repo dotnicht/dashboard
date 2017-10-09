@@ -32,7 +32,7 @@ export class ConfigurationService {
 
     public baseUrl: string = Utilities.baseUrl().replace(/\/$/, '');
     public fallbackBaseUrl: string = "http://ebenmonney.com/demo/quickapp";
-    public loginUrl: string = "/Login";
+    public loginUrl: string = "/login";
 
     //***Specify default configurations here***
     public static readonly defaultLanguage: string = "en";

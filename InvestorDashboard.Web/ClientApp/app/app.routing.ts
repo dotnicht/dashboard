@@ -20,7 +20,6 @@ const routes: Routes = [
     },
     {
         path: '', component: HomeComponent,
-        canActivate: [AuthGuard],
         // *** SEO Magic ***
         // We're using "data" in our Routes to pass in our <title> <meta> <link> tag information
         // Note: This is only happening for ROOT level Routes, you'd have to add some additional logic if you wanted this for Child level routing
