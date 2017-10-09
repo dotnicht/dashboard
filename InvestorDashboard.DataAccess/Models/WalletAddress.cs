@@ -8,11 +8,11 @@ namespace InvestorDashboard.DataAccess.Models
     {
         [Key]
         public Guid Id { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
-        public string Currency { get; set; }
+        public Currency Currency { get; set; }
         public string Address { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public DateTime Created { get; set; }
     }
 }

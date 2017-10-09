@@ -4,16 +4,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InvestorDashboard.DataAccess.Models
 {
-    public class Payment
+    public class Transaction
     {
         [Key]
         public Guid Id { get; set; }
         public Guid WalletAddressId { get; set; }
         [ForeignKey("WalletAddressId")]
         public WalletAddress WalletAddress { get; set; }
-        public string UserId { get; set; }
-        public string Currency { get; set; }
+        public TransactionDirection Direction { get; set; }
+        public Currency Currency { get; set; }
         public decimal Amount { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public decimal ExchangeRate { get; set; }
+        public DateTime Created { get; set; }
     }
 }
