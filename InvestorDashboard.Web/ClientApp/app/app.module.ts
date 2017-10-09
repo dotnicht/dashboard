@@ -39,19 +39,21 @@ import { LoginComponent } from './components/login/login.component';
 import { ClientInfoComponent } from './components/client_info/client_info.component';
 import { NotificationsViewerComponent } from './components/controls/notifications-viewer.component';
 
-
+import { ResponsiveModule, ResponsiveConfig } from 'ng2-responsive';
+import { ResponsiveDirective } from './directives/responsive';
 
 @NgModule({
     declarations: [
         AppComponent,
         ClientInfoComponent,
-        routingComponents
+        routingComponents,
+        ResponsiveDirective
     ],
     imports: [
         CommonModule,
         HttpModule,
         FormsModule,
-        
+
         CdkTableModule,
         AppRoutingModule,
         MaterialModule,
@@ -63,6 +65,7 @@ import { NotificationsViewerComponent } from './components/controls/notification
                 useClass: TranslateLanguageLoader
             }
         }),
+        
         Ng2BootstrapModule.forRoot(), // You could also split this up if you don't want the Entire Module imported
         ToastyModule.forRoot(),
 
@@ -73,13 +76,13 @@ import { NotificationsViewerComponent } from './components/controls/notification
     providers: [
         AlertService,
         AppTitleService,
-    
+
         LinkService,
         ConfigurationService,
         AppTranslationService,
         TranslateStore,
         TranslateService,
-      
+
         ConnectionResolver,
         LocalStoreManager,
 

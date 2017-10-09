@@ -11,9 +11,11 @@
     <button md-button (click)="start.close()">Close</button>-->
   </md-drawer>
   <md-toolbar color="primary">
-    <button class="side-menu-btn" md-icon-button (click)="start.open()">
+
+    <button [mobile] class="side-menu-btn" md-icon-button (click)="start.open()">
       <md-icon>menu</md-icon>
     </button>
+
     <div class="main-toolbar">
       <h2 [routerLink]="['/home']">Trade Analitics</h2>
       <div>

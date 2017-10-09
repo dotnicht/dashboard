@@ -12,7 +12,6 @@ import { REQUEST } from './shared/constants/request';
 import { BrowserTransferStateModule } from '../modules/transfer-state/browser-transfer-state.module';
 
 import { BrowserPrebootModule } from 'preboot/browser';
-import { AuthService } from './services/auth.service';
 
 export function createConfig(): SignalRConfiguration {
     const signalRConfig = new SignalRConfiguration();
@@ -50,7 +49,6 @@ export function getRequest() {
         SignalRModule.forRoot(createConfig)
     ],
     providers: [
-      
         {
             // We need this for our Http calls since they'll be using an ORIGIN_URL provided in main.server
             // (Also remember the Server requires Absolute URLs)
