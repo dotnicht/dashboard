@@ -60,7 +60,7 @@ export class AlertService {
     }
 
 
-    showStickyMessage(summary: string)
+    showStickyMessage(summary: string);
     showStickyMessage(summary: string, detail: string, severity: MessageSeverity, error?: any)
     showStickyMessage(summaryAndDetails: string[], summaryAndDetailsSeparator: string, severity: MessageSeverity)
     showStickyMessage(response: Response, ignoreValue_useNull: string, severity: MessageSeverity)

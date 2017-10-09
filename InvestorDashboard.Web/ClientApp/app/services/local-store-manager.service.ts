@@ -34,14 +34,15 @@ export class LocalStoreManager {
 
         LocalStoreManager.syncListenerInitialised = true;
 
-        
+
         if (isPlatformBrowser) {
             setTimeout(() => {
                 window.addEventListener('storage', this.sessionStorageTransferHandler, false);
+                this.syncSessionStorage();
             }, 1000);
-           
+
         }
-        this.syncSessionStorage();
+
     }
 
 
@@ -184,18 +185,20 @@ export class LocalStoreManager {
 
 
     public getDataObject<T>(key = LocalStoreManager.DBKEY_USER_DATA, isDateType = false): T {
+        if (isPlatformBrowser) {
+            let data = this.getData(key);
 
-        let data = this.getData(key);
+            if (data != null) {
+                if (isDateType)
+                    data = new Date(data);
 
-        if (data != null) {
-            if (isDateType)
-                data = new Date(data);
-
-            return <T>data;
+                return <T>data;
+            }
+            else {
+                return null;
+            }
         }
-        else {
-            return null;
-        }
+        return null;
     }
 
 

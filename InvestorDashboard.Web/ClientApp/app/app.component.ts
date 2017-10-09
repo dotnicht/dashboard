@@ -1,17 +1,23 @@
-﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID } from '@angular/core';
-import { Router, NavigationEnd, ActivatedRoute, PRIMARY_OUTLET } from '@angular/router';
+﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID, ViewChildren, QueryList } from '@angular/core';
+import { Router, NavigationEnd, ActivatedRoute, PRIMARY_OUTLET, NavigationStart } from '@angular/router';
 import { Meta, Title, DOCUMENT, MetaDefinition } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
-import { isPlatformServer } from '@angular/common';
+import { isPlatformServer, isPlatformBrowser } from '@angular/common';
 import { LinkService } from './shared/link.service';
 
 import { REQUEST } from './shared/constants/request';
 import { AuthService } from './services/auth.service';
-import { AlertService, MessageSeverity, AlertMessage } from './services/alert.service';
+import { AlertService, MessageSeverity, AlertMessage, DialogType, AlertDialog } from './services/alert.service';
 import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
 import { ConfigurationService } from './services/configuration.service';
 import { AppTranslationService } from './services/app-translation.service';
 import { LocalStoreManager } from './services/local-store-manager.service';
+import { NotificationService } from './services/notification.service';
+import { AppTitleService } from './services/app-title.service';
+import { ModalDirective } from 'ngx-bootstrap';
+import { LoginComponent } from './components/login/login.component';
+
+
 
 @Component({
     selector: 'app',
@@ -24,9 +30,18 @@ export class AppComponent implements OnInit, OnDestroy {
     isUserLoggedIn: boolean;
     shouldShowLoginModal: boolean;
     removePrebootScreen: boolean;
-    newNotificationCount = 0;
+
+    appTitle = 'Investor Dashboard';
+    // appLogo = require('../assets/images/logo.png');
 
     stickyToasties: number[] = [];
+
+    @ViewChildren('loginModal,loginControl')
+    modalLoginControls: QueryList<any>;
+
+    loginModal: ModalDirective;
+    loginControl: LoginComponent;
+
 
     // This will go at the END of your title for example "Home - Angular Universal..." <-- after the dash (-)
     private endPageTitle: string = 'Angular Universal and ASP.NET Core Starter';
@@ -40,8 +55,12 @@ export class AppComponent implements OnInit, OnDestroy {
         private toastyConfig: ToastyConfig,
         private alertService: AlertService,
 
-        storageManager: LocalStoreManager, private authService: AuthService, private configurations: ConfigurationService,
+        storageManager: LocalStoreManager,
+        private authService: AuthService,
+        private configurations: ConfigurationService,
         private translationService: AppTranslationService,
+        private appTitleService: AppTitleService,
+        private notificationService: NotificationService,
         private router: Router,
         private activatedRoute: ActivatedRoute,
         private title: Title,
@@ -62,6 +81,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.toastyConfig.position = 'top-right';
         this.toastyConfig.limit = 100;
         this.toastyConfig.showClose = true;
+
+        this.appTitleService.appName = this.appTitle;
     }
 
     ngOnInit() {
@@ -75,21 +96,48 @@ export class AppComponent implements OnInit, OnDestroy {
             if (this.isUserLoggedIn) {
                 this.alertService.resetStickyMessage();
 
-                if (!this.authService.isSessionExpired)
-                    this.alertService.showStickyMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
-                else
-                    this.alertService.showStickyMessage('Session Expired', 'Your Session has expired. Please log in again', MessageSeverity.warn);
+                // if (!this.authService.isSessionExpired)
+                    this.alertService.showMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
+                // else
+                //     this.alertService.showStickyMessage('Session Expired', 'Your Session has expired. Please log in again', MessageSeverity.warn);
             }
         }, 2000);
-
+        if (isPlatformBrowser) {
+            this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
+        }
         this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
         this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
+
+        this.authService.reLoginDelegate = () => this.shouldShowLoginModal = true;
+
+        this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
+            this.isUserLoggedIn = isLoggedIn;
+
+   
+
+            setTimeout(() => {
+                if (!this.isUserLoggedIn) {
+                    this.alertService.showMessage('Session Ended!', '', MessageSeverity.default);
+                }
+            }, 500);
+        });
+        this.router.events.subscribe(event => {
+            if (event instanceof NavigationStart) {
+                let url = (<NavigationStart>event).url;
+
+                if (url !== url.toLowerCase()) {
+                    this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
+                }
+            }
+        });
     }
 
     ngOnDestroy() {
         // Subscription clean-up
         this.routerSub$.unsubscribe();
     }
+
+
     getYear() {
         return new Date().getUTCFullYear();
     }
@@ -136,6 +184,52 @@ export class AppComponent implements OnInit, OnDestroy {
             default: break;
         }
     }
+    showDialog(dialog: AlertDialog) {
+        if (isPlatformBrowser) {
+            var alertify: any = require('../app/assets/scripts/alertify.js');
+            alertify.set({
+                labels: {
+                    ok: dialog.okLabel || 'OK',
+                    cancel: dialog.cancelLabel || 'Cancel'
+                }
+            });
+
+            switch (dialog.type) {
+                case DialogType.alert:
+                    alertify.alert(dialog.message);
+
+                    break;
+                case DialogType.confirm:
+                    alertify
+                        .confirm(dialog.message, (e) => {
+                            if (e) {
+                                dialog.okCallback();
+                            }
+                            else {
+                                if (dialog.cancelCallback)
+                                    dialog.cancelCallback();
+                            }
+                        });
+
+                    break;
+                case DialogType.prompt:
+                    alertify
+                        .prompt(dialog.message, (e, val) => {
+                            if (e) {
+                                dialog.okCallback(val);
+                            }
+                            else {
+                                if (dialog.cancelCallback)
+                                    dialog.cancelCallback();
+                            }
+                        }, dialog.defaultValue);
+
+                    break;
+                default: break;
+            }
+        }
+    }
+   
     private _changeTitleOnNavigation() {
 
         this.routerSub$ = this.router.events
@@ -172,11 +266,11 @@ export class AppComponent implements OnInit, OnDestroy {
             this.linkService.addTag(linksData[i]);
         }
     }
-    
+
 
 
     get userName(): string {
-        return this.authService.currentUser ? this.authService.currentUser.userName : "";
+        return this.authService.currentUser ? this.authService.currentUser.userName : '';
     }
 }
 

@@ -19,23 +19,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     modalClosedCallback: () => void;
     loginStatusSubscription: any;
 
-    dialogConfig = {
-        disableClose: false,
-        panelClass: 'custom-overlay-pane-class',
-        hasBackdrop: true,
-        backdropClass: '',
-        width: '',
-        height: '',
-        position: {
-          top: '',
-          bottom: '',
-          left: '',
-          right: ''
-        },
-        data: {
-          message: 'Jazzy jazz jazz'
-        }
-      };
 
     @Input() isModal = false;
 
@@ -43,9 +26,22 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.userLogin.rememberMe = this.authService.rememberMe;
+        
+        if (this.getShouldRedirect()) {
+            this.authService.redirectLoginUser();
+        }
+        else {
+            this.loginStatusSubscription = this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
+                if (this.getShouldRedirect()) {
+                    this.authService.redirectLoginUser();
+                }
+            });
+        }
 
         this.userLogin.email = 'denis.skvortsow@gmail.com';
         this.userLogin.password = '123456_Kol';
+
+        
     }
     ngOnDestroy() {
         if (this.loginStatusSubscription)
@@ -138,24 +134,5 @@ export class LoginComponent implements OnInit, OnDestroy {
         });
     }
 
-
-}
-
-@Component({
-    selector: 'demo-iframe-dialog',
-    styles: [
-        `iframe {
-        width: 100px;
-      }`
-    ],
-    template: `
-      <h2 md-dialog-title>Success</h2>
-  
-      <md-dialog-content>
-        Success login!
-      </md-dialog-content>
-    `
-})
-export class TestDialog {
 
 }

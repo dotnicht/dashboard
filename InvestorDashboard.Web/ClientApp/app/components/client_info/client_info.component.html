@@ -1,14 +1,26 @@
 <md-card>
-  <md-card-title-group>
-    <md-card-title></md-card-title>
-    <md-card-subtitle></md-card-subtitle>
-    <img md-card-avatar src="" />
-  </md-card-title-group>
+  <md-card-header>
+    <img md-card-avatar src="/img/people.svg" />
+    <md-card-title>{{userName}}</md-card-title>
+    <md-card-subtitle>{{userName}}</md-card-subtitle>
+
+  </md-card-header>
 </md-card>
-</hr>
-<div>
+
+<div *ngIf="isMobile">
+  <button md-button [routerLink]="['/settings']">
+        <md-icon class="md-24">settings_applications</md-icon><span>Settings</span>
+      </button>
+  <button md-button (click)="logout()">
+    <md-icon class="md-24">exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>
+  </button>
 
 </div>
-<div>
-  
+<div *ngIf="!isMobile">
+  <button md-menu-item [routerLink]="['/settings']">
+      <md-icon>settings_applications</md-icon><span>Settings</span>
+    </button>
+  <button md-menu-item (click)="logout()">
+      <md-icon>exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>
+    </button>
 </div>

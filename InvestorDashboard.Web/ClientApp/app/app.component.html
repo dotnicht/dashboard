@@ -1,10 +1,11 @@
-
-<ng2-toasty></ng2-toasty>
+<ng2-toasty>
+</ng2-toasty>
 <md-drawer-container fullscreen>
-  <md-drawer #start  mode="push"  class="example-container">
-
+  <md-drawer #start mode="push" class="example-container">
+    <app-client-info></app-client-info>
     <md-nav-list>
-      <a md-list-item><md-icon>home</md-icon>   Home</a>
+      <a md-list-item>
+        <md-icon>home</md-icon> Home</a>
     </md-nav-list>
     <!--<hr />
     <button md-button (click)="start.close()">Close</button>-->
@@ -12,14 +13,22 @@
   <md-toolbar color="primary">
     <button class="side-menu-btn" md-icon-button (click)="start.open()">
       <md-icon>menu</md-icon>
-    </button> 
+    </button>
     <div class="main-toolbar">
-        <h2 [routerLink]="['/home']">Trade Analitics</h2>
-        <div>
-          <button md-button [routerLink]="['/login']" title="login">
-            <md-icon class="md-24">account_circle</md-icon><span>Login</span>
-          </button>
-        </div>
+      <h2 [routerLink]="['/home']">Trade Analitics</h2>
+      <div>
+        <button *ngIf="isUserLoggedIn" md-button [mdMenuTriggerFor]="userMenu">
+              <md-icon>account_circle</md-icon><span>{{userName}}</span>
+            </button>
+        <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" md-button>
+                <md-icon>account_circle</md-icon><span>Login</span>
+              </button>
+        <md-menu #userMenu="mdMenu">
+          <app-client-info></app-client-info>
+        </md-menu>
+
+
+      </div>
     </div>
   </md-toolbar>
   <div class="main-content">

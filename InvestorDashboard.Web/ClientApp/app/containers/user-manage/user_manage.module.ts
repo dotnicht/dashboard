@@ -1,6 +1,6 @@
 
 import { NgModule } from '@angular/core';
-import { LoginComponent, TestDialog } from '../../components/login/login.component';
+import { LoginComponent } from '../../components/login/login.component';
 import { RegisterComponent } from '../../components/register/register.component';
 import { RouterModule, PreloadAllModules } from '@angular/router';
 import {
@@ -27,8 +27,7 @@ import { MaterialModule } from '../../app.material.module';
   declarations: [
     LoginComponent,
     RegisterComponent,
-    EqualValidator,
-    TestDialog
+    EqualValidator
   ],
   imports: [
     CommonModule,
@@ -38,26 +37,10 @@ import { MaterialModule } from '../../app.material.module';
     RouterModule,
     TranslateModule.forRoot({
       loader: {
-          provide: TranslateLoader,
-          useClass: TranslateLanguageLoader
+        provide: TranslateLoader,
+        useClass: TranslateLanguageLoader
       }
-  })
-    // ,
-    // RouterModule.forRoot([
-    //   {
-    //     path: 'login', component: LoginComponent,
-
-    //     data: {
-    //       title: 'Homepage'
-    //     }
-    //   }
-    // ],
-    //   {
-    //     // Router options
-    //     useHash: false,
-    //     preloadingStrategy: PreloadAllModules,
-    //     initialNavigation: 'enabled'
-    //   })
+    })
   ],
   providers: [
     RegisterService,
@@ -68,7 +51,9 @@ import { MaterialModule } from '../../app.material.module';
     AppTranslationService,
     EndpointFactory
   ],
-  entryComponents: [TestDialog]
+  exports: [
+    LoginComponent
+  ]
 })
 export class UserManageModule {
 }

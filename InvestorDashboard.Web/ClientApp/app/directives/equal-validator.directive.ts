@@ -1,5 +1,15 @@
+﻿// ======================================
+// Author: Ebenezer Monney
+// Email:  info@ebenmonney.com
+// Copyright (c) 2017 www.ebenmonney.com
+// 
+// ==> Gun4Hire: contact@ebenmonney.com
+// ======================================
+
 import { Directive, forwardRef, Attribute } from '@angular/core';
 import { Validator, AbstractControl, NG_VALIDATORS } from '@angular/forms';
+
+
 
 @Directive({
     selector: '[validateEqual][formControlName],[validateEqual][formControl],[validateEqual][ngModel]',
@@ -10,39 +20,32 @@ import { Validator, AbstractControl, NG_VALIDATORS } from '@angular/forms';
 export class EqualValidator implements Validator {
     constructor( @Attribute('validateEqual') public validateEqual: string,
         @Attribute('reverse') public reverse: string) {
-
-    }
-
-    private get isReverse() {
-        if (!this.reverse) return false;
-        return this.reverse === 'true' ? true : false;
     }
 
     validate(c: AbstractControl): { [key: string]: any } {
-        // self value
-        let v = c.value;
+        let other = c.root.get(this.validateEqual);
 
-        // control vlaue
-        let e = c.root.get(this.validateEqual);
+        if (!other)
+            return null;
 
-        // value not equal
-        if (e && v !== e.value && !this.isReverse) {
-            return {
-                validateEqual: false
+        return this.reverse === 'true' ? this.validateReverse(c, other) : this.validateNoReverse(c, other);
+    }
+
+    private validateNoReverse(c: AbstractControl, other: AbstractControl): { [key: string]: any } {
+        return other.value === c.value ? null : { validateEqual: true }
+    }
+
+    private validateReverse(c: AbstractControl, other: AbstractControl): { [key: string]: any } {
+        if (c.value === other.value) {
+            if (other.errors) {
+                delete other.errors['validateEqual'];
+
+                if (Object.keys(other.errors).length == 0) {
+                    other.setErrors(null);
+                };
             }
-        }
-
-        // value equal and reverse
-        if (e && v === e.value && this.isReverse) {
-            delete e.errors['validateEqual'];
-            if (!Object.keys(e.errors).length) e.setErrors(null);
-        }
-
-        // value not equal and reverse
-        if (e && v !== e.value && this.isReverse) {
-            e.setErrors({
-                validateEqual: false
-            })
+        } else {
+            other.setErrors({ validateEqual: true });
         }
 
         return null;

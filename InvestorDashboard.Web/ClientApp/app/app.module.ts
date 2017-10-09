@@ -4,8 +4,8 @@ import { CommonModule, APP_BASE_HREF } from '@angular/common';
 import { HttpModule, Http } from '@angular/http';
 import { FormsModule } from '@angular/forms';
 
-import { Ng2BootstrapModule } from 'ngx-bootstrap';
-
+import { Ng2BootstrapModule, ModalModule } from 'ngx-bootstrap';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 // i18n support
 import { TranslateModule, TranslateLoader, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -34,12 +34,17 @@ import { LocalStoreManager } from './services/local-store-manager.service';
 import { AppTranslationService, TranslateLanguageLoader } from './services/app-translation.service';
 import { TranslateStore } from '@ngx-translate/core/src/translate.store';
 import { MaterialModule } from './app.material.module';
+import { AppTitleService } from './services/app-title.service';
+import { LoginComponent } from './components/login/login.component';
+import { ClientInfoComponent } from './components/client_info/client_info.component';
+import { NotificationsViewerComponent } from './components/controls/notifications-viewer.component';
 
 
 
 @NgModule({
     declarations: [
         AppComponent,
+        ClientInfoComponent,
         routingComponents
     ],
     imports: [
@@ -50,7 +55,6 @@ import { MaterialModule } from './app.material.module';
         CdkTableModule,
         AppRoutingModule,
         MaterialModule,
-      
         // MainModule,
         UserManageModule,
         TranslateModule.forRoot({
@@ -61,12 +65,14 @@ import { MaterialModule } from './app.material.module';
         }),
         Ng2BootstrapModule.forRoot(), // You could also split this up if you don't want the Entire Module imported
         ToastyModule.forRoot(),
+
         TransferHttpModule // Our Http TransferData method
 
 
     ],
     providers: [
         AlertService,
+        AppTitleService,
     
         LinkService,
         ConfigurationService,
