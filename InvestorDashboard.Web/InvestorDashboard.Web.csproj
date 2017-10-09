@@ -19,10 +19,10 @@
     <PackageReference Include="NETStandard.Library" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.0" />
-    <PackageReference Include="OpenIddict" Version="2.0.0-rc1-0710" />
-    <PackageReference Include="OpenIddict.Core" Version="2.0.0-rc1-0710" />
-    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0-rc1-0710" />
-    <PackageReference Include="OpenIddict.Mvc" Version="2.0.0-rc1-0710" />
+    <PackageReference Include="OpenIddict" Version="2.0.0-rc1-0719" />
+    <PackageReference Include="OpenIddict.Core" Version="2.0.0-rc1-0719" />
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0-rc1-0719" />
+    <PackageReference Include="OpenIddict.Mvc" Version="2.0.0-rc1-0719" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>

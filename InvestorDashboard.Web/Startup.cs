@@ -231,8 +231,8 @@ namespace InvestorDashboard.Web
           {
             ClientId = "ID",
             DisplayName = "Investor Dashboard",
-            LogoutRedirectUri = "http://localhost:49295/signout-callback-oidc",
-            RedirectUri = "http://localhost:49295/signin-oidc"
+            PostLogoutRedirectUris = "http://localhost:49295/signout-callback-oidc",
+            RedirectUris = "http://localhost:49295/signin-oidc"
           };
 
           await manager.CreateAsync(application, "901564A5-E7FE-42CB-B10D-61EF6A8F3654", cancellationToken);
@@ -253,7 +253,7 @@ namespace InvestorDashboard.Web
           {
             ClientId = "postman",
             DisplayName = "Postman",
-            RedirectUri = "https://www.getpostman.com/oauth2/callback"
+            RedirectUris = "https://www.getpostman.com/oauth2/callback"
           };
 
           await manager.CreateAsync(application, cancellationToken);

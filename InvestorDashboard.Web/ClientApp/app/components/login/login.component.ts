@@ -79,11 +79,10 @@ export class LoginComponent implements OnInit, OnDestroy {
                     if (!this.isModal) {
                         this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
 
-                        let dialogRef = this.dialog.open(TestDialog, this.dialogConfig);
+                      
                     }
                     else {
-                        let dialogRef = this.dialog.open(TestDialog, this.dialogConfig);
-                        
+                      
                         this.alertService.showMessage('Login', `Session for ${user.userName} restored!`, MessageSeverity.success);
                         setTimeout(() => {
                             this.alertService.showStickyMessage('Session Restored', 'Please try your last operation again', MessageSeverity.default);

@@ -1,16 +1,20 @@
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Response } from '@angular/http';
-
+import { isPlatformBrowser } from '@angular/common';
+declare var window: any;
 
 @Injectable()
 export class Utilities {
+
 
     public static readonly captionAndMessageSeparator = ':';
     public static readonly noNetworkMessageCaption = 'No Network';
     public static readonly noNetworkMessageDetail = 'The server cannot be reached';
     public static readonly accessDeniedMessageCaption = 'Access Denied!';
     public static readonly accessDeniedMessageDetail = '';
+
+    @Inject(PLATFORM_ID) public static platformId: Object;
 
     public static cookies = {
         getItem: (sKey) => {
@@ -299,10 +303,14 @@ export class Utilities {
 
 
     public static baseUrl() {
-        if (window.location.origin)
-            return window.location.origin
+        if (isPlatformBrowser(this.platformId)) {
+            if (window.location.origin)
+                return window.location.origin
 
-        return window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+            return window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+
+        }
+        return '/';
     }
 
 

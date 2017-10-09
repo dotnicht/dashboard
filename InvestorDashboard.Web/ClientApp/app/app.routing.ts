@@ -5,6 +5,8 @@ import { HomeComponent } from './containers/home/home.component';
 import { NotFoundComponent } from './containers/not-found/not-found.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
+import { AuthService } from './services/auth.service';
+import { AuthGuard } from './services/auth-guard.service';
 
 export const routingComponents = [
     HomeComponent, NotFoundComponent
@@ -12,13 +14,13 @@ export const routingComponents = [
 
 const routes: Routes = [
     {
-        path: '',
-        redirectTo: 'home',
+        path: 'home',
+        redirectTo: '/',
         pathMatch: 'full'
     },
     {
-        path: 'home', component: HomeComponent,
-
+        path: '', component: HomeComponent,
+        canActivate: [AuthGuard],
         // *** SEO Magic ***
         // We're using "data" in our Routes to pass in our <title> <meta> <link> tag information
         // Note: This is only happening for ROOT level Routes, you'd have to add some additional logic if you wanted this for Child level routing
@@ -59,13 +61,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-    imports: [RouterModule.forRoot(routes, {
-        // Router options
-        useHash: false,
-        preloadingStrategy: PreloadAllModules,
-        initialNavigation: 'enabled'
-    })],
-    exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [
+        RouterModule
+    ],
+    providers: [
+        AuthService, AuthGuard
+    ]
 })
 export class AppRoutingModule { }
 

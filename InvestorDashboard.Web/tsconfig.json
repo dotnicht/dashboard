@@ -13,9 +13,10 @@
       "es2016",
       "dom"
     ],
-    "types": [ "node" ]
+    "types": [ "webpack-env", "node" ]
   },
   "include": [
     "ClientApp"
-  ]
+  ],
+  "exclude": [ "bin", "node_modules" ]
 }

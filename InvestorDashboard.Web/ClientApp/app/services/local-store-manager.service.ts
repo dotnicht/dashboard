@@ -1,10 +1,13 @@
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 
 import { Utilities } from './utilities';
+import { isPlatformBrowser } from '@angular/common';
 
+declare var localStorage: any;
+declare var sessionStorage: any;
 
 
 @Injectable()
@@ -20,8 +23,7 @@ export class LocalStoreManager {
     private reservedKeys: string[] = ['sync_keys', 'addToSyncKeys', 'removeFromSyncKeys',
         'getSessionStorage', 'setSessionStorage', 'addToSessionStorage', 'removeFromSessionStorage', 'clearAllSessionsStorage'];
 
-
-
+    constructor( @Inject(PLATFORM_ID) private platformId: Object) { }
 
 
     // Todo: Implement EventListeners for the various event operations and a SessionStorageEvent for specific data keys
@@ -31,7 +33,14 @@ export class LocalStoreManager {
             return;
 
         LocalStoreManager.syncListenerInitialised = true;
-        window.addEventListener('storage', this.sessionStorageTransferHandler, false);
+
+        
+        if (isPlatformBrowser) {
+            setTimeout(() => {
+                window.addEventListener('storage', this.sessionStorageTransferHandler, false);
+            }, 1000);
+           
+        }
         this.syncSessionStorage();
     }
 
@@ -64,13 +73,17 @@ export class LocalStoreManager {
 
     public clearInstanceSessionStorage() {
 
+
         sessionStorage.clear();
+
         this.syncKeys = [];
     }
 
 
     public clearLocalStorage() {
+
         localStorage.clear();
+
     }
 
     public saveSessionData(data: any, key = LocalStoreManager.DBKEY_USER_DATA) {
@@ -143,12 +156,17 @@ export class LocalStoreManager {
 
     public exists(key = LocalStoreManager.DBKEY_USER_DATA) {
 
-        let data = sessionStorage.getItem(key);
+        if (isPlatformBrowser(this.platformId)) {
 
-        if (data == null)
-            data = localStorage.getItem(key);
+            let data = sessionStorage.getItem(key);
 
-        return data != null;
+            if (data == null)
+                data = localStorage.getItem(key);
+
+            return data != null;
+        } else {
+            return false;
+        }
     }
 
 

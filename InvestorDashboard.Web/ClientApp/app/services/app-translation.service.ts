@@ -6,11 +6,12 @@
 // ==> Gun4Hire: contact@ebenmonney.com
 // ======================================
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { TranslateService, TranslateLoader } from '@ngx-translate/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/observable/of';
+import { isPlatformBrowser } from '@angular/common';
 
 
 @Injectable()
@@ -19,7 +20,9 @@ export class AppTranslationService {
     private _languageChanged = new Subject<string>();
     readonly defaultLanguage = 'en';
 
-    constructor(private translate: TranslateService) {
+
+
+    constructor( @Inject(PLATFORM_ID) private platformId: Object, private translate: TranslateService) {
 
         this.setDefaultLanguage(this.defaultLanguage);
     }
@@ -46,9 +49,13 @@ export class AppTranslationService {
     useBrowserLanguage(): string | void {
         let browserLang = this.getBrowserLanguage();
 
-        if (browserLang.match(/en|fr|de|ar|ko/)) {
-            this.changeLanguage(browserLang);
-            return browserLang;
+        if (isPlatformBrowser(this.platformId)) {
+            if (browserLang.match(/en|fr|de|ar|ko/)) {
+                this.changeLanguage(browserLang);
+                return browserLang;
+            }
+        } else {
+            return 'en';
         }
     }
 

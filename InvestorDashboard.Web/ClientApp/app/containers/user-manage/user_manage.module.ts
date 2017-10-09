@@ -20,16 +20,8 @@ import { LocalStoreManager } from '../../services/local-store-manager.service';
 import { AppTranslationService, TranslateLanguageLoader } from '../../services/app-translation.service';
 import { EndpointFactory } from '../../services/endpoint-factory.service';
 import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { MaterialModule } from '../../app.material.module';
 
-@NgModule({
-  exports: [
-    MdButtonModule,
-    MdCardModule,
-    MdCheckboxModule,
-    MdInputModule
-  ]
-})
-export class Material { }
 
 @NgModule({
   declarations: [
@@ -40,7 +32,7 @@ export class Material { }
   ],
   imports: [
     CommonModule,
-    Material,
+    MaterialModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
