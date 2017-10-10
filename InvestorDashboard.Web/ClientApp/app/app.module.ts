@@ -41,6 +41,8 @@ import { NotificationsViewerComponent } from './components/controls/notification
 
 import { ResponsiveModule, ResponsiveConfig } from 'ng2-responsive';
 import { ResponsiveDirective } from './directives/responsive';
+import { ResizeService } from './services/resize.service';
+import { DashboardModule } from './containers/dashboard/dashboard.module';
 
 @NgModule({
     declarations: [
@@ -59,6 +61,7 @@ import { ResponsiveDirective } from './directives/responsive';
         MaterialModule,
         // MainModule,
         UserManageModule,
+        DashboardModule,
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
@@ -85,7 +88,7 @@ import { ResponsiveDirective } from './directives/responsive';
 
         ConnectionResolver,
         LocalStoreManager,
-
+        ResizeService,
         NotificationService,
         NotificationEndpoint
     ]

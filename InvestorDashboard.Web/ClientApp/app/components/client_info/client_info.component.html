@@ -2,23 +2,23 @@
   <md-card-header>
     <img md-card-avatar src="/img/people.svg" />
     <md-card-title>{{userName}}</md-card-title>
-    <md-card-subtitle>{{userName}}</md-card-subtitle>
-
+    <md-card-subtitle>{{'clientInfo.Balance' | translate}}: {{balance}} DTT</md-card-subtitle>
   </md-card-header>
 </md-card>
-
+<hr>
 <div *ngIf="isMobile">
-  <button md-button [routerLink]="['/settings']">
-        <md-icon class="md-24">settings_applications</md-icon><span>Settings</span>
-      </button>
-  <button md-button (click)="logout()">
-    <md-icon class="md-24">exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>
-  </button>
+    <a md-list-item  [routerLink]="['/settings']">
+      <md-icon class="md-24">settings_applications</md-icon><span>{{'mainMenu.Settings' | translate}}</span>
+    </a>
+    <a md-list-item (click)="logout()">
+      <md-icon class="md-24">exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>
+    </a>
 
 </div>
 <div *ngIf="!isMobile">
+  
   <button md-menu-item [routerLink]="['/settings']">
-      <md-icon>settings_applications</md-icon><span>Settings</span>
+      <md-icon>settings_applications</md-icon><span>{{'mainMenu.Settings' | translate}}</span>
     </button>
   <button md-menu-item (click)="logout()">
       <md-icon>exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>

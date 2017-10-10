@@ -7,6 +7,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthService } from './services/auth.service';
 import { AuthGuard } from './services/auth-guard.service';
+import { DashboardComponent } from './containers/dashboard/dashboard.component';
 
 export const routingComponents = [
     HomeComponent, NotFoundComponent
@@ -19,18 +20,18 @@ const routes: Routes = [
         pathMatch: 'full'
     },
     {
-        path: '', component: HomeComponent,
+        path: '', component: DashboardComponent, canActivate: [AuthGuard],
         // *** SEO Magic ***
         // We're using "data" in our Routes to pass in our <title> <meta> <link> tag information
         // Note: This is only happening for ROOT level Routes, you'd have to add some additional logic if you wanted this for Child level routing
         // When you change Routes it will automatically append these to your document for you on the Server-side
         //  - check out app.component.ts to see how it's doing this
         data: {
-            title: 'Homepage',
-            meta: [{ name: 'description', content: 'This is an example Description Meta tag!' }],
+            title: '',
+            meta: [{ name: 'description', content: '' }],
             links: [
-                { rel: 'canonical', href: 'http://blogs.example.com/blah/nice' },
-                { rel: 'alternate', hreflang: 'es', href: 'http://es.example.com/' }
+                { rel: 'canonical', href: '' },
+                { rel: 'alternate', hreflang: 'es', href: '' }
             ]
         }
     },

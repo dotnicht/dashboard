@@ -474,6 +474,16 @@ export class Utilities {
         return printedDays;
     }
 
+    public static isMobile(): boolean {
+        if (isPlatformBrowser) {
+            if (window.innerWidth > 420) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static getAge(birthDate, otherDate) {
         birthDate = new Date(birthDate);

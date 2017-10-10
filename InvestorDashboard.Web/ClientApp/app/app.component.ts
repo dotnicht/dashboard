@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID, ViewChildren, QueryList } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID, ViewChildren, QueryList, HostListener } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute, PRIMARY_OUTLET, NavigationStart } from '@angular/router';
 import { Meta, Title, DOCUMENT, MetaDefinition } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
@@ -16,6 +16,8 @@ import { NotificationService } from './services/notification.service';
 import { AppTitleService } from './services/app-title.service';
 import { ModalDirective } from 'ngx-bootstrap';
 import { LoginComponent } from './components/login/login.component';
+import { ResizeService } from './services/resize.service';
+import { Utilities } from './services/utilities';
 
 
 
@@ -31,6 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
     shouldShowLoginModal: boolean;
     removePrebootScreen: boolean;
 
+
     appTitle = 'Investor Dashboard';
     // appLogo = require('../assets/images/logo.png');
 
@@ -42,6 +45,11 @@ export class AppComponent implements OnInit, OnDestroy {
     loginModal: ModalDirective;
     loginControl: LoginComponent;
 
+    get selectedLanguage(): string {
+        return this.translationService.getTranslation('languages.' + this.translationService.getCurrentLanguage);
+    }
+
+    public isMobile: boolean;
 
     // This will go at the END of your title for example "Home - Angular Universal..." <-- after the dash (-)
     private endPageTitle: string = 'Angular Universal and ASP.NET Core Starter';
@@ -49,6 +57,16 @@ export class AppComponent implements OnInit, OnDestroy {
     private defaultPageTitle: string = 'My App';
 
     private routerSub$: Subscription;
+
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        if (isPlatformBrowser) {
+            this.resizeService.width = window.innerWidth;
+        }
+        this.isMobile = this.resizeService.isMobile;
+        // this.isMobile = Utilities.isMobile();
+
+    }
 
     constructor(
         private toastyService: ToastyService,
@@ -61,6 +79,7 @@ export class AppComponent implements OnInit, OnDestroy {
         private translationService: AppTranslationService,
         private appTitleService: AppTitleService,
         private notificationService: NotificationService,
+        private resizeService: ResizeService,
         private router: Router,
         private activatedRoute: ActivatedRoute,
         private title: Title,
@@ -68,14 +87,15 @@ export class AppComponent implements OnInit, OnDestroy {
         private linkService: LinkService,
         @Inject(REQUEST) private request
     ) {
-        console.log(`What's our REQUEST Object look like?`);
-        console.log(`The Request object only really exists on the Server, but on the Browser we can at least see Cookies`);
-        console.log(this.request);
+
 
         storageManager.initialiseStorageSyncListener();
 
+
+
         translationService.addLanguages(['en']);
         translationService.setDefaultLanguage('en');
+
 
         this.toastyConfig.theme = 'bootstrap';
         this.toastyConfig.position = 'top-right';
@@ -83,13 +103,22 @@ export class AppComponent implements OnInit, OnDestroy {
         this.toastyConfig.showClose = true;
 
         this.appTitleService.appName = this.appTitle;
-    }
 
+
+    }
+    selectLanguage(lang: string) {
+        this.translationService.changeLanguage(lang);
+    }
     ngOnInit() {
         // Change "Title" on every navigationEnd event
         // Titles come from the data.title property on all Routes (see app.routes.ts)
         this._changeTitleOnNavigation();
+        if (isPlatformBrowser) {
+            this.resizeService.width = window.innerWidth;
+            this.isMobile = Utilities.isMobile();
+            this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
 
+        }
         this.isUserLoggedIn = this.authService.isLoggedIn;
 
         setTimeout(() => {
@@ -97,14 +126,12 @@ export class AppComponent implements OnInit, OnDestroy {
                 this.alertService.resetStickyMessage();
 
                 // if (!this.authService.isSessionExpired)
-                    this.alertService.showMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
+                this.alertService.showMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
                 // else
                 //     this.alertService.showStickyMessage('Session Expired', 'Your Session has expired. Please log in again', MessageSeverity.warn);
             }
-        }, 2000);
-        if (isPlatformBrowser) {
-            this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
-        }
+        }, 500);
+
         this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
         this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
 
@@ -113,7 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
             this.isUserLoggedIn = isLoggedIn;
 
-   
+
 
             setTimeout(() => {
                 if (!this.isUserLoggedIn) {
@@ -130,6 +157,8 @@ export class AppComponent implements OnInit, OnDestroy {
                 }
             }
         });
+
+
     }
 
     ngOnDestroy() {
@@ -229,7 +258,7 @@ export class AppComponent implements OnInit, OnDestroy {
             }
         }
     }
-   
+
     private _changeTitleOnNavigation() {
 
         this.routerSub$ = this.router.events
@@ -273,4 +302,3 @@ export class AppComponent implements OnInit, OnDestroy {
         return this.authService.currentUser ? this.authService.currentUser.userName : '';
     }
 }
-

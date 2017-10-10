@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { ResizeService } from '../../services/resize.service';
 
 @Component({
     selector: 'app-client-info',
@@ -8,24 +9,21 @@ import { AuthService } from '../../services/auth.service';
 })
 
 export class ClientInfoComponent implements OnInit {
-    private isMobile: boolean = false;
-    // private clientImg: any= require('../../assets/images/people.svg');
-    private menuItems = [{
-        title: 'settings',
-        imgName: 'settings_applications',
-        route: '/',
-        click: ''
-    },
-    {
-        title: 'logout',
-        imgName: 'exit_to_app',
-        route: '/',
-        click: 'logout()'
-    }];
+    get isMobile(): boolean {
+        return this.resizeService.isMobile;
+    }
+    private balance: number;
 
-    constructor(private authService: AuthService) { }
 
-    ngOnInit(): void { }
+    constructor(private authService: AuthService, private resizeService: ResizeService) {
+       
+    }
+
+    ngOnInit(): void {
+        if (this.authService.isLoggedIn) {
+            this.balance = 40.05;
+        }
+     }
 
     logout() {
         this.authService.logout();

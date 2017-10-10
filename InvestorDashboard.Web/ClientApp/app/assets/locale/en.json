@@ -4,12 +4,19 @@
     "Notifications": "Notifications",
     "New": "New"
   },
+  "clientInfo": {
+    "Balance": "Yours investments"
+  },
+  "languages": {
+    "en": "Eng",
+    "ru": "Rus"
+  },
   "mainMenu": {
-    "Appointments": "Appointments",
-    "Customers": "Customers",
-    "Products": "Products",
-    "Orders": "Orders",
-    "About": "About",
+    "Dashboard": "Dashboard",
+    "Home": "Home",
+    "Settings": "Settings",
+    "Faq": "FAQ",
+    "Login": "Login",
     "Logout": "Logout"
   },
   "pageHeader": {
