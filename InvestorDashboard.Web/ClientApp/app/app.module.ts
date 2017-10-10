@@ -39,10 +39,10 @@ import { LoginComponent } from './components/login/login.component';
 import { ClientInfoComponent } from './components/client_info/client_info.component';
 import { NotificationsViewerComponent } from './components/controls/notifications-viewer.component';
 
-import { ResponsiveModule, ResponsiveConfig } from 'ng2-responsive';
 import { ResponsiveDirective } from './directives/responsive';
 import { ResizeService } from './services/resize.service';
 import { DashboardModule } from './containers/dashboard/dashboard.module';
+import { ClientInfoService } from './services/client-info.service';
 
 @NgModule({
     declarations: [
@@ -82,6 +82,7 @@ import { DashboardModule } from './containers/dashboard/dashboard.module';
 
         LinkService,
         ConfigurationService,
+        ClientInfoService,
         AppTranslationService,
         TranslateStore,
         TranslateService,

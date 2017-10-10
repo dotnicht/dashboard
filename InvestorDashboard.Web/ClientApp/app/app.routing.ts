@@ -53,8 +53,8 @@ const routes: Routes = [
             title: '404 - Not found',
             meta: [{ name: 'description', content: '404 - Error' }],
             links: [
-                { rel: 'canonical', href: 'http://blogs.example.com/bootstrap/something' },
-                { rel: 'alternate', hreflang: 'es', href: 'http://es.example.com/bootstrap-demo' }
+                { rel: 'canonical', href: '' },
+                { rel: 'alternate', hreflang: 'es', href: '' }
             ]
         }
     }

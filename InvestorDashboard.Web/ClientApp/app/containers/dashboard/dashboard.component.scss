@@ -1,3 +1,75 @@
-﻿.mat-card{
+﻿.mat-card {
+  display: inline-flex;
+  margin-bottom: 5px;
+  .mat-card-content {
+    width: 100%;
+  }
+}
+
+.mat-card-title {
+  font-size: 14px;
+}
+
+.first,
+.second {
+  height: 200px;
+}
+
+.first {
+  width: calc(30% - 2.5px);
+  background: linear-gradient(to bottom, #a1e276, #30b9ad);
+  color: white;
+  .ether-addres {
+    word-wrap: break-word;
+    position: relative;
+    top: 25px;
+  }
+}
+
+.second {
+  width: calc(70% - 2.5px);
+  
+  .left,
+  .right {
+    width: calc(50% - 2.5px);
+  }
+  .mat-card-content{
     display: inline-flex;
+  }
+  .right{
+    color: rgba(0, 0, 0, .54);
+  }
+  .item {
+    margin-bottom: 10px;
+    .img-block {
+      background: #a4e375;
+      border-radius: 2px;
+      width: 32px;
+      height: 32px;
+      float: left;
+      margin-right: 10px;
+    }
+    .value {
+      font-weight: bold;
+    }
+    .title {
+      color: rgba(0, 0, 0, .54);
+    }
+  }
+}
+
+.third,
+.fourth {
+  width: calc(50% - 2.5px);
+  height: 300px;
+}
+
+@media (max-width: 1024px) {
+  .first {}
+}
+
+@media (max-width: 767px) {
+  .mat-card {
+    width: 100%;
+  }
 }

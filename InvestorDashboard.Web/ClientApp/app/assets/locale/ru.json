@@ -5,7 +5,15 @@
     "New": "New"
   },
   "clientInfo": {
-    "Balance": "ваш баланс"
+    "Balance": "ваш баланс",
+    "TotalInvestors": "Всего Инвесторов",
+    "TotalUSD": "Всего USD",
+    "TotalCoins": "Всего Coins",
+    "IcoHasStarted": "ICO НАЧАЛСЯ",
+    "MyEtherAddress": "Мой сетевой адрес",
+    "ChoosePaymentMethod": "Выберите метод оплаты",
+    "TotalInvestments": "Всего Инвестиций",
+    "PaymentMethod": "Метод оплаты"
   },
   "languages": {
     "en": "Анг",

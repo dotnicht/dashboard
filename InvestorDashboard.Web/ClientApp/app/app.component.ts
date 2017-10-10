@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID, ViewChildren, QueryList, HostListener } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute, PRIMARY_OUTLET, NavigationStart } from '@angular/router';
-import { Meta, Title, DOCUMENT, MetaDefinition } from '@angular/platform-browser';
+import { Meta, Title, DOCUMENT, MetaDefinition, DomSanitizer } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
 import { isPlatformServer, isPlatformBrowser } from '@angular/common';
 import { LinkService } from './shared/link.service';
@@ -18,6 +18,7 @@ import { ModalDirective } from 'ngx-bootstrap';
 import { LoginComponent } from './components/login/login.component';
 import { ResizeService } from './services/resize.service';
 import { Utilities } from './services/utilities';
+import { ClientInfoService } from './services/client-info.service';
 
 
 
@@ -34,8 +35,8 @@ export class AppComponent implements OnInit, OnDestroy {
     removePrebootScreen: boolean;
 
 
-    appTitle = 'Investor Dashboard';
-    // appLogo = require('../assets/images/logo.png');
+    appTitle = 'Data Trading';
+    // appLogo = require('../app/assets/images/logo.png');
 
     stickyToasties: number[] = [];
 
@@ -52,9 +53,9 @@ export class AppComponent implements OnInit, OnDestroy {
     public isMobile: boolean;
 
     // This will go at the END of your title for example "Home - Angular Universal..." <-- after the dash (-)
-    private endPageTitle: string = 'Angular Universal and ASP.NET Core Starter';
+    private endPageTitle: string = 'Investor Dashboard';
     // If no Title is provided, we'll use a default one before the dash(-)
-    private defaultPageTitle: string = 'My App';
+    private defaultPageTitle: string = 'Data Trading';
 
     private routerSub$: Subscription;
 
@@ -72,11 +73,12 @@ export class AppComponent implements OnInit, OnDestroy {
         private toastyService: ToastyService,
         private toastyConfig: ToastyConfig,
         private alertService: AlertService,
-
+        private domSanitizer: DomSanitizer,
         storageManager: LocalStoreManager,
         private authService: AuthService,
         private configurations: ConfigurationService,
         private translationService: AppTranslationService,
+        private clientInfoService: ClientInfoService,
         private appTitleService: AppTitleService,
         private notificationService: NotificationService,
         private resizeService: ResizeService,
@@ -93,9 +95,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
 
 
-        translationService.addLanguages(['en']);
+        translationService.addLanguages(['en', 'ru']);
         translationService.setDefaultLanguage('en');
-
 
         this.toastyConfig.theme = 'bootstrap';
         this.toastyConfig.position = 'top-right';
@@ -107,7 +108,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     }
     selectLanguage(lang: string) {
-        this.translationService.changeLanguage(lang);
+        this.configurations.language = lang;
     }
     ngOnInit() {
         // Change "Title" on every navigationEnd event
@@ -119,6 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
 
         }
+
         this.isUserLoggedIn = this.authService.isLoggedIn;
 
         setTimeout(() => {

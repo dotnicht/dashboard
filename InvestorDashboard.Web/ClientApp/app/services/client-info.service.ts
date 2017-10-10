@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { IClientInfo } from '../models/client-info.model';
 
 @Injectable()
 export class ClientInfoService {
-    public width: number;
-    get isMobile(): boolean {
-        if (this.width > 420) {
-            return false;
-        } else {
-            return true;
-        }
+    public clientInfo: IClientInfo;
+
+    constructor() { 
+        this.Initialize();
     }
-    constructor() { }
+    private Initialize() {
+        this.clientInfo = { balance: 40.28 } as IClientInfo;
+    }
 }

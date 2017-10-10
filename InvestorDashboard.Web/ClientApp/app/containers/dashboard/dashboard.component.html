@@ -1,9 +1,62 @@
 ﻿<div>
-        <md-card>dashboard Component</md-card>
-        <md-card>dashboard Component</md-card>
-        <md-card>dashboard Component</md-card>
+  <md-card class="first">
+    <md-card-content>
+      <h4>{{'clientInfo.Balance' | translate}}:
+        <p>{{clientInfoService.clientInfo.balance}} DTT</p>
+      </h4>
+
+      <div>
+
+      </div>
+      <div class="ether-addres">
+        <div>{{'clientInfo.MyEtherAddress' | translate}}</div>
+        867414845648974548974874815489464
+      </div>
+    </md-card-content>
+  </md-card>
+  <md-card class="second">
+    <md-card-content>
+      <div class="left">
+        <div class="item">
+          <div class="img-block"></div>
+          <div class="value">2890</div>
+          <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
+        </div>
+        <div class="item">
+          <div class="img-block"></div>
+          <div class="value">2824290.76</div>
+          <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
+        </div>
+        <div class="item">
+          <div class="img-block"></div>
+          <div class="value">2342342423 DTT</div>
+          <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
+        </div>
+      </div>
+      <div class="right">
+
+        <div style="margin-bottom: 25px;">
+          {{'clientInfo.IcoHasStarted' | translate}}
+        </div>
+        <div style="margin-bottom: 30px;">
+          <p>{{'clientInfo.TotalInvestments' | translate}} - 22%</p>
+          2.24556544 BTC / 10BTC
+        </div>
+        <div>
+          <md-progress-bar mode="determinate" [value]="30" [color]="primary">
+          </md-progress-bar>
+        </div>
+        <div>
+
+        </div>
+      </div>
+    </md-card-content>
+
+  </md-card>
+  <md-card class="third">dashboard Component</md-card>
+  <md-card class="fourth">dashboard Component</md-card>
+  <!-- <md-card class="fifth" >dashboard Component</md-card> -->
 </div>
-<div >
-        <md-card>dashboard Component</md-card>
-        <md-card>dashboard Component</md-card>
+<div>
+
 </div>

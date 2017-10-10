@@ -5,7 +5,15 @@
     "New": "New"
   },
   "clientInfo": {
-    "Balance": "Yours investments"
+    "Balance": "Yours investments",
+    "TotalInvestors": "Total Investors",
+    "TotalUSD": "Total USD",
+    "TotalCoins": "Total Coins",
+    "IcoHasStarted": "ICO HAS STARTED",
+    "MyEtherAddress": "My Ether address",
+    "ChoosePaymentMethod": "Choose the payment method",
+    "TotalInvestments": "Total Investments",
+    "PaymentMethod": "Payment method"
   },
   "languages": {
     "en": "Eng",
