@@ -1,4 +1,5 @@
-﻿using InvestorDashboard.Business.Implementation;
+﻿using InvestorDashboard.Business.Services;
+using InvestorDashboard.Business.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -15,7 +16,9 @@ namespace InvestorDashboard.Business
 
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IKeyVaultService, KeyVaultService>();
-            services.AddTransient<IBitGoService, BitGoService>();
+            services.AddTransient<IBitcoinService, BitcoinService>();
+            services.AddTransient<IEthereumService, EthereumService>();
+            services.AddTransient<IExchangeRateService, ExchangeRateService>();
         }
     }
 }

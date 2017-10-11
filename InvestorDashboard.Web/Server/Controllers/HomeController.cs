@@ -29,9 +29,11 @@ namespace InvestorDashboard.Web.Controllers
       // Here we can pass any Custom Data we want !
 
       // By default we're passing down Cookies, Headers, Host from the Request object here
-      TransferData transferData = new TransferData();
-      transferData.request = AbstractHttpContextRequestInfo(Request);
-      transferData.thisCameFromDotNET = "Hi Angular it's asp.net :)";
+      TransferData transferData = new TransferData
+      {
+        request = AbstractHttpContextRequestInfo(Request),
+        thisCameFromDotNET = "Hi Angular it's asp.net :)"
+      };
       // Add more customData here, add it to the TransferData class
 
       //Prerender now needs CancellationToken
@@ -80,7 +82,6 @@ namespace InvestorDashboard.Web.Controllers
       xml += "</sitemapindex>";
 
       return Content(xml, "text/xml");
-
     }
 
     public IActionResult Error()
@@ -90,11 +91,12 @@ namespace InvestorDashboard.Web.Controllers
 
     private IRequest AbstractHttpContextRequestInfo(HttpRequest request)
     {
-
-      IRequest requestSimplified = new IRequest();
-      requestSimplified.cookies = request.Cookies;
-      requestSimplified.headers = request.Headers;
-      requestSimplified.host = request.Host;
+      IRequest requestSimplified = new IRequest
+      {
+        cookies = request.Cookies,
+        headers = request.Headers,
+        host = request.Host
+      };
 
       return requestSimplified;
     }

@@ -2,6 +2,6 @@
 {
     public enum Currency
     {
-        ETH, BTC
+        ETH, BTC, USD
     }
 }

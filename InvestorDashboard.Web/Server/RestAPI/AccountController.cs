@@ -1,7 +1,7 @@
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
-using InvestorDashboard.Business;
+using InvestorDashboard.Business.Services;
 using InvestorDashboard.DataAccess.Models;
 using InvestorDashboard.Web.Extensions;
 using InvestorDashboard.Web.Models.AccountViewModels;

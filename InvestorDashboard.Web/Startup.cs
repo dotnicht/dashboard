@@ -1,6 +1,7 @@
 using AspNet.Security.OpenIdConnect.Primitives;
 using InvestorDashboard.Business;
 using InvestorDashboard.Business.ConfigurationSections;
+using InvestorDashboard.Business.Services;
 using InvestorDashboard.DataAccess;
 using InvestorDashboard.DataAccess.Models;
 using Microsoft.AspNetCore.Builder;
@@ -39,6 +40,9 @@ namespace InvestorDashboard.Web
     public void ConfigureServices(IServiceCollection services)
     {
       services.Configure<KeyVault>(Configuration.GetSection("KeyVault"));
+      services.Configure<Bitcoin>(Configuration.GetSection("Bitcoin"));
+      services.Configure<Ethereum>(Configuration.GetSection("Ethereum"));
+      services.Configure<ExchangeRate>(Configuration.GetSection("ExchangeRate"));
 
       DependencyInjectionConfiguration.Configure(services);
 
@@ -51,7 +55,7 @@ namespace InvestorDashboard.Web
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
-          options.UseSqlServer(keyVaultService.ConnectionString, b => b.MigrationsAssembly("InvestorDashboard.DataAccess"));
+          options.UseSqlServer(keyVaultService.DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.DataAccess"));
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.
@@ -136,10 +140,7 @@ namespace InvestorDashboard.Web
       });
 
       // Register the Swagger generator, defining one or more Swagger documents
-      services.AddSwaggerGen(c =>
-      {
-        c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" });
-      });
+      services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -161,10 +162,7 @@ namespace InvestorDashboard.Web
           HotModuleReplacementEndpoint = "/dist/__webpack_hmr"
         });
         app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-          c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        });
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
 
         // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
 
@@ -194,7 +192,6 @@ namespace InvestorDashboard.Web
           routes.MapSpaFallbackRoute(
             name: "spa-fallback",
             defaults: new { controller = "Home", action = "Index" });
-
         });
         app.UseExceptionHandler("/Home/Error");
       }
@@ -250,7 +247,7 @@ namespace InvestorDashboard.Web
       }
     }
 
-    public static void Main(string[] args)
+    public static void Main()
     {
       var host = new WebHostBuilder()
           .UseKestrel()
