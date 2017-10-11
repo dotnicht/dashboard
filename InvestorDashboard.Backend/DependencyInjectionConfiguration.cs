@@ -1,9 +1,9 @@
-﻿using InvestorDashboard.Business.Services;
-using InvestorDashboard.Business.Services.Implementation;
+﻿using InvestorDashboard.Backend.Services;
+using InvestorDashboard.Backend.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace InvestorDashboard.Business
+namespace InvestorDashboard.Backend
 {
     public static class DependencyInjectionConfiguration
     {

@@ -1,11 +1,11 @@
-﻿using InvestorDashboard.Business.ConfigurationSections;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Threading.Tasks;
 
-namespace InvestorDashboard.Business.Services.Implementation
+namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class KeyVaultService : IKeyVaultService
     {

@@ -1,10 +1,10 @@
-using InvestorDashboard.Backend.Models;
+using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace InvestorDashboard.Backend
+namespace InvestorDashboard.Backend.Database
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
