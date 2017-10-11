@@ -1,11 +1,11 @@
-﻿using InvestorDashboard.Business.ConfigurationSections;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
 using System;
 
-namespace InvestorDashboard.Business.Services.Implementation
+namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : IEthereumService
     {

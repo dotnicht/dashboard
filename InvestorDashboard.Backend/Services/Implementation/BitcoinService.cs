@@ -1,8 +1,8 @@
-﻿using InvestorDashboard.Business.ConfigurationSections;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using Microsoft.Extensions.Options;
 using System;
 
-namespace InvestorDashboard.Business.Services.Implementation
+namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class BitcoinService : IBitcoinService
     {

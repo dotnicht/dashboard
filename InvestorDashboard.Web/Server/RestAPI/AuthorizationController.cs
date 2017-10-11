@@ -1,7 +1,7 @@
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
-using InvestorDashboard.Backend.Models;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Web.Models;
 using InvestorDashboard.Web.Server.Helpers;
 using InvestorDashboard.Web.Server.Models.AuthorizationViewModels;
@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.Models;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;

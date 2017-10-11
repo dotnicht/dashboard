@@ -1,7 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace InvestorDashboard.Business.Services.Implementation
+namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EmailService : IEmailService
     {

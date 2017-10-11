@@ -1,9 +1,9 @@
 using AspNet.Security.OpenIdConnect.Primitives;
-using InvestorDashboard.Business;
-using InvestorDashboard.Business.ConfigurationSections;
-using InvestorDashboard.Business.Services;
 using InvestorDashboard.Backend;
-using InvestorDashboard.Backend.Models;
+using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
+using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;

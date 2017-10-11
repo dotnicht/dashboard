@@ -1,4 +1,4 @@
-﻿namespace InvestorDashboard.Business.ConfigurationSections
+﻿namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public sealed class KeyVault
     {

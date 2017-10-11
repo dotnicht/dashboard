@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InvestorDashboard.Business.ConfigurationSections
+namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class ExchangeRate
     {

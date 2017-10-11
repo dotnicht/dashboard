@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InvestorDashboard.Business.Services
+namespace InvestorDashboard.Backend.Services
 {
     public interface IBitcoinService
     {
