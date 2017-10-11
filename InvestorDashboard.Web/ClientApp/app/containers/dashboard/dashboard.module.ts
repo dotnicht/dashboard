@@ -5,15 +5,18 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
 import { AppTranslationService, TranslateLanguageLoader } from '../../services/app-translation.service';
 import { ClientInfoService } from '../../services/client-info.service';
+import { DashboardService } from '../../services/dashboard.service';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
     declarations: [
         DashboardComponent
     ],
     imports: [
+        CommonModule,
         MaterialModule,
         RouterModule,
-        
+
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
@@ -23,7 +26,8 @@ import { ClientInfoService } from '../../services/client-info.service';
     ],
     providers: [
         AppTranslationService,
-        ClientInfoService
+        ClientInfoService,
+        DashboardService
     ]
 })
 export class DashboardModule { }

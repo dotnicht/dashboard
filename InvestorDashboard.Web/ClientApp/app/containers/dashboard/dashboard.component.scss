@@ -28,20 +28,19 @@
 
 .second {
   width: calc(70% - 2.5px);
-  
   .left,
   .right {
     width: calc(50% - 2.5px);
   }
-  .mat-card-content{
+  .mat-card-content {
     display: inline-flex;
   }
-  .right{
+  .right {
     color: rgba(0, 0, 0, .54);
   }
   .item {
     margin-bottom: 10px;
-    .img-block {
+    .color-block {
       background: #a4e375;
       border-radius: 2px;
       width: 32px;
@@ -54,6 +53,44 @@
     }
     .title {
       color: rgba(0, 0, 0, .54);
+    }
+  }
+}
+
+.third {
+  .title {
+    color: rgba(0, 0, 0, .54);
+  }
+  .left,
+  .right {
+    width: calc(50% - 2.5px);
+  }
+  .block {
+    display: inline-flex;
+    width: 100%;
+    .left{
+        
+        .item{
+            margin-bottom: 10px;
+            padding: 5px;
+            .mat-button-wrapper{
+                line-height: 0;
+            }
+            .currency-icon{
+                background: #a4e375;
+                border-radius: 2px;
+                width: 32px;
+                height: 32px;
+                float: left;
+                margin-right: 10px;
+            }
+            .value {
+                font-weight: bold;
+              }
+              .title {
+                color: rgba(0, 0, 0, .54);
+              }
+        }
     }
   }
 }

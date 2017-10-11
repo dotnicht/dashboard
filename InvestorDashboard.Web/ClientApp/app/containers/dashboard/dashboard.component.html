@@ -18,17 +18,17 @@
     <md-card-content>
       <div class="left">
         <div class="item">
-          <div class="img-block"></div>
+          <div class="color-block"></div>
           <div class="value">2890</div>
           <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
         </div>
         <div class="item">
-          <div class="img-block"></div>
+          <div class="color-block"></div>
           <div class="value">2824290.76</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
         <div class="item">
-          <div class="img-block"></div>
+          <div class="color-block"></div>
           <div class="value">2342342423 DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div>
@@ -53,7 +53,24 @@
     </md-card-content>
 
   </md-card>
-  <md-card class="third">dashboard Component</md-card>
+  <md-card class="third">
+    <md-card-content>
+      <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
+      <div class="block">
+        <div class="left">
+          <button md-button class="item" *ngFor="let type of paymentTypes">
+            <!-- <img class="currency-icon" [src]="type.image"> -->
+            <div class="currency-icon"></div>
+            <div class="value">{{type.currency}}</div>
+            <div class="title">{{type.value}}</div>
+          </button>
+        </div>
+        <div class="right">
+          <div id="qrCode"></div>
+        </div>
+      </div>
+    </md-card-content>
+  </md-card>
   <md-card class="fourth">dashboard Component</md-card>
   <!-- <md-card class="fifth" >dashboard Component</md-card> -->
 </div>
