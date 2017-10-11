@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace InvestorDashboard.Backend.ConfigurationSections
+﻿namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class ExchangeRate
     {
+        public string ApiUri { get; set; }
     }
 }

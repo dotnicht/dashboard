@@ -1,6 +1,4 @@
 using AspNet.Security.OpenIdConnect.Primitives;
-using InvestorDashboard.Backend;
-using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
@@ -39,12 +37,8 @@ namespace InvestorDashboard.Web
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      services.Configure<KeyVault>(Configuration.GetSection("KeyVault"));
-      services.Configure<Bitcoin>(Configuration.GetSection("Bitcoin"));
-      services.Configure<Ethereum>(Configuration.GetSection("Ethereum"));
-      services.Configure<ExchangeRate>(Configuration.GetSection("ExchangeRate"));
-
-      DependencyInjectionConfiguration.Configure(services);
+      Backend.Configuration.Configure(services, Configuration);
+      Backend.DependencyInjection.Configure(services);
 
       var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
       keyVaultService.Initialize().Wait();

@@ -5,7 +5,7 @@ using System;
 
 namespace InvestorDashboard.Backend
 {
-    public static class DependencyInjectionConfiguration
+    public static class DependencyInjection
     {
         public static void Configure(IServiceCollection services)
         {

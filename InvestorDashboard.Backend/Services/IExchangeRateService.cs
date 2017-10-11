@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace InvestorDashboard.Backend.Services
+﻿namespace InvestorDashboard.Backend.Services
 {
     public interface IExchangeRateService
     {
-
+        decimal GetExchangeRate(Currency baseCurrency, Currency quoteCurrency);
     }
 }
