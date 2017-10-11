@@ -5,9 +5,7 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Web", "InvestorDashboard.Web\InvestorDashboard.Web.csproj", "{1502D3EC-3A93-4914-B0F7-DC6E17E779F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Business", "InvestorDashboard.Business\InvestorDashboard.Business.csproj", "{FA3CED23-D62D-4823-80A7-12F9FBEC42BD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvestorDashboard.DataAccess", "InvestorDashboard.DataAccess\InvestorDashboard.DataAccess.csproj", "{AAB78B11-E0DA-4289-9F91-5B89A4D8ECC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Backend", "InvestorDashboard.Backend\InvestorDashboard.Backend.csproj", "{AAB78B11-E0DA-4289-9F91-5B89A4D8ECC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		{1502D3EC-3A93-4914-B0F7-DC6E17E779F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1502D3EC-3A93-4914-B0F7-DC6E17E779F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1502D3EC-3A93-4914-B0F7-DC6E17E779F3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FA3CED23-D62D-4823-80A7-12F9FBEC42BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA3CED23-D62D-4823-80A7-12F9FBEC42BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FA3CED23-D62D-4823-80A7-12F9FBEC42BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FA3CED23-D62D-4823-80A7-12F9FBEC42BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AAB78B11-E0DA-4289-9F91-5B89A4D8ECC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AAB78B11-E0DA-4289-9F91-5B89A4D8ECC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAB78B11-E0DA-4289-9F91-5B89A4D8ECC2}.Release|Any CPU.ActiveCfg = Release|Any CPU

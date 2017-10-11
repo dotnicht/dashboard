@@ -2,8 +2,8 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using InvestorDashboard.Business;
 using InvestorDashboard.Business.ConfigurationSections;
 using InvestorDashboard.Business.Services;
-using InvestorDashboard.DataAccess;
-using InvestorDashboard.DataAccess.Models;
+using InvestorDashboard.Backend;
+using InvestorDashboard.Backend.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -55,7 +55,7 @@ namespace InvestorDashboard.Web
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
-          options.UseSqlServer(keyVaultService.DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.DataAccess"));
+          options.UseSqlServer(keyVaultService.DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.

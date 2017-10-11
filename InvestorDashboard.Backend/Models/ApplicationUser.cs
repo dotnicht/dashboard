@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace InvestorDashboard.DataAccess.Models
+namespace InvestorDashboard.Backend.Models
 {
     public class ApplicationUser : IdentityUser<Guid>
     {

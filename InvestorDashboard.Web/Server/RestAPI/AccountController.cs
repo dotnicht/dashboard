@@ -1,8 +1,8 @@
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
+using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Business.Services;
-using InvestorDashboard.DataAccess.Models;
 using InvestorDashboard.Web.Extensions;
 using InvestorDashboard.Web.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -72,7 +72,6 @@ namespace InvestorDashboard.Web.Controllers
             ErrorDescription = "The specified user account is disabled"
           });
         }
-
 
         // Validate the username/password parameters and ensure the account is not locked out.
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
@@ -190,7 +189,6 @@ namespace InvestorDashboard.Web.Controllers
         //OpenIddictConstants.Scopes.Roles
       }.Intersect(request.GetScopes()));
 
-
       ticket.SetResources(request.GetResources());
 
       // Note: by default, claims are NOT automatically included in the access and identity tokens.
@@ -202,7 +200,6 @@ namespace InvestorDashboard.Web.Controllers
         // Never include the security stamp in the access and identity tokens, as it's a secret value.
         if (claim.Type == _identityOptions.Value.ClaimsIdentity.SecurityStampClaimType)
           continue;
-
 
         var destinations = new List<string> { OpenIdConnectConstants.Destinations.AccessToken };
 
@@ -253,7 +250,6 @@ namespace InvestorDashboard.Web.Controllers
 
       return ticket;
     }
-
 
     [HttpGet]
     [AllowAnonymous]
@@ -450,9 +446,8 @@ namespace InvestorDashboard.Web.Controllers
       {
         return Json(ex.Message);
       }
-
-      return null;
     }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
@@ -642,7 +637,6 @@ namespace InvestorDashboard.Web.Controllers
     {
       return View();
     }
-
 
     [HttpGet]
     public IActionResult AccessDenied()
