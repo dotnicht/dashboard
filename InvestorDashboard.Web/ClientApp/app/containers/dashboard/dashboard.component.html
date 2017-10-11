@@ -58,7 +58,8 @@
       <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
         <div class="left">
-          <button md-button class="item" *ngFor="let type of paymentTypes">
+          <button (click)="changePayment(type.currency)" [attr.class]="selectedPaymentType!=type.currency?'item mat-button':'item mat-raised-button'"
+            md-button *ngFor="let type of paymentTypes">
             <!-- <img class="currency-icon" [src]="type.image"> -->
             <div class="currency-icon"></div>
             <div class="value">{{type.currency}}</div>
@@ -66,12 +67,25 @@
           </button>
         </div>
         <div class="right">
-          <div id="qrCode"></div>
+          <div id="qrCode" class="qrCode"></div>
+          <div>
+            <md-form-field>
+              <input mdInput name="example" type="text">
+              <button color="primary" md-raised-button>Submit</button>
+            </md-form-field>
+          </div>
         </div>
       </div>
     </md-card-content>
   </md-card>
-  <md-card class="fourth">dashboard Component</md-card>
+  <md-card class="fourth">
+       
+    <md-card-content>
+      <div class="info">
+            dashboard Component
+      </div>
+    </md-card-content>
+  </md-card>
   <!-- <md-card class="fifth" >dashboard Component</md-card> -->
 </div>
 <div>

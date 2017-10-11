@@ -73,7 +73,14 @@ body {
   width: 1024px;
   box-sizing: border-box;
 }
-
+.qrCode{
+  img{
+    display: none !important;
+  }
+  canvas{
+    display: initial !important;
+  }
+}
 @media (max-width: 1024px) {
   .main-content {
     width: 767px;

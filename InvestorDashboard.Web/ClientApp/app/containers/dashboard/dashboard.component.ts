@@ -16,6 +16,7 @@ declare var QRCode: any;
 export class DashboardComponent implements OnInit {
 
     public paymentTypes: IPaymentType[];
+    public selectedPaymentType: string;
     /** dashboard ctor */
     constructor(
         private translationService: AppTranslationService,
@@ -34,8 +35,15 @@ export class DashboardComponent implements OnInit {
 
         let qrCode = new QRCode(document.getElementById('qrCode'), {
             text: data,
-            width: 200,
-            height: 200
+            width: 150,
+            height: 150
         });
+        document.getElementById('qrCode').getElementsByTagName('img')[0].style.display = 'none';
+        document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
+
+
+    }
+    changePayment(payment) {
+        this.selectedPaymentType = payment;
     }
 }
