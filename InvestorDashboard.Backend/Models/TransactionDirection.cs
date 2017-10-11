@@ -1,4 +1,4 @@
-﻿namespace InvestorDashboard.DataAccess.Models
+﻿namespace InvestorDashboard.Backend.Models
 {
     public enum TransactionDirection
     {

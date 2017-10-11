@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace InvestorDashboard.DataAccess.Models
+namespace InvestorDashboard.Backend.Models
 {
     public class WalletAddress
     {

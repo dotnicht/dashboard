@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 
-namespace InvestorDashboard.DataAccess.Models
+namespace InvestorDashboard.Backend.Models
 {
     public class ApplicationRole : IdentityRole<Guid>
     {
