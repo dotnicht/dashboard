@@ -12,7 +12,6 @@ namespace InvestorDashboard.Backend.Database.Models
         [MaxLength(3)]
         public string CountryCode { get; set; }
         public string City { get; set; }
-        public string Address { get; set; }
-        public string KeyStore { get; set; }
+        public bool IsEligibleForTokenSale { get; set; }
     }
 }

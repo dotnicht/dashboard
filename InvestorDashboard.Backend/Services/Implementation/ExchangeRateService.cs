@@ -19,9 +19,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public decimal GetExchangeRate(Currency baseCurrency, Currency quoteCurrency)
         {
+            if (baseCurrency == quoteCurrency)
+            {
+                return 1;
+            }
+             
+            if (baseCurrency == Currency.DTT || quoteCurrency == Currency.DTT)
+            {
+                if (baseCurrency == Currency.DTT && quoteCurrency == Currency.USD)
+                {
+                    return _options.Value.DTTUSD;
+                }
+
+                throw new NotSupportedException("DTT conversions currently not supported.");
+            }
+
             var result = Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
             result.Wait();
-            return result.Result[0];
+            return result.Result?[0] ?? throw new InvalidOperationException("An error occurred while retrieving exchange rate.");
         }
 
         private async Task<T> Get<T>(string url) where T : new()
