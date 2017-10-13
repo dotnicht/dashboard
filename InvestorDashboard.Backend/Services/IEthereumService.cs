@@ -5,6 +5,6 @@ namespace InvestorDashboard.Backend.Services
     public interface IEthereumService
     {
         EthereumAccount CreateAccount();
-        EthereumTransaction[] GetTransactionsByRecepientAddress(string address);
+        EthereumTransaction[] GetInboundTransactionsByRecipientAddress(string address);
     }
 }

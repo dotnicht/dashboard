@@ -33,7 +33,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var result = RestUtil.Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
-            return result.Result?[0] ?? throw new InvalidOperationException("An error occurred while retrieving exchange rate.");
+            if (result != null && result.Count > 0)
+            {
+                return result[0];
+            }
+
+            throw new InvalidOperationException("");
         }
     }
 }

@@ -7,6 +7,7 @@ using Nethereum.KeyStore;
 using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -39,7 +40,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             };
         }
 
-        public EthereumTransaction[] GetTransactionsByRecepientAddress(string address)
+        public EthereumTransaction[] GetInboundTransactionsByRecipientAddress(string address)
         {
             if (address == null)
             {
@@ -48,9 +49,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var result = RestUtil.Get<EtherscanResponse>($"{_options.Value.ApiUri}account/{address}/tx/0");
 
-            if (result.Result != null)
+            if (result != null)
             {
-                return _mapper.Map<EthereumTransaction[]>(result.Result.Data.ToArray());
+                return _mapper.Map<EthereumTransaction[]>(result.Data.Where(x => x.Recipient == address && x.Type == "tx").ToArray());
             }
 
             throw new InvalidOperationException("An error occurred while retrieving transaction list.");

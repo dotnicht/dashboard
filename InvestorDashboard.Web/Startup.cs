@@ -50,8 +50,8 @@ namespace InvestorDashboard.Web
       services.AddNodeServices();
       services.AddAutoMapper(typeof(Backend.DependencyInjection));
 
-      var eth = services.BuildServiceProvider().GetRequiredService<IEthereumService>();
-      var res = eth.GetTransactionsByRecepientAddress("0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe");
+      //var eth = services.BuildServiceProvider().GetRequiredService<IEthereumService>();
+      //var res = eth.GetInboundTransactionsByRecipientAddress("0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe");
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -59,7 +59,7 @@ namespace InvestorDashboard.Web
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.
-          options.UseOpenIddict();
+          options.UseOpenIddict<Guid>();
         }
       );
 
