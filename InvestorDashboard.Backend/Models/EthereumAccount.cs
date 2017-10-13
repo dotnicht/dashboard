@@ -1,4 +1,4 @@
-﻿namespace InvestorDashboard.Backend
+﻿namespace InvestorDashboard.Backend.Models
 {
     public class EthereumAccount
     {

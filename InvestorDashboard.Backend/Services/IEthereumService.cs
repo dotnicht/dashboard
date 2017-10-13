@@ -1,4 +1,6 @@
-﻿namespace InvestorDashboard.Backend.Services
+﻿using InvestorDashboard.Backend.Models;
+
+namespace InvestorDashboard.Backend.Services
 {
     public interface IEthereumService
     {

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services.Implementation;
 
 namespace InvestorDashboard.Backend

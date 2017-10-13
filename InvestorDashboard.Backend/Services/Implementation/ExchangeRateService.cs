@@ -1,4 +1,5 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;

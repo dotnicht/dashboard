@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.KeyStore;
-using Nethereum.RPC.Eth;
 using Nethereum.Signer;
-using Nethereum.Web3;
-using Nethereum.Web3.Accounts;
 using System;
 using System.Collections.Generic;
 
