@@ -1,4 +1,5 @@
 using AspNet.Security.OpenIdConnect.Primitives;
+using AutoMapper;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
@@ -15,6 +16,7 @@ using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,6 +48,7 @@ namespace InvestorDashboard.Web
       // Add framework services.
       services.AddMvc();
       services.AddNodeServices();
+      services.AddAutoMapper(typeof(Backend.DependencyInjection));
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {

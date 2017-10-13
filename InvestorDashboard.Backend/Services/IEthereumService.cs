@@ -3,5 +3,6 @@
     public interface IEthereumService
     {
         EthereumAccount CreateAccount();
+        EthereumTransaction[] GetTransactionsByRecepientAddress(string address);
     }
 }

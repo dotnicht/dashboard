@@ -6,5 +6,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class Ethereum
     {
+        public string ApiUri { get; set; }
     }
 }
