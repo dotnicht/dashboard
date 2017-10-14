@@ -15,7 +15,7 @@
         <md-icon>home</md-icon><span>{{'mainMenu.Home' | translate}}</span>
       </a>
       <a md-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        [routerLink]="['/dashboard']" (click)="start.close()">
+        [routerLink]="['/']" (click)="start.close()">
         <md-icon>dashboard</md-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
       </a>
       <a md-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
@@ -29,7 +29,7 @@
   </md-drawer>
   <md-toolbar color="primary">
 
-    <button *ngIf="isMobile" class="side-menu-btn" md-icon-button (click)="start.open()">
+    <button *ngIf="isTab" class="side-menu-btn" md-icon-button (click)="start.open()">
       <md-icon>menu</md-icon>
     </button>
 
@@ -37,7 +37,7 @@
       <h2>{{appTitle}}</h2>
       <!-- <img src="/img/logo.svg"> -->
       <div>
-        <span *ngIf="!isMobile">
+        <span *ngIf="!isTab">
         <a href="http://www.data-trading.com/">
           <button md-button>
             <md-icon>home</md-icon>{{'mainMenu.Home' | translate}}
@@ -45,7 +45,7 @@
         </a>
           
 
-          <button md-button [routerLink]="['/dashboard']">
+          <button md-button [routerLink]="['/']">
               <md-icon>dashboard</md-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
         </button>
         <button md-button [routerLink]="['/faq']">

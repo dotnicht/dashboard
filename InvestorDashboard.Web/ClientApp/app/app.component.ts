@@ -50,7 +50,8 @@ export class AppComponent implements OnInit, OnDestroy {
         return this.translationService.getTranslation('languages.' + this.translationService.getCurrentLanguage);
     }
 
-    public isMobile: boolean;
+    private isMobile: boolean;
+    private isTab: boolean;
 
     // This will go at the END of your title for example "Home - Angular Universal..." <-- after the dash (-)
     private endPageTitle: string = 'Investor Dashboard';
@@ -65,6 +66,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.resizeService.width = window.innerWidth;
         }
         this.isMobile = this.resizeService.isMobile;
+        this.isTab = this.resizeService.isTab;
         // this.isMobile = Utilities.isMobile();
 
     }
@@ -116,7 +118,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this._changeTitleOnNavigation();
         if (isPlatformBrowser) {
             this.resizeService.width = window.innerWidth;
-            this.isMobile = Utilities.isMobile();
+            this.isMobile = this.resizeService.isMobile;
+            this.isTab = this.resizeService.isTab;
             this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
 
         }

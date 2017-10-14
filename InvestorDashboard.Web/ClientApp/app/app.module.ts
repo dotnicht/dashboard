@@ -28,7 +28,7 @@ import { AlertService } from './services/alert.service';
 import { ToastyModule } from 'ng2-toasty';
 import { NotificationService } from './services/notification.service';
 import { NotificationEndpoint } from './services/notification-endpoint.service';
-import { MainModule } from './containers/main/main.module';
+
 import { ConfigurationService } from './services/configuration.service';
 import { LocalStoreManager } from './services/local-store-manager.service';
 import { AppTranslationService, TranslateLanguageLoader } from './services/app-translation.service';
@@ -43,11 +43,13 @@ import { ResponsiveDirective } from './directives/responsive';
 import { ResizeService } from './services/resize.service';
 import { DashboardModule } from './containers/dashboard/dashboard.module';
 import { ClientInfoService } from './services/client-info.service';
+import { SettingsModule } from './containers/settings/settings.module';
 
 @NgModule({
     declarations: [
         AppComponent,
         ClientInfoComponent,
+        
         routingComponents,
         ResponsiveDirective
     ],
@@ -62,6 +64,7 @@ import { ClientInfoService } from './services/client-info.service';
         // MainModule,
         UserManageModule,
         DashboardModule,
+        SettingsModule,
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,

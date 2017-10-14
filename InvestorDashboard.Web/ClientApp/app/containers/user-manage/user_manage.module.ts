@@ -3,12 +3,7 @@ import { NgModule } from '@angular/core';
 import { LoginComponent } from '../../components/login/login.component';
 import { RegisterComponent } from '../../components/register/register.component';
 import { RouterModule, PreloadAllModules } from '@angular/router';
-import {
-  MdButtonModule,
-  MdCardModule,
-  MdCheckboxModule,
-  MdInputModule
-} from '@angular/material';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { EqualValidator } from '../../directives/equal-validator.directive';

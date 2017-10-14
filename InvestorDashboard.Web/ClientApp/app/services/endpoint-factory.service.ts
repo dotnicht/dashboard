@@ -29,8 +29,6 @@ export class EndpointFactory {
 
     private get loginUrl() { return this.configurations.baseUrl + this._loginUrl; }
 
-
-
     private taskPauser: Subject<any>;
     private isRefreshingLogin: boolean;
 
@@ -43,12 +41,9 @@ export class EndpointFactory {
         return this._authService;
     }
 
-
-
     constructor(protected http: Http, protected configurations: ConfigurationService, private injector: Injector) {
 
     }
-
 
     getLoginEndpoint(user: UserLogin): Observable<Response> {
 
@@ -110,6 +105,8 @@ export class EndpointFactory {
 
         headers.append('Accept', `application/vnd.iman.v${EndpointFactory.apiVersion}+json, application/json, text/plain, */*`);
         headers.append('App-Version', ConfigurationService.appVersion);
+
+        console.log(headers);
 
         return new RequestOptions({ headers: headers });
     }

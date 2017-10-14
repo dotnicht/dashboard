@@ -8,11 +8,17 @@ import { RegisterComponent } from './components/register/register.component';
 import { AuthService } from './services/auth.service';
 import { AuthGuard } from './services/auth-guard.service';
 import { DashboardComponent } from './containers/dashboard/dashboard.component';
+import { SettingsComponent } from './containers/settings/settings.component';
+import { UserInfoComponent } from './components/controls/user-info.component';
 
 export const routingComponents = [
     HomeComponent, NotFoundComponent
 ];
 
+export const SETTINGS_ROUTES: Routes = [
+    { path: '', redirectTo: 'profile', pathMatch: 'full' },
+    { path: 'profile', component: UserInfoComponent }
+];
 const routes: Routes = [
     {
         path: 'home',
@@ -45,6 +51,13 @@ const routes: Routes = [
         path: 'register', component: RegisterComponent,
         data: {
             title: 'Register'
+        }
+    },
+    {
+        path: 'settings', component: SettingsComponent, canActivate: [AuthGuard],
+        children: SETTINGS_ROUTES,
+        data: {
+            title: 'Settings'
         }
     },
     {

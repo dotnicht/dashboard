@@ -16,7 +16,7 @@
   }
 
   .first {
-    width: calc(30% - 2.5px);
+    width: calc(50% - 2.5px);
     background: linear-gradient(to bottom, #a1e276, #30b9ad);
     color: white;
     .ether-addres {
@@ -27,7 +27,7 @@
   }
 
   .second {
-    width: calc(70% - 2.5px);
+    width: calc(50% - 2.5px);
     .left,
     .right {
       width: calc(50% - 2.5px);
@@ -74,12 +74,19 @@
       .left {
         border-right: 1px solid #eeeeee;
         overflow-y: auto;
+        padding-left: 5px;
         .item {
-          margin-bottom: 10px;
+          margin: 5px 0;
           padding: 5px;
           line-height: initial;
           width: 200px;
           text-align: left;
+          border: 1px solid white;
+          &.mat-raised-button{
+            border: 1px solid #eeeeee;
+            box-shadow: none;
+            border-radius: 5px;
+          }
           .currency-icon {
             background: #a4e375;
             border-radius: 2px;
@@ -114,7 +121,32 @@
     width: calc(40% - 2.5px);
     .info {
       height: 100%;
-      overflow-y: auto;
+      width: 100%;
+      position: relative;
+      .info-container {
+        overflow-y: auto;
+        height: 100%;
+        .header {
+          color: rgba(0, 0, 0, 0.54);
+          margin-bottom: 10px;
+          &:first-child {
+            margin-top: 0;
+          }
+        }
+      }
+      &::after {
+        content: '';
+        position: absolute;
+        height: 30px;
+        width: calc(100% - 15px);
+        z-index: 2;
+        bottom: -3px;
+        background-image: -webkit-gradient(linear, 0 50%, 100% 50%, color-stop(100%, rgba(255, 255, 255, 1)), color-stop(0, rgba(255, 255, 255, 0)));
+        background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+        background-image: -moz-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+        background-image: -o-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+        background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+      }
     }
   }
 
@@ -134,10 +166,10 @@
   }
 
   @media (max-width: 1024px) {
-    .third, .fourth {
+    .third,
+    .fourth {
       width: 100%;
     }
-
   }
 
   @media (max-width: 767px) {

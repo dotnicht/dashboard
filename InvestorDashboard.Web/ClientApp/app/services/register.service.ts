@@ -24,7 +24,7 @@ export class RegisterService {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
-        return this.http.post('/account/register', JSON.stringify(user), { headers: headers })
+        return this.http.post('/register', JSON.stringify(user), { headers: headers })
             .map((resp: Response) => resp.json())
             .catch((error: any) => { return Observable.throw(error); });
     }

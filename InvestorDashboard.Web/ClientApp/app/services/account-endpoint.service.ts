@@ -49,26 +49,28 @@ export class AccountEndpoint extends EndpointFactory {
     getUserEndpoint(userId?: string): Observable<Response> {
         let endpointUrl = userId ? `${this.usersUrl}/${userId}` : this.currentUserUrl;
 
-        return this.http.get(endpointUrl, this.getAuthHeader())
+        let res = this.http.get(endpointUrl, this.getAuthHeader())
             .map((response: Response) => {
                 return response;
             })
             .catch(error => {
                 return this.handleError(error, () => this.getUserEndpoint(userId));
             });
+        return res;
     }
 
 
     getUserByUserNameEndpoint(userName: string): Observable<Response> {
         let endpointUrl = `${this.userByUserNameUrl}/${userName}`;
 
-        return this.http.get(endpointUrl, this.getAuthHeader())
+        let res = this.http.get(endpointUrl, this.getAuthHeader())
             .map((response: Response) => {
                 return response;
             })
             .catch(error => {
                 return this.handleError(error, () => this.getUserByUserNameEndpoint(userName));
             });
+        return res;
     }
 
 
