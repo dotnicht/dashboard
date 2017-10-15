@@ -6,6 +6,8 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class Ethereum
     {
-        public string ApiUri { get; set; }
+        public string EtherchainApiUri { get; set; }
+        public string EtherscanApiUri { get; set; }
+        public string EtherscanApiKey { get; set; }
     }
 }

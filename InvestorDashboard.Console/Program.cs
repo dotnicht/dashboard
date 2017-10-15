@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Linq;
-using static System.Console;
 
 namespace InvestorDashboard.Console
 {
@@ -53,6 +52,10 @@ namespace InvestorDashboard.Console
 
             var mapper = serviceProvider.GetRequiredService<IMapper>();
             var ethereumService = serviceProvider.GetRequiredService<IEthereumService>();
+            var exchangeRateService = serviceProvider.GetRequiredService<IExchangeRateService>();
+
+            var tokenRate = exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
+            var ethRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD);
 
             using (var ctx = serviceProvider.GetRequiredService<ApplicationDbContext>())
             {
@@ -64,6 +67,10 @@ namespace InvestorDashboard.Console
                         {
                             var trx = mapper.Map<Transaction>(transaction);
                             trx.Address = address;
+                            trx.Currency = Currency.ETH;
+                            trx.Direction = TransactionDirection.Inbound;
+                            trx.ExchangeRate = ethRate;
+                            trx.TokenPrice = tokenRate;
                             ctx.Transactions.Add(trx);
                         }
                     }
