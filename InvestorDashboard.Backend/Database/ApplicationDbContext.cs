@@ -8,10 +8,11 @@ namespace InvestorDashboard.Backend.Database
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
+        public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-        public DbSet<WalletAddress> WalletAddresses { get; set; }
+        public DbSet<CryptoAddress> CryptoAddresses { get; set; }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
             : base(options)
         {
         }
@@ -22,19 +23,30 @@ namespace InvestorDashboard.Backend.Database
 
             builder.UseOpenIddict();
 
+            builder.Entity<ConfigurationItem>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEWSEQUENTIALID()");
+            builder.Entity<ConfigurationItem>()
+                .HasIndex(x => x.Name)
+                .IsUnique();
+
             builder.Entity<Transaction>()
                 .Property(x => x.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
             builder.Entity<Transaction>()
+                .Property(b => b.Created)
+                .HasDefaultValueSql("GETUTCDATE()");
+            builder.Entity<Transaction>()
+                .HasIndex(x => x.Hash)
+                .IsUnique();
+
+            builder.Entity<CryptoAddress>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEWSEQUENTIALID()");
+            builder.Entity<CryptoAddress>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
 
-            builder.Entity<WalletAddress>()
-                .Property(x => x.Id)
-                .HasDefaultValueSql("NEWSEQUENTIALID()");
-            builder.Entity<WalletAddress>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }

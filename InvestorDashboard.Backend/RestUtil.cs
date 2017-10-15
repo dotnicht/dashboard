@@ -1,6 +1,5 @@
 ﻿using RestSharp.Portable;
 using RestSharp.Portable.HttpClient;
-using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend
 {

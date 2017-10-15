@@ -30,8 +30,8 @@ namespace InvestorDashboard.Web
     {
       var builder = new ConfigurationBuilder()
           .SetBasePath(env.ContentRootPath)
-          .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+          .AddJsonFile("appsettings.json", false, true)
+          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
           .AddEnvironmentVariables();
       Configuration = builder.Build();
     }
@@ -59,7 +59,7 @@ namespace InvestorDashboard.Web
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.
-          options.UseOpenIddict<Guid>();
+          options.UseOpenIddict();
         }
       );
 

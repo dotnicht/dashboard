@@ -11,7 +11,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public Guid Id { get; set; }
         public Guid WalletAddressId { get; set; }
         [ForeignKey("WalletAddressId")]
-        public WalletAddress WalletAddress { get; set; }
+        public CryptoAddress Address { get; set; }
         public string CounterpartyAddress { get; set; }
         public string Hash { get; set; }
         public TransactionDirection Direction { get; set; }

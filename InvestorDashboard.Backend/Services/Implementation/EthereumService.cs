@@ -40,7 +40,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             };
         }
 
-        public EthereumTransaction[] GetInboundTransactionsByRecipientAddress(string address)
+        public IEnumerable<EthereumTransaction> GetInboundTransactionsByRecipientAddress(string address)
         {
             if (address == null)
             {

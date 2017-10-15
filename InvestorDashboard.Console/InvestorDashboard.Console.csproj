@@ -6,6 +6,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\InvestorDashboard.Web\appsettings.json" Link="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.0.1" />
+    <PackageReference Include="microsoft.entityframeworkcore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="microsoft.extensions.dependencyinjection.abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\InvestorDashboard.Backend\InvestorDashboard.Backend.csproj" />
   </ItemGroup>
 
