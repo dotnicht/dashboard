@@ -16,10 +16,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<ExchangeRateSettings> _options;
         private readonly ILogger _logger;
 
-        public ExchangeRateService(IOptions<ExchangeRateSettings> options, ApplicationDbContext context, ILogger logger)
+        public ExchangeRateService(ApplicationDbContext context, IOptions<ExchangeRateSettings> options, ILogger<ExchangeRateService> logger)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -82,14 +82,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             throw new InvalidOperationException("An error occurred while retrieving exchange rate from bitfinex.com.");
         }
 
-        private decimal? GetExchangeRateFromDatabase(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime)
-        {
-            return _context.ExchangeRates.OrderByDescending(x => x.Created).FirstOrDefault(x => x.Base == baseCurrency && x.Quote == quoteCurrency && x.Created <= dateTime)?.Rate;
-        }
+        private decimal? GetExchangeRateFromDatabase(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) => 
+            _context.ExchangeRates.OrderByDescending(x => x.Created).FirstOrDefault(x => x.Base == baseCurrency && x.Quote == quoteCurrency && x.Created <= dateTime)?.Rate;
 
-        private InvalidOperationException CreateDbException(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime)
-        {
-            return new InvalidOperationException($"Exchange rate record not found for currency pair {baseCurrency}/{quoteCurrency} and date & time {dateTime}.");
-        }
+        private InvalidOperationException CreateDbException(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) => 
+            new InvalidOperationException($"Exchange rate record not found for currency pair {baseCurrency}/{quoteCurrency} and date & time {dateTime}.");
     }
 }

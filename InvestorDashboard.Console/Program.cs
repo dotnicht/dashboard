@@ -22,7 +22,7 @@ namespace InvestorDashboard.Console
         private static void Main()
         {
             var configurationBuilder = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
+              .SetBasePath(Directory.GetCurrentDirectory())              
               .AddJsonFile("appsettings.json", false, true)
               .AddEnvironmentVariables();
 
@@ -43,13 +43,11 @@ namespace InvestorDashboard.Console
             serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            //RenewEthereumTransactions(serviceProvider);
-
             var options = serviceProvider.GetRequiredService<IOptions<ExchangeRateSettings>>();
 
-
-            Task.Run(() => Run(serviceProvider, RefreshExchangeRates, options.Value.RefreshRate, CancellationToken.None));
+            var eth = Task.Run(() => Run(serviceProvider, RenewEthereumTransactions, TimeSpan.FromHours(1), CancellationToken.None));
+            var ex = Task.Run(() => Run(serviceProvider, RefreshExchangeRates, options.Value.RefreshRate, CancellationToken.None));
+            Task.WaitAll(eth, ex);
         }
 
         private static void RenewEthereumTransactions(IServiceProvider serviceProvider)
@@ -103,11 +101,11 @@ namespace InvestorDashboard.Console
             }
         }
 
-        private static async Task Run(IServiceProvider serviceProvider, Action<IServiceProvider> action, TimeSpan period, CancellationToken cancellationToken)
+        private static void Run(IServiceProvider serviceProvider, Action<IServiceProvider> action, TimeSpan period, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(period, cancellationToken).ConfigureAwait(false);
+                Task.Delay(period, cancellationToken).Wait();
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     action(serviceProvider);

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexConvertors.Extensions;
@@ -13,12 +14,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : IEthereumService
     {
+        private readonly ApplicationDbContext _context;
         private readonly IOptions<EthereumSettings> _options;
         private readonly IMapper _mapper;
         private readonly IKeyVaultService _keyVaultService;
 
-        public EthereumService(IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService)
+        public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService)
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
@@ -70,7 +73,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (result != null)
             {
-                return _mapper.Map<EthereumTransaction[]>(result.Result/*.Where(x => x.To == address)*/);
+                return _mapper.Map<EthereumTransaction[]>(result.Result.Where(x => x.To == address));
             }
 
             throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");
