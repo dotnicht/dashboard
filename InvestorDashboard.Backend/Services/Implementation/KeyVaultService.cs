@@ -9,13 +9,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class KeyVaultService : IKeyVaultService
     {
-        private readonly IOptions<KeyVault> _options;
+        private readonly IOptions<KeyVaultSettings> _options;
         private bool _initialized;
 
         public string DatabaseConnectionString { get; private set; }
         public string KeyStoreEncryptionPassword { get; private set; }
 
-        public KeyVaultService(IOptions<KeyVault> options)
+        public KeyVaultService(IOptions<KeyVaultSettings> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }

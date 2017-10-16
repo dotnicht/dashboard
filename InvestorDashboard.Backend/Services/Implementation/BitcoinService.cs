@@ -6,9 +6,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class BitcoinService : IBitcoinService
     {
-        private readonly IOptions<Bitcoin> _options;
+        private readonly IOptions<BitcoinSettings> _options;
 
-        public BitcoinService(IOptions<Bitcoin> options)
+        public BitcoinService(IOptions<BitcoinSettings> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }

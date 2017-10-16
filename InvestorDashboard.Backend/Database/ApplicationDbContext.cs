@@ -11,8 +11,9 @@ namespace InvestorDashboard.Backend.Database
         public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
+        public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
@@ -47,6 +48,12 @@ namespace InvestorDashboard.Backend.Database
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
 
+            builder.Entity<ExchangeRate>()
+                .Property(x => x.Id)
+                .HasDefaultValueSql("NEWSEQUENTIALID()");
+            builder.Entity<ExchangeRate>()
+                .Property(b => b.Created)
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }

@@ -13,11 +13,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : IEthereumService
     {
-        private readonly IOptions<Ethereum> _options;
+        private readonly IOptions<EthereumSettings> _options;
         private readonly IMapper _mapper;
         private readonly IKeyVaultService _keyVaultService;
 
-        public EthereumService(IOptions<Ethereum> options, IMapper mapper, IKeyVaultService keyVaultService)
+        public EthereumService(IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -47,7 +47,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(address));
             }
 
-            return GetInboundTransactionsByRecipientAddressFromEtherchain(address);
+            return GetInboundTransactionsByRecipientAddressFromEtherscan(address);
         }
 
         private EthereumTransaction[] GetInboundTransactionsByRecipientAddressFromEtherchain(string address)
@@ -70,7 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (result != null)
             {
-                return _mapper.Map<EthereumTransaction[]>(result.Result.Where(x => x.To == address));
+                return _mapper.Map<EthereumTransaction[]>(result.Result/*.Where(x => x.To == address)*/);
             }
 
             throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");

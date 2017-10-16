@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
@@ -7,9 +8,12 @@ using InvestorDashboard.Backend.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console
 {
@@ -40,10 +44,15 @@ namespace InvestorDashboard.Console
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            RenewEthereumTransactions(serviceProvider);
+            //RenewEthereumTransactions(serviceProvider);
+
+            var options = serviceProvider.GetRequiredService<IOptions<ExchangeRateSettings>>();
+
+
+            Task.Run(() => Run(serviceProvider, RefreshExchangeRates, options.Value.RefreshRate, CancellationToken.None));
         }
 
-        private static void RenewEthereumTransactions(ServiceProvider serviceProvider)
+        private static void RenewEthereumTransactions(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
             {
@@ -69,14 +78,40 @@ namespace InvestorDashboard.Console
                             trx.Address = address;
                             trx.Currency = Currency.ETH;
                             trx.Direction = TransactionDirection.Inbound;
-                            trx.ExchangeRate = ethRate;
+                            trx.ExchangeRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, trx.Created, true);
                             trx.TokenPrice = tokenRate;
                             ctx.Transactions.Add(trx);
+                            ctx.SaveChanges();
                         }
                     }
                 }
+            }
+        }
 
-                ctx.SaveChanges();
+        private static void RefreshExchangeRates(IServiceProvider serviceProvider)
+        {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            var exchangeRateService = serviceProvider.GetRequiredService<IExchangeRateService>();
+
+            foreach (var currency in new[] { Currency.ETH, Currency.BTC })
+            {
+                exchangeRateService.RefreshExchangeRate(currency);
+            }
+        }
+
+        private static async Task Run(IServiceProvider serviceProvider, Action<IServiceProvider> action, TimeSpan period, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(period, cancellationToken).ConfigureAwait(false);
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    action(serviceProvider);
+                }
             }
         }
     }

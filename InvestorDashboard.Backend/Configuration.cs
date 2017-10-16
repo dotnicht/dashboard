@@ -19,10 +19,10 @@ namespace InvestorDashboard.Backend
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            services.Configure<KeyVault>(configuration.GetSection("KeyVault"));
-            services.Configure<Bitcoin>(configuration.GetSection("Bitcoin"));
-            services.Configure<Ethereum>(configuration.GetSection("Ethereum"));
-            services.Configure<ExchangeRate>(configuration.GetSection("ExchangeRate"));
+            services.Configure<KeyVaultSettings>(configuration.GetSection("KeyVault"));
+            services.Configure<BitcoinSettings>(configuration.GetSection("Bitcoin"));
+            services.Configure<EthereumSettings>(configuration.GetSection("Ethereum"));
+            services.Configure<ExchangeRateSettings>(configuration.GetSection("ExchangeRate"));
         }
     }
 }

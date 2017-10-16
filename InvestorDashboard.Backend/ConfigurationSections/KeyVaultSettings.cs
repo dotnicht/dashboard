@@ -1,6 +1,6 @@
 ﻿namespace InvestorDashboard.Backend.ConfigurationSections
 {
-    public sealed class KeyVault
+    public sealed class KeyVaultSettings
     {
         public string ClientId { get; set; }
 
