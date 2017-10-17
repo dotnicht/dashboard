@@ -1,6 +1,5 @@
 using AspNet.Security.OpenIdConnect.Primitives;
-using InvestorDashboard.Backend;
-using InvestorDashboard.Backend.ConfigurationSections;
+using AutoMapper;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
@@ -17,6 +16,7 @@ using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,8 +30,8 @@ namespace InvestorDashboard.Web
     {
       var builder = new ConfigurationBuilder()
           .SetBasePath(env.ContentRootPath)
-          .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+          .AddJsonFile("appsettings.json", false, true)
+          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
           .AddEnvironmentVariables();
       Configuration = builder.Build();
     }
@@ -39,12 +39,8 @@ namespace InvestorDashboard.Web
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      services.Configure<KeyVault>(Configuration.GetSection("KeyVault"));
-      services.Configure<Bitcoin>(Configuration.GetSection("Bitcoin"));
-      services.Configure<Ethereum>(Configuration.GetSection("Ethereum"));
-      services.Configure<ExchangeRate>(Configuration.GetSection("ExchangeRate"));
-
-      DependencyInjectionConfiguration.Configure(services);
+      Backend.Configuration.Configure(services, Configuration);
+      Backend.DependencyInjection.Configure(services);
 
       var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
       keyVaultService.Initialize().Wait();
@@ -52,6 +48,10 @@ namespace InvestorDashboard.Web
       // Add framework services.
       services.AddMvc();
       services.AddNodeServices();
+      services.AddAutoMapper(typeof(Backend.DependencyInjection));
+
+      //var eth = services.BuildServiceProvider().GetRequiredService<IEthereumService>();
+      //var res = eth.GetInboundTransactionsByRecipientAddress("0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe");
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {

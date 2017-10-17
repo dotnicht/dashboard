@@ -4,7 +4,7 @@ using System.Text;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {
-    public class Ethereum
+    public class BitcoinSettings
     {
     }
 }

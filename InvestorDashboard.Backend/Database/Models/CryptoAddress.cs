@@ -1,10 +1,11 @@
-﻿using System;
+﻿using InvestorDashboard.Backend.Models;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InvestorDashboard.Backend.Database.Models
 {
-    public class WalletAddress
+    public class CryptoAddress
     {
         [Key]
         public Guid Id { get; set; }
@@ -12,6 +13,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
         public Currency Currency { get; set; }
+        public AddressType Type { get; set; }
         public string Address { get; set; }
         public DateTime Created { get; set; }
     }
