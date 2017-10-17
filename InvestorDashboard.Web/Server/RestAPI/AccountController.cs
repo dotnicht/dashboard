@@ -1,6 +1,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -20,7 +21,7 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
-  //[Authorize]
+  [Authorize]
   [Route("api/[controller]")]
   public class AccountController : Controller
   {
@@ -67,8 +68,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
     {
       ApplicationUser appUser = await _accountManager.GetUserByUserNameAsync(userName);
 
-      if (!(await _authorizationService.AuthorizeAsync(this.User, appUser?.Id ?? "", AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
-        return new ChallengeResult();
+      //if (!(await _authorizationService.AuthorizeAsync(this.User, appUser?.Id ?? "", AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
+      //  return new ChallengeResult();
 
       if (appUser == null)
         return NotFound(userName);
@@ -79,8 +80,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
     [Produces(typeof(UserViewModel))]
     public async Task<IActionResult> GetUserById(string id)
     {
-      if (!(await _authorizationService.AuthorizeAsync(this.User, id, AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
-        return new ChallengeResult();
+      //if (!(await _authorizationService.AuthorizeAsync(this.User, id, AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
+      //  return new ChallengeResult();
 
 
       UserViewModel userVM = await GetUserViewModelHelper(id);
@@ -90,6 +91,63 @@ namespace InvestorDashboard.Web.Server.RestAPI
       else
         return NotFound(id);
     }
+
+    [HttpGet("roles/{id}", Name = GetRoleByIdActionName)]
+    [Produces(typeof(RoleViewModel))]
+    public async Task<IActionResult> GetRoleById(string id)
+    {
+      var appRole = await _accountManager.GetRoleByIdAsync(id);
+
+      //if (!(await _authorizationService.AuthorizeAsync(this.User, appRole?.Name ?? "", AuthPolicies.ViewRoleByRoleNamePolicy)).Succeeded)
+      //  return new ChallengeResult();
+
+      if (appRole == null)
+        return NotFound(id);
+
+      return await GetRoleByName(appRole.Name);
+    }
+
+
+
+
+    [HttpGet("roles/name/{name}")]
+    [Produces(typeof(RoleViewModel))]
+    public async Task<IActionResult> GetRoleByName(string name)
+    {
+      //if (!(await _authorizationService.AuthorizeAsync(this.User, name, AuthPolicies.ViewRoleByRoleNamePolicy)).Succeeded)
+      //  return new ChallengeResult();
+
+
+      RoleViewModel roleVM = await GetRoleViewModelHelper(name);
+
+      if (roleVM == null)
+        return NotFound(name);
+
+      return Ok(roleVM);
+    }
+
+
+
+
+    [HttpGet("roles")]
+    [Produces(typeof(List<RoleViewModel>))]
+    //[Authorize(AuthPolicies.ViewRolesPolicy)]
+    public async Task<IActionResult> GetRoles()
+    {
+      return await GetRoles(-1, -1);
+    }
+
+
+
+    [HttpGet("roles/{page:int}/{pageSize:int}")]
+    [Produces(typeof(List<RoleViewModel>))]
+    //[Authorize(AuthPolicies.ViewRolesPolicy)]
+    public async Task<IActionResult> GetRoles(int page, int pageSize)
+    {
+      var roles = await _accountManager.GetRolesLoadRelatedAsync(page, pageSize);
+      return Ok(Mapper.Map<List<RoleViewModel>>(roles));
+    }
+
     [HttpPost("~/register"), Produces("application/json")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
@@ -698,6 +756,15 @@ namespace InvestorDashboard.Web.Server.RestAPI
       userVM.Roles = userAndRoles.Item2;
 
       return userVM;
+    }
+    private async Task<RoleViewModel> GetRoleViewModelHelper(string roleName)
+    {
+      var role = await _accountManager.GetRoleLoadRelatedAsync(roleName);
+      if (role != null)
+        return Mapper.Map<RoleViewModel>(role);
+
+
+      return null;
     }
     private void AddErrors(IdentityResult result)
     {

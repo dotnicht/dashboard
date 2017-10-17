@@ -48,8 +48,7 @@ namespace InvestorDashboard.Backend
                 await ensureRoleAsync(adminRoleName, "Default administrator", ApplicationPermissions.GetAllPermissionValues());
                 await ensureRoleAsync(userRoleName, "Default user", new string[] { });
 
-                await createUserAsync("admin", "tempP@ss123", "Inbuilt Administrator", "admin@ebenmonney.com", "+1 (123) 000-0000", new string[] { adminRoleName });
-                await createUserAsync("user", "tempP@ss123", "Inbuilt Standard User", "user@ebenmonney.com", "+1 (123) 000-0001", new string[] { userRoleName });
+                await createUserAsync("test", "123456_Kol", "Inbuilt Administrator", "test@gmail.com", "+1 (123) 000-0000", new string[] { adminRoleName });
 
                 _logger.LogInformation("Inbuilt account generation completed");
             }

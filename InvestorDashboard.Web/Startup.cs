@@ -159,42 +159,42 @@ namespace InvestorDashboard.Web
 
       services.AddAuthorization(options =>
       {
-        options.AddPolicy(AuthPolicies.ViewUserByUserIdPolicy,
-          policy => policy.Requirements.Add(new ViewUserByIdRequirement()));
+        //options.AddPolicy(AuthPolicies.ViewUserByUserIdPolicy,
+        //  policy => policy.Requirements.Add(new ViewUserByIdRequirement()));
 
-        options.AddPolicy(AuthPolicies.ViewUsersPolicy,
-          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewUsers));
+        //options.AddPolicy(AuthPolicies.ViewUsersPolicy,
+        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewUsers));
 
-        options.AddPolicy(AuthPolicies.ManageUserByUserIdPolicy,
-          policy => policy.Requirements.Add(new ManageUserByIdRequirement()));
+        //options.AddPolicy(AuthPolicies.ManageUserByUserIdPolicy,
+        //  policy => policy.Requirements.Add(new ManageUserByIdRequirement()));
 
-        options.AddPolicy(AuthPolicies.ManageUsersPolicy,
-          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageUsers));
+        //options.AddPolicy(AuthPolicies.ManageUsersPolicy,
+        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageUsers));
 
-        options.AddPolicy(AuthPolicies.ViewRoleByRoleNamePolicy,
-          policy => policy.Requirements.Add(new ViewRoleByNameRequirement()));
+        //options.AddPolicy(AuthPolicies.ViewRoleByRoleNamePolicy,
+        //  policy => policy.Requirements.Add(new ViewRoleByNameRequirement()));
 
-        options.AddPolicy(AuthPolicies.ViewRolesPolicy,
-          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewRoles));
+        //options.AddPolicy(AuthPolicies.ViewRolesPolicy,
+        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewRoles));
 
-        options.AddPolicy(AuthPolicies.AssignRolesPolicy,
-          policy => policy.Requirements.Add(new AssignRolesRequirement()));
+        //options.AddPolicy(AuthPolicies.AssignRolesPolicy,
+        //  policy => policy.Requirements.Add(new AssignRolesRequirement()));
 
-        options.AddPolicy(AuthPolicies.ManageRolesPolicy,
-          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageRoles));
+        //options.AddPolicy(AuthPolicies.ManageRolesPolicy,
+        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageRoles));
       });
       Mapper.Initialize(cfg =>
       {
         cfg.AddProfile<AutoMapperProfile>();
       });
       // Repositories
-      services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
+      //services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
       services.AddScoped<IAccountManager, AccountManager>();
       // Auth Policies
-      services.AddSingleton<IAuthorizationHandler, ViewUserByIdHandler>();
-      services.AddSingleton<IAuthorizationHandler, ManageUserByIdHandler>();
-      services.AddSingleton<IAuthorizationHandler, ViewRoleByNameHandler>();
-      services.AddSingleton<IAuthorizationHandler, AssignRolesHandler>();
+      //services.AddSingleton<IAuthorizationHandler, ViewUserByIdHandler>();
+      //services.AddSingleton<IAuthorizationHandler, ManageUserByIdHandler>();
+      //services.AddSingleton<IAuthorizationHandler, ViewRoleByNameHandler>();
+      //services.AddSingleton<IAuthorizationHandler, AssignRolesHandler>();
 
       services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
     }
