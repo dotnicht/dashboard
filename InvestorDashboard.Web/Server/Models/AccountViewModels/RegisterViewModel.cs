@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Web.Models.AccountViewModels
 {
-  public class RegisterViewModel
+  public class RegisterViewModel 
   {
 
     public string Email { get; set; }

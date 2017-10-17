@@ -55,6 +55,22 @@ namespace InvestorDashboard.Web.Controllers
       //return await GetUserByUserName(this.User.Identity.Name);
     }
 
+    [HttpPost("~/register")]
+    public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
+    {
+      var user = new ApplicationUser()
+      {
+        FirstName = model.Email,
+        Email = model.Email,
+        UserName = model.Email,
+        
+
+      };
+      var result = await _userManager.CreateAsync(user, model.Password);
+      if (!result.Succeeded)
+        return Json(true);
+      return Json(false);
+    }
     //[HttpPost("~/connect/token")]
     //[Produces("application/json")]
     //public async Task<IActionResult> Exchange(OpenIdConnectRequest request)
