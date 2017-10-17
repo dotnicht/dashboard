@@ -6,9 +6,10 @@ using System;
 
 namespace InvestorDashboard.Backend.Database
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-        public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
+      public string CurrentUserId { get; set; }
+    public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }

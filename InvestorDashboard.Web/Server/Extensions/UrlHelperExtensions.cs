@@ -1,6 +1,7 @@
 using InvestorDashboard.Web.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using InvestorDashboard.Web.Server.RestAPI;
 
 namespace InvestorDashboard.Web.Extensions
 {

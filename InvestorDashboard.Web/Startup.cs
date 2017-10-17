@@ -19,6 +19,13 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using AspNet.Security.OAuth.Validation;
+using InvestorDashboard.Backend;
+using InvestorDashboard.Backend.Core;
+using InvestorDashboard.Backend.Core.Interfaces;
+using InvestorDashboard.Web.Server.Models;
+using InvestorDashboard.Web.Server.Policies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InvestorDashboard.Web
 {
@@ -45,9 +52,7 @@ namespace InvestorDashboard.Web
       var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
       keyVaultService.Initialize().Wait();
 
-      // Add framework services.
-      services.AddMvc();
-      services.AddNodeServices();
+
       services.AddAutoMapper(typeof(Backend.DependencyInjection));
 
       //var eth = services.BuildServiceProvider().GetRequiredService<IEthereumService>();
@@ -55,19 +60,18 @@ namespace InvestorDashboard.Web
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
-          options.UseSqlServer(keyVaultService.DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
+          options.UseSqlServer(keyVaultService.DatabaseConnectionString,
+            b => b.MigrationsAssembly("InvestorDashboard.Backend"));
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.
           options.UseOpenIddict();
         }
       );
-
       // add identity
       services.AddIdentity<ApplicationUser, ApplicationRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
-
       // Configure Identity options and password complexity here
       services.Configure<IdentityOptions>(options =>
       {
@@ -90,9 +94,6 @@ namespace InvestorDashboard.Web
         options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
       });
 
-      services.AddAuthentication()
-        .AddOAuthValidation();
-
       // Register the OpenIddict services.
       services.AddOpenIddict(options =>
       {
@@ -112,22 +113,22 @@ namespace InvestorDashboard.Web
 
         // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
         // can enable the other flows if you need to support implicit or client credentials.
-        options.AllowAuthorizationCodeFlow()
+        options //.AllowAuthorizationCodeFlow()
           .AllowPasswordFlow()
           .AllowRefreshTokenFlow();
 
         // Mark the "profile" scope as a supported scope in the discovery document.
-        options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
+        //options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
 
         // Make the "client_id" parameter mandatory when sending a token request.
-        options.RequireClientIdentification();
+        // options.RequireClientIdentification();
 
         // When request caching is enabled, authorization and logout requests
         // are stored in the distributed cache by OpenIddict and the user agent
         // is redirected to the same page with a single parameter (request_id).
         // This allows flowing large OpenID Connect requests even when using
         // an external authentication provider like Google, Facebook or Twitter.
-        options.EnableRequestCaching();
+        // options.EnableRequestCaching();
 
         // During development, you can disable the HTTPS requirement.
         options.DisableHttpsRequirement();
@@ -135,12 +136,67 @@ namespace InvestorDashboard.Web
         // Note: to use JWT access tokens instead of the default
         // encrypted format, the following lines are required:
         //
-        options.UseJsonWebTokens();
-        options.AddEphemeralSigningKey();
+        //options.UseJsonWebTokens();
+        //options.AddEphemeralSigningKey();
       });
+
+
+
+
+      services.AddAuthentication(options =>
+          {
+            options.DefaultAuthenticateScheme = OAuthValidationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme;
+          }
+        )
+        .AddOAuthValidation();
+
+      services.AddMvc();
+      services.AddNodeServices();
 
       // Register the Swagger generator, defining one or more Swagger documents
       services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
+
+      services.AddAuthorization(options =>
+      {
+        options.AddPolicy(AuthPolicies.ViewUserByUserIdPolicy,
+          policy => policy.Requirements.Add(new ViewUserByIdRequirement()));
+
+        options.AddPolicy(AuthPolicies.ViewUsersPolicy,
+          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewUsers));
+
+        options.AddPolicy(AuthPolicies.ManageUserByUserIdPolicy,
+          policy => policy.Requirements.Add(new ManageUserByIdRequirement()));
+
+        options.AddPolicy(AuthPolicies.ManageUsersPolicy,
+          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageUsers));
+
+        options.AddPolicy(AuthPolicies.ViewRoleByRoleNamePolicy,
+          policy => policy.Requirements.Add(new ViewRoleByNameRequirement()));
+
+        options.AddPolicy(AuthPolicies.ViewRolesPolicy,
+          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewRoles));
+
+        options.AddPolicy(AuthPolicies.AssignRolesPolicy,
+          policy => policy.Requirements.Add(new AssignRolesRequirement()));
+
+        options.AddPolicy(AuthPolicies.ManageRolesPolicy,
+          policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageRoles));
+      });
+      Mapper.Initialize(cfg =>
+      {
+        cfg.AddProfile<AutoMapperProfile>();
+      });
+      // Repositories
+      services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
+      services.AddScoped<IAccountManager, AccountManager>();
+      // Auth Policies
+      services.AddSingleton<IAuthorizationHandler, ViewUserByIdHandler>();
+      services.AddSingleton<IAuthorizationHandler, ManageUserByIdHandler>();
+      services.AddSingleton<IAuthorizationHandler, ViewRoleByNameHandler>();
+      services.AddSingleton<IAuthorizationHandler, AssignRolesHandler>();
+
+      services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -148,6 +204,11 @@ namespace InvestorDashboard.Web
     {
       loggerFactory.AddConsole(Configuration.GetSection("Logging"));
       loggerFactory.AddDebug();
+
+      app.UseCors(builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 
       app.UseStaticFiles();
 
@@ -255,7 +316,19 @@ namespace InvestorDashboard.Web
           .UseIISIntegration()
           .UseStartup<Startup>()
           .Build();
+      using (var scope = host.Services.CreateScope())
+      {
+        var services = scope.ServiceProvider;
+        try
+        {
+          var databaseInitializer = services.GetRequiredService<IDatabaseInitializer>();
+          databaseInitializer.SeedAsync().Wait();
+        }
+        catch (Exception ex)
+        {
 
+        }
+      }
       host.Run();
     }
   }

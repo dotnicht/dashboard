@@ -1,36 +1,43 @@
-using AspNet.Security.OpenIdConnect.Extensions;
-using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
+
+
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using AutoMapper;
+using InvestorDashboard.Backend.Core.Interfaces;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Services;
-using InvestorDashboard.Web.Extensions;
+using InvestorDashboard.Web.Controllers;
 using InvestorDashboard.Web.Models.AccountViewModels;
+using InvestorDashboard.Web.Server.Models;
+using InvestorDashboard.Web.Server.Models.AccountViewModels;
+using InvestorDashboard.Web.Server.Policies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace InvestorDashboard.Web.Controllers
+namespace InvestorDashboard.Web.Server.RestAPI
 {
   //[Authorize]
   [Route("api/[controller]")]
   public class AccountController : Controller
   {
+    private readonly IAccountManager _accountManager;
+    private readonly IAuthorizationService _authorizationService;
     private readonly IOptions<IdentityOptions> _identityOptions;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     //private readonly IEmailService _emailSender;
     private readonly ILogger _logger;
+    private const string GetUserByIdActionName = "GetUserById";
+    private const string GetRoleByIdActionName = "GetRoleById";
 
     public AccountController(
       UserManager<ApplicationUser> userManager,
+      IAccountManager accountManager,
+      IAuthorizationService authorizationService,
       SignInManager<ApplicationUser> signInManager,
       //IEmailService emailSender,
       ILogger<AccountController> logger,
@@ -41,35 +48,74 @@ namespace InvestorDashboard.Web.Controllers
       //_emailSender = emailSender;
       _logger = logger;
       _identityOptions = identityOptions;
+      _accountManager = accountManager;
+      _authorizationService = authorizationService;
     }
 
     [TempData]
     public string ErrorMessage { get; set; }
 
     [HttpGet("users/me")]
-    //[Produces(typeof(UserViewModel))]
+    [Produces(typeof(UserViewModel))]
     public async Task<IActionResult> GetCurrentUser()
     {
-      var user = this.User;
-      return null;
-      //return await GetUserByUserName(this.User.Identity.Name);
+      return await GetUserByUserName(this.User.Identity.Name);
     }
-
-    [HttpPost("~/register")]
-    public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
+    [HttpGet("users/username/{userName}")]
+    [Produces(typeof(UserViewModel))]
+    public async Task<IActionResult> GetUserByUserName(string userName)
     {
-      var user = new ApplicationUser()
-      {
-        FirstName = model.Email,
-        Email = model.Email,
-        UserName = model.Email,
-        
+      ApplicationUser appUser = await _accountManager.GetUserByUserNameAsync(userName);
 
-      };
-      var result = await _userManager.CreateAsync(user, model.Password);
-      if (!result.Succeeded)
-        return Json(true);
-      return Json(false);
+      if (!(await _authorizationService.AuthorizeAsync(this.User, appUser?.Id ?? "", AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
+        return new ChallengeResult();
+
+      if (appUser == null)
+        return NotFound(userName);
+
+      return await GetUserById(appUser.Id);
+    }
+    [HttpGet("users/{id}", Name = GetUserByIdActionName)]
+    [Produces(typeof(UserViewModel))]
+    public async Task<IActionResult> GetUserById(string id)
+    {
+      if (!(await _authorizationService.AuthorizeAsync(this.User, id, AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
+        return new ChallengeResult();
+
+
+      UserViewModel userVM = await GetUserViewModelHelper(id);
+
+      if (userVM != null)
+        return Ok(userVM);
+      else
+        return NotFound(id);
+    }
+    [HttpPost("~/register"), Produces("application/json")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
+    {
+      try
+      {
+        user.FullName = "TestLogin";
+        user.UserName = "TestName";
+        user.IsEnabled = true;
+
+        ApplicationUser appUser = Mapper.Map<ApplicationUser>(user);
+
+        //var appUser = new ApplicationUser { UserName = model.Email, Email = model.Email };
+
+
+        var result = await _accountManager.CreateUserAsync(appUser, new string[] { "user" }, user.Password);
+        if (result.Item1)
+        {
+          return Json(new { message = "ok" });
+        }
+        return Json(new { error = "reg er" });
+      }
+      catch (Exception ex)
+      {
+        return Json(ex.Message);
+      }
     }
     //[HttpPost("~/connect/token")]
     //[Produces("application/json")]
@@ -575,7 +621,7 @@ namespace InvestorDashboard.Web.Controllers
         // For more information on how to enable account confirmation and password reset please
         // visit https://go.microsoft.com/fwlink/?LinkID=532713
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
+       //var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
         //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
         //  $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
         return RedirectToAction(nameof(ForgotPasswordConfirmation));
@@ -642,7 +688,17 @@ namespace InvestorDashboard.Web.Controllers
     }
 
     #region Helpers
+    private async Task<UserViewModel> GetUserViewModelHelper(string userId)
+    {
+      var userAndRoles = await _accountManager.GetUserAndRolesAsync(userId);
+      if (userAndRoles == null)
+        return null;
 
+      var userVM = Mapper.Map<UserViewModel>(userAndRoles.Item1);
+      userVM.Roles = userAndRoles.Item2;
+
+      return userVM;
+    }
     private void AddErrors(IdentityResult result)
     {
       foreach (var error in result.Errors)

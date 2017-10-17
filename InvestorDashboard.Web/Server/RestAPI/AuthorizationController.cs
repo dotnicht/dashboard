@@ -15,7 +15,9 @@ using OpenIddict.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using InvestorDashboard.Backend.Core;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
@@ -153,7 +155,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
       {
         if (request.IsPasswordGrantType())
         {
-          var user = await _userManager.FindByNameAsync(request.Username);
+          var user = await _userManager.FindByEmailAsync(request.Username) ?? await _userManager.FindByNameAsync(request.Username);
           if (user == null)
           {
             return BadRequest(new OpenIdConnectResponse
@@ -240,8 +242,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
       var ticket = new AuthenticationTicket(principal, properties,
         OpenIdConnectServerDefaults.AuthenticationScheme);
 
-      if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
-      {
+      //if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
+      //{
         // Set the list of scopes granted to the client application.
         // Note: the offline_access scope must be granted
         // to allow OpenIddict to return a refresh token.
@@ -249,13 +251,14 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             OpenIdConnectConstants.Scopes.OpenId,
             OpenIdConnectConstants.Scopes.Email,
+            OpenIdConnectConstants.Scopes.Phone,
             OpenIdConnectConstants.Scopes.Profile,
             OpenIdConnectConstants.Scopes.OfflineAccess,
             OpenIddictConstants.Scopes.Roles
           }.Intersect(request.GetScopes()));
-      }
+      //}
 
-      ticket.SetResources("resource_server");
+      ticket.SetResources(request.GetResources());
 
       // Note: by default, claims are NOT automatically included in the access and identity tokens.
       // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
@@ -278,14 +281,40 @@ namespace InvestorDashboard.Web.Server.RestAPI
         // The other claims will only be added to the access_token, which is encrypted when using the default format.
         if ((claim.Type == OpenIdConnectConstants.Claims.Name && ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
             || (claim.Type == OpenIdConnectConstants.Claims.Email && ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
-            || (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
+            || (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)) ||
+            (claim.Type == CustomClaimTypes.Permission && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
         {
           destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
         }
 
         claim.SetDestinations(destinations);
       }
+      var identity = principal.Identity as ClaimsIdentity;
 
+
+      if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
+      {
+        if (!string.IsNullOrWhiteSpace(user.FirstName))
+          identity.AddClaim(CustomClaimTypes.JobTitle, user.FirstName, OpenIdConnectConstants.Destinations.IdentityToken);
+
+        if (!string.IsNullOrWhiteSpace(user.LastName))
+          identity.AddClaim(CustomClaimTypes.FullName, user.LastName, OpenIdConnectConstants.Destinations.IdentityToken);
+
+        if (!string.IsNullOrWhiteSpace(user.Configuration))
+          identity.AddClaim(CustomClaimTypes.Configuration, user.Configuration, OpenIdConnectConstants.Destinations.IdentityToken);
+      }
+
+      if (ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
+      {
+        if (!string.IsNullOrWhiteSpace(user.Email))
+          identity.AddClaim(CustomClaimTypes.Email, user.Email, OpenIdConnectConstants.Destinations.IdentityToken);
+      }
+
+      if (ticket.HasScope(OpenIdConnectConstants.Scopes.Phone))
+      {
+        if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+          identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber, OpenIdConnectConstants.Destinations.IdentityToken);
+      }
       return ticket;
     }
   }
