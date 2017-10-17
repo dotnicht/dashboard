@@ -55,7 +55,7 @@ namespace InvestorDashboard.Web.Controllers
       //return await GetUserByUserName(this.User.Identity.Name);
     }
 
-    [HttpPost("~/register")]
+    [HttpPost("/register")]
     public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
     {
       var user = new ApplicationUser()
