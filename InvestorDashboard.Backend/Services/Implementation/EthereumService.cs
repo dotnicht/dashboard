@@ -18,13 +18,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<EthereumSettings> _options;
         private readonly IMapper _mapper;
         private readonly IKeyVaultService _keyVaultService;
+        private readonly IExchangeRateService _exchangeRateService;
 
-        public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService)
+        public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
+            _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
         }
 
         public EthereumAccount CreateAccount()
@@ -43,7 +45,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             };
         }
 
-        public IEnumerable<EthereumTransaction> GetInboundTransactionsByRecipientAddress(string address)
+        public IEnumerable<CryptoTransaction> GetInboundTransactionsByRecipientAddress(string address)
         {
             if (address == null)
             {
@@ -53,27 +55,49 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return GetInboundTransactionsByRecipientAddressFromEtherscan(address);
         }
 
-        private EthereumTransaction[] GetInboundTransactionsByRecipientAddressFromEtherchain(string address)
+        public void RefreshInboundTransactions()
         {
+            var tokenRate = _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
+            var hashes = _context.Transactions.Select(x => x.Hash).ToHashSet();
 
+            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == AddressType.Investment))
+            {
+                foreach (var transaction in GetInboundTransactionsByRecipientAddress(address.Address))
+                {
+                    if (!hashes.Contains(transaction.Hash))
+                    {
+                        var trx = _mapper.Map<Database.Models.Transaction>(transaction);
+                        trx.Address = address;
+                        trx.Direction = TransactionDirection.Inbound;
+                        trx.ExchangeRate = _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
+                        trx.TokenPrice = tokenRate;
+                        _context.Transactions.Add(trx);
+                        _context.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        private CryptoTransaction[] GetInboundTransactionsByRecipientAddressFromEtherchain(string address)
+        {
             var result = RestUtil.Get<EtherchainResponse>($"{_options.Value.EtherchainApiUri}account/{address}/tx/0");
 
             if (result != null)
             {
-                return _mapper.Map<EthereumTransaction[]>(result.Data.Where(x => x.Recipient == address && x.Type == "tx"));
+                return _mapper.Map<CryptoTransaction[]>(result.Data.Where(x => x.Recipient == address && x.Type == "tx"));
             }
 
             throw new InvalidOperationException("An error occurred while retrieving transaction list from etherchain.org.");
         }
 
-        private EthereumTransaction[] GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
+        private CryptoTransaction[] GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
             var uri = $"{_options.Value.EtherscanApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_options.Value.EtherscanApiKey}";
             var result = RestUtil.Get<EtherscanResponse>(uri);
 
             if (result != null)
             {
-                return _mapper.Map<EthereumTransaction[]>(result.Result.Where(x => x.To == address));
+                return _mapper.Map<CryptoTransaction[]>(result.Result.Where(x => x.To == address));
             }
 
             throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");

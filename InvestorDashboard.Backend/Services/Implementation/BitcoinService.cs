@@ -1,6 +1,8 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -11,6 +13,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public BitcoinService(IOptions<BitcoinSettings> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
+        }
+
+        public IEnumerable<CryptoTransaction> GetInboundTransactionsByRecipientAddress(string address)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RefreshInboundTransactions()
+        {
+            throw new NotImplementedException();
         }
     }
 }

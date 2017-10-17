@@ -1,11 +1,9 @@
 ﻿using InvestorDashboard.Backend.Models;
-using System.Collections.Generic;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IEthereumService
+    public interface IEthereumService : ICryptoService
     {
         EthereumAccount CreateAccount();
-        IEnumerable<EthereumTransaction> GetInboundTransactionsByRecipientAddress(string address);
     }
 }

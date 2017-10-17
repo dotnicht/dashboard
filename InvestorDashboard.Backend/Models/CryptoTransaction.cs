@@ -2,7 +2,7 @@
 
 namespace InvestorDashboard.Backend.Models
 {
-    public class EthereumTransaction
+    public class CryptoTransaction
     {
         public string Hash { get; set; }
         public string Sender { get; set; }

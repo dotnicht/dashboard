@@ -22,7 +22,7 @@ namespace InvestorDashboard.Console
         private static void Main()
         {
             var configurationBuilder = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())              
+              .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", false, true)
               .AddEnvironmentVariables();
 
@@ -64,26 +64,25 @@ namespace InvestorDashboard.Console
             var tokenRate = exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
             var ethRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD);
 
-            using (var ctx = serviceProvider.GetRequiredService<ApplicationDbContext>())
-            {
-                foreach (var address in ctx.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == AddressType.Investment))
-                {
-                    foreach (var transaction in ethereumService.GetInboundTransactionsByRecipientAddress(address.Address))
-                    {
-                        if (!ctx.Transactions.Any(x => x.Hash == transaction.Hash))
-                        {
-                            var trx = mapper.Map<Transaction>(transaction);
-                            trx.Address = address;
-                            trx.Currency = Currency.ETH;
-                            trx.Direction = TransactionDirection.Inbound;
-                            trx.ExchangeRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, trx.Created, true);
-                            trx.TokenPrice = tokenRate;
-                            ctx.Transactions.Add(trx);
-                            ctx.SaveChanges();
-                        }
-                    }
-                }
-            }
+            //using (var ctx = serviceProvider.GetRequiredService<ApplicationDbContext>())
+            //{
+            //    foreach (var address in ctx.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == AddressType.Investment))
+            //    {
+            //        foreach (var transaction in ethereumService.GetInboundTransactionsByRecipientAddress(address.Address))
+            //        {
+            //            if (!ctx.Transactions.Any(x => x.Hash == transaction.Hash))
+            //            {
+            //                var trx = mapper.Map<CryptoTransaction>(transaction);
+            //                trx.Address = address;
+            //                trx.Direction = TransactionDirection.Inbound;
+            //                trx.ExchangeRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, trx.Created, true);
+            //                trx.TokenPrice = tokenRate;
+            //                ctx.Transactions.Add(trx);
+            //                ctx.SaveChanges();
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         private static void RefreshExchangeRates(IServiceProvider serviceProvider)
