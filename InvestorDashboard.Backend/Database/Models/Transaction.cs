@@ -17,7 +17,6 @@ namespace InvestorDashboard.Backend.Database.Models
         [Required]
         public string Hash { get; set; }
         public TransactionDirection Direction { get; set; }
-        public Currency Currency { get; set; }
         public decimal Amount { get; set; }
         public decimal ExchangeRate { get; set; }
         public decimal TokenPrice { get; set; }

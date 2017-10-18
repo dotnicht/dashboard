@@ -6,18 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\InvestorDashboard.Web\appsettings.json" Link="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.0.1" />
     <PackageReference Include="microsoft.entityframeworkcore" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
     <PackageReference Include="microsoft.extensions.dependencyinjection.abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
+    <PackageReference Include="Quartz" Version="3.0.0-beta1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,11 +20,7 @@
   </ItemGroup>
 
   <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
-    <Copy SourceFiles="%(Content.Identity)"
-          DestinationFiles="%(Content.Link)"
-          SkipUnchangedFiles='true'
-          OverwriteReadOnlyFiles='true'
-          Condition="'%(Content.Link)' != ''" />
+    <Copy SourceFiles="%(Content.Identity)" DestinationFiles="%(Content.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Condition="'%(Content.Link)' != ''" />
   </Target>
 
 </Project>
