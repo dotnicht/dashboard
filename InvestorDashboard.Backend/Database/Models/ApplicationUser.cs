@@ -18,7 +18,6 @@ namespace InvestorDashboard.Backend.Database.Models
     public string Address { get; set; }
     public bool IsEligibleForTokenSale { get; set; }
 
-    public virtual ICollection<IdentityUserRole<string>> Roles { get; set; }
     public virtual ICollection<IdentityUserClaim<string>> Claims { get; set; }
   }
 }

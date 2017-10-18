@@ -19,7 +19,7 @@ import { ConfigurationService } from './configuration.service';
 import { DBkeys } from './db-Keys';
 import { JwtHelper } from './jwt-helper';
 import { Utilities } from './utilities';
-import { UserLogin, User } from '../models/user.model';
+import { UserLogin, User, UserRegister } from '../models/user.model';
 import { Permission, PermissionNames, PermissionValues } from '../models/permission.model';
 
 @Injectable()
@@ -111,16 +111,12 @@ export class AuthService {
 
 
   logout(): void {
-    this.localStorage.deleteData(DBkeys.ACCESS_TOKEN);
-    this.localStorage.deleteData(DBkeys.ID_TOKEN);
-    this.localStorage.deleteData(DBkeys.REFRESH_TOKEN);
-    this.localStorage.deleteData(DBkeys.TOKEN_EXPIRES_IN);
-    this.localStorage.deleteData(DBkeys.USER_PERMISSIONS);
-    this.localStorage.deleteData(DBkeys.CURRENT_USER);
+    this.endpointFactory.logoutEndPoint();
+    this.clearUser();
 
-    this.configurations.clearLocalChanges();
-
-    this.reevaluateLoginStatus();
+  }
+  register(user: UserRegister) {
+    return this.endpointFactory.registerEndPoint(user);
   }
   getLoginStatusEvent(): Observable<boolean> {
     return this._loginStatus.asObservable();
@@ -138,7 +134,18 @@ export class AuthService {
   }
 
 
+  private clearUser() {
+    this.localStorage.deleteData(DBkeys.ACCESS_TOKEN);
+    this.localStorage.deleteData(DBkeys.ID_TOKEN);
+    this.localStorage.deleteData(DBkeys.REFRESH_TOKEN);
+    this.localStorage.deleteData(DBkeys.TOKEN_EXPIRES_IN);
+    this.localStorage.deleteData(DBkeys.USER_PERMISSIONS);
+    this.localStorage.deleteData(DBkeys.CURRENT_USER);
 
+    this.configurations.clearLocalChanges();
+
+    this.reevaluateLoginStatus();
+  }
 
 
   private processLoginResponse(response: Response, rememberMe: boolean) {
@@ -169,15 +176,11 @@ export class AuthService {
     let user = new User(
       decodedIdToken.sub,
       decodedIdToken.name,
-      decodedIdToken.fullname,
-      decodedIdToken.email,
-      decodedIdToken.jobtitle,
-      decodedIdToken.phone,
-      Array.isArray(decodedIdToken.role) ? decodedIdToken.role : [decodedIdToken.role]);
+      decodedIdToken.email);
 
     user.isEnabled = true;
 
-    console.log(user);
+    console.log(decodedIdToken);
 
     this.saveUserDetails(user, permissions, accessToken, idToken, refreshToken, accessTokenExpiry, rememberMe);
 

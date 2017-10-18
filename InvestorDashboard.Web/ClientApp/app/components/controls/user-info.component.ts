@@ -1,11 +1,4 @@
-﻿// ======================================
-// Author: Ebenezer Monney
-// Email:  info@ebenmonney.com
-// Copyright (c) 2017 www.ebenmonney.com
-// 
-// ==> Gun4Hire: contact@ebenmonney.com
-// ======================================
-
+﻿
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { AlertService, MessageSeverity } from '../../services/alert.service';
@@ -48,8 +41,6 @@ export class UserInfoComponent implements OnInit {
     private uniqueId: string = Utilities.uniqueId();
     private user: User = new User();
     private userEdit: UserEdit;
-    private allRoles: Role[] = [];
-
 
 
     @ViewChild('f')
@@ -73,9 +64,6 @@ export class UserInfoComponent implements OnInit {
 
     @ViewChild('confirmPassword')
     private confirmPassword;
-
-    @ViewChild('roles')
-    private roles;
 
 
     constructor(private alertService: AlertService, private accountService: AccountService) {
@@ -103,11 +91,10 @@ export class UserInfoComponent implements OnInit {
     }
 
 
-    newUser(allRoles: Role[]) {
+    newUser() {
         this.isGeneralEditor = true;
         this.isNewUser = true;
 
-        this.allRoles = allRoles;
         this.editingUserName = null;
         this.user = this.userEdit = new UserEdit();
         this.userEdit.isEnabled = true;
@@ -116,34 +103,27 @@ export class UserInfoComponent implements OnInit {
         return this.userEdit;
     }
 
-    editUser(user: User, allRoles: Role[]) {
-        if (user) {
-            this.isGeneralEditor = true;
-            this.isNewUser = false;
+    editUser(user: User) {
+        this.isGeneralEditor = true;
+        this.isNewUser = false;
 
-            this.setRoles(user, allRoles);
-            this.editingUserName = user.userName;
-            this.user = new User();
-            this.userEdit = new UserEdit();
-            Object.assign(this.user, user);
-            Object.assign(this.userEdit, user);
-            this.edit();
+        this.editingUserName = user.userName;
+        this.user = new User();
+        this.userEdit = new UserEdit();
+        Object.assign(this.user, user);
+        Object.assign(this.userEdit, user);
+        this.edit();
 
-            return this.userEdit;
-        }
-        else {
-            return this.newUser(allRoles);
-        }
+        return this.userEdit;
+
     }
 
 
-    displayUser(user: User, allRoles?: Role[]) {
+    displayUser(user: User) {
 
         this.user = new User();
         Object.assign(this.user, user);
         this.deletePasswordFromUser(this.user);
-        this.setRoles(user, allRoles);
-
         this.isEditMode = false;
     }
     public deletePasswordFromUser(user: UserEdit | User) {
@@ -156,20 +136,13 @@ export class UserInfoComponent implements OnInit {
 
     private loadCurrentUserData() {
         this.alertService.startLoadingMessage();
-
-        if (this.canViewAllRoles) {
-            this.accountService.getUserAndRoles().subscribe(results => this.onCurrentUserDataLoadSuccessful(results[0], results[1]), error => this.onCurrentUserDataLoadFailed(error));
-        }
-        else {
-            this.accountService.getUser().subscribe(user => this.onCurrentUserDataLoadSuccessful(user, []), error => this.onCurrentUserDataLoadFailed(error));
-        }
+        this.accountService.getUser().subscribe(user => this.onCurrentUserDataLoadSuccessful(user), error => this.onCurrentUserDataLoadFailed(error));
     }
 
 
-    private onCurrentUserDataLoadSuccessful(user: User, roles: Role[]) {
+    private onCurrentUserDataLoadSuccessful(user: User) {
         this.alertService.stopLoadingMessage();
         this.user = user;
-        this.allRoles = roles;
     }
 
     private onCurrentUserDataLoadFailed(error: any) {
@@ -178,12 +151,6 @@ export class UserInfoComponent implements OnInit {
             MessageSeverity.error, error);
 
         this.user = new User();
-    }
-
-
-
-    private getRoleByName(name: string) {
-        return this.allRoles.find((r) => r.name == name)
     }
 
 
@@ -229,7 +196,6 @@ export class UserInfoComponent implements OnInit {
 
 
     private saveSuccessHelper(user?: User) {
-        this.testIsRoleUserCountChanged(this.user, this.userEdit);
 
         if (user)
             Object.assign(this.userEdit, user);
@@ -276,17 +242,6 @@ export class UserInfoComponent implements OnInit {
     }
 
 
-
-    private testIsRoleUserCountChanged(currentUser: User, editedUser: User) {
-
-        let rolesAdded = this.isNewUser ? editedUser.roles : editedUser.roles.filter(role => currentUser.roles.indexOf(role) == -1);
-        let rolesRemoved = this.isNewUser ? [] : currentUser.roles.filter(role => editedUser.roles.indexOf(role) == -1);
-
-        let modifiedRoles = rolesAdded.concat(rolesRemoved);
-
-        if (modifiedRoles.length)
-            setTimeout(() => this.accountService.onRolesUserCountChanged(modifiedRoles));
-    }
 
 
 
@@ -363,25 +318,5 @@ export class UserInfoComponent implements OnInit {
 
 
 
-    private setRoles(user: User, allRoles?: Role[]) {
 
-        this.allRoles = allRoles ? [...allRoles] : [];
-
-        if (user.roles) {
-            for (let ur of user.roles) {
-                if (!this.allRoles.some(r => r.name == ur))
-                    this.allRoles.unshift(new Role(ur));
-            }
-        }
-    }
-
-
-
-    get canViewAllRoles() {
-        return this.accountService.userHasPermission(Permission.viewRolesPermission);
-    }
-
-    get canAssignRoles() {
-        return this.accountService.userHasPermission(Permission.assignRolesPermission);
-    }
 }

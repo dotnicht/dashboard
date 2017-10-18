@@ -18,7 +18,15 @@
 
           (canAssignRoles && !roles.valid && showErrorAlert('Roles is required', 'Please select a minimum of 1 role'));">
 
-        <div class="form-group">
+          <!-- <md-form-field>
+            <input mdInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
+                required />
+            <md-error *ngIf="email.invalid && (email.dirty || email.touched)">
+                <div *ngIf="email.errors.required">Email is <strong>required</strong></div>
+                <div *ngIf="email.errors.email">Email is not <strong>valid</strong></div>
+            </md-error>
+        </md-form-field> -->
+        <!-- <div class="form-group">
             <label [class.col-md-3]="isViewOnly" [class.col-md-2]="!isViewOnly" class="control-label" for="jobTitle-{{uniqueId}}">{{'users.editor.JobTitle' | translate}}</label>
             <div *ngIf="!isEditMode" [class.col-md-9]="isViewOnly" [class.col-md-10]="!isViewOnly">
                 <p class="form-control-static">{{user.jobTitle}}</p>
@@ -26,7 +34,7 @@
             <div *ngIf="isEditMode" [class.col-md-9]="isViewOnly" [class.col-md-10]="!isViewOnly">
                 <input autofocus type="text" attr.id="jobTitle-{{uniqueId}}" name="jobTitle" placeholder="Enter Job Title" class="form-control" [(ngModel)]="userEdit.jobTitle" />
             </div>
-        </div>
+        </div> -->
 
         <div class="row">
             <div class="col-md-12">

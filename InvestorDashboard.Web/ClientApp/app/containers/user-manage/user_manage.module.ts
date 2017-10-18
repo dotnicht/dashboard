@@ -7,7 +7,6 @@ import { RouterModule, PreloadAllModules } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { EqualValidator } from '../../directives/equal-validator.directive';
-import { RegisterService } from '../../services/register.service';
 import { AuthService } from '../../services/auth.service';
 import { AlertService } from '../../services/alert.service';
 import { ConfigurationService } from '../../services/configuration.service';
@@ -38,7 +37,6 @@ import { MaterialModule } from '../../app.material.module';
     })
   ],
   providers: [
-    RegisterService,
     AuthService,
     AlertService,
     ConfigurationService,

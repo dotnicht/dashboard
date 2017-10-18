@@ -26,6 +26,7 @@ export class AccountEndpoint extends EndpointFactory {
     private readonly _rolesUrl: string = "/api/account/roles";
     private readonly _roleByRoleNameUrl: string = "/api/account/roles/name";
     private readonly _permissionsUrl: string = "/api/account/permissions";
+   
 
     get usersUrl() { return this.configurations.baseUrl + this._usersUrl; }
     get userByUserNameUrl() { return this.configurations.baseUrl + this._userByUserNameUrl; }
@@ -51,6 +52,7 @@ export class AccountEndpoint extends EndpointFactory {
 
         let res = this.http.get(endpointUrl, this.getAuthHeader())
             .map((response: Response) => {
+                console.log(response.json());
                 return response;
             })
             .catch(error => {
@@ -65,6 +67,7 @@ export class AccountEndpoint extends EndpointFactory {
 
         let res = this.http.get(endpointUrl, this.getAuthHeader())
             .map((response: Response) => {
+              
                 return response;
             })
             .catch(error => {
@@ -79,6 +82,7 @@ export class AccountEndpoint extends EndpointFactory {
 
         return this.http.get(endpointUrl, this.getAuthHeader())
             .map((response: Response) => {
+                console.log(response.json());
                 return response;
             })
             .catch(error => {

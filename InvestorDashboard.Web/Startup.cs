@@ -24,7 +24,6 @@ using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Core;
 using InvestorDashboard.Backend.Core.Interfaces;
 using InvestorDashboard.Web.Server.Models;
-using InvestorDashboard.Web.Server.Policies;
 using Microsoft.AspNetCore.Authorization;
 
 namespace InvestorDashboard.Web
@@ -157,46 +156,13 @@ namespace InvestorDashboard.Web
       // Register the Swagger generator, defining one or more Swagger documents
       services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
 
-      services.AddAuthorization(options =>
-      {
-        //options.AddPolicy(AuthPolicies.ViewUserByUserIdPolicy,
-        //  policy => policy.Requirements.Add(new ViewUserByIdRequirement()));
-
-        //options.AddPolicy(AuthPolicies.ViewUsersPolicy,
-        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewUsers));
-
-        //options.AddPolicy(AuthPolicies.ManageUserByUserIdPolicy,
-        //  policy => policy.Requirements.Add(new ManageUserByIdRequirement()));
-
-        //options.AddPolicy(AuthPolicies.ManageUsersPolicy,
-        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageUsers));
-
-        //options.AddPolicy(AuthPolicies.ViewRoleByRoleNamePolicy,
-        //  policy => policy.Requirements.Add(new ViewRoleByNameRequirement()));
-
-        //options.AddPolicy(AuthPolicies.ViewRolesPolicy,
-        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ViewRoles));
-
-        //options.AddPolicy(AuthPolicies.AssignRolesPolicy,
-        //  policy => policy.Requirements.Add(new AssignRolesRequirement()));
-
-        //options.AddPolicy(AuthPolicies.ManageRolesPolicy,
-        //  policy => policy.RequireClaim(CustomClaimTypes.Permission, ApplicationPermissions.ManageRoles));
-      });
+      services.AddAuthorization();
       Mapper.Initialize(cfg =>
       {
         cfg.AddProfile<AutoMapperProfile>();
       });
       // Repositories
-      //services.AddScoped<IUnitOfWork, HttpUnitOfWork>();
       services.AddScoped<IAccountManager, AccountManager>();
-      // Auth Policies
-      //services.AddSingleton<IAuthorizationHandler, ViewUserByIdHandler>();
-      //services.AddSingleton<IAuthorizationHandler, ManageUserByIdHandler>();
-      //services.AddSingleton<IAuthorizationHandler, ViewRoleByNameHandler>();
-      //services.AddSingleton<IAuthorizationHandler, AssignRolesHandler>();
-
-      services.AddTransient<IDatabaseInitializer, DatabaseInitializer>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -316,19 +282,7 @@ namespace InvestorDashboard.Web
           .UseIISIntegration()
           .UseStartup<Startup>()
           .Build();
-      using (var scope = host.Services.CreateScope())
-      {
-        var services = scope.ServiceProvider;
-        try
-        {
-          var databaseInitializer = services.GetRequiredService<IDatabaseInitializer>();
-          databaseInitializer.SeedAsync().Wait();
-        }
-        catch (Exception ex)
-        {
 
-        }
-      }
       host.Run();
     }
   }

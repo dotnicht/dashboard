@@ -37,6 +37,14 @@
     <Content Remove="ClientApp\**" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ClientApp\app\assets\locale\ar.json" />
+    <Content Include="ClientApp\app\assets\locale\de.json" />
+    <Content Include="ClientApp\app\assets\locale\en.json" />
+    <Content Include="ClientApp\app\assets\locale\fr.json" />
+    <Content Include="ClientApp\app\assets\locale\ko.json" />
+    <Content Include="ClientApp\app\assets\locale\ru.json" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\InvestorDashboard.Backend\InvestorDashboard.Backend.csproj" />
   </ItemGroup>
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">

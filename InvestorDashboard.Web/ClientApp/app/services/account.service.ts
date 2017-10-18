@@ -108,8 +108,7 @@ export class AccountService {
 
         if (typeof userOrUserId === 'string' || userOrUserId instanceof String) {
             return this.accountEndpoint.getDeleteUserEndpoint(<string>userOrUserId)
-                .map((response: Response) => <User>response.json())
-                .do(data => this.onRolesUserCountChanged(data.roles));
+                .map((response: Response) => <User>response.json());
         }
         else {
 
