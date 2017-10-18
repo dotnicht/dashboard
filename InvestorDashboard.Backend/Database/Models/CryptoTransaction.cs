@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InvestorDashboard.Backend.Database.Models
 {
-    public class Transaction
+    public class CryptoTransaction
     {
         [Key]
         public Guid Id { get; set; }
@@ -16,7 +16,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public string CounterpartyAddress { get; set; }
         [Required]
         public string Hash { get; set; }
-        public TransactionDirection Direction { get; set; }
+        public CryptoTransactionDirection Direction { get; set; }
         public decimal Amount { get; set; }
         public decimal ExchangeRate { get; set; }
         public decimal TokenPrice { get; set; }

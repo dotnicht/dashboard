@@ -1,6 +1,6 @@
 ﻿namespace InvestorDashboard.Backend.Models
 {
-    public enum AddressType
+    public enum CryptoAddressType
     {
         Investment,
         Refund

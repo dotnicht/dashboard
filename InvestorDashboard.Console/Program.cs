@@ -9,17 +9,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Quartz.Impl;
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Console;
 
 namespace InvestorDashboard.Console
 {
     internal static class Program
     {
         private static void Main()
+        {
+            Run().GetAwaiter().GetResult();
+        }
+
+        private static async Task Run()
         {
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
@@ -38,78 +46,25 @@ namespace InvestorDashboard.Console
             var keyVaultService = serviceCollection
                 .BuildServiceProvider()
                 .GetRequiredService<IKeyVaultService>();
-            keyVaultService.Initialize().Wait();
+
+            await keyVaultService.Initialize().ConfigureAwait(false);
 
             serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            var options = serviceProvider.GetRequiredService<IOptions<ExchangeRateSettings>>();
 
-            var eth = Task.Run(() => Run(serviceProvider, RenewEthereumTransactions, TimeSpan.FromHours(1), CancellationToken.None));
-            var ex = Task.Run(() => Run(serviceProvider, RefreshExchangeRates, options.Value.RefreshRate, CancellationToken.None));
-            Task.WaitAll(eth, ex);
-        }
+            var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
+            var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
-        private static void RenewEthereumTransactions(IServiceProvider serviceProvider)
-        {
-            if (serviceProvider == null)
+            await scheduler.Start().ConfigureAwait(false);
+
+            WriteLine("Press the escape key (ESC) to quit.");
+            while (ReadKey(true).Key != ConsoleKey.Escape)
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
+                Task.Delay(TimeSpan.FromSeconds(3)).Wait();
             }
 
-            var mapper = serviceProvider.GetRequiredService<IMapper>();
-            var ethereumService = serviceProvider.GetRequiredService<IEthereumService>();
-            var exchangeRateService = serviceProvider.GetRequiredService<IExchangeRateService>();
-
-            var tokenRate = exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
-            var ethRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD);
-
-            //using (var ctx = serviceProvider.GetRequiredService<ApplicationDbContext>())
-            //{
-            //    foreach (var address in ctx.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == AddressType.Investment))
-            //    {
-            //        foreach (var transaction in ethereumService.GetInboundTransactionsByRecipientAddress(address.Address))
-            //        {
-            //            if (!ctx.Transactions.Any(x => x.Hash == transaction.Hash))
-            //            {
-            //                var trx = mapper.Map<CryptoTransaction>(transaction);
-            //                trx.Address = address;
-            //                trx.Direction = TransactionDirection.Inbound;
-            //                trx.ExchangeRate = exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, trx.Created, true);
-            //                trx.TokenPrice = tokenRate;
-            //                ctx.Transactions.Add(trx);
-            //                ctx.SaveChanges();
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
-        private static void RefreshExchangeRates(IServiceProvider serviceProvider)
-        {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            var exchangeRateService = serviceProvider.GetRequiredService<IExchangeRateService>();
-
-            foreach (var currency in new[] { Currency.ETH, Currency.BTC })
-            {
-                exchangeRateService.RefreshExchangeRate(currency);
-            }
-        }
-
-        private static void Run(IServiceProvider serviceProvider, Action<IServiceProvider> action, TimeSpan period, CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                Task.Delay(period, cancellationToken).Wait();
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    action(serviceProvider);
-                }
-            }
+            await scheduler.Shutdown().ConfigureAwait(false);
         }
     }
 }

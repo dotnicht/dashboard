@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -23,22 +24,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public decimal GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null)
+        public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null)
         {
             if (baseCurrency == quoteCurrency)
             {
                 return 1;
             }
 
-            return dateTime == null
-                ? GetExchangeRateFromApi(baseCurrency, quoteCurrency)
-                : GetExchangeRateFromDatabase(baseCurrency, quoteCurrency, dateTime.Value)
-                    ?? throw CreateDbException(baseCurrency, quoteCurrency, dateTime.Value);
+            if (dateTime == null)
+            {
+                return await GetExchangeRateFromApi(baseCurrency, quoteCurrency);
+            }
+
+            var ex = await GetExchangeRateFromDatabase(baseCurrency, quoteCurrency, dateTime.Value);
+            
+            if (ex == null)
+            {
+                throw CreateDbException(baseCurrency, quoteCurrency, dateTime.Value);
+            }
+
+            return ex.Rate;
         }
 
-        public decimal GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime, bool fallbacktoCurrent)
+        public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime, bool fallbacktoCurrent)
         {
-            var result = GetExchangeRateFromDatabase(baseCurrency, quoteCurrency, dateTime);
+            var result = await GetExchangeRateFromDatabase(baseCurrency, quoteCurrency, dateTime);
             if (result == null)
             {
                 var ex = CreateDbException(baseCurrency, quoteCurrency, dateTime);
@@ -46,22 +56,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 if (fallbacktoCurrent)
                 {
                     _logger.LogInformation(ex.Message);
-                    return GetExchangeRateFromApi(baseCurrency, quoteCurrency);
+                    return await GetExchangeRateFromApi(baseCurrency, quoteCurrency);
                 }
 
                 throw ex;
             }
 
-            return result.Value;
+            return result.Rate;
         }
 
-        public void RefreshExchangeRate(Currency baseCurrency)
+        public async Task RefreshExchangeRate(Currency baseCurrency)
         {
-            _context.ExchangeRates.Add(new ExchangeRate { Base = baseCurrency, Quote = Currency.USD, Rate = GetExchangeRate(baseCurrency, Currency.USD) });
+            var rate = await GetExchangeRate(baseCurrency, Currency.USD);
+            _context.ExchangeRates.Add(new ExchangeRate { Base = baseCurrency, Quote = Currency.USD, Rate = rate });
             _context.SaveChanges();
         }
 
-        private decimal GetExchangeRateFromApi(Currency baseCurrency, Currency quoteCurrency)
+        private async Task<decimal> GetExchangeRateFromApi(Currency baseCurrency, Currency quoteCurrency)
         {
             if (baseCurrency == Currency.DTT || quoteCurrency == Currency.DTT)
             {
@@ -73,19 +84,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new NotSupportedException("DTT conversions currently not supported.");
             }
 
-            var result = RestUtil.Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
-            if (result?.Count > 0)
-            {
-                return result[0];
-            }
+            var result = await RestUtil.Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
 
             throw new InvalidOperationException("An error occurred while retrieving exchange rate from bitfinex.com.");
         }
 
-        private decimal? GetExchangeRateFromDatabase(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) => 
-            _context.ExchangeRates.OrderByDescending(x => x.Created).FirstOrDefault(x => x.Base == baseCurrency && x.Quote == quoteCurrency && x.Created <= dateTime)?.Rate;
+        private Task<ExchangeRate> GetExchangeRateFromDatabase(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) =>
+            _context.ExchangeRates
+                .OrderByDescending(x => x.Created)
+                .ToAsyncEnumerable()
+                .FirstOrDefault(x => x.Base == baseCurrency && x.Quote == quoteCurrency && x.Created <= dateTime);
 
-        private InvalidOperationException CreateDbException(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) => 
+        private InvalidOperationException CreateDbException(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) =>
             new InvalidOperationException($"Exchange rate record not found for currency pair {baseCurrency}/{quoteCurrency} and date & time {dateTime}.");
     }
 }

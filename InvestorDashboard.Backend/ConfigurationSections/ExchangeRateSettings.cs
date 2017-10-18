@@ -6,6 +6,5 @@ namespace InvestorDashboard.Backend.ConfigurationSections
     {
         public string ApiUri { get; set; }
         public decimal DTTUSD { get; set; }
-        public TimeSpan RefreshRate { get; set; }
     }
 }

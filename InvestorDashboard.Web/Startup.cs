@@ -25,6 +25,7 @@ using InvestorDashboard.Backend.Core;
 using InvestorDashboard.Backend.Core.Interfaces;
 using InvestorDashboard.Web.Server.Models;
 using Microsoft.AspNetCore.Authorization;
+using InvestorDashboard.Backend.Services.Implementation;
 
 namespace InvestorDashboard.Web
 {
@@ -53,9 +54,6 @@ namespace InvestorDashboard.Web
 
 
       services.AddAutoMapper(typeof(Backend.DependencyInjection));
-
-      //var eth = services.BuildServiceProvider().GetRequiredService<IEthereumService>();
-      //var res = eth.GetInboundTransactionsByRecipientAddress("0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe");
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {

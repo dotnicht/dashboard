@@ -1,6 +1,6 @@
 ﻿namespace InvestorDashboard.Backend.Models
 {
-    public enum TransactionDirection
+    public enum CryptoTransactionDirection
     {
         Inbound,
         Outbound
