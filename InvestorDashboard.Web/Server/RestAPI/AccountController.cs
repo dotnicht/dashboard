@@ -103,39 +103,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
       else
         return NotFound(id);
     }
-    [HttpPost("~/connect/register"), Produces("application/json")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
-    {
-      try
-      {
-        user.FirstName = "FirstName";
-        user.LastName = "LastName";
-        user.UserName = "UserName";
-        user.Address = "Address";
-        user.Balance = 10;
-        user.PhoneNumber = "050 000 0000";
-        user.IsEligibleForTokenSale = true;
-        user.CountryCode = "ukr";
-        user.City = "Boston";
-        user.IsEnabled = true;
-
-        ApplicationUser appUser = Mapper.Map<ApplicationUser>(user);
-
-        var result = await _accountManager.CreateUserAsync(appUser, user.Password);
-        if (result.Item1)
-        {
-          return Json(new { message = "ok" });
-        }
-        return Json(new { error = "reg er" });
-      }
-      catch (Exception ex)
-      {
-        return Json(ex.Message);
-      }
-    }
-   
-   
+  
 
     //[HttpGet]
     //[AllowAnonymous]

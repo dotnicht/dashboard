@@ -18,8 +18,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using InvestorDashboard.Backend.Core;
+using InvestorDashboard.Backend.Core.Interfaces;
 using InvestorDashboard.Web.Models.AccountViewModels;
+using InvestorDashboard.Web.Server.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Web.Server.RestAPI
@@ -27,6 +30,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
   [Route("[controller]/[action]")]
   public class AuthorizationController : Controller
   {
+    private readonly IAccountManager _accountManager;
     private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
     private readonly IOptions<IdentityOptions> _identityOptions;
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -38,14 +42,56 @@ namespace InvestorDashboard.Web.Server.RestAPI
       IOptions<IdentityOptions> identityOptions,
       SignInManager<ApplicationUser> signInManager,
       UserManager<ApplicationUser> userManager,
-      ILogger<AuthorizationController> loger)
+      ILogger<AuthorizationController> loger,
+      IAccountManager accountManager)
     {
       _applicationManager = applicationManager;
       _identityOptions = identityOptions;
       _signInManager = signInManager;
       _userManager = userManager;
       _logger = loger;
+      _accountManager = accountManager;
     }
+    [HttpPost("~/connect/register"), Produces("application/json")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
+    {
+      try
+      {
+        user.FirstName = "FirstName";
+        user.LastName = "LastName";
+        user.UserName = "UserName";
+        user.Address = "Address";
+        user.Balance = 10;
+        user.PhoneNumber = "050 000 0000";
+        user.IsEligibleForTokenSale = true;
+        user.CountryCode = "ukr";
+        user.City = "Boston";
+        user.IsEnabled = true;
+
+        ApplicationUser appUser = Mapper.Map<ApplicationUser>(user);
+
+        //var result = await _accountManager.CreateUserAsync(appUser, user.Password);
+        var result = await _userManager.CreateAsync(appUser, user.Password);
+        if (result.Succeeded)
+        {
+          return Ok();
+        }
+        return BadRequest(new OpenIdConnectResponse
+        {
+          Error = "user_exist"
+        });
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(new OpenIdConnectResponse
+        {
+          Error = OpenIdConnectConstants.Errors.ServerError,
+          ErrorDescription = ex.Message
+        });
+      }
+    }
+
 
     #region Authorization code, implicit and implicit flows
     // Note: to support interactive flows like the code flow,
