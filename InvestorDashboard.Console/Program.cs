@@ -1,20 +1,14 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend;
-using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Quartz.Impl;
 using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using static System.Console;
 
@@ -22,6 +16,9 @@ namespace InvestorDashboard.Console
 {
     internal static class Program
     {
+        // TODO: refactor this.
+        public static ServiceProvider ServiceProvider { get; private set; }
+
         private static void Main()
         {
             Run().GetAwaiter().GetResult();
@@ -51,7 +48,7 @@ namespace InvestorDashboard.Console
 
             serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")));
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            ServiceProvider = serviceCollection.BuildServiceProvider();
 
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);

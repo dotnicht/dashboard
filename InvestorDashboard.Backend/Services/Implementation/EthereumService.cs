@@ -21,6 +21,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IKeyVaultService _keyVaultService;
         private readonly IExchangeRateService _exchangeRateService;
 
+        public Currency Currency => Currency.ETH;
+
         public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
