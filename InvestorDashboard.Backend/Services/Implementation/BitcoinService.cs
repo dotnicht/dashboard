@@ -17,14 +17,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshInboundTransactions()
         {
-            throw new NotImplementedException();
+            
         }
 
-        private async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
+        public async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
             var uri = $"{_options.Value.ApiBaseUrl}/rawaddr/{address}";
-            var result = await RestUtil.Get<Transaction>(uri);
-            return result;
+            return await RestUtil.Get<Transaction>(uri);
         }
 
     }
