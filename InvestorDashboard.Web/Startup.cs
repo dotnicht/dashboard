@@ -52,7 +52,6 @@ namespace InvestorDashboard.Web
       var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
       keyVaultService.Initialize().Wait();
 
-
       services.AddAutoMapper(typeof(Backend.DependencyInjection));
 
       services.AddDbContext<ApplicationDbContext>(options =>
@@ -65,10 +64,12 @@ namespace InvestorDashboard.Web
           options.UseOpenIddict();
         }
       );
+
       // add identity
       services.AddIdentity<ApplicationUser, ApplicationRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+
       // Configure Identity options and password complexity here
       services.Configure<IdentityOptions>(options =>
       {
@@ -137,16 +138,12 @@ namespace InvestorDashboard.Web
         //options.AddEphemeralSigningKey();
       });
 
-
-
-
       services.AddAuthentication(options =>
           {
             options.DefaultAuthenticateScheme = OAuthValidationDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme;
           }
-        )
-        .AddOAuthValidation();
+        ).AddOAuthValidation();
 
       services.AddMvc();
       services.AddNodeServices();
@@ -155,10 +152,8 @@ namespace InvestorDashboard.Web
       services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
 
       services.AddAuthorization();
-      Mapper.Initialize(cfg =>
-      {
-        cfg.AddProfile<AutoMapperProfile>();
-      });
+      Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperProfile>());
+
       // Repositories
       services.AddScoped<IAccountManager, AccountManager>();
     }

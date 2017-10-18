@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    public class EthereumService : IEthereumService
+    internal class EthereumService : IEthereumService
     {
         private readonly ApplicationDbContext _context;
         private readonly IOptions<EthereumSettings> _options;
@@ -54,7 +54,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
             {
-                foreach (var transaction in GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address))
+                foreach (var transaction in await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address))
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {
@@ -70,14 +70,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public EtherscanResponse.Transaction[] GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
+        private async Task<EtherscanResponse.Transaction[]> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
             var uri = $"{_options.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_options.Value.ApiKey}";
-            var result = RestUtil.Get<EtherscanResponse>(uri);
-            return result?.Result?.Result?.ToArray() ?? throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");
+            var result = await RestUtil.Get<EtherscanResponse>(uri);
+            return result?.Result?.ToArray() ?? throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");
         }
 
-        public class EtherscanResponse
+        internal class EtherscanResponse
         {
             public string Status { get; set; }
             public string Message { get; set; }
