@@ -6,5 +6,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class BitcoinSettings
     {
+        public string ApiBaseUrl { get; set; }
     }
 }
