@@ -1,12 +1,13 @@
 ﻿using InvestorDashboard.Backend.Models;
 using System;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
     public interface IExchangeRateService
     {
-        decimal GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null);
-        decimal GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime, bool fallbacktoCurrent);
-        void RefreshExchangeRate(Currency baseCurrency);
+        Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null);
+        Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime, bool fallbacktoCurrent);
+        Task RefreshExchangeRate(Currency baseCurrency);
     }
 }

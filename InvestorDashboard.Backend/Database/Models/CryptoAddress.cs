@@ -13,7 +13,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
         public Currency Currency { get; set; }
-        public AddressType Type { get; set; }
+        public CryptoAddressType Type { get; set; }
         public string Address { get; set; }
         public DateTime Created { get; set; }
     }

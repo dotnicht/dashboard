@@ -9,10 +9,11 @@ using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class EthereumService : IEthereumService
+    public class EthereumService : IEthereumService
     {
         private readonly ApplicationDbContext _context;
         private readonly IOptions<EthereumSettings> _options;
@@ -45,92 +46,38 @@ namespace InvestorDashboard.Backend.Services.Implementation
             };
         }
 
-        public IEnumerable<CryptoTransaction> GetInboundTransactionsByRecipientAddress(string address)
+        public async Task RefreshInboundTransactions()
         {
-            if (address == null)
+            var tokenRate = await _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
+            var ethRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
+            var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
+
+            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
             {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            return GetInboundTransactionsByRecipientAddressFromEtherscan(address);
-        }
-
-        public void RefreshInboundTransactions()
-        {
-            var tokenRate = _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
-            var hashes = _context.Transactions.Select(x => x.Hash).ToHashSet();
-
-            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == AddressType.Investment))
-            {
-                foreach (var transaction in GetInboundTransactionsByRecipientAddress(address.Address))
+                foreach (var transaction in GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address))
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {
-                        var trx = _mapper.Map<Database.Models.Transaction>(transaction);
+                        var trx = _mapper.Map<Database.Models.CryptoTransaction>(transaction);
                         trx.Address = address;
-                        trx.Direction = TransactionDirection.Inbound;
-                        trx.ExchangeRate = _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
+                        trx.Direction = CryptoTransactionDirection.Inbound;
+                        trx.ExchangeRate = ethRate;
                         trx.TokenPrice = tokenRate;
-                        _context.Transactions.Add(trx);
-                        _context.SaveChanges();
+                        await _context.CryptoTransactions.AddAsync(trx);
+                        await _context.SaveChangesAsync();
                     }
                 }
             }
         }
 
-        private CryptoTransaction[] GetInboundTransactionsByRecipientAddressFromEtherchain(string address)
+        public EtherscanResponse.Transaction[] GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
-            var result = RestUtil.Get<EtherchainResponse>($"{_options.Value.EtherchainApiUri}account/{address}/tx/0");
-
-            if (result != null)
-            {
-                return _mapper.Map<CryptoTransaction[]>(result.Data.Where(x => x.Recipient == address && x.Type == "tx"));
-            }
-
-            throw new InvalidOperationException("An error occurred while retrieving transaction list from etherchain.org.");
-        }
-
-        private CryptoTransaction[] GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
-        {
-            var uri = $"{_options.Value.EtherscanApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_options.Value.EtherscanApiKey}";
+            var uri = $"{_options.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_options.Value.ApiKey}";
             var result = RestUtil.Get<EtherscanResponse>(uri);
-
-            if (result != null)
-            {
-                return _mapper.Map<CryptoTransaction[]>(result.Result.Where(x => x.To == address));
-            }
-
-            throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");
+            return result?.Result?.Result?.ToArray() ?? throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");
         }
 
-
-        internal class EtherchainResponse
-        {
-            public int Status { get; set; }
-            public List<Transaction> Data { get; set; }
-
-            public class Transaction
-            {
-                public string Hash { get; set; }
-                public string Sender { get; set; }
-                public string Recipient { get; set; }
-                public string AccountNonce { get; set; }
-                public object Price { get; set; }
-                public int GasLimit { get; set; }
-                public decimal Amount { get; set; }
-                public int Block_id { get; set; }
-                public DateTime Time { get; set; }
-                public int NewContract { get; set; }
-                public object IsContractTx { get; set; }
-                public string BlockHash { get; set; }
-                public string ParentHash { get; set; }
-                public int? TxIndex { get; set; }
-                public int GasUsed { get; set; }
-                public string Type { get; set; }
-            }
-        }
-
-        internal class EtherscanResponse
+        public class EtherscanResponse
         {
             public string Status { get; set; }
             public string Message { get; set; }

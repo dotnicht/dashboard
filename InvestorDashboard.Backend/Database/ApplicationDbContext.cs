@@ -2,15 +2,15 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace InvestorDashboard.Backend.Database
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-      public string CurrentUserId { get; set; }
-    public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public string CurrentUserId { get; set; }
+
+        public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
+        public DbSet<CryptoTransaction> CryptoTransactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
@@ -32,13 +32,13 @@ namespace InvestorDashboard.Backend.Database
                 .HasIndex(x => x.Name)
                 .IsUnique();
 
-            builder.Entity<Transaction>()
+            builder.Entity<CryptoTransaction>()
                 .Property(x => x.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
-            builder.Entity<Transaction>()
+            builder.Entity<CryptoTransaction>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
-            builder.Entity<Transaction>()
+            builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.Hash)
                 .IsUnique();
 

@@ -1,11 +1,9 @@
-﻿using InvestorDashboard.Backend.Models;
-using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
     public interface ICryptoService
     {
-        IEnumerable<CryptoTransaction> GetInboundTransactionsByRecipientAddress(string address);
-        void RefreshInboundTransactions();
+        Task RefreshInboundTransactions();
     }
 }
