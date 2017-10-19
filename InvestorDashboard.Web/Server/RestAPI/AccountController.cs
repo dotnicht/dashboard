@@ -20,7 +20,7 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
-  //[Authorize]
+  [Authorize]
   [Route("api/[controller]")]
   public class AccountController : Controller
   {

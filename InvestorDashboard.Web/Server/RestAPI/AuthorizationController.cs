@@ -60,12 +60,12 @@ namespace InvestorDashboard.Web.Server.RestAPI
       {
         user.FirstName = "FirstName";
         user.LastName = "LastName";
-        user.UserName = "UserName";
+        user.UserName = user.Email;
         user.Address = "Address";
         user.Balance = 10;
         user.PhoneNumber = "050 000 0000";
         user.IsEligibleForTokenSale = true;
-        user.CountryCode = "ukr";
+        user.CountryCode = "UKR";
         user.City = "Boston";
         user.IsEnabled = true;
 

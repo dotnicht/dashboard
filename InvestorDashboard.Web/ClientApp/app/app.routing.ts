@@ -16,8 +16,8 @@ export const routingComponents = [
 ];
 
 export const SETTINGS_ROUTES: Routes = [
-    { path: '', redirectTo: 'profile', pathMatch: 'full' },
-    { path: 'profile', component: UserInfoComponent }
+    { path: '', redirectTo: 'profile', pathMatch: 'full', canActivate: [AuthGuard] },
+    { path: 'profile', component: UserInfoComponent, canActivate: [AuthGuard] }
 ];
 const routes: Routes = [
     {
