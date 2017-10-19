@@ -1,3 +1,4 @@
+using System;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
@@ -17,34 +18,168 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using InvestorDashboard.Backend.Core;
+using InvestorDashboard.Backend.Core.Interfaces;
+using InvestorDashboard.Web.Models.AccountViewModels;
+using InvestorDashboard.Web.Server.Models.AccountViewModels;
+using Microsoft.Extensions.Logging;
+using InvestorDashboard.Backend.Services;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
   [Route("[controller]/[action]")]
   public class AuthorizationController : Controller
   {
+    private readonly IAccountManager _accountManager;
     private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
     private readonly IOptions<IdentityOptions> _identityOptions;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger _logger;
+    private readonly IEnumerable<ICryptoService> _cryptoServices;
 
     public AuthorizationController(
       OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
       IOptions<IdentityOptions> identityOptions,
       SignInManager<ApplicationUser> signInManager,
-      UserManager<ApplicationUser> userManager)
+      UserManager<ApplicationUser> userManager,
+      ILogger<AuthorizationController> loger,
+      IAccountManager accountManager,
+      IEnumerable<ICryptoService> cryptoServices)
     {
       _applicationManager = applicationManager;
       _identityOptions = identityOptions;
       _signInManager = signInManager;
       _userManager = userManager;
+      _logger = loger;
+      _accountManager = accountManager;
+      _cryptoServices = cryptoServices;
     }
+
+    [HttpPost("~/connect/register"), Produces("application/json")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
+    {
+      try
+      {
+        user.FirstName = "FirstName";
+        user.LastName = "LastName";
+        user.UserName = "UserName";
+        user.Address = "Address";
+        user.Balance = 10;
+        user.PhoneNumber = "050 000 0000";
+        user.IsEligibleForTokenSale = true;
+        user.CountryCode = "ukr";
+        user.City = "Boston";
+        user.IsEnabled = true;
+
+        ApplicationUser appUser = Mapper.Map<ApplicationUser>(user);
+
+        //var result = await _accountManager.CreateUserAsync(appUser, user.Password);
+        var result = await _userManager.CreateAsync(appUser, user.Password);
+        if (result.Succeeded)
+        {
+          //_cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
+          return Ok();
+        }
+        return BadRequest(new OpenIdConnectResponse
+        {
+          Error = "user_exist"
+        });
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(new OpenIdConnectResponse
+        {
+          Error = OpenIdConnectConstants.Errors.ServerError,
+          ErrorDescription = ex.Message
+        });
+      }
+    }
+
 
     #region Authorization code, implicit and implicit flows
     // Note: to support interactive flows like the code flow,
     // you must provide your own authorization endpoint action:
+    [HttpGet]
+    public async Task<IActionResult> LoginWith2fa(bool rememberMe, string returnUrl = null)
+    {
+      // Ensure the user has gone through the username & password screen first
+      var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 
+      if (user == null)
+      {
+       // throw new ApplicationException($"Unable to load two-factor authentication user.");
+        return BadRequest(new OpenIdConnectResponse
+        {
+          Error = OpenIdConnectConstants.Errors.InvalidGrant,
+          ErrorDescription = "The username/password couple is invalid."
+        });
+      }
+
+      var model = new LoginWith2faViewModel { RememberMe = rememberMe };
+      ViewData["ReturnUrl"] = returnUrl;
+
+      return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel model, bool rememberMe, string returnUrl = null)
+    {
+      if (!ModelState.IsValid)
+      {
+        var errorrs = string.Empty;
+        foreach (var values in ModelState.Values)
+        {
+          foreach (var error in values.Errors)
+          {
+            errorrs += $"{error};";
+          }
+        }
+        return Ok(new OpenIdConnectResponse
+        {
+          Error = OpenIdConnectConstants.Errors.InvalidGrant,
+          ErrorDescription = errorrs
+        });
+      }
+
+      var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+      if (user == null)
+      {
+        throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+      }
+
+      var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+      var result =
+        await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
+
+      if (result.Succeeded)
+      {
+        _logger.LogInformation("User with ID {UserId} logged in with 2fa.", user.Id);
+        return Ok();
+      }
+      else if (result.IsLockedOut)
+      {
+        _logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
+        return Ok(new OpenIdConnectResponse
+        {
+          Error = OpenIdConnectConstants.Errors.InvalidGrant,
+          ErrorDescription = "User with ID {UserId} account locked out."
+        });
+      }
+      else
+      {
+        _logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
+        return Ok(new OpenIdConnectResponse
+        {
+          Error = OpenIdConnectConstants.Errors.InvalidGrant,
+          ErrorDescription = "Invalid authenticator code."
+        });
+      
+      }
+    }
     [Authorize, HttpGet("~/connect/authorize")]
     public async Task<IActionResult> Authorize(OpenIdConnectRequest request)
     {
@@ -126,7 +261,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
       });
     }
 
-    [HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
+    [HttpPost("~/connect/logout"), Produces("application/json")]
     public async Task<IActionResult> Logout()
     {
       // Ask ASP.NET Core Identity to delete the local and external cookies created
@@ -173,6 +308,14 @@ namespace InvestorDashboard.Web.Server.RestAPI
             {
               Error = OpenIdConnectConstants.Errors.InvalidGrant,
               ErrorDescription = "The username/password couple is invalid."
+            });
+          }
+
+          if (result.RequiresTwoFactor)
+          {
+            return Ok(new OpenIdConnectResponse
+            {
+              Code = ""
             });
           }
 

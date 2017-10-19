@@ -1,10 +1,3 @@
-// ======================================
-// Author: Ebenezer Monney
-// Email:  info@ebenmonney.com
-// Copyright (c) 2017 www.ebenmonney.com
-// 
-// ==> Gun4Hire: contact@ebenmonney.com
-// ======================================
 
 import { Injectable, Injector } from '@angular/core';
 import { Http, Headers, RequestOptions, Response, URLSearchParams } from '@angular/http';
@@ -17,7 +10,7 @@ import 'rxjs/add/operator/catch';
 
 import { AuthService } from './auth.service';
 import { ConfigurationService } from './configuration.service';
-import { UserLogin } from '../models/user.model';
+import { UserLogin, UserRegister } from '../models/user.model';
 
 
 @Injectable()
@@ -26,6 +19,8 @@ export class EndpointFactory {
     static readonly apiVersion: string = '1';
 
     private readonly _loginUrl: string = '/connect/token';
+    private readonly _logoutUrl: string = '/connect/logout';
+    private readonly _registerUrl: string = '/connect/register';
 
     private get loginUrl() { return this.configurations.baseUrl + this._loginUrl; }
 
@@ -45,6 +40,31 @@ export class EndpointFactory {
 
     }
 
+    logoutEndPoint(): Observable<Response> {
+
+        return this.http.post(this._logoutUrl, this.getAuthHeader())
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.logoutEndPoint());
+            });
+    }
+    registerEndPoint(user: UserRegister): Observable<Response> {
+        let searchParams = new URLSearchParams();
+        searchParams.append('Email', user.email);
+        searchParams.append('Password', user.password);
+
+
+        console.log(searchParams);
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        return this.http.post(this._registerUrl, JSON.stringify(user), { headers: headers })
+            .map((resp: Response) => resp.json())
+            .catch((error: any) => { return Observable.throw(error); });
+
+    }
     getLoginEndpoint(user: UserLogin): Observable<Response> {
 
         let header = new Headers();
@@ -74,7 +94,7 @@ export class EndpointFactory {
         let header = new Headers();
         header.append('Content-Type', 'application/x-www-form-urlencoded');
 
-        
+
         let searchParams = new URLSearchParams();
         searchParams.append('refresh_token', this.authService.refreshToken);
         searchParams.append('grant_type', 'refresh_token');

@@ -1,4 +1,4 @@
-﻿{
+{
   "app": {
     "Welcome": "Welcome",
     "Notifications": "Notifications",
@@ -49,8 +49,8 @@
   "settings": {
     "tab": {
       "Profile": "Profile",
-      "Preferences": "Preferences",
-      "Users": "Users",
+      "2fa": "Two-factor authentication",
+      "Password": "Password",
       "Roles": "Roles"
     },
     "header": {
