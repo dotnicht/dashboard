@@ -65,7 +65,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
       {
         user.FirstName = "FirstName";
         user.LastName = "LastName";
-        user.UserName = "UserName";
+        user.UserName = user.Email;
         user.Address = "Address";
         user.Balance = 10;
         user.PhoneNumber = "050 000 0000";
@@ -80,7 +80,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         var result = await _userManager.CreateAsync(appUser, user.Password);
         if (result.Succeeded)
         {
-          //_cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
+          _cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
           return Ok();
         }
         return BadRequest(new OpenIdConnectResponse

@@ -41,28 +41,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var ecKey = EthECKey.GenerateKey();
-            var privateKey = ecKey.GetPrivateKeyAsBytes().ToHex();
-            var keyStoreService = new KeyStorePbkdf2Service();
-            var bytes = ecKey.GetPrivateKeyAsBytes();
             var address = ecKey.GetPublicAddress();
 
-            var cryptoAccount = new CryptoAccount
+            await _context.CryptoAddresses.AddAsync(new CryptoAddress
             {
-                UserId = userId,
-                Currency = Currency,
-                KeyStore = keyStoreService.EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, bytes, address)
-            };
-
-            var cryptoAddress = new CryptoAddress
-            {
-                CryptoAccount = cryptoAccount,
+                CryptoAccount = new CryptoAccount
+                {
+                    UserId = userId,
+                    Currency = Currency,
+                    KeyStore = new KeyStorePbkdf2Service().EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, ecKey.GetPrivateKeyAsBytes(), address)
+                },
                 Type = CryptoAddressType.Investment,
                 Address = address
-            };
+            });
 
-            await _context.CryptoAccounts.AddAsync(cryptoAccount);
-            await _context.CryptoAddresses.AddAsync(cryptoAddress);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public async Task RefreshInboundTransactions()
@@ -83,8 +76,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         trx.Direction = CryptoTransactionDirection.Inbound;
                         trx.ExchangeRate = ethRate;
                         trx.TokenPrice = tokenRate;
+
                         await _context.CryptoTransactions.AddAsync(trx);
-                        await _context.SaveChangesAsync();
+
+                        _context.SaveChanges();
                     }
                 }
             }

@@ -14,8 +14,8 @@ namespace InvestorDashboard.Backend
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddSingleton<IKeyVaultService, KeyVaultService>();
             services.AddTransient<IEmailService, EmailService>();
-            services.AddTransient<IKeyVaultService, KeyVaultService>();
             services.AddTransient<IExchangeRateService, ExchangeRateService>();
             services.AddTransient<IBitcoinService, BitcoinService>();
             services.AddTransient<IEthereumService, EthereumService>();
