@@ -70,7 +70,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         user.Balance = 10;
         user.PhoneNumber = "050 000 0000";
         user.IsEligibleForTokenSale = true;
-        user.CountryCode = "ukr";
+        user.CountryCode = "UKR";
         user.City = "Boston";
         user.IsEnabled = true;
 

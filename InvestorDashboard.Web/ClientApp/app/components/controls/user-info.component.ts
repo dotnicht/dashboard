@@ -13,7 +13,7 @@ import { Permission } from '../../models/permission.model';
 @Component({
     selector: 'user-info',
     templateUrl: './user-info.component.html',
-    styleUrls: ['./user-info.component.css']
+    styleUrls: ['./user-info.component.scss']
 })
 export class UserInfoComponent implements OnInit {
 
@@ -28,8 +28,6 @@ export class UserInfoComponent implements OnInit {
     @Input()
     isViewOnly: boolean;
 
-    @Input()
-    isGeneralEditor = false;
 
     private isEditMode = false;
     private isNewUser = false;
@@ -70,9 +68,7 @@ export class UserInfoComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this.isGeneralEditor) {
             this.loadCurrentUserData();
-        }
     }
 
     resetForm(replace = false) {
@@ -91,20 +87,7 @@ export class UserInfoComponent implements OnInit {
     }
 
 
-    newUser() {
-        this.isGeneralEditor = true;
-        this.isNewUser = true;
-
-        this.editingUserName = null;
-        this.user = this.userEdit = new UserEdit();
-        this.userEdit.isEnabled = true;
-        this.edit();
-
-        return this.userEdit;
-    }
-
     editUser(user: User) {
-        this.isGeneralEditor = true;
         this.isNewUser = false;
 
         this.editingUserName = user.userName;
@@ -164,17 +147,17 @@ export class UserInfoComponent implements OnInit {
 
 
     private edit() {
-        if (!this.isGeneralEditor) {
+        // if (!this.isGeneralEditor) {
             this.isEditingSelf = true;
             this.userEdit = new UserEdit();
             Object.assign(this.userEdit, this.user);
-        }
-        else {
-            if (!this.userEdit)
-                this.userEdit = new UserEdit();
+        // }
+        // else {
+        //     if (!this.userEdit)
+        //         this.userEdit = new UserEdit();
 
-            this.isEditingSelf = this.accountService.currentUser ? this.userEdit.id == this.accountService.currentUser.id : false;
-        }
+        //     this.isEditingSelf = this.accountService.currentUser ? this.userEdit.id == this.accountService.currentUser.id : false;
+        // }
 
         this.isEditMode = true;
         this.showValidationErrors = true;
@@ -183,15 +166,16 @@ export class UserInfoComponent implements OnInit {
 
 
     private save() {
-        this.isSaving = true;
-        this.alertService.startLoadingMessage('Saving changes...');
+        console.log(this.userEdit);
+        // this.isSaving = true;
+        // this.alertService.startLoadingMessage('Saving changes...');
 
-        if (this.isNewUser) {
-            this.accountService.newUser(this.userEdit).subscribe(user => this.saveSuccessHelper(user), error => this.saveFailedHelper(error));
-        }
-        else {
-            this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
-        }
+        // if (this.isNewUser) {
+        //     this.accountService.newUser(this.userEdit).subscribe(user => this.saveSuccessHelper(user), error => this.saveFailedHelper(error));
+        // }
+        // else {
+        //     this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
+        // }
     }
 
 
@@ -211,12 +195,12 @@ export class UserInfoComponent implements OnInit {
         this.resetForm();
 
 
-        if (this.isGeneralEditor) {
-            if (this.isNewUser)
-                this.alertService.showMessage('Success', `User \"${this.user.userName}\" was created successfully`, MessageSeverity.success);
-            else if (!this.isEditingSelf)
-                this.alertService.showMessage('Success', `Changes to user \"${this.user.userName}\" was saved successfully`, MessageSeverity.success);
-        }
+        // if (this.isGeneralEditor) {
+        //     if (this.isNewUser)
+        //         this.alertService.showMessage('Success', `User \"${this.user.userName}\" was created successfully`, MessageSeverity.success);
+        //     else if (!this.isEditingSelf)
+        //         this.alertService.showMessage('Success', `Changes to user \"${this.user.userName}\" was saved successfully`, MessageSeverity.success);
+        // }
 
         if (this.isEditingSelf) {
             this.alertService.showMessage('Success', 'Changes to your User Profile was saved successfully', MessageSeverity.success);
@@ -246,9 +230,9 @@ export class UserInfoComponent implements OnInit {
 
 
     private cancel() {
-        if (this.isGeneralEditor)
-            this.userEdit = this.user = new UserEdit();
-        else
+        // if (this.isGeneralEditor)
+        //     this.userEdit = this.user = new UserEdit();
+        // else
             this.userEdit = new UserEdit();
 
         this.showValidationErrors = false;
@@ -257,22 +241,11 @@ export class UserInfoComponent implements OnInit {
         this.alertService.showMessage('Cancelled', 'Operation cancelled by user', MessageSeverity.default);
         this.alertService.resetStickyMessage();
 
-        if (!this.isGeneralEditor)
+        // if (!this.isGeneralEditor)
             this.isEditMode = false;
 
         if (this.changesCancelledCallback)
             this.changesCancelledCallback();
-    }
-
-
-    private close() {
-        this.userEdit = this.user = new UserEdit();
-        this.showValidationErrors = false;
-        this.resetForm();
-        this.isEditMode = false;
-
-        if (this.changesSavedCallback)
-            this.changesSavedCallback();
     }
 
 

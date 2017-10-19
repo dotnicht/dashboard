@@ -22,6 +22,7 @@ import { MaterialModule } from '../../app.material.module';
     LoginComponent,
     RegisterComponent,
     EqualValidator
+    
   ],
   imports: [
     CommonModule,
