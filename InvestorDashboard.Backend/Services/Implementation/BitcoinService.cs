@@ -1,23 +1,29 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     public class BitcoinService : IBitcoinService
     {
+        private readonly ApplicationDbContext _context;
         private readonly IOptions<BitcoinSettings> _options;
         private readonly IKeyVaultService _keyVaultService;
+        private readonly IExchangeRateService _exchangeRateService;
 
         public Currency Currency => Currency.BTC;
 
-        public BitcoinService(IOptions<BitcoinSettings> options, IKeyVaultService keyVaultService)
+        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
+            _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
         }
 
         public async Task UpdateUserDetails(string userId)
@@ -30,7 +36,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshInboundTransactions()
         {
-            
+            //var tokenRate = await _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
+            //var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
+
+            //foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
+            //{
+            //    foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address)).Data.Txs)
+            //    {
+            //        if (!hashes.Contains(transaction.))
+            //        {
+            //        }
+            //    }
+            //}
         }
 
         public async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
@@ -41,55 +58,82 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
     }
 
+    public class Spent
+    {
+        public string Txid { get; set; }
+        public int Input_no { get; set; }
+    }
+
+    public class Output
+    {
+        public int Output_no { get; set; }
+        public string Address { get; set; }
+        public string Value { get; set; }
+        public Spent Spent { get; set; }
+    }
+
+    public class Outgoing
+    {
+        public string Value { get; set; }
+        public List<Output> Outputs { get; set; }
+    }
+
+    public class Spent2
+    {
+        public string Txid { get; set; }
+        public int Input_no { get; set; }
+    }
+
     public class ReceivedFrom
     {
-        public string txid { get; set; }
-        public int output_no { get; set; }
+        public string Txid { get; set; }
+        public int Output_no { get; set; }
     }
 
     public class Input
     {
-        public int input_no { get; set; }
-        public string address { get; set; }
-        public ReceivedFrom received_from { get; set; }
+        public int Input_no { get; set; }
+        public string Address { get; set; }
+        public ReceivedFrom Received_from { get; set; }
     }
 
     public class Incoming
     {
-        public int output_no { get; set; }
-        public string value { get; set; }
-        public object spent { get; set; }
-        public List<Input> inputs { get; set; }
-        public int req_sigs { get; set; }
-        public string script_asm { get; set; }
-        public string script_hex { get; set; }
+        public int Output_no { get; set; }
+        public string Value { get; set; }
+        public Spent2 Spent { get; set; }
+        public List<Input> Inputs { get; set; }
+        public int Req_sigs { get; set; }
+        public string Script_asm { get; set; }
+        public string Script_hex { get; set; }
     }
 
     public class Tx
     {
-        public string txid { get; set; }
-        public int block_no { get; set; }
-        public int confirmations { get; set; }
-        public int time { get; set; }
-        public Incoming incoming { get; set; }
+        public string Txid { get; set; }
+        public int Block_no { get; set; }
+        public int Confirmations { get; set; }
+        public int Time { get; set; }
+        public Outgoing Outgoing { get; set; }
+        public Incoming Incoming { get; set; }
     }
 
     public class Data
     {
-        public string network { get; set; }
-        public string address { get; set; }
-        public string balance { get; set; }
-        public string received_value { get; set; }
-        public string pending_value { get; set; }
-        public int total_txs { get; set; }
-        public List<Tx> txs { get; set; }
+        public string Network { get; set; }
+        public string Address { get; set; }
+        public string Balance { get; set; }
+        public string Received_value { get; set; }
+        public string Pending_value { get; set; }
+        public int Total_txs { get; set; }
+        public List<Tx> Txs { get; set; }
     }
 
     public class Transaction
     {
-        public string status { get; set; }
-        public Data data { get; set; }
-        public int code { get; set; }
-        public string message { get; set; }
+        public string Status { get; set; }
+        public Data Data { get; set; }
+        public int Code { get; set; }
+        public string Message { get; set; }
     }
 }
