@@ -5,6 +5,7 @@ using InvestorDashboard.Backend.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 using Quartz.Impl;
 using System;
 using System.Collections.Specialized;
@@ -54,6 +55,31 @@ namespace InvestorDashboard.Console
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
             await scheduler.Start().ConfigureAwait(false);
+
+            var refreshExchangeRatesJob = JobBuilder
+                .Create<RefreshExchangeRatesJob>()
+                .WithIdentity("RefreshExchangeRatesJob")
+                .Build();
+            var refreshExchangeRatesJobTrigger = TriggerBuilder
+                .Create()
+                .WithIdentity("RefreshExchangeRatesJobTrigger")
+                .StartNow()
+                .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever())
+                .Build();
+
+            var resfreshTransactionsJob = JobBuilder
+                .Create<ResfreshTransactionsJob>()
+                .WithIdentity("ResfreshTransactionsJob")
+                .Build();
+            var resfreshTransactionsJobTrigger = TriggerBuilder
+                .Create()
+                .WithIdentity("ResfreshTransactionsJobTrigger")
+                .StartNow()
+                .WithSimpleSchedule(x => x.WithIntervalInHours(1).RepeatForever())
+                .Build();
+
+            await scheduler.ScheduleJob(refreshExchangeRatesJob, refreshExchangeRatesJobTrigger).ConfigureAwait(false);
+            await scheduler.ScheduleJob(resfreshTransactionsJob, resfreshTransactionsJobTrigger).ConfigureAwait(false);
 
             WriteLine("Press the escape key (ESC) to quit.");
             while (ReadKey(true).Key != ConsoleKey.Escape)

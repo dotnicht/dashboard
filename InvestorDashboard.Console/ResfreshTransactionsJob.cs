@@ -7,7 +7,7 @@ using static System.Console;
 
 namespace InvestorDashboard.Console
 {
-    public class ResfreshTransactions : IJob
+    public class ResfreshTransactionsJob : IJob
     {
         public async Task Execute(IJobExecutionContext context)
         {
