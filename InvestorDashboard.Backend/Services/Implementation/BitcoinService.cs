@@ -35,68 +35,61 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
-            var uri = $"{_options.Value.ApiBaseUrl}/rawaddr/{address}";
+            var uri = $"{_options.Value.ApiBaseUrl}address/BTC/{address}";
             return await RestUtil.Get<Transaction>(uri);
         }
 
     }
 
-    public class PrevOut
+    public class ReceivedFrom
     {
-        public bool Spent { get; set; }
-        public int Tx_index { get; set; }
-        public int Type { get; set; }
-        public string Addr { get; set; }
-        public long Aalue { get; set; }
-        public int N { get; set; }
-        public string Script { get; set; }
+        public string txid { get; set; }
+        public int output_no { get; set; }
     }
 
     public class Input
     {
-        public object Sequence { get; set; }
-        public string Witness { get; set; }
-        public PrevOut Prev_out { get; set; }
-        public string Script { get; set; }
+        public int input_no { get; set; }
+        public string address { get; set; }
+        public ReceivedFrom received_from { get; set; }
     }
 
-    public class Out
+    public class Incoming
     {
-        public bool Spent { get; set; }
-        public int Tx_index { get; set; }
-        public int Type { get; set; }
-        public string Addr { get; set; }
-        public long Value { get; set; }
-        public int N { get; set; }
-        public string Script { get; set; }
+        public int output_no { get; set; }
+        public string value { get; set; }
+        public object spent { get; set; }
+        public List<Input> inputs { get; set; }
+        public int req_sigs { get; set; }
+        public string script_asm { get; set; }
+        public string script_hex { get; set; }
     }
 
     public class Tx
     {
-        public int Ver { get; set; }
-        public IList<Input> Inputs { get; set; }
-        public int Weight { get; set; }
-        public int Block_height { get; set; }
-        public string Relayed_by { get; set; }
-        public IList<Out> Out { get; set; }
-        public int Lock_time { get; set; }
-        public int Result { get; set; }
-        public int Size { get; set; }
-        public int Time { get; set; }
-        public int Tx_index { get; set; }
-        public int Vin_sz { get; set; }
-        public string Hash { get; set; }
-        public int Vout_sz { get; set; }
+        public string txid { get; set; }
+        public int block_no { get; set; }
+        public int confirmations { get; set; }
+        public int time { get; set; }
+        public Incoming incoming { get; set; }
+    }
+
+    public class Data
+    {
+        public string network { get; set; }
+        public string address { get; set; }
+        public string balance { get; set; }
+        public string received_value { get; set; }
+        public string pending_value { get; set; }
+        public int total_txs { get; set; }
+        public List<Tx> txs { get; set; }
     }
 
     public class Transaction
     {
-        public string Hash160 { get; set; }
-        public string Address { get; set; }
-        public int N_tx { get; set; }
-        public int Total_received { get; set; }
-        public int Total_sent { get; set; }
-        public int Final_balance { get; set; }
-        public List<Tx> Txs { get; set; }
+        public string status { get; set; }
+        public Data data { get; set; }
+        public int code { get; set; }
+        public string message { get; set; }
     }
 }
