@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexConvertors.Extensions;
@@ -21,6 +22,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IKeyVaultService _keyVaultService;
         private readonly IExchangeRateService _exchangeRateService;
 
+        public Currency Currency => Currency.ETH;
+
         public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> options, IMapper mapper, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -30,36 +33,53 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
         }
 
-        public EthereumAccount CreateAccount()
+        public async Task UpdateUserDetails(string userId)
         {
+            if (userId == null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
             var ecKey = EthECKey.GenerateKey();
             var privateKey = ecKey.GetPrivateKeyAsBytes().ToHex();
             var keyStoreService = new KeyStorePbkdf2Service();
             var bytes = ecKey.GetPrivateKeyAsBytes();
             var address = ecKey.GetPublicAddress();
-            var json = keyStoreService.EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, bytes, address);
 
-            return new EthereumAccount
+            var cryptoAccount = new CryptoAccount
             {
-                Address = ecKey.GetPublicAddress(),
-                KeyStore = json
+                UserId = userId,
+                Currency = Currency,
+                KeyStore = keyStoreService.EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, bytes, address)
             };
+
+            var cryptoAddress = new CryptoAddress
+            {
+                CryptoAccount = cryptoAccount,
+                Type = CryptoAddressType.Investment,
+                Address = address
+            };
+
+            await _context.CryptoAccounts.AddAsync(cryptoAccount);
+            await _context.CryptoAddresses.AddAsync(cryptoAddress);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RefreshInboundTransactions()
         {
             var tokenRate = await _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
-            var ethRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
             var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
 
-            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
+            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
             {
                 foreach (var transaction in await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address))
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {
-                        var trx = _mapper.Map<Database.Models.CryptoTransaction>(transaction);
-                        trx.Address = address;
+                        var ethRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
+
+                        var trx = _mapper.Map<CryptoTransaction>(transaction);
+                        trx.CryptoAddress = address;
                         trx.Direction = CryptoTransactionDirection.Inbound;
                         trx.ExchangeRate = ethRate;
                         trx.TokenPrice = tokenRate;

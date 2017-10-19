@@ -24,6 +24,7 @@ using InvestorDashboard.Backend.Core.Interfaces;
 using InvestorDashboard.Web.Models.AccountViewModels;
 using InvestorDashboard.Web.Server.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
+using InvestorDashboard.Backend.Services;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
@@ -36,6 +37,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger _logger;
+    private readonly IEnumerable<ICryptoService> _cryptoServices;
 
     public AuthorizationController(
       OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -43,7 +45,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
       SignInManager<ApplicationUser> signInManager,
       UserManager<ApplicationUser> userManager,
       ILogger<AuthorizationController> loger,
-      IAccountManager accountManager)
+      IAccountManager accountManager,
+      IEnumerable<ICryptoService> cryptoServices)
     {
       _applicationManager = applicationManager;
       _identityOptions = identityOptions;
@@ -51,7 +54,9 @@ namespace InvestorDashboard.Web.Server.RestAPI
       _userManager = userManager;
       _logger = loger;
       _accountManager = accountManager;
+      _cryptoServices = cryptoServices;
     }
+
     [HttpPost("~/connect/register"), Produces("application/json")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
@@ -75,6 +80,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         var result = await _userManager.CreateAsync(appUser, user.Password);
         if (result.Succeeded)
         {
+          //_cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
           return Ok();
         }
         return BadRequest(new OpenIdConnectResponse
