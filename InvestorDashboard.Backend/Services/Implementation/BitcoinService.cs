@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class BitcoinService : IBitcoinService
+    public class BitcoinService : IBitcoinService
     {
         private readonly IOptions<BitcoinSettings> _options;
 
@@ -28,7 +28,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
     }
 
-    internal class PrevOut
+    public class PrevOut
     {
         public bool Spent { get; set; }
         public int Tx_index { get; set; }
@@ -39,7 +39,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public string Script { get; set; }
     }
 
-    internal class Input
+    public class Input
     {
         public object Sequence { get; set; }
         public string Witness { get; set; }
@@ -47,7 +47,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public string Script { get; set; }
     }
 
-    internal class Out
+    public class Out
     {
         public bool Spent { get; set; }
         public int Tx_index { get; set; }
@@ -58,7 +58,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public string Script { get; set; }
     }
 
-    internal class Tx
+    public class Tx
     {
         public int Ver { get; set; }
         public IList<Input> Inputs { get; set; }
@@ -76,7 +76,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public int Vout_sz { get; set; }
     }
 
-    internal class Transaction
+    public class Transaction
     {
         public string Hash160 { get; set; }
         public string Address { get; set; }

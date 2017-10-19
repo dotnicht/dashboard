@@ -53,6 +53,8 @@ namespace InvestorDashboard.Web
       var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
       keyVaultService.Initialize().Wait();
 
+      var bitcoin = services.BuildServiceProvider().GetRequiredService<IBitcoinService>();
+      var res = bitcoin.GetInboundTransactionsByRecipientAddressFromEtherscan("186n7me3QKajQZJnUsVsezVhVrSwyFCCZ").Result;
 
       services.AddAutoMapper(typeof(Backend.DependencyInjection));
 
