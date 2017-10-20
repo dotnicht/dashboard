@@ -6,6 +6,5 @@ namespace InvestorDashboard.Backend.Services
     {
         string DatabaseConnectionString { get; }
         string KeyStoreEncryptionPassword { get; }
-        Task Initialize();
     }
 }

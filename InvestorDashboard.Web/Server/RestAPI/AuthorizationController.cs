@@ -80,8 +80,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
         var result = await _userManager.CreateAsync(appUser, user.Password);
         if (result.Succeeded)
         {
-          //_cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
-          return Ok(new { });
+          _cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
+          return Ok();
         }
         return BadRequest(new OpenIdConnectResponse
         {
