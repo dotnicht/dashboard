@@ -54,6 +54,8 @@ export class UserInfoComponent implements OnInit {
     @ViewChild('email')
     private email;
 
+
+
     @ViewChild('currentPassword')
     private currentPassword;
 
@@ -93,6 +95,7 @@ export class UserInfoComponent implements OnInit {
         this.editingUserName = user.userName;
         this.user = new User();
         this.userEdit = new UserEdit();
+        
         Object.assign(this.user, user);
         Object.assign(this.userEdit, user);
         this.edit();

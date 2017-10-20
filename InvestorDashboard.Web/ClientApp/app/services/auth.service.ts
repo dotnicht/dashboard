@@ -85,12 +85,12 @@ export class AuthService {
 
     this.localStorage.deleteData(DBkeys.TOKEN_EXPIRES_IN);
 
-    if (this.reLoginDelegate) {
-      this.reLoginDelegate();
-    }
-    else {
+    //if (this.reLoginDelegate) {
+    //  this.reLoginDelegate();
+    //}
+    //else {
       this.redirectForLogin();
-    }
+    //}
   }
 
 

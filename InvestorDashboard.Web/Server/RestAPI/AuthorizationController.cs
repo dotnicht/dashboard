@@ -70,8 +70,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
         user.Balance = 10;
         user.PhoneNumber = "050 000 0000";
         user.IsEligibleForTokenSale = true;
-        user.CountryCode = "UKR";
-        user.City = "Boston";
+        user.CountryCode = "UKR".ToUpper();
+        user.City = "Boston".ToUpper();
         user.IsEnabled = true;
 
         ApplicationUser appUser = Mapper.Map<ApplicationUser>(user);
@@ -81,7 +81,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         if (result.Succeeded)
         {
           //_cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
-          return Ok();
+          return Ok(new { });
         }
         return BadRequest(new OpenIdConnectResponse
         {

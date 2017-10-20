@@ -61,8 +61,12 @@ export class EndpointFactory {
         headers.append('Content-Type', 'application/json');
 
         return this.http.post(this._registerUrl, JSON.stringify(user), { headers: headers })
-            .map((resp: Response) => resp.json())
-            .catch((error: any) => { return Observable.throw(error); });
+          .map((response: Response) => {
+            return response;
+          })
+          .catch((error: any) => {
+            return Observable.throw(error);
+          });
 
     }
     getLoginEndpoint(user: UserLogin): Observable<Response> {

@@ -2,21 +2,7 @@
   <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" class="form-horizontal" name="userInfoForm"
     #f="ngForm" novalidate (ngSubmit)="f.form.valid ? save() :
 
-          (!userName.valid && showErrorAlert('User name is required', 'Please enter a user name (minimum of 2 and maximum of 200 characters)'));
-
-          (userPassword && !userPassword.valid && showErrorAlert('Password is required', 'Please enter the current password'));
-
-          (email.errors?.required && showErrorAlert('Email is required', 'Please enter an email address (maximum of 200 characters)'));
-          (email.errors?.pattern && showErrorAlert('Invalid Email', 'Please enter a valid email address'));
-
-          (isChangePassword && isEditingSelf && !currentPassword.valid && showErrorAlert('Current password is required', 'Please enter the current password'));
-
-          (isChangePassword && !newPassword.valid && showErrorAlert('New password is required', 'Please enter the new password (minimum of 6 characters)'));
-
-          (isChangePassword && confirmPassword.errors?.required && showErrorAlert('Confirmation password is required', 'Please enter the confirmation password'));
-          (isChangePassword && confirmPassword.errors?.validateEqual && showErrorAlert('Passwword mismatch', 'New password and comfirmation password do not match'));
-
-          (canAssignRoles && !roles.valid && showErrorAlert('Roles is required', 'Please select a minimum of 1 role'));">
+         null">
 
 
     <md-form-field *ngIf="isEditMode">
@@ -54,13 +40,18 @@
     </div>
 
     <md-form-field *ngIf="isEditMode">
-      <input mdInput  attr.id="countryCode-{{uniqueId}}" #countryCode="ngModel" name="countryCode" placeholder="Enter country code" [(ngModel)]="userEdit.countryCode"
-      pattern="[A-Z]{0-3}" case='uppercase' maxLength="3"/>
+      <input mdInput attr.id="countryCode-{{uniqueId}}" #countryCode="ngModel" name="countryCode" placeholder="Enter country code"
+        [(ngModel)]="userEdit.countryCode" pattern="[A-Z]{0,3}" case='uppercase' maxLength="3" />
       <md-icon *ngIf="f.submitted && countryCode.valid" mdSuffix>done</md-icon>
       <md-hint align="end">
         <md-icon>mode_edit</md-icon>
         <span aria-live="polite">{{userEdit.countryCode.length}} / 3</span>
       </md-hint>
+      <md-error *ngIf="countryCode.invalid && (countryCode.dirty || countryCode.touched)">
+        <div *ngIf="countryCode.errors.pattern">pattern </div>
+        <div> {{countryCode.errors | json}}</div>
+       
+      </md-error>
     </md-form-field>
     <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-md-3]="isViewOnly" [class.col-md-2]="!isViewOnly" class="control-label" for="countryCode-{{uniqueId}}">{{'users.editor.CountryCode' | translate}}</label>
@@ -79,14 +70,16 @@
       </div>
     </div>
 
-    <div class="form-group">
+    <md-form-field *ngIf="isEditMode">
+      <input mdInput attr.id="city-{{uniqueId}}" #city="ngModel" name="city" placeholder="Enter city" [(ngModel)]="userEdit.city"
+        case='uppercase' />
+    </md-form-field>
+
+
+    <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-md-3]="isViewOnly" [class.col-md-2]="!isViewOnly" class="control-label" for="city-{{uniqueId}}">{{'users.editor.City' | translate}}</label>
-      <div *ngIf="!isEditMode" [class.col-md-9]="isViewOnly" [class.col-md-10]="!isViewOnly">
+      <div [class.col-md-9]="isViewOnly" [class.col-md-10]="!isViewOnly">
         <p class="form-control-static">{{user.city}}</p>
-      </div>
-      <div *ngIf="isEditMode" [class.col-md-9]="isViewOnly" [class.col-md-10]="!isViewOnly">
-        <input type="text" attr.id="city-{{uniqueId}}" name="city" placeholder="Enter city name" class="form-control" [(ngModel)]="userEdit.city"
-        />
       </div>
     </div>
 
@@ -109,8 +102,8 @@
 
 
     <md-form-field *ngIf="isEditMode">
-      <input mdInput attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number" [(ngModel)]="userEdit.phoneNumber"
-      />
+      <input mdInput attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
+        [(ngModel)]="userEdit.phoneNumber" />
     </md-form-field>
     <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-md-3]="isViewOnly" [class.col-md-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
