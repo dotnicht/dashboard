@@ -10,29 +10,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class KeyVaultService : IKeyVaultService
     {
         private readonly IOptions<KeyVaultSettings> _options;
-        private bool _initialized;
 
-        public string DatabaseConnectionString { get; private set; }
-        public string KeyStoreEncryptionPassword { get; private set; }
+        private string _databaseConnectionString;
+        private string _keyStoreEncryptionPassword;
+
+        public string DatabaseConnectionString => _databaseConnectionString ?? (_databaseConnectionString = GetSecret("DatabaseConnectionString").Result);
+        public string KeyStoreEncryptionPassword => _keyStoreEncryptionPassword ?? (_keyStoreEncryptionPassword = GetSecret("KeyStoreEncryptionPassword").Result);
 
         public KeyVaultService(IOptions<KeyVaultSettings> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public async Task Initialize()
+        private async Task<string> GetSecret(string secretName)
         {
-            if (!_initialized)
+            using (var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetToken)))
             {
-                using (var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetToken)))
-                {
-                    var connectionString = await keyVaultClient.GetSecretAsync(_options.Value.SecretUri, "DatabaseConnectionString").ConfigureAwait(false);
-                    DatabaseConnectionString = connectionString.Value;
-                    var keyStoreEncryptionPassword = await keyVaultClient.GetSecretAsync(_options.Value.SecretUri, "KeyStoreEncryptionPassword").ConfigureAwait(false);
-                    KeyStoreEncryptionPassword = keyStoreEncryptionPassword.Value;
-                }
-
-                _initialized = true;
+                var secret = await keyVaultClient.GetSecretAsync(_options.Value.SecretUri, secretName);
+                return secret.Value;
             }
         }
 
@@ -40,7 +35,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var authContext = new AuthenticationContext(authority);
             var clientCredential = new ClientCredential(_options.Value.ClientId, _options.Value.ClientSecret);
-            var result = await authContext.AcquireTokenAsync(resource, clientCredential).ConfigureAwait(false);
+            var result = await authContext.AcquireTokenAsync(resource, clientCredential);
 
             if (result == null)
             {

@@ -47,20 +47,15 @@ namespace InvestorDashboard.Web
     public void ConfigureServices(IServiceCollection services)
     {
       Backend.Configuration.Configure(services, Configuration);
-      Backend.DependencyInjection.Configure(services);
-
-      var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
-      keyVaultService.Initialize().Wait();
-
-      var bitcoin = services.BuildServiceProvider().GetRequiredService<IBitcoinService>();
-      var res = bitcoin.GetInboundTransactionsByRecipientAddressFromEtherscan("1LYLuYMXkCXDxSfsNoDp8FCb2mA36r29u7").Result;
+      DependencyInjection.Configure(services);
+      
+      services.AddAutoMapper(typeof(DependencyInjection));
 
       services.AddAutoMapper(typeof(Backend.DependencyInjection));
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
-          options.UseSqlServer(keyVaultService.DatabaseConnectionString,
-            b => b.MigrationsAssembly("InvestorDashboard.Backend"));
+          options.UseSqlServer(services.BuildServiceProvider().GetRequiredService<IKeyVaultService>().DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
           // Register the entity sets needed by OpenIddict.
           // Note: use the generic overload if you need
           // to replace the default OpenIddict entities.

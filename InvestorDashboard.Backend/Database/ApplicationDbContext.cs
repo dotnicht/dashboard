@@ -20,6 +20,11 @@ namespace InvestorDashboard.Backend.Database
         {
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
