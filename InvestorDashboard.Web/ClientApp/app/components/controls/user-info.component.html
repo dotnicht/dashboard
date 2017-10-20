@@ -50,7 +50,7 @@
       <md-error *ngIf="countryCode.invalid && (countryCode.dirty || countryCode.touched)">
         <div *ngIf="countryCode.errors.pattern">pattern </div>
         <div> {{countryCode.errors | json}}</div>
-       
+
       </md-error>
     </md-form-field>
     <div class="form-group" *ngIf="!isEditMode">
@@ -100,16 +100,28 @@
       </div>
     </div> -->
 
+    <md-select placeholder="phone code" [(value)]="userEdit.phoneCode" *ngIf="isEditMode">
+      <md-option *ngFor="let code of countryCodes" [value]="code.dial_code">
+        {{ code.dial_code }}
+      </md-option>
+    </md-select>
 
     <md-form-field *ngIf="isEditMode">
-      <input mdInput attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
+
+      <input mdInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
         [(ngModel)]="userEdit.phoneNumber" />
+      <md-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
+        <!-- <div *ngIf="phoneNumber.errors.pattern">pattern </div> -->
+        <div> {{phoneNumber.errors | json}}</div>
+
+      </md-error>
     </md-form-field>
     <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-md-3]="isViewOnly" [class.col-md-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
       <div [class.col-md-9]="isViewOnly" [class.col-md-10]="!isViewOnly">
         <p class="form-control-static">{{user.phoneNumber}}</p>
       </div>
+
     </div>
 
 

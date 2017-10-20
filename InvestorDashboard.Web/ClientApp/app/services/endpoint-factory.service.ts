@@ -11,6 +11,7 @@ import 'rxjs/add/operator/catch';
 import { AuthService } from './auth.service';
 import { ConfigurationService } from './configuration.service';
 import { UserLogin, UserRegister } from '../models/user.model';
+import { CountryCode } from '../models/countryCodes';
 
 
 @Injectable()
@@ -61,12 +62,12 @@ export class EndpointFactory {
         headers.append('Content-Type', 'application/json');
 
         return this.http.post(this._registerUrl, JSON.stringify(user), { headers: headers })
-          .map((response: Response) => {
-            return response;
-          })
-          .catch((error: any) => {
-            return Observable.throw(error);
-          });
+            .map((response: Response) => {
+                return response;
+            })
+            .catch((error: any) => {
+                return Observable.throw(error);
+            });
 
     }
     getLoginEndpoint(user: UserLogin): Observable<Response> {
@@ -116,7 +117,9 @@ export class EndpointFactory {
     }
 
 
-
+    getCountryCode() {
+        return Observable.of(require('../assets/json/countryCodes.json'));
+    }
 
 
 
