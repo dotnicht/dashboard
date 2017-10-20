@@ -1,5 +1,7 @@
-﻿using InvestorDashboard.Backend.ConfigurationSections;
+﻿using AutoMapper;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using System;
@@ -15,15 +17,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _options;
         private readonly IKeyVaultService _keyVaultService;
         private readonly IExchangeRateService _exchangeRateService;
+        private readonly IMapper _mapper;
 
         public Currency Currency => Currency.BTC;
 
-        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
+        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task UpdateUserDetails(string userId)
@@ -36,18 +40,29 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshInboundTransactions()
         {
-            //var tokenRate = await _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
-            //var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
+            var tokenRate = await _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
+            var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
 
-            //foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
-            //{
-            //    foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address)).Data.Txs)
-            //    {
-            //        if (!hashes.Contains(transaction.))
-            //        {
-            //        }
-            //    }
-            //}
+            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
+            {
+                foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address)).Data.Txs)
+                {
+                    if (!hashes.Contains(transaction.Txid))
+                    {
+                        var ethRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
+
+                        var trx = _mapper.Map<CryptoTransaction>(transaction);
+                        trx.CryptoAddress = address;
+                        trx.Direction = CryptoTransactionDirection.Inbound;
+                        trx.ExchangeRate = ethRate;
+                        trx.TokenPrice = tokenRate;
+
+                        await _context.CryptoTransactions.AddAsync(trx);
+
+                        _context.SaveChanges();
+                    }
+                }
+            }
         }
 
         public async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
