@@ -14,6 +14,14 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
 
 */
 
+.mat-raised-button{
+  &.btn-danger{
+    color: #fff;
+    background-color: #ac2925;
+    border-color: #761c19;
+  }
+}
+
 body {
   font-family: Roboto, 'Helvetica Neue', sans-serif; // Helps fonts on OSX looks more consistent with other systems
   // Isn't currently in button styles due to performance concerns

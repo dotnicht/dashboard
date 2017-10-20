@@ -14,12 +14,14 @@ import { EndpointFactory } from '../../services/endpoint-factory.service';
 import { UserInfoComponent } from '../../components/controls/user-info.component';
 import { AccountService } from '../../services/account.service';
 import { AccountEndpoint } from '../../services/account-endpoint.service';
+import { CaseFormatterDirective } from '../../directives/case-formater.directive';
 
 
 @NgModule({
     declarations: [
         SettingsComponent,
-        UserInfoComponent
+        UserInfoComponent,
+        CaseFormatterDirective
     ],
     imports: [
         CommonModule,

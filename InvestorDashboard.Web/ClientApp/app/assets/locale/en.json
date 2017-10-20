@@ -113,7 +113,8 @@
       "PhoneNumber": "Phone Number"
     },
     "editor": {
-      "JobTitle": "Job Title: ",
+      "FirstName": "First name: ",
+      "LastName": "Last name: ",
       "UserName": "User Name:",
       "UserNameRequired": "User name is required (minimum of 2 and maximum of 200 characters)",
       "Password": "Password:",
@@ -139,7 +140,10 @@
       "Edit": "Edit",
       "Cancel": "Cancel",
       "Save": "Save",
-      "Saving": "Saving..."
+      "Saving": "Saving...",
+      "Address": "Address",
+      "City": "City",
+      "CountryCode": "Country code"
     }
   },
   "roles": {
