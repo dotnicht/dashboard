@@ -45,7 +45,6 @@ namespace InvestorDashboard.Console
                 .BuildServiceProvider()
                 .GetRequiredService<IKeyVaultService>();
 
-            await keyVaultService.Initialize().ConfigureAwait(false);
 
             serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")));
 
