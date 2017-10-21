@@ -12,9 +12,14 @@ namespace InvestorDashboard.Console
     {
         public async Task Execute(IJobExecutionContext context)
         {
-            var exchangeRateService = Program.ServiceProvider.GetRequiredService<IExchangeRateService>();
             var currencies = new[] { Currency.BTC, Currency.ETH };
-            Parallel.ForEach(currencies, async x => await exchangeRateService.RefreshExchangeRate(x));
+            Parallel.ForEach(currencies, async x =>
+            {
+                using (var service = Program.ServiceProvider.GetRequiredService<IExchangeRateService>())
+                {
+                    await service.RefreshExchangeRate(x);
+                }
+            });
             await Out.WriteLineAsync($"Exchange rates update completed for currencies: { string.Join(", ", currencies.Select(x => x.ToString())) }");
         }
     }

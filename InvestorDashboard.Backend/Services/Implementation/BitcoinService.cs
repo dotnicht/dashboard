@@ -30,5 +30,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public async Task RefreshInboundTransactions()
         {
         }
+
+        public void Dispose()
+        {
+            //_context.Dispose();
+        }
     }
 }

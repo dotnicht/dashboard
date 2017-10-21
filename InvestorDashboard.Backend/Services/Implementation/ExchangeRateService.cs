@@ -68,8 +68,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public async Task RefreshExchangeRate(Currency baseCurrency)
         {
             var rate = await GetExchangeRate(baseCurrency, Currency.USD);
-            _context.ExchangeRates.Add(new ExchangeRate { Base = baseCurrency, Quote = Currency.USD, Rate = rate });
-            _context.SaveChanges();
+            await _context.ExchangeRates.AddAsync(new ExchangeRate { Base = baseCurrency, Quote = Currency.USD, Rate = rate });
+            await _context.SaveChangesAsync();
         }
 
         private async Task<decimal> GetExchangeRateFromApi(Currency baseCurrency, Currency quoteCurrency)
@@ -86,7 +86,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var result = await RestUtil.Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
 
-            throw new InvalidOperationException("An error occurred while retrieving exchange rate from bitfinex.com.");
+            if (result == null || result.Count == 0)
+            {
+                throw new InvalidOperationException("An error occurred while retrieving exchange rate from bitfinex.com.");
+            }
+
+            return result[0];
         }
 
         private Task<ExchangeRate> GetExchangeRateFromDatabase(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) =>
@@ -97,5 +102,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private InvalidOperationException CreateDbException(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime) =>
             new InvalidOperationException($"Exchange rate record not found for currency pair {baseCurrency}/{quoteCurrency} and date & time {dateTime}.");
+
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
     }
 }

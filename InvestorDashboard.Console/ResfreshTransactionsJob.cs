@@ -13,6 +13,7 @@ namespace InvestorDashboard.Console
         {
             var cryptoServices = Program.ServiceProvider.GetServices<ICryptoService>();
             Parallel.ForEach(cryptoServices, async x => await x.RefreshInboundTransactions());
+            cryptoServices.ToList().ForEach(x => x.Dispose());
             await Out.WriteLineAsync($"Transaction refresh completed for currencies: { string.Join(", ", cryptoServices.Select(x => x.Currency.ToString())) }");
         }
     }

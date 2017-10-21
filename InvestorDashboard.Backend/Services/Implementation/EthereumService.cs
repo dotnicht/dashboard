@@ -85,6 +85,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
+
         private async Task<EtherscanResponse.Transaction[]> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
             var uri = $"{_options.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_options.Value.ApiKey}";

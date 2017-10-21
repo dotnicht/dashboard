@@ -45,11 +45,12 @@ namespace InvestorDashboard.Console
                 .BuildServiceProvider()
                 .GetRequiredService<IKeyVaultService>();
 
-            await keyVaultService.Initialize().ConfigureAwait(false);
-
-            serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")));
+            serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")), ServiceLifetime.Transient);
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
+
+            var ctx = ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
 
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
