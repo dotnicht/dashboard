@@ -67,16 +67,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {
-                        var ethRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, DateTime.UtcNow, true);
-
                         var trx = _mapper.Map<CryptoTransaction>(transaction);
                         trx.CryptoAddress = address;
                         trx.Direction = CryptoTransactionDirection.Inbound;
-                        trx.ExchangeRate = ethRate;
+                        trx.ExchangeRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, trx.TimeStamp, true);
                         trx.TokenPrice = tokenRate;
-
-                        await _context.CryptoTransactions.AddAsync(trx);
-
+                        _context.CryptoTransactions.Add(trx);
                         _context.SaveChanges();
                     }
                 }

@@ -12,7 +12,7 @@ namespace InvestorDashboard.Console
         public async Task Execute(IJobExecutionContext context)
         {
             var cryptoServices = Program.ServiceProvider.GetServices<ICryptoService>();
-            Parallel.ForEach(cryptoServices, async x => await x.RefreshInboundTransactions());
+            Parallel.ForEach(cryptoServices, x => x.RefreshInboundTransactions().Wait());
             cryptoServices.ToList().ForEach(x => x.Dispose());
             await Out.WriteLineAsync($"Transaction refresh completed for currencies: { string.Join(", ", cryptoServices.Select(x => x.Currency.ToString())) }");
         }
