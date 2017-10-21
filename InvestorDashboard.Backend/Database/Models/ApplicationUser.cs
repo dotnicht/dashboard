@@ -12,6 +12,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [MaxLength(3)]
         public string CountryCode { get; set; }
         public string Configuration { get; set; }
+        public string City { get; set; }
         public bool IsEligibleForTokenSale { get; set; }
         public virtual ICollection<IdentityUserClaim<string>> Claims { get; set; }
     }

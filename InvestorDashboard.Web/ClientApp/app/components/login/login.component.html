@@ -1,60 +1,60 @@
 <div class="vertical-center-flex">
   <div class="login-container center-block">
-      <md-card class="panel ">
-          <md-card-title class="panel-heading">
+      <mat-card class="panel ">
+          <mat-card-title class="panel-heading">
               <span class="glyphicon glyphicon-lock"></span> Login
               <button *ngIf="isModal" type="button" class="close pull-right" aria-label="Close" (click)="closeModal()">
                   <span aria-hidden="true">&times;</span>
               </button>
-          </md-card-title>
-          <md-card-content class="panel-body">
-              <div class="col-md-12 ">
+          </mat-card-title>
+          <mat-card-content class="panel-body">
+              <div class="col-mat-12 ">
                   <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login() :
                         (!email.valid && showErrorAlert('Email is required', 'Please enter a valid email'));
                         (!password.valid && showErrorAlert('Password is required', 'Please enter a valid password'))">
-                      <md-form-field>
-                          <input mdInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
+                      <mat-form-field>
+                          <input matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
                               required />
-                          <md-error *ngIf="email.invalid && (email.dirty || email.touched)">
+                          <mat-error *ngIf="email.invalid && (email.dirty || email.touched)">
                               <div *ngIf="email.errors.required">Email is <strong>required</strong></div>
                               <div *ngIf="email.errors.email">Email is not <strong>valid</strong></div>
-                          </md-error>
-                      </md-form-field>
-                      <md-form-field>
-                          <input mdInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
+                          </mat-error>
+                      </mat-form-field>
+                      <mat-form-field>
+                          <input matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
                               #password="ngModel" required />
-                          <md-error *ngIf="password.invalid && (password.dirty || password.touched)">
+                          <mat-error *ngIf="password.invalid && (password.dirty || password.touched)">
                               <div *ngIf="email.errors.required">Password is <strong>required</strong></div>
-                          </md-error>
-                      </md-form-field>
-                      <md-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
+                          </mat-error>
+                      </mat-form-field>
+                      <mat-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
                           Remember me
-                      </md-checkbox>
+                      </mat-checkbox>
                       <div class="form-group">
-                          <div class="col-md-offset-2 col-md-10">
+                          <div class="col-mat-offset-2 col-mat-10">
 
                           </div>
                       </div>
                       <div style="display: flex;justify-content: space-between;align-items: center;">
-                          <button type="submit" md-raised-button color="primary" [disabled]="isLoading">
+                          <button type="submit" mat-raised-button color="primary" [disabled]="isLoading">
                                       <i *ngIf="isLoading" class='fa fa-circle-o-notch fa-spin'></i> {{isLoading ? 'Loggin in...' : 'Login'}}
                                     </button>
                           
-                          <button type="button" [routerLink]="['/register']" md-raised-button color="primary">
+                          <button type="button" [routerLink]="['/register']" mat-raised-button color="primary">
                                       <span>Register</span>
                                     </button>
                       </div>
 
-                      <!--<div *ngIf="!isModal" class="col-md-12">
+                      <!--<div *ngIf="!isModal" class="col-mat-12">
                           <hr class="separator-hr" />
                       </div>
 
-                      <div *ngIf="!isModal" class="col-md-12 last-control-group">
+                      <div *ngIf="!isModal" class="col-mat-12 last-control-group">
                           <span>Don't have an account?</span><a href="javascript:;" class="btn btn-link" (click)="signUp()">Sign Up</a>
                       </div>-->
                   </form>
               </div>
-          </md-card-content>
-      </md-card>
+          </mat-card-content>
+      </mat-card>
   </div>
 </div>

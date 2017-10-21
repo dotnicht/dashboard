@@ -8,6 +8,9 @@ import { User } from '../../models/user.model';
 import { UserEdit } from '../../models/user-edit.model';
 import { Role } from '../../models/role.model';
 import { Permission } from '../../models/permission.model';
+import { ConfigurationService } from '../../services/configuration.service';
+import { CountryCode } from '../../models/countryCodes';
+import { EndpointFactory } from '../../services/endpoint-factory.service';
 
 
 @Component({
@@ -17,7 +20,8 @@ import { Permission } from '../../models/permission.model';
 })
 export class UserInfoComponent implements OnInit {
 
-
+    public mask: (string | RegExp)[];
+    public phonePattern: string;
 
     public formResetToggle = true;
 
@@ -28,7 +32,7 @@ export class UserInfoComponent implements OnInit {
     @Input()
     isViewOnly: boolean;
 
-
+    private countryCodes: CountryCode[];
     private isEditMode = false;
     private isNewUser = false;
     private isSaving = false;
@@ -54,6 +58,8 @@ export class UserInfoComponent implements OnInit {
     @ViewChild('email')
     private email;
 
+
+
     @ViewChild('currentPassword')
     private currentPassword;
 
@@ -64,11 +70,17 @@ export class UserInfoComponent implements OnInit {
     private confirmPassword;
 
 
-    constructor(private alertService: AlertService, private accountService: AccountService) {
+    constructor(private alertService: AlertService, private accountService: AccountService,
+        private configurationService: ConfigurationService, private endpointFactory: EndpointFactory) {
+        this.endpointFactory.getCountryCode().subscribe(data => {
+            this.countryCodes = data as CountryCode[];
+        });
     }
 
     ngOnInit() {
-            this.loadCurrentUserData();
+        this.mask = ['+', '(', /\d/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
+        this.phonePattern = '\+?([0-9]{0,3})\(?([0-9]{3})\)?([ .-]?)([0-9]{3})-([0-9]{4})';
+        this.loadCurrentUserData();
     }
 
     resetForm(replace = false) {
@@ -93,6 +105,7 @@ export class UserInfoComponent implements OnInit {
         this.editingUserName = user.userName;
         this.user = new User();
         this.userEdit = new UserEdit();
+
         Object.assign(this.user, user);
         Object.assign(this.userEdit, user);
         this.edit();
@@ -109,6 +122,7 @@ export class UserInfoComponent implements OnInit {
         this.deletePasswordFromUser(this.user);
         this.isEditMode = false;
     }
+
     public deletePasswordFromUser(user: UserEdit | User) {
         let userEdit = <UserEdit>user;
 
@@ -148,9 +162,9 @@ export class UserInfoComponent implements OnInit {
 
     private edit() {
         // if (!this.isGeneralEditor) {
-            this.isEditingSelf = true;
-            this.userEdit = new UserEdit();
-            Object.assign(this.userEdit, this.user);
+        this.isEditingSelf = true;
+        this.userEdit = new UserEdit();
+        Object.assign(this.userEdit, this.user);
         // }
         // else {
         //     if (!this.userEdit)
@@ -233,7 +247,7 @@ export class UserInfoComponent implements OnInit {
         // if (this.isGeneralEditor)
         //     this.userEdit = this.user = new UserEdit();
         // else
-            this.userEdit = new UserEdit();
+        this.userEdit = new UserEdit();
 
         this.showValidationErrors = false;
         this.resetForm();
@@ -242,7 +256,7 @@ export class UserInfoComponent implements OnInit {
         this.alertService.resetStickyMessage();
 
         // if (!this.isGeneralEditor)
-            this.isEditMode = false;
+        this.isEditMode = false;
 
         if (this.changesCancelledCallback)
             this.changesCancelledCallback();

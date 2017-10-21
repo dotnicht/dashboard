@@ -1,36 +1,36 @@
 <ng2-toasty>
 </ng2-toasty>
-<md-drawer-container fullscreen>
-  <md-drawer #start mode="push" class="example-container">
+<mat-drawer-container fullscreen>
+  <mat-drawer #start mode="push" class="example-container">
 
-    <md-nav-list>
+    <mat-nav-list>
       <app-client-info *ngIf="isUserLoggedIn"></app-client-info>
-      <a md-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         *ngIf="!isUserLoggedIn" [routerLink]="['/login']" (click)="start.close()">
-        <md-icon class="md-24">account_circle</md-icon><span>{{'mainMenu.Login' | translate}}</span>
+        <mat-icon class="mat-24">account_circle</mat-icon><span>{{'mainMenu.Login' | translate}}</span>
       </a>
 
-      <a md-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         href="http://www.data-trading.com/" (click)="start.close()">
-        <md-icon>home</md-icon><span>{{'mainMenu.Home' | translate}}</span>
+        <mat-icon>home</mat-icon><span>{{'mainMenu.Home' | translate}}</span>
       </a>
-      <a md-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/']" (click)="start.close()">
-        <md-icon>dashboard</md-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
+        <mat-icon>dashboard</mat-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
       </a>
-      <a md-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/faq']" (click)="start.close()">
-        <md-icon>info</md-icon><span>{{'mainMenu.Faq' | translate}}</span>
+        <mat-icon>info</mat-icon><span>{{'mainMenu.Faq' | translate}}</span>
       </a>
 
-    </md-nav-list>
+    </mat-nav-list>
     <!--<hr />
-    <button md-button (click)="start.close()">Close</button>-->
-  </md-drawer>
-  <md-toolbar color="primary">
+    <button mat-button (click)="start.close()">Close</button>-->
+  </mat-drawer>
+  <mat-toolbar color="primary">
 
-    <button *ngIf="isTab" class="side-menu-btn" md-icon-button (click)="start.open()">
-      <md-icon>menu</md-icon>
+    <button *ngIf="isTab" class="side-menu-btn" mat-icon-button (click)="start.open()">
+      <mat-icon>menu</mat-icon>
     </button>
 
     <div class="main-toolbar">
@@ -39,41 +39,41 @@
       <div>
         <span *ngIf="!isTab">
         <a href="http://www.data-trading.com/">
-          <button md-button>
-            <md-icon>home</md-icon>{{'mainMenu.Home' | translate}}
+          <button mat-button>
+            <mat-icon>home</mat-icon>{{'mainMenu.Home' | translate}}
           </button>
         </a>
           
 
-          <button md-button [routerLink]="['/']">
-              <md-icon>dashboard</md-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
+          <button mat-button [routerLink]="['/']">
+              <mat-icon>dashboard</mat-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
         </button>
-        <button md-button [routerLink]="['/faq']">
-              <md-icon>info</md-icon><span>{{'mainMenu.Faq' | translate}}</span>
+        <button mat-button [routerLink]="['/faq']">
+              <mat-icon>info</mat-icon><span>{{'mainMenu.Faq' | translate}}</span>
             </button>
-        <button *ngIf="isUserLoggedIn" md-button [mdMenuTriggerFor]="userMenu">
-              <md-icon>account_circle</md-icon><span>{{userName}}</span>
+        <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
+              <mat-icon>account_circle</mat-icon><span>{{userName}}</span>
             </button>
-        <md-menu #userMenu="mdMenu">
+        <mat-menu #userMenu="matMenu">
           <app-client-info></app-client-info>
-        </md-menu>
-        <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" md-button>
-                <md-icon>account_circle</md-icon><span>{{'mainMenu.Login' | translate}}</span>
+        </mat-menu>
+        <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" mat-button>
+                <mat-icon>account_circle</mat-icon><span>{{'mainMenu.Login' | translate}}</span>
               </button>
 
         </span>
-        <button md-button [mdMenuTriggerFor]="langMenu">
-          <span>{{selectedLanguage}}</span><md-icon>expand_more</md-icon>
+        <button mat-button [mat-menu-trigger-for]="langMenu">
+          <span>{{selectedLanguage}}</span><mat-icon>expand_more</mat-icon>
         </button>
-        <md-menu #langMenu="mdMenu">
-          <button md-menu-item (click)="selectLanguage('en');"><span>{{'languages.en' | translate}}</span></button>
-          <button md-menu-item (click)="selectLanguage('ru')"><span>{{'languages.ru' | translate}}</span></button>
-        </md-menu>
+        <mat-menu #langMenu="matMenu">
+          <button mat-menu-item (click)="selectLanguage('en');"><span>{{'languages.en' | translate}}</span></button>
+          <button mat-menu-item (click)="selectLanguage('ru')"><span>{{'languages.ru' | translate}}</span></button>
+        </mat-menu>
       </div>
 
     </div>
-  </md-toolbar>
+  </mat-toolbar>
   <div class="main-content">
     <router-outlet></router-outlet>
   </div>
-</md-drawer-container>
+</mat-drawer-container>

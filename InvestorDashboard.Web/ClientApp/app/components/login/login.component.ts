@@ -1,10 +1,9 @@
-﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { UserLogin } from '../../models/user.model';
 import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity, DialogType } from '../../services/alert.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { Utilities } from '../../services/utilities';
-import { MdDialog } from '@angular/material';
 
 @Component({
     selector: 'app-login',
@@ -22,7 +21,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     @Input() isModal = false;
 
-    constructor(private alertService: AlertService, private authService: AuthService, private configurations: ConfigurationService, private dialog: MdDialog) { }
+    constructor(private alertService: AlertService, private authService: AuthService, private configurations: ConfigurationService) { }
 
     ngOnInit(): void {
         this.userLogin.rememberMe = this.authService.rememberMe;

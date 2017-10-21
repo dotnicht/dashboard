@@ -1,6 +1,6 @@
-﻿<div>
-  <md-card class="first">
-    <md-card-content>
+<div>
+  <mat-card class="first">
+    <mat-card-content>
       <h4>{{'clientInfo.Balance' | translate}}:
         <p>{{clientInfoService.clientInfo.balance}} DTT</p>
       </h4>
@@ -12,10 +12,10 @@
         <div>{{'clientInfo.MyEtherAddress' | translate}}:</div>
         0xca30e63200a0fe3182dc61fc5605efc41456f32
       </div>
-    </md-card-content>
-  </md-card>
-  <md-card class="second">
-    <md-card-content>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="second">
+    <mat-card-content>
       <div class="left">
         <div class="item">
           <div class="color-block"></div>
@@ -43,23 +43,23 @@
           2.24556544 BTC / 10BTC
         </div>
         <div>
-          <md-progress-bar mode="determinate" [value]="30" [color]="primary">
-          </md-progress-bar>
+          <mat-progress-bar mode="determinate" [value]="30" [color]="primary">
+          </mat-progress-bar>
         </div>
         <div>
 
         </div>
       </div>
-    </md-card-content>
+    </mat-card-content>
 
-  </md-card>
-  <md-card class="third">
-    <md-card-content>
+  </mat-card>
+  <mat-card class="third">
+    <mat-card-content>
       <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
         <div class="left">
           <button (click)="changePayment(type.currency)" [attr.class]="selectedPaymentType!=type.currency?'item mat-button':'item mat-raised-button'"
-            md-button *ngFor="let type of paymentTypes">
+            mat-button *ngFor="let type of paymentTypes">
             <!-- <img class="currency-icon" [src]="type.image"> -->
             <div class="currency-icon"></div>
             <div class="value">{{type.currency}}</div>
@@ -69,18 +69,18 @@
         <div class="right">
           <div id="qrCode" class="qrCode"></div>
           <div>
-            <md-form-field>
-              <input mdInput name="example" [value]="adsasdada" type="text">
-            </md-form-field>
-            <button color="primary" md-raised-button>Submit</button>
+            <mat-form-field>
+              <input matInput name="example" [value]="adsasdada" type="text">
+            </mat-form-field>
+            <button color="primary" mat-raised-button>Submit</button>
           </div>
         </div>
       </div>
-    </md-card-content>
-  </md-card>
-  <md-card class="fourth">
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="fourth">
 
-    <md-card-content>
+    <mat-card-content>
       <div class="info">
         <div class="info-container">
           <div class="header">Payment method:
@@ -134,9 +134,9 @@
       </div>
 
 
-    </md-card-content>
-  </md-card>
-  <!-- <md-card class="fifth" >dashboard Component</md-card> -->
+    </mat-card-content>
+  </mat-card>
+  <!-- <mat-card class="fifth" >dashboard Component</mat-card> -->
 </div>
 <div>
 
