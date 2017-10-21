@@ -25,6 +25,7 @@ using InvestorDashboard.Web.Models.AccountViewModels;
 using InvestorDashboard.Web.Server.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
 using InvestorDashboard.Backend.Services;
+using System.Globalization;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
@@ -80,7 +81,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         var result = await _userManager.CreateAsync(appUser, user.Password);
         if (result.Succeeded)
         {
-          _cryptoServices.ToList().ForEach(async x => await x.UpdateUserDetails(appUser.Id));
+          Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(appUser.Id));
           return Ok();
         }
         return BadRequest(new OpenIdConnectResponse
