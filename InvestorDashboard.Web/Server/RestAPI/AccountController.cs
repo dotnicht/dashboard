@@ -71,7 +71,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
           ErrorDescription = ex.Message
         });
       }
-
     }
 
     [HttpGet("users/username/{userName}")]
@@ -88,13 +87,13 @@ namespace InvestorDashboard.Web.Server.RestAPI
 
       return await GetUserById(appUser.Id);
     }
+
     [HttpGet("users/{id}", Name = GetUserByIdActionName)]
     [Produces(typeof(UserViewModel))]
     public async Task<IActionResult> GetUserById(string id)
     {
       //if (!(await _authorizationService.AuthorizeAsync(this.User, id, AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
       //  return new ChallengeResult();
-
 
       UserViewModel userVM = await GetUserViewModelHelper(id);
 
@@ -244,7 +243,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
     {
       return View();
     }
-
 
     #region Helpers
     private async Task<UserViewModel> GetUserViewModelHelper(string userId)

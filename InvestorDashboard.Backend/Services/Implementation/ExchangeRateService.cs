@@ -24,7 +24,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null)
+        public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency = Currency.USD, DateTime? dateTime = null)
         {
             if (baseCurrency == quoteCurrency)
             {
