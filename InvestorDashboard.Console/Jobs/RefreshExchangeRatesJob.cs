@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using static System.Console;
 
-namespace InvestorDashboard.Console
+namespace InvestorDashboard.Console.Jobs
 {
     public class RefreshExchangeRatesJob : IJob
     {
