@@ -4,6 +4,6 @@ namespace InvestorDashboard.Web.Server.Models.DashboardModels
   {
     public int TotalInvestors { get; set; }
     public decimal TotalUsd { get; set; }
-    public int TotalCoins { get; set; }
+    public decimal TotalCoins { get; set; }
   }
 }

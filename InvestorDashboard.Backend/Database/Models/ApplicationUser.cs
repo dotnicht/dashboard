@@ -6,7 +6,7 @@ namespace InvestorDashboard.Backend.Database.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        public int Balance { get; set; }
+        public decimal Balance { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         [MaxLength(3)]
