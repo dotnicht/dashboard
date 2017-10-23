@@ -44,24 +44,24 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             var user = _context.Users.SingleOrDefault(x => x.UserName == User.Identity.Name);
 
-            if (user == null)
+            if (user != null)
             {
-                throw new InvalidOperationException();
+                var paymentInfo = _context.CryptoAccounts
+                    .Include(x => x.CryptoAddresses)
+                    .Where(x => !x.IsDisabled && x.UserId == user.Id && x.User.IsEligibleForTokenSale)
+                    .ToList()
+                    .Select(async x => new PaymentInfoModel
+                    {
+                        Currency = x.Currency.ToString(),
+                        Address = x.CryptoAddresses.FirstOrDefault(y => !x.IsDisabled)?.Address,
+                        Rate = await _exchangeRateService.GetExchangeRate(x.Currency)
+                    })
+                    .ToArray();
+
+                return Ok(paymentInfo);
             }
 
-            var paymentInfo = _context.CryptoAccounts
-                .Include(x => x.CryptoAddresses)
-                .Where(x => !x.IsDisabled && x.UserId == user.Id && x.User.IsEligibleForTokenSale)
-                .ToList()
-                .Select(async x => new PaymentInfoModel
-                {
-                    Currency = x.Currency.ToString(),
-                    Address = x.CryptoAddresses.FirstOrDefault(y => !x.IsDisabled)?.Address,
-                    Rate = await _exchangeRateService.GetExchangeRate(x.Currency)
-                })
-                .ToArray();
-
-            return Ok(paymentInfo);
+            return Ok();
         }
     }
 }
