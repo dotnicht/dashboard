@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -31,12 +32,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"User not found with ID {userId}.");
             }
 
-            var balance = user.CryptoAccounts
+            var balance = _context.CryptoAccounts
+                .Where(x => x.UserId == userId)
                 .SelectMany(x => x.CryptoAddresses)
                 .Where(x => x.Type == CryptoAddressType.Investment)
                 .SelectMany(x => x.CryptoTransactions)
                 .Where(x => x.Direction == CryptoTransactionDirection.Inbound)
-                .Sum(x => x.Amount * x.ExchangeRate * x.TokenPrice);
+                .Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice);
 
             user.Balance = balance;
             await _context.SaveChangesAsync();

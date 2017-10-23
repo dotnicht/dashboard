@@ -38,9 +38,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             var userId = string.Empty; // TODO: extract real user id.
             var paymentInfo = _context.CryptoAccounts
-                .Where(x => !x.IsDisabled)
                 .Include(x => x.CryptoAddresses)
-                .Where(x => x.UserId == userId && x.User.IsEligibleForTokenSale)
+                .Where(x => !x.IsDisabled && x.UserId == userId && x.User.IsEligibleForTokenSale)
                 .ToList()
                 .Select(async x => new PaymentInfoModel
                 {
