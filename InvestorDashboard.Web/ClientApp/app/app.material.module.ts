@@ -9,17 +9,16 @@ import {
     MatDatepickerModule,
     MatDialogModule,
     MatExpansionModule,
+    MatFormFieldModule,
     MatGridListModule,
     MatIconModule,
     MatInputModule,
     MatListModule,
     MatMenuModule,
-    MatNativeDateModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
     MatRadioModule,
-    MatRippleModule,
     MatSelectModule,
     MatSidenavModule,
     MatSliderModule,
@@ -29,8 +28,18 @@ import {
     MatTableModule,
     MatTabsModule,
     MatToolbarModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatStepperModule
 } from '@angular/material';
+import { MatNativeDateModule, MatRippleModule } from '@angular/material';
+import { CdkTableModule } from '@angular/cdk/table';
+// import { CdkAccordionModule } from '@angular/cdk/accordion';
+import { A11yModule } from '@angular/cdk/a11y';
+import { BidiModule } from '@angular/cdk/bidi';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { PlatformModule } from '@angular/cdk/platform';
+import { ObserversModule } from '@angular/cdk/observers';
+import { PortalModule } from '@angular/cdk/portal';
 
 
 @NgModule({
@@ -41,15 +50,16 @@ import {
         MatCardModule,
         MatCheckboxModule,
         MatChipsModule,
+        MatTableModule,
         MatDatepickerModule,
         MatDialogModule,
         MatExpansionModule,
+        MatFormFieldModule,
         MatGridListModule,
         MatIconModule,
         MatInputModule,
         MatListModule,
         MatMenuModule,
-        MatNativeDateModule,
         MatPaginatorModule,
         MatProgressBarModule,
         MatProgressSpinnerModule,
@@ -57,14 +67,23 @@ import {
         MatRippleModule,
         MatSelectModule,
         MatSidenavModule,
-        MatSliderModule,
         MatSlideToggleModule,
+        MatSliderModule,
         MatSnackBarModule,
         MatSortModule,
-        MatTableModule,
+        MatStepperModule,
         MatTabsModule,
         MatToolbarModule,
-        MatTooltipModule
+        MatTooltipModule,
+        MatNativeDateModule,
+        CdkTableModule,
+        A11yModule,
+        BidiModule,
+        // CdkAccordionModule,
+        ObserversModule,
+        OverlayModule,
+        PlatformModule,
+        PortalModule
     ]
 })
 export class MaterialModule { }

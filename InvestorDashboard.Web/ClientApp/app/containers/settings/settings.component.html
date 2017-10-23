@@ -1,3 +1,10 @@
+<!-- <mat-tab-group dynamicHeight [(selectedIndex)]="activeTabIndex">
+  <mat-tab *ngFor="let tabLink of tabLinks" [routerLink]="tabLink.link" routerLinkActive #rla="routerLinkActive" 
+    [disabled]="tabLink.disabled">
+    <ng-template mat-tab-label>{{tabLink.label}}</ng-template>
+  </mat-tab>
+</mat-tab-group>
+<router-outlet></router-outlet> -->
 <nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="tabNavBackground">
   <a mat-tab-link
      *ngFor="let tabLink of tabLinks; let i = index"

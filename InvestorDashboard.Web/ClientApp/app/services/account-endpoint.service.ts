@@ -1,11 +1,3 @@
-// ======================================
-// Author: Ebenezer Monney
-// Email:  info@ebenmonney.com
-// Copyright (c) 2017 www.ebenmonney.com
-// 
-// ==> Gun4Hire: contact@ebenmonney.com
-// ======================================
-
 import { Injectable, Injector } from '@angular/core';
 import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
@@ -13,6 +5,7 @@ import 'rxjs/add/operator/map';
 
 import { EndpointFactory } from './endpoint-factory.service';
 import { ConfigurationService } from './configuration.service';
+import { AlertService, MessageSeverity } from './alert.service';
 
 
 @Injectable()
@@ -26,7 +19,7 @@ export class AccountEndpoint extends EndpointFactory {
     private readonly _rolesUrl: string = "/api/account/roles";
     private readonly _roleByRoleNameUrl: string = "/api/account/roles/name";
     private readonly _permissionsUrl: string = "/api/account/permissions";
-   
+
 
     get usersUrl() { return this.configurations.baseUrl + this._usersUrl; }
     get userByUserNameUrl() { return this.configurations.baseUrl + this._userByUserNameUrl; }
@@ -39,9 +32,9 @@ export class AccountEndpoint extends EndpointFactory {
 
 
 
-    constructor(http: Http, configurations: ConfigurationService, injector: Injector) {
+    constructor(http: Http, configurations: ConfigurationService, injector: Injector, alertService: AlertService) {
 
-        super(http, configurations, injector);
+        super(http, configurations, injector, alertService);
     }
 
 
@@ -56,7 +49,9 @@ export class AccountEndpoint extends EndpointFactory {
                 return response;
             })
             .catch(error => {
+
                 return this.handleError(error, () => this.getUserEndpoint(userId));
+
             });
         return res;
     }
@@ -67,11 +62,14 @@ export class AccountEndpoint extends EndpointFactory {
 
         let res = this.http.get(endpointUrl, this.getAuthHeader())
             .map((response: Response) => {
-              
+
                 return response;
             })
             .catch(error => {
+
                 return this.handleError(error, () => this.getUserByUserNameEndpoint(userName));
+
+
             });
         return res;
     }

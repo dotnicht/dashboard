@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { ConfigurationService } from './configuration.service';
 import { UserLogin, UserRegister } from '../models/user.model';
 import { CountryCode } from '../models/countryCodes';
+import { MessageSeverity, AlertService } from './alert.service';
 
 
 @Injectable()
@@ -37,7 +38,7 @@ export class EndpointFactory {
         return this._authService;
     }
 
-    constructor(protected http: Http, protected configurations: ConfigurationService, private injector: Injector) {
+    constructor(protected http: Http, protected configurations: ConfigurationService, private injector: Injector, protected alertService: AlertService) {
 
     }
 
@@ -103,7 +104,7 @@ export class EndpointFactory {
         let searchParams = new URLSearchParams();
         searchParams.append('refresh_token', this.authService.refreshToken);
         searchParams.append('grant_type', 'refresh_token');
-        searchParams.append('scope', 'openid email phone profile offline_access roles');
+        searchParams.append('scope', 'offline_access');
 
         let requestBody = searchParams.toString();
 
@@ -162,6 +163,7 @@ export class EndpointFactory {
 
                     if (refreshLoginError.status == 401 || (refreshLoginError.url && refreshLoginError.url.toLowerCase().includes(this.loginUrl.toLowerCase()))) {
                         this.authService.reLogin();
+                        this.alertService.showMessage('Warning', `Session expired!`, MessageSeverity.warn);
                         return Observable.throw('session expired');
                     }
                     else {

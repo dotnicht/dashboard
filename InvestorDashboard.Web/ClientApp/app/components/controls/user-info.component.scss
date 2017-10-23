@@ -1,9 +1,7 @@
-﻿
-
-
-.mat-form-field{
+﻿.mat-form-field {
     width: 100%;
 }
+
 .row:not(:last-child) {
     /*border-bottom: 1px solid #ccc;*/
 }
@@ -31,7 +29,6 @@
     border-style: none;
 }
 
-
 .form-group {
     margin-top: 0;
     margin-bottom: 0;
@@ -40,7 +37,6 @@
 input.form-control {
     border-left-width: 5px;
 }
-
 
 .password-well {
     margin-bottom: 0;
@@ -61,5 +57,15 @@ input.form-control {
 @media (min-width: 992px) {
     .user-enabled {
         margin-left: 40px;
+    }
+}
+
+.phoneBlock {
+    .phoneCode {
+        width: 100px;
+    }
+    .phone {
+        width: calc(100% - 110px);
+        float: right;
     }
 }
