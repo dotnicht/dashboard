@@ -18,6 +18,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [Required]
         public string KeyStore { get; set; }
         public DateTime Created { get; set; }
+        public bool IsDisabled { get; set; }
         public virtual ICollection<CryptoAddress> CryptoAddresses { get; set; }
     }
 }

@@ -16,9 +16,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public CryptoAddressType Type { get; set; }
         public string Address { get; set; }
         public DateTime Created { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsDisabled { get; set; }
         public virtual ICollection<CryptoTransaction> CryptoTransactions { get; set; }
-
-        public CryptoAddress() => IsActive = true;
     }
 }

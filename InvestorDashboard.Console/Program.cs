@@ -51,16 +51,17 @@ namespace InvestorDashboard.Console
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
             var ctx = ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            
+
 
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
             await scheduler.Start().ConfigureAwait(false);
 
-            await ScheduleJob<RefreshExchangeRatesJob>(scheduler, TimeSpan.FromMinutes(1));
-            await ScheduleJob<RefreshTransactionsJob>(scheduler, TimeSpan.FromHours(1));
-            await ScheduleJob<TransferCryptoAssetsJob>(scheduler, TimeSpan.FromDays(1));
+            //await ScheduleJob<RefreshExchangeRatesJob>(scheduler, TimeSpan.FromMinutes(1));
+            //await ScheduleJob<RefreshTransactionsJob>(scheduler, TimeSpan.FromHours(1));
+            await ScheduleJob<RefreshTokenBalanceJob>(scheduler, TimeSpan.FromMinutes(1));
+            //await ScheduleJob<TransferCryptoAssetsJob>(scheduler, TimeSpan.FromDays(1));
 
             WriteLine("Press the escape key (ESC) to quit.");
             while (ReadKey(true).Key != ConsoleKey.Escape)
@@ -71,10 +72,10 @@ namespace InvestorDashboard.Console
             await scheduler.Shutdown().ConfigureAwait(false);
         }
 
-        private static async Task ScheduleJob<TJob>(IScheduler scheduler, TimeSpan interval)
+        private static async Task ScheduleJob<TJob>(IScheduler scheduler, TimeSpan interval) where TJob : IJob
         {
             var job = JobBuilder
-                .Create<RefreshTransactionsJob>()
+                .Create<TJob>()
                 .WithIdentity(typeof(TJob).Name)
                 .Build();
             var trigger = TriggerBuilder

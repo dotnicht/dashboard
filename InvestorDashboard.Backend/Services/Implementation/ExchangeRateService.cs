@@ -74,14 +74,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<decimal> GetExchangeRateFromApi(Currency baseCurrency, Currency quoteCurrency)
         {
-            if (baseCurrency == Currency.DTT || quoteCurrency == Currency.DTT)
+            if (baseCurrency == quoteCurrency)
             {
-                if (baseCurrency == Currency.DTT && quoteCurrency == Currency.USD)
-                {
-                    return _options.Value.DTTUSD;
-                }
-
-                throw new NotSupportedException("DTT conversions currently not supported.");
+                return 1;
             }
 
             var result = await RestUtil.Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
