@@ -58,8 +58,8 @@ namespace InvestorDashboard.Console
 
             await scheduler.Start().ConfigureAwait(false);
 
-            //await ScheduleJob<RefreshExchangeRatesJob>(scheduler, TimeSpan.FromMinutes(1));
-            //await ScheduleJob<RefreshTransactionsJob>(scheduler, TimeSpan.FromHours(1));
+            await ScheduleJob<RefreshExchangeRatesJob>(scheduler, TimeSpan.FromMinutes(1));
+            await ScheduleJob<RefreshTransactionsJob>(scheduler, TimeSpan.FromMinutes(1));
             await ScheduleJob<RefreshTokenBalanceJob>(scheduler, TimeSpan.FromMinutes(1));
             //await ScheduleJob<TransferCryptoAssetsJob>(scheduler, TimeSpan.FromDays(1));
 
