@@ -73,7 +73,34 @@ export class UserInfoComponent implements OnInit {
     constructor(private alertService: AlertService, private accountService: AccountService,
         private configurationService: ConfigurationService, private endpointFactory: EndpointFactory) {
         this.endpointFactory.getCountryCode().subscribe(data => {
-            this.countryCodes = data as CountryCode[];
+            let country = data as CountryCode[];
+
+            this.countryCodes = country.filter((item) => {
+                let equal = true;
+                if (item.dial_code == null) {
+                    return false;
+                }
+
+                for (let element of country) {
+                    if (element.dial_code == item.dial_code) {
+                        equal = false;
+                    }
+                }
+                if (!equal) {
+                    return false;
+                }
+                return true;
+            }).sort((a, b) => {
+                if (a.dial_code > b.dial_code) {
+                    return 1;
+                }
+                if (a.dial_code < b.dial_code) {
+                    return -1;
+                }
+                return 0;
+            });
+            console.log(this.countryCodes)
+
         });
     }
 

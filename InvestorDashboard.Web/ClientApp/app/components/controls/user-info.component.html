@@ -1,5 +1,5 @@
 ﻿<mat-card>
-  <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" class="form-horizontal" name="userInfoForm"
+  <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" name="userInfoForm"
     #f="ngForm" novalidate (ngSubmit)="f.form.valid ? save() :
 
          null">
@@ -99,26 +99,28 @@
           [(ngModel)]="userEdit.phoneNumber" />
       </div>
     </div> -->
-    
-    <mat-form-field *ngIf="isEditMode">
-      <mat-select [(value)]="userEdit.phoneCode">
-        <mat-option *ngFor="let code of countryCodes" [value]="code.dial_code">
-          {{ code.dial_code }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <div class="phoneBlock">
+      <mat-form-field *ngIf="isEditMode" class="phoneCode">
+        <mat-select placeholder="Select phone code" [(value)]="userEdit.phoneCode">
+          <mat-option *ngFor="let code of countryCodes" [value]="code.dial_code">
+            {{ code.dial_code }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
 
-    <mat-form-field *ngIf="isEditMode">
+      <mat-form-field *ngIf="isEditMode" class="phone">
 
-      <input matInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
-        [(ngModel)]="userEdit.phoneNumber" />
-      <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
-        <!-- <div *ngIf="phoneNumber.errors.pattern">pattern </div> -->
-        <div> {{phoneNumber.errors | json}}</div>
+        <input matInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
+          [(ngModel)]="userEdit.phoneNumber" />
+        <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
+          <!-- <div *ngIf="phoneNumber.errors.pattern">pattern </div> -->
+          <div> {{phoneNumber.errors | json}}</div>
 
-      </mat-error>
-    </mat-form-field>
+        </mat-error>
+      </mat-form-field>
+    </div>
+
     <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
       <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
