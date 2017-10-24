@@ -19,17 +19,17 @@
       <div class="left">
         <div class="item">
           <div class="color-block"></div>
-          <div class="value">2890</div>
+          <div class="value">{{icoInfo.totalInvestors}}</div>
           <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
         </div>
         <div class="item">
           <div class="color-block"></div>
-          <div class="value">2824290.76</div>
+          <div class="value">{{icoInfo.totalUsd}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
         <div class="item">
           <div class="color-block"></div>
-          <div class="value">2342342423 DTT</div>
+          <div class="value">{{icoInfo.totalCoins}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div>
       </div>
@@ -58,21 +58,22 @@
       <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
         <div class="left">
-          <button (click)="changePayment(type.currency)" [attr.class]="selectedPaymentType!=type.currency?'item mat-button':'item mat-raised-button'"
+          <button (click)="changePayment(type.address)" [attr.class]="selectedPaymentType!=type.currency?'item mat-button':'item mat-raised-button'"
             mat-button *ngFor="let type of paymentTypes">
             <!-- <img class="currency-icon" [src]="type.image"> -->
             <div class="currency-icon"></div>
             <div class="value">{{type.currency}}</div>
-            <div class="title">{{type.value}}</div>
+            <div class="title">1 {{type.currency}} = {{type.rate}} USD</div>
           </button>
         </div>
-        <div class="right">
+        <div class="right" *ngIf="selectedPaymentType">
+          
           <div id="qrCode" class="qrCode"></div>
           <div>
             <mat-form-field>
-              <input matInput name="example" [value]="adsasdada" type="text">
+              <input matInput name="example" [value]="selectedPaymentType" type="text">
             </mat-form-field>
-            <button color="primary" mat-raised-button>Submit</button>
+            <button color="primary" mat-raised-button>Copy</button>
           </div>
         </div>
       </div>

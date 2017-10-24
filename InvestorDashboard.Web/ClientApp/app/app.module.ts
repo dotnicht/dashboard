@@ -42,13 +42,13 @@ import { NotificationsViewerComponent } from './components/controls/notification
 import { ResponsiveDirective } from './directives/responsive';
 import { ResizeService } from './services/resize.service';
 import { DashboardModule } from './containers/dashboard/dashboard.module';
-import { ClientInfoService } from './services/client-info.service';
+import { ClientInfoEndpointService } from './services/client-info.service';
 import { SettingsModule } from './containers/settings/settings.module';
 
 @NgModule({
     declarations: [
         AppComponent,
-        ClientInfoComponent,
+      ClientInfoComponent,
         
         routingComponents,
         ResponsiveDirective
@@ -85,7 +85,7 @@ import { SettingsModule } from './containers/settings/settings.module';
 
         LinkService,
         ConfigurationService,
-        ClientInfoService,
+      ClientInfoEndpointService,
         AppTranslationService,
         TranslateStore,
         TranslateService,
