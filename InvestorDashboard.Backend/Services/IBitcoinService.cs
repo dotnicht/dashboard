@@ -5,6 +5,6 @@ namespace InvestorDashboard.Backend.Services
 {
     public interface IBitcoinService : ICryptoService
     {
-       Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address);
+       
     }
 }

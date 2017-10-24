@@ -66,9 +66,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
+        private async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
         {
-            var uri = $"{_options.Value.ApiBaseUrl}address/BTC/{address}";
+            var uri = $"{_options.Value.ApiBaseUrl}address/{_options.Value.NetworkType}/{address}";
             return await RestUtil.Get<Transaction>(uri);
         }
 
@@ -76,16 +76,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             _context.Dispose();
         }
-
     }
 
-    public class Spent
+    internal class Spent
     {
         public string Txid { get; set; }
         public int Input_no { get; set; }
     }
 
-    public class Output
+    internal class Output
     {
         public int Output_no { get; set; }
         public string Address { get; set; }
@@ -93,32 +92,32 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public Spent Spent { get; set; }
     }
 
-    public class Outgoing
+    internal class Outgoing
     {
         public string Value { get; set; }
         public List<Output> Outputs { get; set; }
     }
 
-    public class Spent2
+    internal class Spent2
     {
         public string Txid { get; set; }
         public int Input_no { get; set; }
     }
 
-    public class ReceivedFrom
+    internal class ReceivedFrom
     {
         public string Txid { get; set; }
         public int Output_no { get; set; }
     }
 
-    public class Input
+    internal class Input
     {
         public int Input_no { get; set; }
         public string Address { get; set; }
         public ReceivedFrom Received_from { get; set; }
     }
 
-    public class Incoming
+    internal class Incoming
     {
         public int Output_no { get; set; }
         public string Value { get; set; }
@@ -129,7 +128,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public string Script_hex { get; set; }
     }
 
-    public class Tx
+    internal class Tx
     {
         public string Txid { get; set; }
         public int Block_no { get; set; }
@@ -139,7 +138,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public Incoming Incoming { get; set; }
     }
 
-    public class Data
+    internal class Data
     {
         public string Network { get; set; }
         public string Address { get; set; }
@@ -150,7 +149,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public List<Tx> Txs { get; set; }
     }
 
-    public class Transaction
+    internal class Transaction
     {
         public string Status { get; set; }
         public Data Data { get; set; }
