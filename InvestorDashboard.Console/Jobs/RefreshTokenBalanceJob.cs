@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
+using Microsoft.Extensions.Options;
 using Quartz;
 using static System.Console;
 
@@ -10,20 +12,19 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class RefreshTokenBalanceJob : JobBase
     {
-        private readonly ApplicationDbContext _context;
         private readonly ITokenService _tokenService;
 
-        public override TimeSpan Period => TimeSpan.FromMinutes(1);
+        public override TimeSpan Period => Options.Value.RefreshTokenBalancePeriod;
 
-        public RefreshTokenBalanceJob(ApplicationDbContext context, ITokenService tokenService)
+        public RefreshTokenBalanceJob(ApplicationDbContext context, IOptions<JobsSettings> options, ITokenService tokenService) 
+            : base(context, options)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            var ids = _context.Users.Select(x => x.Id).ToArray();
+            var ids = Context.Users.Select(x => x.Id).ToArray();
             foreach (var userId in ids)
             {
                 await _tokenService.RefreshTokenBalance(userId);

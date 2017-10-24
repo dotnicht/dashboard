@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
+using Microsoft.Extensions.Options;
 using Quartz;
 using static System.Console;
 
@@ -12,9 +15,10 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public override TimeSpan Period => TimeSpan.FromMinutes(1);
+        public override TimeSpan Period => Options.Value.RefreshTransactionsPeriod;
 
-        public RefreshTransactionsJob(IEnumerable<ICryptoService> cryptoServices)
+        public RefreshTransactionsJob(ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices) 
+            : base(context, options)
         {
             _cryptoServices = cryptoServices ?? throw new System.ArgumentNullException(nameof(cryptoServices));
         }
