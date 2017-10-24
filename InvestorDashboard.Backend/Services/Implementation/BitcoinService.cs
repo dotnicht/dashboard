@@ -73,7 +73,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public void Dispose()
         {
-            //_context.Dispose();
+            _context.Dispose();
         }
 
     }
@@ -155,8 +155,5 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public Data Data { get; set; }
         public int Code { get; set; }
         public string Message { get; set; }
-        }
-
-       
     }
 }
