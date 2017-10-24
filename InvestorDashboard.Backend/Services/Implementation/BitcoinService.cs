@@ -18,15 +18,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IKeyVaultService _keyVaultService;
         private readonly IExchangeRateService _exchangeRateService;
         private readonly IMapper _mapper;
+        private readonly IOptions<TokenSettings> _tokenSettings;
 
         public Currency Currency => Currency.BTC;
 
-        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService, IMapper mapper)
+        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IOptions<TokenSettings> tokenSettings, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
+            _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -40,7 +42,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshInboundTransactions()
         {
-            var tokenRate = await _exchangeRateService.GetExchangeRate(Currency.DTT, Currency.USD);
             var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
 
             foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment))
@@ -55,7 +56,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         trx.CryptoAddress = address;
                         trx.Direction = CryptoTransactionDirection.Inbound;
                         trx.ExchangeRate = ethRate;
-                        trx.TokenPrice = tokenRate;
+                        trx.TokenPrice = _tokenSettings.Value.Price;
 
                         await _context.CryptoTransactions.AddAsync(trx);
 
