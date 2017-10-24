@@ -1,16 +1,23 @@
-﻿using Quartz;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using System.Threading.Tasks;
+using InvestorDashboard.Backend.Database;
+using Quartz;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class TransferCryptoAssetsJob : IJob
+    public class TransferCryptoAssetsJob : JobBase
     {
-        public async Task Execute(IJobExecutionContext context)
+        public override TimeSpan Period => TimeSpan.FromMinutes(1);
+
+        private readonly ApplicationDbContext _context;
+
+        public TransferCryptoAssetsJob(ApplicationDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
+        protected override async Task ExecuteInternal(IJobExecutionContext context)
+        {
         }
     }
 }
