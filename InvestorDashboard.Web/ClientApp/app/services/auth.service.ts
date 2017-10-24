@@ -31,6 +31,7 @@ export class AuthService {
 
   private previousIsLoggedInCheck = false;
   private _loginStatus = new Subject<boolean>();
+  private isAuth: boolean;
 
   gotoPage(page: string, preserveParams = true) {
 
@@ -83,7 +84,7 @@ export class AuthService {
     //  this.reLoginDelegate();
     //}
     //else {
-      this.redirectForLogin();
+    this.redirectForLogin();
     //}
   }
 
@@ -269,7 +270,12 @@ export class AuthService {
   }
 
   get isLoggedIn(): boolean {
-    return this.currentUser != null;
+    this.endpointFactory.isAuth().subscribe(resp => {
+      console.log(resp.json());
+      this.isAuth = resp.json();
+    });
+    
+    return this.isAuth;
   }
 
   get rememberMe(): boolean {

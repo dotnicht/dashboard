@@ -1,3 +1,4 @@
-export interface IClientInfo {
+export class ClientInfo {
     balance: number;
+    address: string;
 }

@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { IClientInfo } from '../models/client-info.model';
+import { ClientInfo } from '../models/client-info.model';
 
 @Injectable()
-export class ClientInfoService {
-    public clientInfo: IClientInfo;
+export class ClientInfoEndpointService {
+    public clientInfo: ClientInfo;
 
     constructor() { 
         this.Initialize();
     }
     private Initialize() {
-        this.clientInfo = { balance: 40.28 } as IClientInfo;
+        this.clientInfo = { balance: 40.28 } as ClientInfo;
     }
 }

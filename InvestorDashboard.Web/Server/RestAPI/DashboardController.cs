@@ -56,7 +56,9 @@ namespace InvestorDashboard.Web.Server.RestAPI
                         Address = x.CryptoAddresses.FirstOrDefault(y => !x.IsDisabled)?.Address,
                         Rate = await _exchangeRateService.GetExchangeRate(x.Currency)
                     })
-                    .ToArray();
+                    .ToArray()
+                    .Select(m => m.Result)
+                    .ToList();
 
                 return Ok(paymentInfo);
             }

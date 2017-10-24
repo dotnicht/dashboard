@@ -81,14 +81,14 @@ export class UserInfoComponent implements OnInit {
                     return false;
                 }
 
-                for (let element of country) {
-                    if (element.dial_code == item.dial_code) {
-                        equal = false;
-                    }
-                }
-                if (!equal) {
-                    return false;
-                }
+                // for (let element of country) {
+                //     if (element.dial_code == item.dial_code) {
+                //         equal = false;
+                //     }
+                // }
+                // if (!equal) {
+                //     return false;
+                // }
                 return true;
             }).sort((a, b) => {
                 if (a.dial_code > b.dial_code) {
@@ -208,15 +208,15 @@ export class UserInfoComponent implements OnInit {
 
     private save() {
         console.log(this.userEdit);
-        // this.isSaving = true;
-        // this.alertService.startLoadingMessage('Saving changes...');
+        this.isSaving = true;
+        this.alertService.startLoadingMessage('Saving changes...');
 
-        // if (this.isNewUser) {
-        //     this.accountService.newUser(this.userEdit).subscribe(user => this.saveSuccessHelper(user), error => this.saveFailedHelper(error));
-        // }
-        // else {
-        //     this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
-        // }
+        if (this.isNewUser) {
+            this.accountService.newUser(this.userEdit).subscribe(user => this.saveSuccessHelper(user), error => this.saveFailedHelper(error));
+        }
+        else {
+            this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
+        }
     }
 
 

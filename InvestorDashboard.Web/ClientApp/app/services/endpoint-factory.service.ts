@@ -23,6 +23,7 @@ export class EndpointFactory {
     private readonly _loginUrl: string = '/connect/token';
     private readonly _logoutUrl: string = '/connect/logout';
     private readonly _registerUrl: string = '/connect/register';
+    private readonly _isAuthUrl: string = '/connect/isauthorization';
 
     private get loginUrl() { return this.configurations.baseUrl + this._loginUrl; }
 
@@ -58,7 +59,6 @@ export class EndpointFactory {
         searchParams.append('Password', user.password);
 
 
-        console.log(searchParams);
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
@@ -110,13 +110,23 @@ export class EndpointFactory {
 
         return this.http.post(this.loginUrl, requestBody, { headers: header })
             .map((response: Response) => {
+                
                 return response;
             })
             .catch(error => {
                 return this.handleError(error, () => this.getRefreshLoginEndpoint());
             });
     }
-
+    public isAuth(): Observable<Response> {
+        return this.http.get(this._isAuthUrl, this.getAuthHeader())
+            .map((response: Response) => {
+                
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.isAuth());
+            });
+    }
 
     getCountryCode() {
         return Observable.of(require('../assets/json/countryCodes.json'));
@@ -138,8 +148,6 @@ export class EndpointFactory {
 
         return new RequestOptions({ headers: headers });
     }
-
-
 
     protected handleError(error, continuation: () => Observable<any>) {
 

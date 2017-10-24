@@ -18,7 +18,7 @@ import { ModalDirective } from 'ngx-bootstrap';
 import { LoginComponent } from './components/login/login.component';
 import { ResizeService } from './services/resize.service';
 import { Utilities } from './services/utilities';
-import { ClientInfoService } from './services/client-info.service';
+import { ClientInfoEndpointService } from './services/client-info.service';
 
 
 
@@ -80,7 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private configurations: ConfigurationService,
         private translationService: AppTranslationService,
-        private clientInfoService: ClientInfoService,
+        private clientInfoService: ClientInfoEndpointService,
         private appTitleService: AppTitleService,
         private notificationService: NotificationService,
         private resizeService: ResizeService,
