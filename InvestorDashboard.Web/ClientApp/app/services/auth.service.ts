@@ -1,10 +1,4 @@
-// ======================================
-// Author: Ebenezer Monney
-// Email:  info@ebenmonney.com
-// Copyright (c) 2017 www.ebenmonney.com
-// 
-// ==> Gun4Hire: contact@ebenmonney.com
-// ======================================
+
 
 import { Injectable } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
@@ -37,6 +31,7 @@ export class AuthService {
 
   private previousIsLoggedInCheck = false;
   private _loginStatus = new Subject<boolean>();
+  private isAuth: boolean;
 
   gotoPage(page: string, preserveParams = true) {
 
@@ -85,12 +80,12 @@ export class AuthService {
 
     this.localStorage.deleteData(DBkeys.TOKEN_EXPIRES_IN);
 
-    if (this.reLoginDelegate) {
-      this.reLoginDelegate();
-    }
-    else {
-      this.redirectForLogin();
-    }
+    //if (this.reLoginDelegate) {
+    //  this.reLoginDelegate();
+    //}
+    //else {
+    this.redirectForLogin();
+    //}
   }
 
 
@@ -275,7 +270,12 @@ export class AuthService {
   }
 
   get isLoggedIn(): boolean {
-    return this.currentUser != null;
+    this.endpointFactory.isAuth().subscribe(resp => {
+      console.log(resp.json());
+      this.isAuth = resp.json();
+    });
+    
+    return this.isAuth;
   }
 
   get rememberMe(): boolean {

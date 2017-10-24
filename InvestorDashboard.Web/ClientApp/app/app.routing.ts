@@ -10,6 +10,7 @@ import { AuthGuard } from './services/auth-guard.service';
 import { DashboardComponent } from './containers/dashboard/dashboard.component';
 import { SettingsComponent } from './containers/settings/settings.component';
 import { UserInfoComponent } from './components/controls/user-info.component';
+import { TfaComponent } from './components/controls/tfa/tfa.component';
 
 export const routingComponents = [
     HomeComponent, NotFoundComponent
@@ -17,7 +18,8 @@ export const routingComponents = [
 
 export const SETTINGS_ROUTES: Routes = [
     { path: '', redirectTo: 'profile', pathMatch: 'full', canActivate: [AuthGuard] },
-    { path: 'profile', component: UserInfoComponent, canActivate: [AuthGuard] }
+    { path: 'profile', component: UserInfoComponent, canActivate: [AuthGuard] },
+    { path: '2fa', component: TfaComponent, canActivate: [AuthGuard] }
 ];
 const routes: Routes = [
     {

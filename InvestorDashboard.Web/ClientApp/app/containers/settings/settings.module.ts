@@ -1,7 +1,7 @@
 import { SettingsComponent } from './settings.component';
 import { NgModule } from '@angular/core';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, RouterLinkActive } from '@angular/router';
 import { TranslateLanguageLoader, AppTranslationService } from '../../services/app-translation.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../app.material.module';
@@ -15,12 +15,13 @@ import { UserInfoComponent } from '../../components/controls/user-info.component
 import { AccountService } from '../../services/account.service';
 import { AccountEndpoint } from '../../services/account-endpoint.service';
 import { CaseFormatterDirective } from '../../directives/case-formater.directive';
-
+import { TfaComponent } from '../../components/controls/tfa/tfa.component';
 
 @NgModule({
     declarations: [
         SettingsComponent,
         UserInfoComponent,
+        TfaComponent,
         CaseFormatterDirective
     ],
     imports: [
@@ -29,6 +30,7 @@ import { CaseFormatterDirective } from '../../directives/case-formater.directive
         FormsModule,
         ReactiveFormsModule,
         RouterModule,
+      
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,

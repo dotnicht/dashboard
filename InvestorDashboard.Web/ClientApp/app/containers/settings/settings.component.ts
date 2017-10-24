@@ -10,7 +10,7 @@ export class SettingsComponent implements OnInit {
     tabLinks = [
         { label: 'Profile', link: 'profile' },
         { label: 'Two-factor authentication', link: '2fa' },
-        { label: 'Password', link: 'password' }
+        { label: 'Password', link: 'password', 'disabled': true }
     ];
 
     /** settings ctor */

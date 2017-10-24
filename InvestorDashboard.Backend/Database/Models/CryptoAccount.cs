@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace InvestorDashboard.Backend.Database.Models
 {
@@ -17,5 +18,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [Required]
         public string KeyStore { get; set; }
         public DateTime Created { get; set; }
+        public bool IsDisabled { get; set; }
+        public virtual ICollection<CryptoAddress> CryptoAddresses { get; set; }
     }
 }

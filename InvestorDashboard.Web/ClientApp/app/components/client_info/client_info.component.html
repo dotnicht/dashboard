@@ -1,26 +1,26 @@
-<md-card>
-  <md-card-header>
-    <img md-card-avatar src="https://scontent-waw1-1.xx.fbcdn.net/v/t1.0-9/13631682_2081080775450793_6522050385971991668_n.jpg?oh=2ef8c4128923df015b7e2843b25a2f1d&oe=5A8712EF" />
-    <md-card-title>{{userName}}</md-card-title>
-    <md-card-subtitle>{{'clientInfo.Balance' | translate}}: {{balance}} DTT</md-card-subtitle>
-  </md-card-header>
-</md-card>
+<mat-card>
+  <mat-card-header>
+    <img mat-card-avatar src="https://scontent-waw1-1.xx.fbcdn.net/v/t1.0-9/13631682_2081080775450793_6522050385971991668_n.jpg?oh=2ef8c4128923df015b7e2843b25a2f1d&oe=5A8712EF" />
+    <mat-card-title>{{userName}}</mat-card-title>
+    <mat-card-subtitle>{{'clientInfo.Balance' | translate}}: {{balance}} DTT</mat-card-subtitle>
+  </mat-card-header>
+</mat-card>
 <hr>
 <div *ngIf="isMobile">
-    <a md-list-item  [routerLink]="['/settings']">
-      <md-icon class="md-24">settings_applications</md-icon><span>{{'mainMenu.Settings' | translate}}</span>
+    <a mat-list-item  [routerLink]="['/settings']">
+      <mat-icon class="mat-24">settings_applications</mat-icon><span>{{'mainMenu.Settings' | translate}}</span>
     </a>
-    <a md-list-item (click)="logout()">
-      <md-icon class="md-24">exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>
+    <a mat-list-item (click)="logout()">
+      <mat-icon class="mat-24">exit_to_app</mat-icon><span>{{'mainMenu.Logout' | translate}}</span>
     </a>
 
 </div>
 <div *ngIf="!isMobile">
   
-  <button md-menu-item [routerLink]="['/settings']">
-      <md-icon>settings_applications</md-icon><span>{{'mainMenu.Settings' | translate}}</span>
+  <button mat-menu-item [routerLink]="['/settings']">
+      <mat-icon>settings_applications</mat-icon><span>{{'mainMenu.Settings' | translate}}</span>
     </button>
-  <button md-menu-item (click)="logout()">
-      <md-icon>exit_to_app</md-icon><span>{{'mainMenu.Logout' | translate}}</span>
+  <button mat-menu-item (click)="logout()">
+      <mat-icon>exit_to_app</mat-icon><span>{{'mainMenu.Logout' | translate}}</span>
     </button>
 </div>

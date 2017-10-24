@@ -20,6 +20,7 @@ namespace InvestorDashboard.Backend
             }
 
             services.Configure<KeyVaultSettings>(configuration.GetSection("KeyVault"));
+            services.Configure<TokenSettings>(configuration.GetSection("Token"));
             services.Configure<BitcoinSettings>(configuration.GetSection("Bitcoin"));
             services.Configure<EthereumSettings>(configuration.GetSection("Ethereum"));
             services.Configure<ExchangeRateSettings>(configuration.GetSection("ExchangeRate"));

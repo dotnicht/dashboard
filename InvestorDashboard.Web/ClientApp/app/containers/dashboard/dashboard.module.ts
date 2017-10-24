@@ -4,9 +4,9 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
 import { AppTranslationService, TranslateLanguageLoader } from '../../services/app-translation.service';
-import { ClientInfoService } from '../../services/client-info.service';
-import { DashboardService } from '../../services/dashboard.service';
+import { ClientInfoEndpointService } from '../../services/client-info.service';
 import { CommonModule } from '@angular/common';
+import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 
 @NgModule({
     declarations: [
@@ -26,8 +26,8 @@ import { CommonModule } from '@angular/common';
     ],
     providers: [
         AppTranslationService,
-        ClientInfoService,
-        DashboardService
+        ClientInfoEndpointService,
+        DashboardEndpoint
     ]
 })
 export class DashboardModule { }

@@ -71,6 +71,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return await RestUtil.Get<Transaction>(uri);
         }
 
+        public void Dispose()
+        {
+            //_context.Dispose();
+        }
+
     }
 
     public class Spent
@@ -150,5 +155,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public Data Data { get; set; }
         public int Code { get; set; }
         public string Message { get; set; }
+        }
+
+       
     }
 }

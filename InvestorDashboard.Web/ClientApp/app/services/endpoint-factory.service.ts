@@ -11,6 +11,8 @@ import 'rxjs/add/operator/catch';
 import { AuthService } from './auth.service';
 import { ConfigurationService } from './configuration.service';
 import { UserLogin, UserRegister } from '../models/user.model';
+import { CountryCode } from '../models/countryCodes';
+import { MessageSeverity, AlertService } from './alert.service';
 
 
 @Injectable()
@@ -21,6 +23,7 @@ export class EndpointFactory {
     private readonly _loginUrl: string = '/connect/token';
     private readonly _logoutUrl: string = '/connect/logout';
     private readonly _registerUrl: string = '/connect/register';
+    private readonly _isAuthUrl: string = '/connect/isauthorization';
 
     private get loginUrl() { return this.configurations.baseUrl + this._loginUrl; }
 
@@ -36,7 +39,7 @@ export class EndpointFactory {
         return this._authService;
     }
 
-    constructor(protected http: Http, protected configurations: ConfigurationService, private injector: Injector) {
+    constructor(protected http: Http, protected configurations: ConfigurationService, private injector: Injector, protected alertService: AlertService) {
 
     }
 
@@ -56,13 +59,16 @@ export class EndpointFactory {
         searchParams.append('Password', user.password);
 
 
-        console.log(searchParams);
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
 
         return this.http.post(this._registerUrl, JSON.stringify(user), { headers: headers })
-            .map((resp: Response) => resp.json())
-            .catch((error: any) => { return Observable.throw(error); });
+            .map((response: Response) => {
+                return response;
+            })
+            .catch((error: any) => {
+                return Observable.throw(error);
+            });
 
     }
     getLoginEndpoint(user: UserLogin): Observable<Response> {
@@ -98,21 +104,33 @@ export class EndpointFactory {
         let searchParams = new URLSearchParams();
         searchParams.append('refresh_token', this.authService.refreshToken);
         searchParams.append('grant_type', 'refresh_token');
-        searchParams.append('scope', 'openid email phone profile offline_access roles');
+        searchParams.append('scope', 'offline_access');
 
         let requestBody = searchParams.toString();
 
         return this.http.post(this.loginUrl, requestBody, { headers: header })
             .map((response: Response) => {
+                
                 return response;
             })
             .catch(error => {
                 return this.handleError(error, () => this.getRefreshLoginEndpoint());
             });
     }
+    public isAuth(): Observable<Response> {
+        return this.http.get(this._isAuthUrl, this.getAuthHeader())
+            .map((response: Response) => {
+                
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.isAuth());
+            });
+    }
 
-
-
+    getCountryCode() {
+        return Observable.of(require('../assets/json/countryCodes.json'));
+    }
 
 
 
@@ -130,8 +148,6 @@ export class EndpointFactory {
 
         return new RequestOptions({ headers: headers });
     }
-
-
 
     protected handleError(error, continuation: () => Observable<any>) {
 
@@ -155,6 +171,7 @@ export class EndpointFactory {
 
                     if (refreshLoginError.status == 401 || (refreshLoginError.url && refreshLoginError.url.toLowerCase().includes(this.loginUrl.toLowerCase()))) {
                         this.authService.reLogin();
+                        this.alertService.showMessage('Warning', `Session expired!`, MessageSeverity.warn);
                         return Observable.throw('session expired');
                     }
                     else {

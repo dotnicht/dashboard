@@ -2,6 +2,7 @@
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
+using InvestorDashboard.Console.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,40 +46,22 @@ namespace InvestorDashboard.Console
                 .BuildServiceProvider()
                 .GetRequiredService<IKeyVaultService>();
 
-
-            serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")));
+            serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")), ServiceLifetime.Transient);
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
+
+            var ctx = ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
 
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
             await scheduler.Start().ConfigureAwait(false);
 
-            var refreshExchangeRatesJob = JobBuilder
-                .Create<RefreshExchangeRatesJob>()
-                .WithIdentity("RefreshExchangeRatesJob")
-                .Build();
-            var refreshExchangeRatesJobTrigger = TriggerBuilder
-                .Create()
-                .WithIdentity("RefreshExchangeRatesJobTrigger")
-                .StartNow()
-                .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever())
-                .Build();
-
-            var resfreshTransactionsJob = JobBuilder
-                .Create<ResfreshTransactionsJob>()
-                .WithIdentity("ResfreshTransactionsJob")
-                .Build();
-            var resfreshTransactionsJobTrigger = TriggerBuilder
-                .Create()
-                .WithIdentity("ResfreshTransactionsJobTrigger")
-                .StartNow()
-                .WithSimpleSchedule(x => x.WithIntervalInHours(1).RepeatForever())
-                .Build();
-
-            await scheduler.ScheduleJob(refreshExchangeRatesJob, refreshExchangeRatesJobTrigger).ConfigureAwait(false);
-            await scheduler.ScheduleJob(resfreshTransactionsJob, resfreshTransactionsJobTrigger).ConfigureAwait(false);
+            await ScheduleJob<RefreshExchangeRatesJob>(scheduler, TimeSpan.FromMinutes(1));
+            await ScheduleJob<RefreshTransactionsJob>(scheduler, TimeSpan.FromMinutes(1));
+            await ScheduleJob<RefreshTokenBalanceJob>(scheduler, TimeSpan.FromMinutes(1));
+            //await ScheduleJob<TransferCryptoAssetsJob>(scheduler, TimeSpan.FromDays(1));
 
             WriteLine("Press the escape key (ESC) to quit.");
             while (ReadKey(true).Key != ConsoleKey.Escape)
@@ -87,6 +70,21 @@ namespace InvestorDashboard.Console
             }
 
             await scheduler.Shutdown().ConfigureAwait(false);
+        }
+
+        private static async Task ScheduleJob<TJob>(IScheduler scheduler, TimeSpan interval) where TJob : IJob
+        {
+            var job = JobBuilder
+                .Create<TJob>()
+                .WithIdentity(typeof(TJob).Name)
+                .Build();
+            var trigger = TriggerBuilder
+                .Create()
+                .WithIdentity($"{typeof(TJob).Name}Trigger")
+                .StartNow()
+                .WithSimpleSchedule(x => x.WithInterval(interval).RepeatForever())
+                .Build();
+            await scheduler.ScheduleJob(job, trigger);
         }
     }
 }
