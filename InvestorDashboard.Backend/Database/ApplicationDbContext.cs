@@ -9,7 +9,6 @@ namespace InvestorDashboard.Backend.Database
     {
         public string CurrentUserId { get; set; }
 
-        public DbSet<ConfigurationItem> ConfigurationItems { get; set; }
         public DbSet<CryptoTransaction> CryptoTransactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<CryptoAccount> CryptoAccounts { get; set; }
@@ -26,13 +25,6 @@ namespace InvestorDashboard.Backend.Database
 
             builder.UseOpenIddict();
 
-            builder.Entity<ConfigurationItem>()
-                .Property(x => x.Id)
-                .HasDefaultValueSql("NEWSEQUENTIALID()");
-            builder.Entity<ConfigurationItem>()
-                .HasIndex(x => x.Name)
-                .IsUnique();
-
             builder.Entity<CryptoTransaction>()
                 .Property(x => x.Id)
                 .HasDefaultValueSql("NEWSEQUENTIALID()");
@@ -45,7 +37,8 @@ namespace InvestorDashboard.Backend.Database
 
             builder.Entity<CryptoAddress>()
                 .Property(x => x.Id)
-                .HasDefaultValueSql("NEWSEQUENTIALID()");
+//                .HasDefaultValueSql("NEWSEQUENTIALID()")
+                ;
             builder.Entity<CryptoAddress>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");

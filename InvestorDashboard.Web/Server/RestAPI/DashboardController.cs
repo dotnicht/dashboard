@@ -1,14 +1,17 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Web.Server.Models.DashboardModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
@@ -18,12 +21,14 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly ApplicationDbContext _context;
         private readonly IExchangeRateService _exchangeRateService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IOptions<TokenSettings> _tokenSettings;
 
-        public DashboardController(ApplicationDbContext context, IExchangeRateService exchangeRateService, UserManager<ApplicationUser> userManager)
+        public DashboardController(ApplicationDbContext context, IExchangeRateService exchangeRateService, UserManager<ApplicationUser> userManager, IOptions<TokenSettings> tokenSettings)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
         }
 
         [HttpGet("ico_status")]
@@ -31,15 +36,16 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             var status = new IcoInfoModel
             {
-                TotalCoins = _context.Users.Sum(x => x.Balance),
+                TotalCoins = _tokenSettings.Value.TotalCoins,
+                TotalCoinsBought = _context.Users.Sum(x => x.Balance),
                 TotalInvestors = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Select(x => x.CryptoAddress.CryptoAccount.UserId).Distinct().Count(),
-                TotalUsd = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Sum(x => x.Amount * x.ExchangeRate),
+                TotalUsdInvested = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Sum(x => x.Amount * x.ExchangeRate),
             };
 
             return Ok(status);
         }
 
-        [HttpGet("payment_status")]
+        [HttpGet("payment_status"), Authorize]
         public async Task<IActionResult> GetPaymentInfo()
         {
             var user = _context.Users.SingleOrDefault(x => x.UserName == User.Identity.Name);
@@ -56,7 +62,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
                         Address = x.CryptoAddresses.FirstOrDefault(y => !x.IsDisabled)?.Address,
                         Rate = await _exchangeRateService.GetExchangeRate(x.Currency)
                     })
-                    .ToArray()
                     .Select(m => m.Result)
                     .ToList();
 
@@ -66,17 +71,25 @@ namespace InvestorDashboard.Web.Server.RestAPI
             return Ok();
         }
 
-        [HttpGet("client_info")]
+        [HttpGet("client_info"), Authorize]
         public async Task<IActionResult> GetClientInfo()
         {
-            var user = _context.Users.SingleOrDefault(x => x.UserName == User.Identity.Name);
-            var clientInfo = new ClientInfoModel();
+            var user = _context.Users
+                .Include(x => x.CryptoAccounts)
+                .ThenInclude(x => x.CryptoAddresses)
+                .SingleOrDefault(x => x.UserName == User.Identity.Name);
+
             if (user != null)
             {
-                clientInfo.Balance = _context.Users
-                .Select(x => (double)x.Balance)
-                .FirstOrDefault();
-                
+                var clientInfo = new ClientInfoModel
+                {
+                    Balance = user.Balance,
+                    Address = user.CryptoAccounts
+                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH)
+                        ?.CryptoAddresses
+                        .SingleOrDefault(x => !x.IsDisabled && x.Type == CryptoAddressType.Contract)
+                        ?.Address,
+                };
 
                 return Ok(clientInfo);
             }

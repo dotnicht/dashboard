@@ -1,5 +1,11 @@
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using AspNet.Security.OAuth.Validation;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
+using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
@@ -14,22 +20,10 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using AspNet.Security.OAuth.Validation;
-using InvestorDashboard.Backend;
-using InvestorDashboard.Backend.Core;
-using InvestorDashboard.Backend.Core.Interfaces;
-using InvestorDashboard.Web.Server.Models;
-using Microsoft.AspNetCore.Authorization;
-using InvestorDashboard.Backend.Services.Implementation;
 
 namespace InvestorDashboard.Web
 {
-  public class Startup
+    public class Startup
   {
     public IConfigurationRoot Configuration { get; }
 
@@ -49,7 +43,7 @@ namespace InvestorDashboard.Web
       Backend.Configuration.Configure(services, Configuration);
       DependencyInjection.Configure(services);
       
-      services.AddAutoMapper(typeof(DependencyInjection));
+      services.AddAutoMapper(typeof(DependencyInjection), GetType());
 
       services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -149,10 +143,6 @@ namespace InvestorDashboard.Web
       services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
 
       services.AddAuthorization();
-      Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperProfile>());
-
-      // Repositories
-      services.AddScoped<IAccountManager, AccountManager>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

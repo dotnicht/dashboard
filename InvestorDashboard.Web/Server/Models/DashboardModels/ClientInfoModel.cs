@@ -8,6 +8,6 @@ namespace InvestorDashboard.Web.Server.Models.DashboardModels
     public class ClientInfoModel
     {
         public string Address { get; set; }
-        public double Balance { get; set; }
+        public decimal Balance { get; set; }
     }
 }
