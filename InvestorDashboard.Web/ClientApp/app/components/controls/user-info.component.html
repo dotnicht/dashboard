@@ -101,7 +101,7 @@
     </div> -->
     <div class="phoneBlock">
       <mat-form-field *ngIf="isEditMode" class="phoneCode">
-        <mat-select placeholder="Select phone code" [(value)]="userEdit.phoneCode">
+        <mat-select placeholder="Select phone code" name="phoneCode" [(value)]="userEdit.phoneCode">
           <mat-option *ngFor="let code of countryCodes" [value]="code.dial_code">
             {{ code.dial_code }}
           </mat-option>
@@ -124,7 +124,7 @@
     <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
       <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
-        <p class="form-control-static">{{user.phoneNumber}}</p>
+        <p class="form-control-static">{{user.phoneCode}} {{user.phoneNumber}}</p>
       </div>
 
     </div>
