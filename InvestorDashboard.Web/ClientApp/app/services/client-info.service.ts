@@ -27,6 +27,9 @@ export class ClientInfoEndpointService extends EndpointFactory {
             this.clientInfo = info.json() as ClientInfo;
         });
     }
+    // protected handleError(error, continuation: () => Observable<any>)  {
+    //     return '';
+    // }
     private getClientInfoEndpoint(): Observable<Response> {
         let res = this.http.get(this._clientInfoUrl, this.getAuthHeader())
             .map((response: Response) => {
@@ -39,4 +42,5 @@ export class ClientInfoEndpointService extends EndpointFactory {
             });
         return res;
     }
+
 }

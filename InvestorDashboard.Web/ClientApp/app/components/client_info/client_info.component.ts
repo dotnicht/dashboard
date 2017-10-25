@@ -14,18 +14,19 @@ export class ClientInfoComponent implements OnInit {
     get isMobile(): boolean {
         return this.resizeService.isMobile;
     }
-    public clientInfo: ClientInfo = new ClientInfo();
 
     constructor(private clientInfoService: ClientInfoEndpointService, private authService: AuthService, private resizeService: ResizeService) {
 
     }
 
     ngOnInit(): void {
-        if (this.authService.isLoggedIn) {
-            this.clientInfo = this.clientInfoService.clientInfo;
-        }
-    }
 
+    }
+    get clientInfo() {
+       //  return new ClientInfo();
+            return this.clientInfoService.clientInfo;
+        
+    }
     logout() {
         this.authService.logout();
         this.authService.redirectLogoutUser();
