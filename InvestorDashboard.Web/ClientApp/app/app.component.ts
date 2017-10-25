@@ -128,9 +128,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
         this.isUserLoggedIn = this.authService.isLoggedIn;
 
+        if (this.isUserLoggedIn) {
+            this.refreshData();
+        }
         setTimeout(() => {
             if (this.isUserLoggedIn) {
-                this.refreshData();
+
                 this.alertService.resetStickyMessage();
 
                 // if (!this.authService.isSessionExpired)
@@ -165,7 +168,7 @@ export class AppComponent implements OnInit, OnDestroy {
                 }
             }
         });
-      
+
 
     }
 
@@ -176,7 +179,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (this.clientInfoSubscription) {
             this.clientInfoSubscription.unsubscribe();
         }
-        
+
     }
 
 
@@ -273,7 +276,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     public refreshData() {
         this.clientInfoService.updateClientInfo();
-        
+
         // this.subscribeToClientInfoData();
     }
     private subscribeToClientInfoData(): void {

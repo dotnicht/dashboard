@@ -26,7 +26,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     public paymentTypes: PaymentType[];
     public icoInfo: IcoInfo = new IcoInfo();
-    public clientInfo: ClientInfo = new ClientInfo();
+
     public selectedPaymentType: string;
 
     public qrLoaded: boolean = true;
@@ -44,7 +44,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
     }
-
+    get clientInfo() {
+        //return new ClientInfo();
+         return this.clientInfoService.clientInfo;
+    }
     /** Called by Angular after dashboard component initialized */
     ngOnInit(): void {
         this.alertService.startLoadingMessage();
@@ -94,8 +97,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     loadData() {
-      
-        this.clientInfo = this.clientInfoService.clientInfo;
+
         this.icoInfoSubscription = this.dashboardService.getIcoInfo().subscribe(info => {
             this.icoInfo = info.json() as IcoInfo;
             this.dashboard.icoInfo = info.json() as IcoInfo;
