@@ -1,4 +1,10 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using AutoMapper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
@@ -8,19 +14,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Impl;
-using System;
-using System.Collections.Specialized;
-using System.IO;
-using System.Threading.Tasks;
 using static System.Console;
 
 namespace InvestorDashboard.Console
 {
     internal static class Program
     {
-        // TODO: refactor this.
-        public static ServiceProvider ServiceProvider { get; private set; }
-
         private static void Main()
         {
             Run().GetAwaiter().GetResult();
@@ -46,22 +45,40 @@ namespace InvestorDashboard.Console
                 .BuildServiceProvider()
                 .GetRequiredService<IKeyVaultService>();
 
-            serviceCollection.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")), ServiceLifetime.Transient);
-
-            ServiceProvider = serviceCollection.BuildServiceProvider();
-
-            var ctx = ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
+            serviceCollection.AddDbContext<ApplicationDbContext>(
+                x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")), 
+                ServiceLifetime.Transient);
 
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
-            await scheduler.Start().ConfigureAwait(false);
+            Assembly
+                .GetExecutingAssembly()
+                .GetTypes()
+                .Where(x => !x.IsAbstract && typeof(IJob).IsAssignableFrom(x))
+                .ToList()
+                .ForEach(async x =>
+                {
+                    serviceCollection.AddTransient(x);
 
-            await ScheduleJob<RefreshExchangeRatesJob>(scheduler, TimeSpan.FromMinutes(1));
-            await ScheduleJob<RefreshTransactionsJob>(scheduler, TimeSpan.FromMinutes(1));
-            await ScheduleJob<RefreshTokenBalanceJob>(scheduler, TimeSpan.FromMinutes(1));
-            //await ScheduleJob<TransferCryptoAssetsJob>(scheduler, TimeSpan.FromDays(1));
+                    var job = JobBuilder
+                        .Create(x)
+                        .Build();
+
+                    var period = (serviceCollection.BuildServiceProvider().GetService(x) as JobBase).Period;
+
+                    var trigger = TriggerBuilder
+                        .Create()
+                        .StartNow()
+                        .WithSimpleSchedule(y => y.WithInterval(period).RepeatForever())
+                        .Build();
+
+                    await scheduler.ScheduleJob(job, trigger);
+                });
+
+            scheduler.JobFactory = new JobFactory(serviceCollection.BuildServiceProvider());
+
+            await scheduler.Start().ConfigureAwait(false);
 
             WriteLine("Press the escape key (ESC) to quit.");
             while (ReadKey(true).Key != ConsoleKey.Escape)
@@ -70,21 +87,6 @@ namespace InvestorDashboard.Console
             }
 
             await scheduler.Shutdown().ConfigureAwait(false);
-        }
-
-        private static async Task ScheduleJob<TJob>(IScheduler scheduler, TimeSpan interval) where TJob : IJob
-        {
-            var job = JobBuilder
-                .Create<TJob>()
-                .WithIdentity(typeof(TJob).Name)
-                .Build();
-            var trigger = TriggerBuilder
-                .Create()
-                .WithIdentity($"{typeof(TJob).Name}Trigger")
-                .StartNow()
-                .WithSimpleSchedule(x => x.WithInterval(interval).RepeatForever())
-                .Build();
-            await scheduler.ScheduleJob(job, trigger);
         }
     }
 }
