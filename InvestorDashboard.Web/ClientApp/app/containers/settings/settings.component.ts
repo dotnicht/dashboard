@@ -12,7 +12,7 @@ export class SettingsComponent implements OnInit {
         { label: 'Two-factor authentication', link: '2fa' },
         { label: 'Password', link: 'password', 'disabled': true }
     ];
-
+    tabNavBackground: any = undefined;
     /** settings ctor */
     constructor() { }
 

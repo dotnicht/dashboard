@@ -270,12 +270,18 @@ export class AuthService {
   }
 
   get isLoggedIn(): boolean {
-    this.endpointFactory.isAuth().subscribe(resp => {
-      console.log(resp.json());
-      this.isAuth = resp.json();
+    // return this.currentUser != null;
+    setTimeout(() => {
+      this.endpointFactory.isAuth().subscribe(resp => {
+        // console.log(resp.json());
+        this.isAuth = resp.json();
+        
+      });
     });
-    
-    return this.isAuth;
+
+    console.log(this.isAuth);
+    return (this.currentUser != null);
+    // return this.isAuth && (this.currentUser != null);
   }
 
   get rememberMe(): boolean {

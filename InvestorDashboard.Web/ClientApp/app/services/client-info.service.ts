@@ -1,15 +1,42 @@
-import { Injectable } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, Injector } from '@angular/core';
+import { Http, Response } from '@angular/http';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/map';
+
+import { EndpointFactory } from './endpoint-factory.service';
+import { ConfigurationService } from './configuration.service';
+import { AlertService, MessageSeverity } from './alert.service';
+import { Dashboard, PaymentType, IcoInfo } from '../models/dashboard.models';
+import { Utilities } from './utilities';
 import { ClientInfo } from '../models/client-info.model';
 
 @Injectable()
-export class ClientInfoEndpointService {
-    public clientInfo: ClientInfo;
+export class ClientInfoEndpointService extends EndpointFactory {
+    public clientInfo: ClientInfo = new ClientInfo();
 
-    constructor() { 
-        this.Initialize();
+    private readonly _clientInfoUrl: string = '/api/dashboard/client_info';
+
+
+    constructor(http: Http, configurations: ConfigurationService, injector: Injector, alertService: AlertService) {
+
+        super(http, configurations, injector, alertService);
     }
-    private Initialize() {
-        this.clientInfo = { balance: 40.28 } as ClientInfo;
+
+    public updateClientInfo() {
+        this.getClientInfoEndpoint().subscribe(info => {
+            this.clientInfo = info.json() as ClientInfo;
+        });
+    }
+    private getClientInfoEndpoint(): Observable<Response> {
+        let res = this.http.get(this._clientInfoUrl, this.getAuthHeader())
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+
+                return this.handleError(error, () => this.getClientInfoEndpoint());
+
+            });
+        return res;
     }
 }

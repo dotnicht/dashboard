@@ -19,6 +19,7 @@ import { LoginComponent } from './components/login/login.component';
 import { ResizeService } from './services/resize.service';
 import { Utilities } from './services/utilities';
 import { ClientInfoEndpointService } from './services/client-info.service';
+import { Observable } from 'rxjs/Observable';
 
 
 
@@ -50,8 +51,8 @@ export class AppComponent implements OnInit, OnDestroy {
         return this.translationService.getTranslation('languages.' + this.translationService.getCurrentLanguage);
     }
 
-    private isMobile: boolean;
-    private isTab: boolean;
+    public isMobile: boolean;
+    public isTab: boolean;
 
     // This will go at the END of your title for example "Home - Angular Universal..." <-- after the dash (-)
     private endPageTitle: string = 'Investor Dashboard';
@@ -59,6 +60,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private defaultPageTitle: string = 'Data Trading';
 
     private routerSub$: Subscription;
+    private clientInfoSubscription: Subscription;
 
     @HostListener('window:resize', ['$event'])
     onResize(event) {
@@ -128,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
         setTimeout(() => {
             if (this.isUserLoggedIn) {
+                this.refreshData();
                 this.alertService.resetStickyMessage();
 
                 // if (!this.authService.isSessionExpired)
@@ -162,13 +165,18 @@ export class AppComponent implements OnInit, OnDestroy {
                 }
             }
         });
-
+      
 
     }
 
     ngOnDestroy() {
         // Subscription clean-up
         this.routerSub$.unsubscribe();
+
+        if (this.clientInfoSubscription) {
+            this.clientInfoSubscription.unsubscribe();
+        }
+        
     }
 
 
@@ -263,7 +271,14 @@ export class AppComponent implements OnInit, OnDestroy {
             }
         }
     }
-
+    public refreshData() {
+        this.clientInfoService.updateClientInfo();
+        
+        // this.subscribeToClientInfoData();
+    }
+    private subscribeToClientInfoData(): void {
+        this.clientInfoSubscription = Observable.timer(30000).first().subscribe(() => this.refreshData());
+    }
     private _changeTitleOnNavigation() {
 
         this.routerSub$ = this.router.events

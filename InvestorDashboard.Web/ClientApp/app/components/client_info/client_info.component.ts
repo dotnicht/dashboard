@@ -1,6 +1,8 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ResizeService } from '../../services/resize.service';
+import { ClientInfo } from '../../models/client-info.model';
+import { ClientInfoEndpointService } from '../../services/client-info.service';
 
 @Component({
     selector: 'app-client-info',
@@ -12,18 +14,17 @@ export class ClientInfoComponent implements OnInit {
     get isMobile(): boolean {
         return this.resizeService.isMobile;
     }
-    private balance: number;
+    public clientInfo: ClientInfo = new ClientInfo();
 
+    constructor(private clientInfoService: ClientInfoEndpointService, private authService: AuthService, private resizeService: ResizeService) {
 
-    constructor(private authService: AuthService, private resizeService: ResizeService) {
-       
     }
 
     ngOnInit(): void {
         if (this.authService.isLoggedIn) {
-            this.balance = 40.05;
+            this.clientInfo = this.clientInfoService.clientInfo;
         }
-     }
+    }
 
     logout() {
         this.authService.logout();

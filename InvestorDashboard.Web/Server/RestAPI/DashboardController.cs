@@ -65,5 +65,23 @@ namespace InvestorDashboard.Web.Server.RestAPI
 
             return Ok();
         }
+
+        [HttpGet("client_info")]
+        public async Task<IActionResult> GetClientInfo()
+        {
+            var user = _context.Users.SingleOrDefault(x => x.UserName == User.Identity.Name);
+            var clientInfo = new ClientInfoModel();
+            if (user != null)
+            {
+                clientInfo.Balance = _context.Users
+                .Select(x => (double)x.Balance)
+                .FirstOrDefault();
+                
+
+                return Ok(clientInfo);
+            }
+
+            return Ok();
+        }
     }
 }

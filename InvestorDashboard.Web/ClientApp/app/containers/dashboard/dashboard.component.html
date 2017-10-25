@@ -2,7 +2,7 @@
   <mat-card class="first">
     <mat-card-content>
       <h4>{{'clientInfo.Balance' | translate}}:
-        <p>{{clientInfoService.clientInfo.balance}} DTT</p>
+        <p>{{clientInfo.balance}} DTT</p>
       </h4>
 
       <div>
@@ -43,7 +43,7 @@
           2.24556544 BTC / 10BTC
         </div>
         <div>
-          <mat-progress-bar mode="determinate" [value]="30" [color]="primary">
+          <mat-progress-bar mode="determinate" [value]="30" [color]="'primary'">
           </mat-progress-bar>
         </div>
         <div>
@@ -73,7 +73,7 @@
             <mat-form-field>
               <input matInput name="example" [value]="selectedPaymentType" type="text">
             </mat-form-field>
-            <button color="primary" mat-raised-button>Copy</button>
+            <button [color]="'primary'" mat-raised-button>Copy</button>
           </div>
         </div>
       </div>

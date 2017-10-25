@@ -37,7 +37,6 @@ import { MaterialModule } from './app.material.module';
 import { AppTitleService } from './services/app-title.service';
 import { LoginComponent } from './components/login/login.component';
 import { ClientInfoComponent } from './components/client_info/client_info.component';
-import { NotificationsViewerComponent } from './components/controls/notifications-viewer.component';
 
 import { ResponsiveDirective } from './directives/responsive';
 import { ResizeService } from './services/resize.service';
@@ -48,8 +47,8 @@ import { SettingsModule } from './containers/settings/settings.module';
 @NgModule({
     declarations: [
         AppComponent,
-      ClientInfoComponent,
-        
+        ClientInfoComponent,
+
         routingComponents,
         ResponsiveDirective
     ],
@@ -61,7 +60,6 @@ import { SettingsModule } from './containers/settings/settings.module';
         CdkTableModule,
         AppRoutingModule,
         MaterialModule,
-        // MainModule,
         UserManageModule,
         DashboardModule,
         SettingsModule,
@@ -71,7 +69,7 @@ import { SettingsModule } from './containers/settings/settings.module';
                 useClass: TranslateLanguageLoader
             }
         }),
-        
+
         Ng2BootstrapModule.forRoot(), // You could also split this up if you don't want the Entire Module imported
         ToastyModule.forRoot(),
 
@@ -85,7 +83,7 @@ import { SettingsModule } from './containers/settings/settings.module';
 
         LinkService,
         ConfigurationService,
-      ClientInfoEndpointService,
+        ClientInfoEndpointService,
         AppTranslationService,
         TranslateStore,
         TranslateService,

@@ -2,7 +2,7 @@
 import { AppTranslationService } from '../../services/app-translation.service';
 import { ClientInfoEndpointService } from '../../services/client-info.service';
 import { isPlatformBrowser } from '@angular/common';
-import { PaymentType, IcoInfo } from '../../models/dashboard.models';
+import { PaymentType, IcoInfo, Dashboard } from '../../models/dashboard.models';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { Utilities } from '../../services/utilities';
@@ -10,6 +10,7 @@ import { Observable } from 'rxjs/Observable';
 import { AnonymousSubscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/timer';
 import { AuthService } from '../../services/auth.service';
+import { ClientInfo } from '../../models/client-info.model';
 
 declare var QRCode: any;
 
@@ -21,8 +22,11 @@ declare var QRCode: any;
 
 export class DashboardComponent implements OnInit, OnDestroy {
 
+    public dashboard: Dashboard = new Dashboard();
+
     public paymentTypes: PaymentType[];
     public icoInfo: IcoInfo = new IcoInfo();
+    public clientInfo: ClientInfo = new ClientInfo();
     public selectedPaymentType: string;
 
     public qrLoaded: boolean = true;
@@ -84,16 +88,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.qrLoaded = true;
             this.qrInitialize(payment);
             this.alertService.stopLoadingMessage();
-           
+
         }, 100);
 
     }
 
     loadData() {
+      
+        this.clientInfo = this.clientInfoService.clientInfo;
         this.icoInfoSubscription = this.dashboardService.getIcoInfo().subscribe(info => {
             this.icoInfo = info.json() as IcoInfo;
+            this.dashboard.icoInfo = info.json() as IcoInfo;
         });
         this.paymentTypesSubscription = this.dashboardService.getPaymentTypes().subscribe(info => {
+            this.dashboard.paymentTypes = info.json() as PaymentType[];
             this.paymentTypes = info.json() as PaymentType[];
         });
         // this.subscribeToData();
