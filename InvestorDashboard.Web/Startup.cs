@@ -45,6 +45,8 @@ namespace InvestorDashboard.Web
       
       services.AddAutoMapper(typeof(DependencyInjection), GetType());
 
+      services.AddAutoMapper(typeof(Backend.DependencyInjection));
+
       services.AddDbContext<ApplicationDbContext>(options =>
         {
           options.UseSqlServer(services.BuildServiceProvider().GetRequiredService<IKeyVaultService>().DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
