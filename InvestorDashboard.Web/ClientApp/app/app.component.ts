@@ -275,7 +275,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
     }
     public refreshData() {
-        this.clientInfoService.updateClientInfo();
+       
 
         // this.subscribeToClientInfoData();
     }
