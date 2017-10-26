@@ -43,7 +43,7 @@
           {{icoInfo.totalCoinsBought}} DTT / {{icoInfo.totalCoins}} DTT
         </div>
         <div>
-          <mat-progress-bar mode="determinate" [value]="30" [color]="'primary'">
+          <mat-progress-bar mode="determinate" [value]="icoInfo.totalCoinsBoughtPercent" [color]="'primary'">
           </mat-progress-bar>
         </div>
         <div>
