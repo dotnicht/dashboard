@@ -59,5 +59,9 @@ export class UserRegister {
         this.confirmPassword = confirmPassword;
     }
 }
+export class RegisterRules {
+    name: string;
+    checked: boolean;
+}
 
 

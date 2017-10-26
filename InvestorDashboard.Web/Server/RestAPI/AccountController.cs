@@ -26,7 +26,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
-        private readonly IAccountManager _accountManager;
         private readonly IAuthorizationService _authorizationService;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -35,10 +34,11 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly ILogger _logger;
         private const string GetUserByIdActionName = "GetUserById";
         private const string GetRoleByIdActionName = "GetRoleById";
+        private readonly ApplicationDbContext _context;
 
         public AccountController(
+          ApplicationDbContext context,
           UserManager<ApplicationUser> userManager,
-          IAccountManager accountManager,
           IAuthorizationService authorizationService,
           SignInManager<ApplicationUser> signInManager,
           //IEmailService emailSender,
@@ -50,8 +50,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
             //_emailSender = emailSender;
             _logger = logger;
             _identityOptions = identityOptions;
-            _accountManager = accountManager;
             _authorizationService = authorizationService;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         [TempData]
@@ -63,7 +63,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             try
             {
-                ApplicationUser appUser = await _accountManager.GetUserByUserNameAsync(this.User.Identity.Name);
+                ApplicationUser appUser = await _userManager.FindByNameAsync(this.User.Identity.Name);
 
                 if (appUser == null)
                     return NotFound(this.User.Identity.Name);
@@ -85,11 +85,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             }
         }
 
-        [HttpGet("users/username/{userName}")]
-        [Produces(typeof(UserViewModel))]
-        public async Task<IActionResult> GetUserByUserName(string userName)
-        {
-            ApplicationUser appUser = await _userManager.FindByNameAsync(userName);
+
         [HttpPut("users/me")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
         {

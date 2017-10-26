@@ -1,24 +1,33 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { UserRegister } from '../../models/user.model';
+import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
 import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { Utilities } from '../../services/utilities';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material';
+import { DOCUMENT } from '@angular/platform-browser';
+
+const defaultDialogConfig = new MatDialogConfig();
 
 @Component({
     selector: 'app-register',
     templateUrl: './register.component.html',
     styleUrls: ['./register.component.scss']
 })
-
 export class RegisterComponent implements OnInit {
+
+    dialogRef: MatDialogRef<RegisterRulesDialogComponent> | null;
+    registerRules: RegisterRules;
     formResetToggle = true;
     isLoading = false;
     registerForm = new UserRegister();
 
-    constructor(private alertService: AlertService, private authService: AuthService) {
 
+    constructor(private alertService: AlertService, private authService: AuthService,
+        public dialog: MatDialog, @Inject(DOCUMENT) doc: any) {
+            
+      
     }
 
 
@@ -27,6 +36,14 @@ export class RegisterComponent implements OnInit {
         this.registerForm.email = 'denis.skvortsow@gmail.com';
         this.registerForm.password = '123456_Kol';
         this.registerForm.confirmPassword = '123456_Kol';
+
+        
+        // this.dialogRef = this.dialog.open(RegisterRulesDialogComponent);
+        // this.dialogRef.afterClosed().subscribe((result: RegisterRules) => {
+        //     this.registerRules = result;
+        //     console.log(this.registerRules);
+        //     this.dialogRef = undefined;
+        // });
     }
 
     OnSubmit() {
@@ -73,4 +90,21 @@ export class RegisterComponent implements OnInit {
         });
     }
 
+}
+
+
+@Component({
+    selector: 'accept-rules-dialog',
+    templateUrl: './accept-rules.dialog.component.html'
+})
+export class RegisterRulesDialogComponent {
+    public _acceptRules: RegisterRules[] = [
+        { name: 'OptionA', checked: false },
+        { name: 'OptionB', checked: false },
+        { name: 'OptionC', checked: false }
+    ];
+
+    constructor(
+        public dialogRef: MatDialogRef<RegisterRulesDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any) { }
 }
