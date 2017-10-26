@@ -35,6 +35,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private const string GetUserByIdActionName = "GetUserById";
         private const string GetRoleByIdActionName = "GetRoleById";
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
         public AccountController(
           ApplicationDbContext context,
@@ -43,7 +44,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
           SignInManager<ApplicationUser> signInManager,
           //IEmailService emailSender,
           ILogger<AccountController> logger,
-          IOptions<IdentityOptions> identityOptions)
+          IOptions<IdentityOptions> identityOptions, 
+          IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -52,6 +54,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             _identityOptions = identityOptions;
             _authorizationService = authorizationService;
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [TempData]
@@ -99,7 +102,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
 
                 if (appUser == null)
                     return NotFound(appUser.Id);
-                    Mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
+                    _mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
 
                     var result = await _userManager.UpdateAsync(appUser);
 
