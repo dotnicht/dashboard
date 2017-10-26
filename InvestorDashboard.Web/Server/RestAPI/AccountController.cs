@@ -1,11 +1,12 @@
 
 
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
-using InvestorDashboard.Backend.Core.Interfaces;
+using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Web.Controllers;
 using InvestorDashboard.Web.Models.AccountViewModels;
@@ -84,6 +85,11 @@ namespace InvestorDashboard.Web.Server.RestAPI
             }
         }
 
+        [HttpGet("users/username/{userName}")]
+        [Produces(typeof(UserViewModel))]
+        public async Task<IActionResult> GetUserByUserName(string userName)
+        {
+            ApplicationUser appUser = await _userManager.FindByNameAsync(userName);
         [HttpPut("users/me")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
         {
@@ -250,12 +256,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
         #region Helpers
         private async Task<UserViewModel> GetUserViewModelHelper(string userId)
         {
-            var userAndRoles = await _accountManager.GetUserAndRolesAsync(userId);
-            if (userAndRoles == null)
-                return null;
-
-            var userVM = Mapper.Map<UserViewModel>(userAndRoles.Item1);
-            userVM.Roles = userAndRoles.Item2;
+            var userVM = Mapper.Map<UserViewModel>(_context.Users.SingleOrDefault());
+            userVM.Roles = new string[0];
 
             return userVM;
         }

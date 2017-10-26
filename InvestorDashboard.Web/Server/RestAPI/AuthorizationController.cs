@@ -8,8 +8,6 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using AutoMapper;
-using InvestorDashboard.Backend.Core;
-using InvestorDashboard.Backend.Core.Interfaces;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Web.Models;
@@ -31,7 +29,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
     [Route("[controller]/[action]")]
     public class AuthorizationController : Controller
     {
-        private readonly IAccountManager _accountManager;
         private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -45,7 +42,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
           SignInManager<ApplicationUser> signInManager,
           UserManager<ApplicationUser> userManager,
           ILogger<AuthorizationController> loger,
-          IAccountManager accountManager,
           IEnumerable<ICryptoService> cryptoServices)
         {
             _applicationManager = applicationManager;
@@ -53,7 +49,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = loger;
-            _accountManager = accountManager;
             _cryptoServices = cryptoServices;
         }
 
@@ -375,22 +370,22 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private async Task<AuthenticationTicket> CreateTicketAsync(
           OpenIdConnectRequest request, ApplicationUser user,
               AuthenticationProperties properties = null)
+        {
+            // Create a new ClaimsPrincipal containing the claims that
+            // will be used to create an id_token, a token or a code.
+            var principal = await _signInManager.CreateUserPrincipalAsync(user);
+
+            // Create a new authentication ticket holding the user identity.
+            var ticket = new AuthenticationTicket(principal, properties,
+              OpenIdConnectServerDefaults.AuthenticationScheme);
+
+            //if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
+            //{
+            // Set the list of scopes granted to the client application.
+            // Note: the offline_access scope must be granted
+            // to allow OpenIddict to return a refresh token.
+            ticket.SetScopes(new[]
             {
-                // Create a new ClaimsPrincipal containing the claims that
-                // will be used to create an id_token, a token or a code.
-                var principal = await _signInManager.CreateUserPrincipalAsync(user);
-
-                // Create a new authentication ticket holding the user identity.
-                var ticket = new AuthenticationTicket(principal, properties,
-                  OpenIdConnectServerDefaults.AuthenticationScheme);
-
-                //if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
-                //{
-                // Set the list of scopes granted to the client application.
-                // Note: the offline_access scope must be granted
-                // to allow OpenIddict to return a refresh token.
-                ticket.SetScopes(new[]
-                {
                 OpenIdConnectConstants.Scopes.OpenId,
                 OpenIdConnectConstants.Scopes.Email,
                 OpenIdConnectConstants.Scopes.Phone,
@@ -398,67 +393,67 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 OpenIdConnectConstants.Scopes.OfflineAccess,
                 OpenIddictConstants.Scopes.Roles
               }.Intersect(request.GetScopes()));
-                //}
+            //}
 
-                ticket.SetResources(request.GetResources());
+            ticket.SetResources(request.GetResources());
 
-                // Note: by default, claims are NOT automatically included in the access and identity tokens.
-                // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
-                // whether they should be included in access tokens, in identity tokens or in both.
+            // Note: by default, claims are NOT automatically included in the access and identity tokens.
+            // To allow OpenIddict to serialize them, you must attach them a destination, that specifies
+            // whether they should be included in access tokens, in identity tokens or in both.
 
-                foreach (var claim in ticket.Principal.Claims)
+            foreach (var claim in ticket.Principal.Claims)
+            {
+                // Never include the security stamp in the access and identity tokens, as it's a secret value.
+                if (claim.Type == _identityOptions.Value.ClaimsIdentity.SecurityStampClaimType)
                 {
-                    // Never include the security stamp in the access and identity tokens, as it's a secret value.
-                    if (claim.Type == _identityOptions.Value.ClaimsIdentity.SecurityStampClaimType)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    var destinations = new List<string>
+                var destinations = new List<string>
               {
                 OpenIdConnectConstants.Destinations.AccessToken
               };
 
-                    // Only add the iterated claim to the id_token if the corresponding scope was granted to the client application.
-                    // The other claims will only be added to the access_token, which is encrypted when using the default format.
-                    if ((claim.Type == OpenIdConnectConstants.Claims.Name && ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
-                        || (claim.Type == OpenIdConnectConstants.Claims.Email && ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
-                        || (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)) ||
-                        (claim.Type == CustomClaimTypes.Permission && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
-                    {
-                        destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
-                    }
-
-                    claim.SetDestinations(destinations);
-                }
-                var identity = principal.Identity as ClaimsIdentity;
-
-
-                if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
+                // Only add the iterated claim to the id_token if the corresponding scope was granted to the client application.
+                // The other claims will only be added to the access_token, which is encrypted when using the default format.
+                if ((claim.Type == OpenIdConnectConstants.Claims.Name && ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
+                    || (claim.Type == OpenIdConnectConstants.Claims.Email && ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
+                    || (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)) ||
+                    (claim.Type == CustomClaimTypes.Permission && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
                 {
-                    if (!string.IsNullOrWhiteSpace(user.FirstName))
-                        identity.AddClaim(CustomClaimTypes.JobTitle, user.FirstName, OpenIdConnectConstants.Destinations.IdentityToken);
-
-                    if (!string.IsNullOrWhiteSpace(user.LastName))
-                        identity.AddClaim(CustomClaimTypes.FullName, user.LastName, OpenIdConnectConstants.Destinations.IdentityToken);
-
-                    if (!string.IsNullOrWhiteSpace(user.Configuration))
-                        identity.AddClaim(CustomClaimTypes.Configuration, user.Configuration, OpenIdConnectConstants.Destinations.IdentityToken);
+                    destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
                 }
 
-                if (ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
-                {
-                    if (!string.IsNullOrWhiteSpace(user.Email))
-                        identity.AddClaim(CustomClaimTypes.Email, user.Email, OpenIdConnectConstants.Destinations.IdentityToken);
-                }
-
-                if (ticket.HasScope(OpenIdConnectConstants.Scopes.Phone))
-                {
-                    if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
-                        identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber, OpenIdConnectConstants.Destinations.IdentityToken);
-                }
-                return ticket;
+                claim.SetDestinations(destinations);
             }
+            var identity = principal.Identity as ClaimsIdentity;
+
+
+            if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
+            {
+                if (!string.IsNullOrWhiteSpace(user.FirstName))
+                    identity.AddClaim(CustomClaimTypes.JobTitle, user.FirstName, OpenIdConnectConstants.Destinations.IdentityToken);
+
+                if (!string.IsNullOrWhiteSpace(user.LastName))
+                    identity.AddClaim(CustomClaimTypes.FullName, user.LastName, OpenIdConnectConstants.Destinations.IdentityToken);
+
+                if (!string.IsNullOrWhiteSpace(user.Configuration))
+                    identity.AddClaim(CustomClaimTypes.Configuration, user.Configuration, OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+
+            if (ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
+            {
+                if (!string.IsNullOrWhiteSpace(user.Email))
+                    identity.AddClaim(CustomClaimTypes.Email, user.Email, OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+
+            if (ticket.HasScope(OpenIdConnectConstants.Scopes.Phone))
+            {
+                if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+                    identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber, OpenIdConnectConstants.Destinations.IdentityToken);
+            }
+            return ticket;
+        }
 
         [HttpGet("~/connect/isauthorization")]
         public IActionResult IsAuthorization()

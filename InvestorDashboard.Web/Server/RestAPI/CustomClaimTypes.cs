@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InvestorDashboard.Backend.Core
+namespace InvestorDashboard.Web
 {
     public class CustomClaimTypes
     {

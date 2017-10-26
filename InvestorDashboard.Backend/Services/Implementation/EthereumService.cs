@@ -15,7 +15,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : IEthereumService
     {
-        private readonly ApplicationDbContext _context;        
+        private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IKeyVaultService _keyVaultService;
         private readonly IExchangeRateService _exchangeRateService;
@@ -44,7 +44,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var ecKey = EthECKey.GenerateKey();
             var address = ecKey.GetPublicAddress();
 
-            await _context.CryptoAddresses.AddAsync(new CryptoAddress
+            var invsetmentAddress = await _context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 CryptoAccount = new CryptoAccount
                 {
@@ -55,6 +55,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 Type = CryptoAddressType.Investment,
                 Address = address
             });
+
+            var contractAddress = _mapper.Map<CryptoAddress>(invsetmentAddress.Entity);
+            contractAddress.Type = CryptoAddressType.Contract;
+            await _context.CryptoAddresses.AddAsync(contractAddress);
 
             _context.SaveChanges();
         }

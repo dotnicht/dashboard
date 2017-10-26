@@ -1,15 +1,6 @@
-
 using AutoMapper;
-
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using InvestorDashboard.Backend.Core;
 using InvestorDashboard.Backend.Database.Models;
-using StackExchange.Redis;
+using Microsoft.AspNetCore.Identity;
 
 namespace InvestorDashboard.Web.Server.Models
 {
