@@ -3,7 +3,7 @@
     public class TokenSettings
     {
         public decimal TotalCoins { get; set; }
-        public bool SellDisabled { get; set; }
+        public bool IsTokenSaleDisabled { get; set; }
         public decimal Price { get; set; }
     }
 }

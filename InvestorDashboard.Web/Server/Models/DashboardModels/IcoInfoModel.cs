@@ -7,6 +7,6 @@ namespace InvestorDashboard.Web.Server.Models.DashboardModels
         public decimal TotalCoinsBought { get; set; }
         public decimal TotalCoinsBoughtPercent { get; set; }
         public decimal TotalCoins { get; set; }
-        public bool SellDisabled { get; set; }
+        public bool IsTokenSaleDisabled { get; set; }
     }
 }
