@@ -1,56 +1,62 @@
-﻿
-<div class="vertical-center-flex">
+﻿<div class="vertical-center-flex">
   <div class="login-container center-block">
-      <mat-card class="panel ">
-          <mat-card-title class="panel-heading">
-              <span class="glyphicon glyphicon-lock"></span> Register
-          </mat-card-title>
-          <mat-card-content class="panel-body">
-              <div class="col-mat-12 ">
-                <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
-                  <div>
-                    <mat-form-field  class="login">
-                      <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
-                        required email>
-                      <mat-error *ngIf="email.invalid && (email.dirty || email.touched)">
-            
-                        <div *ngIf="email.errors.required">Email is <strong>required</strong></div>
-                        <div *ngIf="email.errors.email">Email is not <strong>valid</strong></div>
-                      </mat-error>
-                    </mat-form-field>
-            
+    <mat-card class="panel ">
+      <mat-card-title class="panel-heading">
+        <span class="glyphicon glyphicon-lock"></span> Register
+      </mat-card-title>
+      <mat-card-content class="panel-body">
+        <div class="col-mat-12 ">
+          <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
+            <div>
+              <mat-form-field class="login">
+                <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
+                  required email>
+                <mat-error *ngIf="email.invalid && (email.dirty || email.touched)">
+
+                  <div *ngIf="email.errors.required">Email is
+                    <strong>required</strong>
                   </div>
-                  <mat-form-field>
-                    <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password"
-                      #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$_%&*])).{8,}$">
-                    <mat-error *ngIf="password.invalid && (password.dirty || password.touched)">
-                      <div *ngIf="password.errors.required">Password is <strong>required</strong></div>
-                      <div *ngIf="password.errors.minlength">Min length is 8</div>
-                      <div *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet, 1 LowerCase Alphabet, 1 Number and 1 Special Character</div>
-                    </mat-error>
-                  </mat-form-field>
-                  <mat-form-field>
-                    <input matInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel"
-                      placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
-                    <mat-error *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)">
-                      Password mismatch
-                    </mat-error>
-             
-                  </mat-form-field>
-            
-                  <div style="display: flex;justify-content: space-between;align-items: center;">
-                    <button type="submit" [disabled]="!f.form.valid" mat-raised-button color="primary">
-                              <span>{{'buttons.Register' | translate}}</span>
-                            </button>
-                    <span>{{'other.Or' | translate}}</span>
-                    <button type="button" [routerLink]="['/login']" mat-raised-button >
-                              <span>{{'buttons.Login' | translate}}</span>
-                            </button>
+                  <div *ngIf="email.errors.email">Email is not
+                    <strong>valid</strong>
                   </div>
-                </form>
-              </div>
-          </mat-card-content>
-      </mat-card>
+                </mat-error>
+              </mat-form-field>
+
+            </div>
+            <mat-form-field>
+              <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password"
+                [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$_%&*])).{8,}$">
+              <mat-error *ngIf="password.invalid && (password.dirty || password.touched)">
+                <div *ngIf="password.errors.required">Password is
+                  <strong>required</strong>
+                </div>
+                <div *ngIf="password.errors.minlength">Min length is 8</div>
+                <div *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet, 1 LowerCase Alphabet, 1 Number and 1 Special Character</div>
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel"
+                placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
+              <mat-error *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)">
+                Password mismatch
+              </mat-error>
+
+            </mat-form-field>
+
+            <div style="display: flex;justify-content: space-between;align-items: center;">
+              <button type="submit" [disabled]="!f.form.valid" mat-raised-button color="primary">
+                <span>{{'buttons.Register' | translate}}</span>
+              </button>
+              
+              <span>{{'other.Or' | translate}}</span>
+              <button type="button" [routerLink]="['/login']" mat-raised-button>
+                <span>{{'buttons.Login' | translate}}</span>
+              </button>
+            </div>
+          </form>
+         
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>
-

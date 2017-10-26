@@ -44,7 +44,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     }
     get clientInfo() {
-        //return new ClientInfo();
          return this.clientInfoService.clientInfo;
     }
     /** Called by Angular after dashboard component initialized */
@@ -55,9 +54,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
 
         this.alertService.stopLoadingMessage();
-        // if (isPlatformBrowser) {
-        //     this.qrInitialize('http://jindo.dev.naver.com/collie');
-        // }
     }
     public ngOnDestroy(): void {
         if (this.paymentTypesSubscription) {
