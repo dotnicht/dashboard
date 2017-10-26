@@ -36,6 +36,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             var status = new IcoInfoModel
             {
+                SellDisabled = _tokenSettings.Value.SellDisabled,
                 TotalCoins = _tokenSettings.Value.TotalCoins,
                 TotalCoinsBought = _context.Users.Sum(x => x.Balance),
                 TotalInvestors = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Select(x => x.CryptoAddress.CryptoAccount.UserId).Distinct().Count(),

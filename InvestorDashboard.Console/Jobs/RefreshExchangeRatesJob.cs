@@ -26,10 +26,10 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             var currencies = new[] { Currency.BTC, Currency.ETH };
-            Parallel.ForEach(currencies, async x =>
+            foreach (var currency in currencies)
             {
-                await _exchangeRateService.RefreshExchangeRate(x);
-            });
+                await _exchangeRateService.RefreshExchangeRate(currency);
+            }
 
             await Out.WriteLineAsync($"Exchange rates update completed for currencies: { string.Join(", ", currencies.Select(x => x.ToString())) }");
         }
