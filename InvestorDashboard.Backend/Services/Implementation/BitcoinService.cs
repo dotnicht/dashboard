@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NBitcoin;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -38,6 +39,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 throw new ArgumentNullException(nameof(userId));
             }
+
+            var networkType = GetNetworkType();
+            var privateKey = new Key();
+            var address = privateKey.PubKey.GetAddress(networkType).ToString();
+
+            await _context.CryptoAddresses.AddAsync(new CryptoAddress
+            {
+                CryptoAccount = new CryptoAccount
+                {
+                    UserId = userId,
+                    Currency = Currency,
+                    KeyStore = ""//privateKey.ToBytes()
+                },
+                Type = CryptoAddressType.Investment,
+                Address = address
+            });
+
+            _context.SaveChanges();
         }
 
         public async Task RefreshInboundTransactions()
@@ -64,6 +83,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
+        }
+
+        private Network GetNetworkType()
+        {
+            return _options.Value.NetworkType.Equals("BTC", StringComparison.InvariantCultureIgnoreCase) ?
+                Network.Main : Network.TestNet;
         }
 
         private async Task<Transaction> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
