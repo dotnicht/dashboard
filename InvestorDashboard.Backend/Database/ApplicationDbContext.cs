@@ -26,9 +26,6 @@ namespace InvestorDashboard.Backend.Database
             builder.UseOpenIddict();
 
             builder.Entity<CryptoTransaction>()
-                .Property(x => x.Id)
-                .HasDefaultValueSql("NEWSEQUENTIALID()");
-            builder.Entity<CryptoTransaction>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
             builder.Entity<CryptoTransaction>()
@@ -36,23 +33,13 @@ namespace InvestorDashboard.Backend.Database
                 .IsUnique();
 
             builder.Entity<CryptoAddress>()
-                .Property(x => x.Id)
-//                .HasDefaultValueSql("NEWSEQUENTIALID()")
-                ;
-            builder.Entity<CryptoAddress>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
 
             builder.Entity<CryptoAccount>()
-                .Property(x => x.Id)
-                .HasDefaultValueSql("NEWSEQUENTIALID()");
-            builder.Entity<CryptoAccount>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
 
-            builder.Entity<ExchangeRate>()
-                .Property(x => x.Id)
-                .HasDefaultValueSql("NEWSEQUENTIALID()");
             builder.Entity<ExchangeRate>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
