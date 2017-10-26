@@ -25,7 +25,7 @@ export class User {
     public firstName: string;
     public email: string;
     public balance: number;
-    public phoneCode: number;
+    public phoneCode: string;
     public phoneNumber: string;
     public isEnabled: boolean;
     public isLockedOut: boolean;
@@ -58,6 +58,10 @@ export class UserRegister {
         this.password = password;
         this.confirmPassword = confirmPassword;
     }
+}
+export class RegisterRules {
+    name: string;
+    checked: boolean;
 }
 
 

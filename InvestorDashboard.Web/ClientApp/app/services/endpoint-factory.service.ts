@@ -144,8 +144,6 @@ export class EndpointFactory {
         headers.append('Accept', `application/vnd.iman.v${EndpointFactory.apiVersion}+json, application/json, text/plain, */*`);
         headers.append('App-Version', ConfigurationService.appVersion);
 
-        console.log(headers);
-
         return new RequestOptions({ headers: headers });
     }
 

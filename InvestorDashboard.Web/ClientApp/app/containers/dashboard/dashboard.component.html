@@ -24,12 +24,12 @@
         </div>
         <div class="item">
           <div class="color-block"></div>
-          <div class="value">{{icoInfo.totalUsd}}</div>
+          <div class="value">{{icoInfo.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
         <div class="item">
           <div class="color-block"></div>
-          <div class="value">{{icoInfo.totalCoins}} DTT</div>
+          <div class="value">{{icoInfo.totalCoinsBought}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div>
       </div>
@@ -39,8 +39,8 @@
           {{'clientInfo.IcoHasStarted' | translate}}
         </div>
         <div style="margin-bottom: 30px;">
-          <p>{{'clientInfo.TotalInvestments' | translate}} - 22%</p>
-          2.24556544 BTC / 10BTC
+          <p>{{'clientInfo.TotalInvestments' | translate}} - {{icoInfo.totalCoinsBoughtPercent}} %</p>
+          {{icoInfo.totalCoinsBought}} DTT / {{icoInfo.totalCoins}} DTT
         </div>
         <div>
           <mat-progress-bar mode="determinate" [value]="30" [color]="'primary'">

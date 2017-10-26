@@ -101,8 +101,8 @@ export class AccountEndpoint extends EndpointFactory {
     }
 
     getUpdateUserEndpoint(userObject: any, userId?: string): Observable<Response> {
-        let endpointUrl = userId ? `${this.usersUrl}/${userId}` : this.currentUserUrl;
-
+        let endpointUrl = this.currentUserUrl;
+        console.log(endpointUrl);
         return this.http.put(endpointUrl, JSON.stringify(userObject), this.getAuthHeader(true))
             .map((response: Response) => {
                 return response;

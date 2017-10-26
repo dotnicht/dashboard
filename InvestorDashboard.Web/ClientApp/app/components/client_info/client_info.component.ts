@@ -20,12 +20,11 @@ export class ClientInfoComponent implements OnInit {
     }
 
     ngOnInit(): void {
-
+        this.clientInfoService.updateClientInfo();
     }
     get clientInfo() {
-       //  return new ClientInfo();
-            return this.clientInfoService.clientInfo;
-        
+        //  return new ClientInfo();
+        return this.clientInfoService.clientInfo;
     }
     logout() {
         this.authService.logout();

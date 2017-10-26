@@ -42,7 +42,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         private alertService: AlertService,
         private authService: AuthService) {
 
-
     }
     get clientInfo() {
         //return new ClientInfo();

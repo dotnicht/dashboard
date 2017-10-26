@@ -1,0 +1,5 @@
+<mat-checkbox *ngFor="let option of _registerRules" [(ngModel)]="option.checked" name="rule" color="primary">{{option.name}}
+
+</mat-checkbox>
+
+<button type="button" (click)="dialogRef.close(_acceptRules)">Close dialog</button>

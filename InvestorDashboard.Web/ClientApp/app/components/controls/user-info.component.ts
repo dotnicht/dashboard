@@ -211,12 +211,7 @@ export class UserInfoComponent implements OnInit {
         this.isSaving = true;
         this.alertService.startLoadingMessage('Saving changes...');
 
-        if (this.isNewUser) {
-            this.accountService.newUser(this.userEdit).subscribe(user => this.saveSuccessHelper(user), error => this.saveFailedHelper(error));
-        }
-        else {
-            this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
-        }
+        this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
     }
 
 

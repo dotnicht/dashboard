@@ -73,6 +73,7 @@ export class AccountService {
 
 
     updateUser(user: UserEdit) {
+        console.log(user);
         if (user.id) {
             return this.accountEndpoint.getUpdateUserEndpoint(user, user.id);
         }

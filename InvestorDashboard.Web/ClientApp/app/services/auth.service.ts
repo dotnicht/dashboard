@@ -279,7 +279,6 @@ export class AuthService {
       });
     });
 
-    console.log(this.isAuth);
     return (this.currentUser != null);
     // return this.isAuth && (this.currentUser != null);
   }

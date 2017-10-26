@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
@@ -31,19 +32,18 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly SignInManager<ApplicationUser> _signInManager;
         //private readonly IEmailService _emailSender;
         private readonly ILogger _logger;
-
         private const string GetUserByIdActionName = "GetUserById";
         private const string GetRoleByIdActionName = "GetRoleById";
         private readonly ApplicationDbContext _context;
 
         public AccountController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            IAuthorizationService authorizationService,
-            SignInManager<ApplicationUser> signInManager,
-            //IEmailService emailSender,
-            ILogger<AccountController> logger,
-            IOptions<IdentityOptions> identityOptions)
+          ApplicationDbContext context,
+          UserManager<ApplicationUser> userManager,
+          IAuthorizationService authorizationService,
+          SignInManager<ApplicationUser> signInManager,
+          //IEmailService emailSender,
+          ILogger<AccountController> logger,
+          IOptions<IdentityOptions> identityOptions)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -63,7 +63,17 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             try
             {
-                return await GetUserByUserName(this.User.Identity.Name);
+                ApplicationUser appUser = await _userManager.FindByNameAsync(this.User.Identity.Name);
+
+                if (appUser == null)
+                    return NotFound(this.User.Identity.Name);
+
+                UserViewModel userVM = await GetUserViewModelHelper(appUser.Id);
+
+                if (userVM != null)
+                    return Ok(userVM);
+                else
+                    return NotFound(appUser.Id);
             }
             catch (Exception ex)
             {
@@ -75,37 +85,30 @@ namespace InvestorDashboard.Web.Server.RestAPI
             }
         }
 
-        [HttpGet("users/username/{userName}")]
-        [Produces(typeof(UserViewModel))]
-        public async Task<IActionResult> GetUserByUserName(string userName)
+
+        [HttpPut("users/me")]
+        public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
         {
-            ApplicationUser appUser = await _userManager.FindByNameAsync(userName);
+            ApplicationUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
-            //if (!(await _authorizationService.AuthorizeAsync(this.User, appUser?.Id ?? "", AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
-            //  return new ChallengeResult();
+            if (ModelState.IsValid)
+            {
+                if (user == null)
+                    return BadRequest($"{nameof(user)} cannot be null");
 
-            if (appUser == null)
-                return NotFound(userName);
 
-            return await GetUserById(appUser.Id);
+                if (appUser == null)
+                    return NotFound(appUser.Id);
+                    Mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
+
+                    var result = await _userManager.UpdateAsync(appUser);
+
+                return Ok();
+                
+            }
+
+            return BadRequest(ModelState);
         }
-
-        [HttpGet("users/{id}", Name = GetUserByIdActionName)]
-        [Produces(typeof(UserViewModel))]
-        public async Task<IActionResult> GetUserById(string id)
-        {
-            //if (!(await _authorizationService.AuthorizeAsync(this.User, id, AuthPolicies.ViewUserByUserIdPolicy)).Succeeded)
-            //  return new ChallengeResult();
-
-            UserViewModel userVM = await GetUserViewModelHelper(id);
-
-            if (userVM != null)
-                return Ok(userVM);
-            else
-                return NotFound(id);
-        }
-
-
         //[HttpGet]
         //[AllowAnonymous]
         //public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null)
