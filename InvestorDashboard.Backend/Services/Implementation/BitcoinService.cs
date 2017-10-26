@@ -63,7 +63,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
 
-            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.BTC && x.Type == CryptoAddressType.Investment))
+            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.BTC && x.Type == CryptoAddressType.Investment).ToArray())
             {
                 foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromChain(address.Address)).Data.Txs)
                 {
@@ -77,8 +77,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         trx.ExchangeRate = btcRate;
                         trx.TokenPrice = _tokenSettings.Value.Price;
 
-                        await _context.CryptoTransactions.AddAsync(trx);
-
+                        _context.CryptoTransactions.Add(trx);
                         _context.SaveChanges();
                     }
                 }
@@ -156,7 +155,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         internal class Tx
         {
             public string Txid { get; set; }
-            public int Block_no { get; set; }
+            public int? Block_no { get; set; }
             public int Confirmations { get; set; }
             public int Time { get; set; }
             public Outgoing Outgoing { get; set; }
