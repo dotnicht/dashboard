@@ -25,8 +25,11 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            Parallel.ForEach(_cryptoServices, x => x.RefreshInboundTransactions().Wait());
-            _cryptoServices.ToList().ForEach(x => x.Dispose());
+            _cryptoServices.ToList().ForEach(x =>
+            {
+                x.RefreshInboundTransactions().Wait();
+                x.Dispose();
+            });
             await Out.WriteLineAsync($"Transaction refresh completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Currency.ToString())) }");
         }
     }

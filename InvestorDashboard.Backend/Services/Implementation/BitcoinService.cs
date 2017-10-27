@@ -1,22 +1,36 @@
-﻿using InvestorDashboard.Backend.ConfigurationSections;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
+using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
-using System;
-using System.Threading.Tasks;
+using NBitcoin;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class BitcoinService : IBitcoinService
+    public class BitcoinService : IBitcoinService
     {
+        private readonly ApplicationDbContext _context;
         private readonly IOptions<BitcoinSettings> _options;
         private readonly IKeyVaultService _keyVaultService;
+        private readonly IExchangeRateService _exchangeRateService;
+        private readonly IMapper _mapper;
+        private readonly IOptions<TokenSettings> _tokenSettings;
 
         public Currency Currency => Currency.BTC;
 
-        public BitcoinService(IOptions<BitcoinSettings> options, IKeyVaultService keyVaultService)
+        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IOptions<TokenSettings> tokenSettings, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService, IMapper mapper)
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
+            _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
+            _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task UpdateUserDetails(string userId)
@@ -25,15 +39,146 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 throw new ArgumentNullException(nameof(userId));
             }
+
+            var networkType = GetNetworkType();
+            var privateKey = new Key();
+            var address = privateKey.PubKey.GetAddress(networkType).ToString();
+
+            await _context.CryptoAddresses.AddAsync(new CryptoAddress
+            {
+                CryptoAccount = new CryptoAccount
+                {
+                    UserId = userId,
+                    Currency = Currency,
+                    KeyStore = privateKey.ToString(networkType)
+                },
+                Type = CryptoAddressType.Investment,
+                Address = address
+            });
+
+            _context.SaveChanges();
         }
 
         public async Task RefreshInboundTransactions()
         {
+            var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
+
+            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.BTC && x.Type == CryptoAddressType.Investment).ToArray())
+            {
+                foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromChain(address.Address)).Data.Txs)
+                {
+                    if (!hashes.Contains(transaction.Txid))
+                    {
+                        var btcRate = await _exchangeRateService.GetExchangeRate(Currency.BTC, Currency.USD, DateTime.UtcNow, true);
+
+                        var trx = _mapper.Map<CryptoTransaction>(transaction);
+                        trx.CryptoAddress = address;
+                        trx.Direction = CryptoTransactionDirection.Inbound;
+                        trx.ExchangeRate = btcRate;
+                        trx.TokenPrice = _tokenSettings.Value.Price;
+
+                        _context.CryptoTransactions.Add(trx);
+                        _context.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        private Network GetNetworkType()
+        {
+            return _options.Value.NetworkType.Equals("BTC", StringComparison.InvariantCultureIgnoreCase)
+                ? Network.Main
+                : Network.TestNet;
+        }
+
+        private Task<Transaction> GetInboundTransactionsByRecipientAddressFromChain(string address)
+        {
+            var uri = $"{_options.Value.ApiBaseUrl}address/{_options.Value.NetworkType}/{address}";
+            return RestUtil.Get<Transaction>(uri);
         }
 
         public void Dispose()
         {
-            //_context.Dispose();
+            _context.Dispose();
+        }
+
+        internal class Spent
+        {
+            public string Txid { get; set; }
+            public int Input_no { get; set; }
+        }
+
+        internal class Output
+        {
+            public int Output_no { get; set; }
+            public string Address { get; set; }
+            public string Value { get; set; }
+            public Spent Spent { get; set; }
+        }
+
+        internal class Outgoing
+        {
+            public string Value { get; set; }
+            public List<Output> Outputs { get; set; }
+        }
+
+        internal class Spent2
+        {
+            public string Txid { get; set; }
+            public int Input_no { get; set; }
+        }
+
+        internal class ReceivedFrom
+        {
+            public string Txid { get; set; }
+            public int Output_no { get; set; }
+        }
+
+        internal class Input
+        {
+            public int Input_no { get; set; }
+            public string Address { get; set; }
+            public ReceivedFrom Received_from { get; set; }
+        }
+
+        internal class Incoming
+        {
+            public int Output_no { get; set; }
+            public string Value { get; set; }
+            public Spent2 Spent { get; set; }
+            public List<Input> Inputs { get; set; }
+            public int Req_sigs { get; set; }
+            public string Script_asm { get; set; }
+            public string Script_hex { get; set; }
+        }
+
+        internal class Tx
+        {
+            public string Txid { get; set; }
+            public int? Block_no { get; set; }
+            public int Confirmations { get; set; }
+            public int Time { get; set; }
+            public Outgoing Outgoing { get; set; }
+            public Incoming Incoming { get; set; }
+        }
+
+        internal class Data
+        {
+            public string Network { get; set; }
+            public string Address { get; set; }
+            public string Balance { get; set; }
+            public string Received_value { get; set; }
+            public string Pending_value { get; set; }
+            public int Total_txs { get; set; }
+            public List<Tx> Txs { get; set; }
+        }
+
+        internal class Transaction
+        {
+            public string Status { get; set; }
+            public Data Data { get; set; }
+            public int Code { get; set; }
+            public string Message { get; set; }
         }
     }
 }

@@ -13,6 +13,7 @@ using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Web.Models;
 using InvestorDashboard.Web.Models.AccountViewModels;
 using InvestorDashboard.Web.Server.Helpers;
+using InvestorDashboard.Web.Server.Models;
 using InvestorDashboard.Web.Server.Models.AccountViewModels;
 using InvestorDashboard.Web.Server.Models.AuthorizationViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -35,6 +36,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly IMapper _mapper;
 
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -42,7 +44,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
           SignInManager<ApplicationUser> signInManager,
           UserManager<ApplicationUser> userManager,
           ILogger<AuthorizationController> loger,
-          IEnumerable<ICryptoService> cryptoServices)
+          IEnumerable<ICryptoService> cryptoServices, 
+          IMapper mapper)
         {
             _applicationManager = applicationManager;
             _identityOptions = identityOptions;
@@ -50,6 +53,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             _userManager = userManager;
             _logger = loger;
             _cryptoServices = cryptoServices;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [HttpPost("~/connect/register"), Produces("application/json")]
@@ -69,10 +73,9 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 user.City = "Boston".ToUpper();
                 user.IsEnabled = true;
 
-                ApplicationUser appUser = Mapper.Map<ApplicationUser>(user);
-
-                //var result = await _accountManager.CreateUserAsync(appUser, user.Password);
+                ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
                 var result = await _userManager.CreateAsync(appUser, user.Password);
+
                 if (result.Succeeded)
                 {
                     Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(appUser.Id));
