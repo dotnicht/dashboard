@@ -26,7 +26,7 @@ import { Observable } from 'rxjs/Observable';
 @Component({
     selector: 'app',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
+    styleUrls: ['./app.component.scss', './green.theme.scss'],
     encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -99,7 +99,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
 
 
-        translationService.addLanguages(['en', 'ru']);
+        translationService.addLanguages(['en']);
         translationService.setDefaultLanguage('en');
 
         this.toastyConfig.theme = 'bootstrap';
@@ -141,7 +141,7 @@ export class AppComponent implements OnInit, OnDestroy {
                 // else
                 //     this.alertService.showStickyMessage('Session Expired', 'Your Session has expired. Please log in again', MessageSeverity.warn);
             }
-        }, 500);
+        }, 100);
 
         this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
         this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
@@ -157,7 +157,7 @@ export class AppComponent implements OnInit, OnDestroy {
                 if (!this.isUserLoggedIn) {
                     this.alertService.showMessage('Session Ended!', '', MessageSeverity.default);
                 }
-            }, 500);
+            }, 100);
         });
         this.router.events.subscribe(event => {
             if (event instanceof NavigationStart) {
@@ -275,7 +275,7 @@ export class AppComponent implements OnInit, OnDestroy {
         }
     }
     public refreshData() {
-       
+
 
         // this.subscribeToClientInfoData();
     }

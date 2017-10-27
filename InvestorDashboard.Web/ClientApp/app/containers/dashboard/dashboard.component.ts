@@ -27,7 +27,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     public paymentTypes: PaymentType[];
     public icoInfo: IcoInfo = new IcoInfo();
 
-    public selectedPaymentType: string;
+    public selectedPaymentType: PaymentType = new PaymentType();
 
     public qrLoaded: boolean = true;
 
@@ -44,7 +44,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     }
     get clientInfo() {
-         return this.clientInfoService.clientInfo;
+        return this.clientInfoService.clientInfo;
     }
     /** Called by Angular after dashboard component initialized */
     ngOnInit(): void {
@@ -78,13 +78,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 
     }
-    changePayment(payment) {
+    changePayment(payment: PaymentType) {
         this.qrLoaded = false;
         this.selectedPaymentType = payment;
         this.alertService.startLoadingMessage();
         setTimeout(() => {
             this.qrLoaded = true;
-            this.qrInitialize(payment);
+            this.qrInitialize(payment.address);
             this.alertService.stopLoadingMessage();
 
         }, 100);
@@ -94,12 +94,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     loadData() {
 
         this.icoInfoSubscription = this.dashboardService.getIcoInfo().subscribe(info => {
-            this.icoInfo = info.json() as IcoInfo;
-            this.dashboard.icoInfo = info.json() as IcoInfo;
+            let icoInfo = info.json() as IcoInfo;
+
+            icoInfo.totalCoinsBoughtPercent = Math.round((icoInfo.totalCoinsBought * 100 / icoInfo.totalCoins) * 100) / 100;
+            this.icoInfo = icoInfo;
         });
         this.paymentTypesSubscription = this.dashboardService.getPaymentTypes().subscribe(info => {
-            this.dashboard.paymentTypes = info.json() as PaymentType[];
-            this.paymentTypes = info.json() as PaymentType[];
+            let pt = info.json() as PaymentType[];
+            pt.forEach(element => {
+                element.image = '/img/btc.png';
+            });
+            this.paymentTypes = pt;
         });
         // this.subscribeToData();
     }

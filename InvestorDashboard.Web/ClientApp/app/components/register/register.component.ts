@@ -32,7 +32,7 @@ export class RegisterComponent implements OnInit {
     config = {
         disableClose: true,
         hasBackdrop: false,
-        panelClass: 'custom-overlay-pane-class',
+        panelClass: 'register-rules-dialog',
         data: this.registerRules
     };
 
@@ -71,6 +71,9 @@ export class RegisterComponent implements OnInit {
         if (this.registerRules !== undefined && this.registerRules.every((element, index, array) => {
             return element.checked;
         })) {
+            this.registerRules.forEach(element => {
+                element.checked = false;
+            });
             this.alertService.startLoadingMessage();
             this.authService.register(this.registerForm).subscribe(responce => {
                 setTimeout(() => {
@@ -123,8 +126,8 @@ export class RegisterComponent implements OnInit {
 
 
 @Component({
-    selector: 'accept-rules-dialog',
-    templateUrl: './accept-rules.dialog.component.html'
+    selector: 'register-rules-dialog',
+    templateUrl: './register-rules.dialog.component.html'
 })
 export class RegisterRulesDialogComponent {
     public _acceptRules: RegisterRules[];

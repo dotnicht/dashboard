@@ -42,9 +42,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 TotalInvestors = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Select(x => x.CryptoAddress.CryptoAccount.UserId).Distinct().Count(),
                 TotalUsdInvested = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Sum(x => x.Amount * x.ExchangeRate),
             };
-
-            status.TotalCoinsBoughtPercent = status.TotalCoinsBought * 100 / status.TotalCoins;
-
+            
             return Ok(status);
         }
 

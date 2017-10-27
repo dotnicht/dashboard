@@ -24,7 +24,9 @@ export class ClientInfoEndpointService extends EndpointFactory {
 
     public updateClientInfo() {
         this.getClientInfoEndpoint().subscribe(info => {
-            this.clientInfo = info.json() as ClientInfo;
+            let model = info.json() as ClientInfo;
+            model.balance = Math.round(model.balance * 100) / 100;
+            this.clientInfo = model;
         });
     }
     // protected handleError(error, continuation: () => Observable<any>)  {

@@ -1,6 +1,6 @@
 ﻿  .mat-card {
     display: inline-flex;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     .mat-card-content {
       width: 100%;
     }
@@ -16,7 +16,8 @@
   }
 
   .first {
-    width: calc(50% - 2.5px);
+    width: calc(50% - 7.5px);
+    margin-right: 5px;
     background: linear-gradient(to bottom, #a1e276, #30b9ad);
     color: white;
     .ether-addres {
@@ -27,7 +28,8 @@
   }
 
   .second {
-    width: calc(50% - 2.5px);
+    width: calc(50% - 7.5px);
+    margin-left: 5px;
     .left,
     .right {
       width: calc(50% - 2.5px);
@@ -41,8 +43,6 @@
     .item {
       margin-bottom: 10px;
       .color-block {
-        background: #a4e375;
-        border-radius: 2px;
         width: 32px;
         height: 32px;
         float: left;
@@ -58,8 +58,9 @@
   }
 
   .third {
-    width: calc(60% - 2.5px);
+    width: calc(60% - 7.5px);
     min-height: 300px;
+    margin-right: 5px;
     .title {
       color: rgba(0, 0, 0, .54);
     }
@@ -81,14 +82,14 @@
           line-height: initial;
           width: 200px;
           text-align: left;
-          border: 1px solid white;
+          // border: 1px solid white;
           &.mat-raised-button{
-            border: 1px solid #eeeeee;
-            box-shadow: none;
+            // border: 1px solid #eeeeee;
+            // box-shadow: none;
             border-radius: 5px;
           }
           .currency-icon {
-            background: #a4e375;
+
             border-radius: 2px;
             width: 32px;
             height: 32px;
@@ -118,7 +119,8 @@
 
   .fourth {
     height: 300px;
-    width: calc(40% - 2.5px);
+    width: calc(40% - 7.5px);
+    margin-left: 5px;
     .info {
       height: 100%;
       width: 100%;
@@ -155,7 +157,7 @@
       .block {
         .right {
           .mat-form-field {
-            width: 160px;
+            width: 150px;
           }
           .mat-raised-button {
             width: auto;
@@ -170,11 +172,19 @@
     .fourth {
       width: 100%;
     }
+    .third,.fourth{
+      margin-left: 0;
+      margin-right: 0;
+    }
   }
 
   @media (max-width: 767px) {
     .mat-card {
       width: 100%;
+    }
+    .first,.second{
+      margin-left: 0;
+      margin-right: 0;
     }
     .third {
       .block {

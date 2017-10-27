@@ -148,7 +148,7 @@
     "register": {
       "rules": {
         "first": "I confirm hereby that I am not U.S. citizen/permanent resident/representing U.S. company or citizen/permanent resident/representing company of any jurisdiction, where purchase of ATL tokens is illegal, restricted or requires special accreditation.",
-        "second": "Check here to confirm that you have read and understand the Terms and Conditions and Privacy Policy and expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
+        "second": "Check here to confirm that you have read and understand the <a href='http://data-trading.com/'>Terms and Conditions and Privacy Policy</a> and expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
         "third": "Check here to confirm that you have read and understand the Terms of Token Saleand expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
         "fourth": "Check here to confirm that you have read and understand the White Paper."
       }

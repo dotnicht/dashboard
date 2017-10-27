@@ -7,20 +7,24 @@
       <app-client-info *ngIf="isUserLoggedIn"></app-client-info>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         *ngIf="!isUserLoggedIn" [routerLink]="['/login']" (click)="start.close()">
-        <mat-icon class="mat-24">account_circle</mat-icon><span>{{'mainMenu.Login' | translate}}</span>
+        <mat-icon class="mat-24">account_circle</mat-icon>
+        <span>{{'mainMenu.Login' | translate}}</span>
       </a>
 
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         href="http://www.data-trading.com/" (click)="start.close()">
-        <mat-icon>home</mat-icon><span>{{'mainMenu.Home' | translate}}</span>
+        <mat-icon>home</mat-icon>
+        <span>{{'mainMenu.Home' | translate}}</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/']" (click)="start.close()">
-        <mat-icon>dashboard</mat-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
+        <mat-icon>dashboard</mat-icon>
+        <span>{{'mainMenu.Dashboard' | translate}}</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/faq']" (click)="start.close()">
-        <mat-icon>info</mat-icon><span>{{'mainMenu.Faq' | translate}}</span>
+        <mat-icon>info</mat-icon>
+        <span>{{'mainMenu.Faq' | translate}}</span>
       </a>
 
     </mat-nav-list>
@@ -34,41 +38,45 @@
     </button>
 
     <div class="main-toolbar">
-      <h2>{{appTitle}}</h2>
-      <!-- <img src="/img/logo.svg"> -->
+      <!-- <h2>{{appTitle}}</h2> -->
+      <img src="/img/logo.svg" style="width: 120px;">
       <div>
         <span *ngIf="!isTab">
-        <a href="http://www.data-trading.com/">
-          <button mat-button>
-            <mat-icon>home</mat-icon>{{'mainMenu.Home' | translate}}
-          </button>
-        </a>
-          
+          <a href="http://www.data-trading.com/">
+            <button mat-button>
+              <mat-icon>home</mat-icon>{{'mainMenu.Home' | translate}}
+            </button>
+          </a>
+
 
           <button mat-button [routerLink]="['/']">
-              <mat-icon>dashboard</mat-icon><span>{{'mainMenu.Dashboard' | translate}}</span>
-        </button>
-        <button mat-button [routerLink]="['/faq']">
-              <mat-icon>info</mat-icon><span>{{'mainMenu.Faq' | translate}}</span>
-            </button>
-        <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
-              <mat-icon>account_circle</mat-icon><span>{{userName}}</span>
-            </button>
-        <mat-menu #userMenu="matMenu">
-          <app-client-info></app-client-info>
-        </mat-menu>
-        <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" mat-button>
-                <mat-icon>account_circle</mat-icon><span>{{'mainMenu.Login' | translate}}</span>
-              </button>
+            <mat-icon>dashboard</mat-icon>
+            <span>{{'mainMenu.Dashboard' | translate}}</span>
+          </button>
+          <button mat-button [routerLink]="['/faq']">
+            <mat-icon>info</mat-icon>
+            <span>{{'mainMenu.Faq' | translate}}</span>
+          </button>
+          <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
+            <mat-icon>account_circle</mat-icon>
+            <span>{{userName}}</span>
+          </button>
+          <mat-menu #userMenu="matMenu">
+            <app-client-info></app-client-info>
+          </mat-menu>
+          <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" mat-button>
+            <mat-icon>account_circle</mat-icon>
+            <span>{{'mainMenu.Login' | translate}}</span>
+          </button>
 
         </span>
-        <button mat-button [mat-menu-trigger-for]="langMenu">
+        <!-- <button mat-button [mat-menu-trigger-for]="langMenu">
           <span>{{selectedLanguage}}</span><mat-icon>expand_more</mat-icon>
         </button>
         <mat-menu #langMenu="matMenu">
           <button mat-menu-item (click)="selectLanguage('en');"><span>{{'languages.en' | translate}}</span></button>
           <button mat-menu-item (click)="selectLanguage('ru')"><span>{{'languages.ru' | translate}}</span></button>
-        </mat-menu>
+        </mat-menu> -->
       </div>
 
     </div>

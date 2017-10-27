@@ -49,16 +49,18 @@ export class AppTranslationService {
     }
 
     useBrowserLanguage(): string | void {
-        let browserLang = this.getBrowserLanguage();
+        return 'en';
 
-        if (isPlatformBrowser(this.platformId)) {
-            if (browserLang.match(/en|ru|fr|de|ar|ko/)) {
-                this.changeLanguage(browserLang);
-                return browserLang;
-            }
-        } else {
-            return 'en';
-        }
+        // let browserLang = this.getBrowserLanguage();
+
+        // if (isPlatformBrowser(this.platformId)) {
+        //     if (browserLang.match(/en|ru|fr|de|ar|ko/)) {
+        //         this.changeLanguage(browserLang);
+        //         return browserLang;
+        //     }
+        // } else {
+        //     return 'en';
+        // }
     }
 
     changeLanguage(language: string = 'en') {
@@ -111,8 +113,8 @@ export class TranslateLanguageLoader implements TranslateLoader {
         switch (lang) {
             case 'en':
                 return Observable.of(require('../assets/locale/en.json'));
-            case 'ru':
-                return Observable.of(require('../assets/locale/ru.json'));
+            // case 'ru':
+            //     return Observable.of(require('../assets/locale/ru.json'));
             // case 'fr':
             //     return Observable.of(require('../assets/locale/fr.json'));
             // case 'de':

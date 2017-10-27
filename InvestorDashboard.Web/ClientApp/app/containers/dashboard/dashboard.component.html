@@ -2,13 +2,14 @@
   <mat-card class="first">
     <mat-card-content>
       <h4>{{'clientInfo.Balance' | translate}}:
-        <p>{{clientInfo.balance}} DTT</p>
+        <p style="    font-size: 35px;
+        font-weight: bold;">{{clientInfo.balance}} DTT</p>
       </h4>
 
       <div>
 
       </div>
-      <div class="ether-addres">
+      <div class="ether-addres" style="display:none">
         <div>{{'clientInfo.MyEtherAddress' | translate}}:</div>
         0xca30e63200a0fe3182dc61fc5605efc41456f32
       </div>
@@ -19,6 +20,7 @@
       <div class="left">
         <div class="item">
           <div class="color-block"></div>
+          <!-- <img class="color-block" src="/img/btc.png"> -->
           <div class="value">{{icoInfo.totalInvestors}}</div>
           <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
         </div>
@@ -58,20 +60,21 @@
       <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
         <div class="left">
-          <button (click)="changePayment(type.address)" [attr.class]="selectedPaymentType!=type.currency?'item mat-button':'item mat-raised-button'"
+          <button (click)="changePayment(type)" [attr.class]="selectedPaymentType.currency!=type.currency?'item mat-button':'item mat-raised-button'"
             mat-button *ngFor="let type of paymentTypes">
-            <!-- <img class="currency-icon" [src]="type.image"> -->
-            <div class="currency-icon"></div>
+            <img class="currency-icon" [src]="type.image">
+            <!-- <div class="currency-icon"></div> -->
             <div class="value">{{type.currency}}</div>
             <div class="title">1 {{type.currency}} = {{type.rate}} USD</div>
+          
           </button>
         </div>
-        <div class="right" *ngIf="selectedPaymentType">
+        <div class="right" *ngIf="selectedPaymentType.address">
           
           <div id="qrCode" class="qrCode"></div>
           <div>
             <mat-form-field>
-              <input matInput name="example" [value]="selectedPaymentType" type="text">
+              <input matInput name="example" [value]="selectedPaymentType.address" type="text">
             </mat-form-field>
             <button [color]="'primary'" mat-raised-button>Copy</button>
           </div>
@@ -85,7 +88,7 @@
       <div class="info">
         <div class="info-container">
           <div class="header">Payment method:
-            <b>BTC</b>
+            <b>{{selectedPaymentType.currency}}</b>
           </div>
           <div class="header">How to use:</div>
           <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
