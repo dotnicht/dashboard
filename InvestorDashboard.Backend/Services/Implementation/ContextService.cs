@@ -6,12 +6,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal abstract class ContextService : IDisposable
     {
         private bool isDisposed;
+
         protected ApplicationDbContext Context { get; }
 
-        public ContextService(ApplicationDbContext context)
-        {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-        }
+        protected ContextService(ApplicationDbContext context) => Context = context ?? throw new ArgumentNullException(nameof(context));
 
         public void Dispose()
         {

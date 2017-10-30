@@ -18,6 +18,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public decimal Amount { get; set; }
         public decimal ExchangeRate { get; set; }
         public decimal TokenPrice { get; set; }
+        public decimal BonusPercentage { get; set; }
         public DateTime TimeStamp { get; set; }
         public DateTime Created { get; set; }
     }
