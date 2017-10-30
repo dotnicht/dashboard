@@ -38,19 +38,20 @@ namespace InvestorDashboard.Web.Server.RestAPI
         [HttpGet("ico_status")]
         public async Task<IActionResult> GetIcoStatus()
         {
+            var transactions = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment);
+
             var status = new IcoInfoModel
             {
                 IsTokenSaleDisabled = _tokenSettings.Value.IsTokenSaleDisabled,
                 TotalCoins = _tokenSettings.Value.TotalCoins,
                 TotalCoinsBought = _context.Users.Sum(x => x.Balance),
-                TotalInvestors = _context.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
+                TotalInvestors = transactions
                     .Select(x => x.CryptoAddress.UserId)
                     .Distinct()
                     .Count(),
-                TotalUsdInvested = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Sum(x => x.Amount * x.ExchangeRate),
+                TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate),
             };
-            
+
             return Ok(status);
         }
 
@@ -74,7 +75,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 return Ok(paymentInfo);
             }
 
-            return Ok();
+            return Unauthorized();
         }
 
         [HttpGet("client_info"), Authorize]
@@ -93,7 +94,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 return Ok(clientInfo);
             }
 
-            return Ok();
+            return Unauthorized();
         }
     }
 }
