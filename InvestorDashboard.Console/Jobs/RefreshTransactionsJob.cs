@@ -20,7 +20,7 @@ namespace InvestorDashboard.Console.Jobs
         public RefreshTransactionsJob(ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices) 
             : base(context, options)
         {
-            _cryptoServices = cryptoServices ?? throw new System.ArgumentNullException(nameof(cryptoServices));
+            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
