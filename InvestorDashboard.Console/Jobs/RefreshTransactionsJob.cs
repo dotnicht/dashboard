@@ -17,7 +17,7 @@ namespace InvestorDashboard.Console.Jobs
 
         public override TimeSpan Period => Options.Value.RefreshTransactionsPeriod;
 
-        public RefreshTransactionsJob(ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices) 
+        public RefreshTransactionsJob(ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
             : base(context, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));

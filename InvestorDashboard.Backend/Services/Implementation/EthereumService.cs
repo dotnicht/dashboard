@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -6,92 +9,46 @@ using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Options;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class EthereumService : IEthereumService
+    internal class EthereumService : CryptoService, IEthereumService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly IKeyVaultService _keyVaultService;
-        private readonly IExchangeRateService _exchangeRateService;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
-        private readonly IOptions<TokenSettings> _tokenSettings;
 
-        public Currency Currency => Currency.ETH;
+        public override Currency Currency => Currency.ETH;
 
-        public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> ethereumSettings, IOptions<TokenSettings> tokenSettings, IMapper mapper, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
+        public EthereumService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
+            : base(context, exchangeRateService, keyVaultService, mapper, tokenSettings)
+            => _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
+
+        protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
-            _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
-            _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
-        }
-
-        public async Task UpdateUserDetails(string userId)
-        {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
             var ecKey = EthECKey.GenerateKey();
             var address = ecKey.GetPublicAddress();
 
-            var invsetmentAddress = await _context.CryptoAddresses.AddAsync(new CryptoAddress
+            var invsetmentAddress = await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Currency,
-                PrivateKey = new KeyStorePbkdf2Service().EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, ecKey.GetPrivateKeyAsBytes(), address),
+                PrivateKey = new KeyStorePbkdf2Service().EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, ecKey.GetPrivateKeyAsBytes(), address),
                 Type = CryptoAddressType.Investment,
                 Address = address
             });
 
             // duplicate the same address as the contract address.
-            var contractAddress = _mapper.Map<CryptoAddress>(invsetmentAddress.Entity);
+            var contractAddress = Mapper.Map<CryptoAddress>(invsetmentAddress.Entity);
             contractAddress.Type = CryptoAddressType.Contract;
-            await _context.CryptoAddresses.AddAsync(contractAddress);
+            await Context.CryptoAddresses.AddAsync(contractAddress);
 
-            _context.SaveChanges();
+            Context.SaveChanges();
         }
 
-        public async Task RefreshInboundTransactions()
-        {
-            var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
-            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment).ToArray())
-            {
-                foreach (var transaction in await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address))
-                {
-                    if (!hashes.Contains(transaction.Hash))
-                    {
-                        var trx = _mapper.Map<CryptoTransaction>(transaction);
-                        trx.CryptoAddress = address;
-                        trx.Direction = CryptoTransactionDirection.Inbound;
-                        trx.ExchangeRate = await _exchangeRateService.GetExchangeRate(Currency.ETH, Currency.USD, trx.TimeStamp, true);
-                        trx.TokenPrice = _tokenSettings.Value.Price;
-                        _context.CryptoTransactions.Add(trx);
-                        _context.SaveChanges();
-                    }
-                }
-            }
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
-
-        private async Task<EtherscanResponse.Transaction[]> GetInboundTransactionsByRecipientAddressFromEtherscan(string address)
+        protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockChain(string address)
         {
             var uri = $"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}";
             var result = await RestUtil.Get<EtherscanResponse>(uri);
-            return result?.Result?.ToArray() ?? throw new InvalidOperationException("An error occurred while retrieving transaction list from etherscan.io.");
+            return Mapper.Map<List<CryptoTransaction>>(result.Result);
         }
 
         internal class EtherscanResponse

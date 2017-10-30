@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
@@ -12,39 +11,26 @@ using NBitcoin;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    public class BitcoinService : IBitcoinService
+    internal class BitcoinService : CryptoService, IBitcoinService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IOptions<BitcoinSettings> _options;
-        private readonly IKeyVaultService _keyVaultService;
-        private readonly IExchangeRateService _exchangeRateService;
-        private readonly IMapper _mapper;
-        private readonly IOptions<TokenSettings> _tokenSettings;
+        private readonly IOptions<BitcoinSettings> _bitcoinSettings;
 
-        public Currency Currency => Currency.BTC;
+        public override Currency Currency => Currency.BTC;
 
-        public BitcoinService(ApplicationDbContext context, IOptions<BitcoinSettings> options, IOptions<TokenSettings> tokenSettings, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService, IMapper mapper)
+        public BitcoinService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<BitcoinSettings> bitcoinSettings)
+            : base(context, exchangeRateService, keyVaultService, mapper, tokenSettings)
+            => _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
+
+        protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
-            _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
-            _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
+            var networkType = _bitcoinSettings.Value.NetworkType.Equals("BTC", StringComparison.InvariantCultureIgnoreCase)
+                ? Network.Main
+                : Network.TestNet;
 
-        public async Task UpdateUserDetails(string userId)
-        {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
-            var networkType = GetNetworkType();
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(networkType).ToString();
 
-            await _context.CryptoAddresses.AddAsync(new CryptoAddress
+            await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Currency,
@@ -53,50 +39,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 Address = address
             });
 
-            _context.SaveChanges();
+            Context.SaveChanges();
         }
 
-        public async Task RefreshInboundTransactions()
+        protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockChain(string address)
         {
-            var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
-
-            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment).ToArray())
-            {
-                foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromChain(address.Address)).Data.Txs)
-                {
-                    if (!hashes.Contains(transaction.Txid))
-                    {
-                        var btcRate = await _exchangeRateService.GetExchangeRate(Currency, Currency.USD, DateTime.UtcNow, true);
-
-                        var trx = _mapper.Map<CryptoTransaction>(transaction);
-                        trx.CryptoAddress = address;
-                        trx.Direction = CryptoTransactionDirection.Inbound;
-                        trx.ExchangeRate = btcRate;
-                        trx.TokenPrice = _tokenSettings.Value.Price;
-
-                        _context.CryptoTransactions.Add(trx);
-                        _context.SaveChanges();
-                    }
-                }
-            }
-        }
-
-        private Network GetNetworkType()
-        {
-            return _options.Value.NetworkType.Equals("BTC", StringComparison.InvariantCultureIgnoreCase)
-                ? Network.Main
-                : Network.TestNet;
-        }
-
-        private Task<Transaction> GetInboundTransactionsByRecipientAddressFromChain(string address)
-        {
-            var uri = $"{_options.Value.ApiBaseUrl}address/{_options.Value.NetworkType}/{address}";
-            return RestUtil.Get<Transaction>(uri);
-        }
-
-        public void Dispose()
-        {
-            _context.Dispose();
+            var uri = $"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}";
+            var result = await RestUtil.Get<Transaction>(uri);
+            return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs);
         }
 
         internal class Spent
