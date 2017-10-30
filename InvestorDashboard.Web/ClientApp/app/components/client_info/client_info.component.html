@@ -7,10 +7,10 @@
 </mat-card>
 <hr>
 <div *ngIf="isTab">
-    <a mat-list-item  [routerLink]="['/settings']">
+    <a mat-list-item  [routerLink]="['/settings']" >
       <mat-icon mat-list-icon class="mat-24">settings_applications</mat-icon><span  mat-line>{{'mainMenu.Settings' | translate}}</span>
     </a>
-    <a mat-list-item (click)="logout()">
+    <a mat-list-item (click)="logout()" >
       <mat-icon mat-list-icon class="mat-24">exit_to_app</mat-icon><span mat-line>{{'mainMenu.Logout' | translate}}</span>
     </a>
 

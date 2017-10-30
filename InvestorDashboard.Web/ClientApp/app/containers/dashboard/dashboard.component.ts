@@ -30,6 +30,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     public selectedPaymentType: PaymentType = new PaymentType();
 
     public qrLoaded: boolean = true;
+    public isCopied: boolean = false;
 
     private refreshSubscription: AnonymousSubscription;
     private icoInfoSubscription: AnonymousSubscription;
@@ -80,6 +81,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     changePayment(payment: PaymentType) {
         this.qrLoaded = false;
+        this.isCopied = false;
         this.selectedPaymentType = payment;
         this.alertService.startLoadingMessage();
         setTimeout(() => {
@@ -103,7 +105,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             let pt = info.json() as PaymentType[];
             pt.forEach(element => {
                 element.image = `/img/${element.currency}.svg`;
-                element.faq =  this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
+                element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
             });
             this.paymentTypes = pt;
             if (pt.length > 0) {

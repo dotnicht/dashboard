@@ -11,7 +11,7 @@ export class SettingsComponent implements OnInit {
       { label: 'Profile', link: 'profile' }
 //      ,
         //{ label: 'Two-factor authentication', link: '2fa' },
-        //{ label: 'Password', link: 'password', 'disabled': true }
+        //{ label: 'Password', link: 'restore_password' }
     ];
     tabNavBackground: any = undefined;
     /** settings ctor */
