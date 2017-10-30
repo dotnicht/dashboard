@@ -52,9 +52,9 @@ export class RegisterComponent implements OnInit {
 
     /** Called by Angular after register component initialized */
     ngOnInit(): void {
-        this.registerForm.email = 'denis.skvortsow@gmail.com';
-        this.registerForm.password = '123456_Kol';
-        this.registerForm.confirmPassword = '123456_Kol';
+        //this.registerForm.email = 'denis.skvortsow@gmail.com';
+        //this.registerForm.password = '123456_Kol';
+        //this.registerForm.confirmPassword = '123456_Kol';
 
 
 
