@@ -103,6 +103,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             let pt = info.json() as PaymentType[];
             pt.forEach(element => {
                 element.image = `/img/${element.currency}.svg`;
+                element.faq =  this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
             });
             this.paymentTypes = pt;
             if (pt.length > 0) {
