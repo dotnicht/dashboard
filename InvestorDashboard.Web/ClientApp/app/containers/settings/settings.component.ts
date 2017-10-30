@@ -8,9 +8,10 @@
 /** settings component*/
 export class SettingsComponent implements OnInit {
     tabLinks = [
-        { label: 'Profile', link: 'profile' },
-        { label: 'Two-factor authentication', link: '2fa' },
-        { label: 'Password', link: 'password', 'disabled': true }
+      { label: 'Profile', link: 'profile' }
+//      ,
+        //{ label: 'Two-factor authentication', link: '2fa' },
+        //{ label: 'Password', link: 'password', 'disabled': true }
     ];
     tabNavBackground: any = undefined;
     /** settings ctor */

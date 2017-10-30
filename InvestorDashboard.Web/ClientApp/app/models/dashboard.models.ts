@@ -3,6 +3,7 @@ export class PaymentType {
     currency: string;
     address: string;
     rate: number;
+    faq: string;
 }
 
 export class IcoInfo {
