@@ -4,7 +4,7 @@ using System.Text;
 
 namespace InvestorDashboard.Web
 {
-    public class CustomClaimTypes
+    public static class CustomClaimTypes
     {
       ///<summary>A claim that specifies the permission of an entity</summary>
       public const string Permission = "permission";

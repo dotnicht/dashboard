@@ -23,6 +23,10 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
 
+        private ApplicationUser ApplicationUser => _context.Users
+                .Include(x => x.CryptoAddresses)
+                .SingleOrDefault(x => x.UserName == User.Identity.Name);
+
         public DashboardController(ApplicationDbContext context, IExchangeRateService exchangeRateService, UserManager<ApplicationUser> userManager, IOptions<TokenSettings> tokenSettings)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -39,7 +43,11 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 IsTokenSaleDisabled = _tokenSettings.Value.IsTokenSaleDisabled,
                 TotalCoins = _tokenSettings.Value.TotalCoins,
                 TotalCoinsBought = _context.Users.Sum(x => x.Balance),
-                TotalInvestors = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Select(x => x.CryptoAddress.CryptoAccount.UserId).Distinct().Count(),
+                TotalInvestors = _context.CryptoTransactions
+                    .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
+                    .Select(x => x.CryptoAddress.UserId)
+                    .Distinct()
+                    .Count(),
                 TotalUsdInvested = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound).Sum(x => x.Amount * x.ExchangeRate),
             };
             
@@ -49,18 +57,15 @@ namespace InvestorDashboard.Web.Server.RestAPI
         [HttpGet("payment_status"), Authorize]
         public async Task<IActionResult> GetPaymentInfo()
         {
-            var user = _context.Users.SingleOrDefault(x => x.UserName == User.Identity.Name);
-
-            if (user != null)
+            if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
             {
-                var paymentInfo = _context.CryptoAccounts
-                    .Include(x => x.CryptoAddresses)
-                    .Where(x => !x.IsDisabled && x.UserId == user.Id && x.User.IsEligibleForTokenSale)
+                var paymentInfo = ApplicationUser.CryptoAddresses
+                    .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
                     .ToList()
                     .Select(async x => new PaymentInfoModel
                     {
                         Currency = x.Currency.ToString(),
-                        Address = x.CryptoAddresses.FirstOrDefault(y => !x.IsDisabled)?.Address,
+                        Address = x.Address,
                         Rate = await _exchangeRateService.GetExchangeRate(x.Currency)
                     })
                     .Select(m => m.Result)
@@ -75,20 +80,13 @@ namespace InvestorDashboard.Web.Server.RestAPI
         [HttpGet("client_info"), Authorize]
         public async Task<IActionResult> GetClientInfo()
         {
-            var user = _context.Users
-                .Include(x => x.CryptoAccounts)
-                .ThenInclude(x => x.CryptoAddresses)
-                .SingleOrDefault(x => x.UserName == User.Identity.Name);
-
-            if (user != null)
+            if (ApplicationUser != null)
             {
                 var clientInfo = new ClientInfoModel
                 {
-                    Balance = user.Balance,
-                    Address = user.CryptoAccounts
-                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH)
-                        ?.CryptoAddresses
-                        .SingleOrDefault(x => !x.IsDisabled && x.Type == CryptoAddressType.Contract)
+                    Balance = ApplicationUser.Balance,
+                    Address = ApplicationUser.CryptoAddresses
+                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
                         ?.Address,
                 };
 

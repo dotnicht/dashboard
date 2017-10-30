@@ -13,10 +13,9 @@ namespace InvestorDashboard.Backend.Database.Models
         public string CountryCode { get; set; }
         public string Configuration { get; set; }
         public string City { get; set; }
-        public bool IsEligibleForTokenSale { get; set; }
+        public bool IsTokenSaleDisabled { get; set; }
         public string PhoneCode{ get; set; }
         public virtual ICollection<IdentityUserClaim<string>> Claims { get; set; }
-        public virtual ICollection<CryptoAccount> CryptoAccounts { get; set; }
-
+        public virtual ICollection<CryptoAddress> CryptoAddresses { get; set; }
     }
 }

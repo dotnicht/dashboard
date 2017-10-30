@@ -46,12 +46,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             await _context.CryptoAddresses.AddAsync(new CryptoAddress
             {
-                CryptoAccount = new CryptoAccount
-                {
-                    UserId = userId,
-                    Currency = Currency,
-                    KeyStore = privateKey.ToString(networkType)
-                },
+                UserId = userId,
+                Currency = Currency,
+                PrivateKey = privateKey.ToString(networkType), // TODO: encrypt private key with password.
                 Type = CryptoAddressType.Investment,
                 Address = address
             });
@@ -63,13 +60,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
 
-            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.BTC && x.Type == CryptoAddressType.Investment).ToArray())
+            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment).ToArray())
             {
                 foreach (var transaction in (await GetInboundTransactionsByRecipientAddressFromChain(address.Address)).Data.Txs)
                 {
                     if (!hashes.Contains(transaction.Txid))
                     {
-                        var btcRate = await _exchangeRateService.GetExchangeRate(Currency.BTC, Currency.USD, DateTime.UtcNow, true);
+                        var btcRate = await _exchangeRateService.GetExchangeRate(Currency, Currency.USD, DateTime.UtcNow, true);
 
                         var trx = _mapper.Map<CryptoTransaction>(transaction);
                         trx.CryptoAddress = address;

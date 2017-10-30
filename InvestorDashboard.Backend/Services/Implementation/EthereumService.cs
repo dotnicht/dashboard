@@ -24,7 +24,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public Currency Currency => Currency.ETH;
 
-        public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> ethereumSettings, IOptions<TokenSettings> tokenSettings,  IMapper mapper, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
+        public EthereumService(ApplicationDbContext context, IOptions<EthereumSettings> ethereumSettings, IOptions<TokenSettings> tokenSettings, IMapper mapper, IKeyVaultService keyVaultService, IExchangeRateService exchangeRateService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
@@ -46,16 +46,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var invsetmentAddress = await _context.CryptoAddresses.AddAsync(new CryptoAddress
             {
-                CryptoAccount = new CryptoAccount
-                {
-                    UserId = userId,
-                    Currency = Currency,
-                    KeyStore = new KeyStorePbkdf2Service().EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, ecKey.GetPrivateKeyAsBytes(), address)
-                },
+                UserId = userId,
+                Currency = Currency,
+                PrivateKey = new KeyStorePbkdf2Service().EncryptAndGenerateKeyStoreAsJson(_keyVaultService.KeyStoreEncryptionPassword, ecKey.GetPrivateKeyAsBytes(), address),
                 Type = CryptoAddressType.Investment,
                 Address = address
             });
 
+            // duplicate the same address as the contract address.
             var contractAddress = _mapper.Map<CryptoAddress>(invsetmentAddress.Entity);
             contractAddress.Type = CryptoAddressType.Contract;
             await _context.CryptoAddresses.AddAsync(contractAddress);
@@ -66,7 +64,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public async Task RefreshInboundTransactions()
         {
             var hashes = _context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
-            foreach (var address in _context.CryptoAddresses.Where(x => x.CryptoAccount.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment).ToArray())
+            foreach (var address in _context.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment).ToArray())
             {
                 foreach (var transaction in await GetInboundTransactionsByRecipientAddressFromEtherscan(address.Address))
                 {

@@ -11,7 +11,6 @@ namespace InvestorDashboard.Backend.Database
 
         public DbSet<CryptoTransaction> CryptoTransactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
-        public DbSet<CryptoAccount> CryptoAccounts { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -33,10 +32,6 @@ namespace InvestorDashboard.Backend.Database
                 .IsUnique();
 
             builder.Entity<CryptoAddress>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            builder.Entity<CryptoAccount>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETUTCDATE()");
 
