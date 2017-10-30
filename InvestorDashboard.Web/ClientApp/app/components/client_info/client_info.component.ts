@@ -11,8 +11,8 @@ import { ClientInfoEndpointService } from '../../services/client-info.service';
 })
 
 export class ClientInfoComponent implements OnInit {
-    get isMobile(): boolean {
-        return this.resizeService.isMobile;
+    get isTab(): boolean {
+        return this.resizeService.isTab;
     }
 
     constructor(private clientInfoService: ClientInfoEndpointService, private authService: AuthService, private resizeService: ResizeService) {
@@ -21,6 +21,7 @@ export class ClientInfoComponent implements OnInit {
 
     ngOnInit(): void {
         if (this.authService.isLoggedIn) {
+
             this.clientInfoService.updateClientInfo();
         }
 

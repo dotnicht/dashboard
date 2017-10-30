@@ -1,1 +1,34 @@
-<svg viewBox="0 0 49.99 50" id="BTC" width="100%" height="100%"><path class="cls-1" d="M49.25,31A25,25,0,1,1,31,.75,25,25,0,0,1,49.25,31Z"></path><path class="cls-2" d="M36.89,21.9c.5-3.33-2-5.11-5.5-6.31l1.12-4.51-2.74-.68-1.09,4.39-2.2-.52,1.1-4.42-2.74-.68-1.12,4.5L22,13.26h0l-3.78-.94-.73,2.93s2,.47,2,.49a1.46,1.46,0,0,1,1.28,1.59l-1.28,5.13.29.09-.29-.07-1.79,7.19a1,1,0,0,1-1.26.65s-2-.5-2-.5L13,33l3.57.89,2,.5-1.14,4.56,2.74.68,1.13-4.51,2.18.57-1.12,4.49,2.74.68,1.14-4.55c4.68.89,8.19.53,9.67-3.7,1.19-3.41-.06-5.37-2.52-6.65a4.38,4.38,0,0,0,3.5-4h0Zm-6.27,8.79c-.85,3.41-6.58,1.57-8.44,1.1l1.51-6c1.86.46,7.82,1.38,6.94,4.93Zm.85-8.84c-.77,3.1-5.55,1.52-7.1,1.14l1.37-5.48C27.29,17.9,32.28,18.62,31.47,21.85Z"></path></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-3037.494 -5458.229 52.982 52.982">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #a4e375;
+      }
+
+      .cls-2 {
+        clip-path: url(#clip-path);
+      }
+
+      .cls-3 {
+        fill: #1c1e1e;
+      }
+
+      .cls-4 {
+        fill: #414b49;
+      }
+    </style>
+    <clipPath id="clip-path">
+      <rect id="Rectangle-path" class="cls-1" width="52.982" height="52.982" rx="5" transform="translate(317.506 841.771)"/>
+    </clipPath>
+  </defs>
+  <g id="Mask_Group_4" data-name="Mask Group 4" class="cls-2" transform="translate(-3355 -6300)">
+    <g id="eth" transform="translate(327.731 841.771)">
+      <path id="Path_127" data-name="Path 127" class="cls-3" d="M26.484,0l-.355,1.207V36.24l.355.354,16.261-9.611Z" transform="translate(-10.223)"/>
+      <path id="Path_128" data-name="Path 128" class="cls-4" d="M26.484,0,10.223,26.983l16.261,9.612Z" transform="translate(-10.223)"/>
+      <path id="Path_129" data-name="Path 129" class="cls-4" d="M26.484,39.674l-.2.244V52.4l.2.583,16.27-22.915Z" transform="translate(-10.223)"/>
+      <path id="Path_130" data-name="Path 130" class="cls-3" d="M26.484,52.982V39.674L10.223,30.067Z" transform="translate(-10.223)"/>
+      <path id="Path_131" data-name="Path 131" class="cls-4" d="M26.484,36.595l16.26-9.612-16.26-7.391v17" transform="translate(-10.223)"/>
+      <path id="Path_132" data-name="Path 132" class="cls-3" d="M10.223,26.983l16.26,9.612v-17" transform="translate(-10.223)"/>
+    </g>
+  </g>
+</svg>

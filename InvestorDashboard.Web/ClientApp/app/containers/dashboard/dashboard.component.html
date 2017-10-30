@@ -19,18 +19,19 @@
     <mat-card-content>
       <div class="left">
         <div class="item">
-          <div class="color-block"></div>
+          <!-- <div class="color-block"></div> -->
+          <img class="color-block" src="/img/avatar.svg">
           <!-- <img class="color-block" src="/img/btc.png"> -->
           <div class="value">{{icoInfo.totalInvestors}}</div>
           <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
         </div>
         <div class="item">
-          <div class="color-block"></div>
+          <img class="color-block" src="/img/wallet.svg">
           <div class="value">{{icoInfo.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
         <div class="item">
-          <div class="color-block"></div>
+          <img class="color-block" src="/img/coin.svg">
           <div class="value">{{icoInfo.totalCoinsBought}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div>
@@ -60,7 +61,7 @@
       <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
         <div class="left">
-          <button (click)="changePayment(type)" [attr.class]="selectedPaymentType.currency!=type.currency?'item mat-button':'item mat-raised-button'"
+          <button (click)="changePayment(type)" [attr.class]="selectedPaymentType.currency!=type.currency?'item mat-raised-button':'item mat-raised-button active'"
             mat-button *ngFor="let type of paymentTypes">
             <img class="currency-icon" [src]="type.image">
             <!-- <div class="currency-icon"></div> -->

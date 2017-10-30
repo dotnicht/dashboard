@@ -102,9 +102,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.paymentTypesSubscription = this.dashboardService.getPaymentTypes().subscribe(info => {
             let pt = info.json() as PaymentType[];
             pt.forEach(element => {
-                element.image = '/img/btc.png';
+                element.image = `/img/${element.currency}.svg`;
             });
             this.paymentTypes = pt;
+            if (pt.length > 0) {
+                this.selectedPaymentType = pt[0];
+                this.changePayment(pt[0]);
+            }
+
         });
         // this.subscribeToData();
     }

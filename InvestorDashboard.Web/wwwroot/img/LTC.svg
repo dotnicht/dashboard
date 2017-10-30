@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-3036.494 -5726.229 52.982 52.982">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #95989a;
+      }
+
+      .cls-2 {
+        clip-path: url(#clip-path);
+      }
+    </style>
+    <clipPath id="clip-path">
+      <rect id="Rectangle-path" class="cls-1" width="52.982" height="52.982" rx="5" transform="translate(50.775 82.503)"/>
+    </clipPath>
+  </defs>
+  <g id="Mask_Group_1" data-name="Mask Group 1" class="cls-2" transform="translate(-3087.269 -5808.732)">
+    <g id="litecoin" transform="translate(50.638 82.363)">
+      <g id="Imported-Layers">
+        <path id="Fill-1" class="cls-1" d="M26.491,0A26.491,26.491,0,1,0,52.982,26.491,26.491,26.491,0,0,0,26.491,0ZM22.4,12.284H30.6L27.706,23.163l4.01-1.465.035.094L30.737,25.6l-4.074,1.488-1.72,6.479H38.556l-1.4,5.208H15.351l2.227-8.367L14.426,31.56l1.043-3.926,3.154-1.152Z" transform="translate(0.136 0.141)"/>
+      </g>
+    </g>
+  </g>
+</svg>
