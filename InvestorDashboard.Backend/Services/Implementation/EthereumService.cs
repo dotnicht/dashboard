@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
@@ -48,7 +49,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var uri = $"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}";
             var result = await RestUtil.Get<EtherscanResponse>(uri);
-            return Mapper.Map<List<CryptoTransaction>>(result.Result);
+            return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 
         internal class EtherscanResponse

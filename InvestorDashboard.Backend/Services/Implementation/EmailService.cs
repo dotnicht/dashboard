@@ -1,19 +1,38 @@
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using InvestorDashboard.Backend.ConfigurationSections;
+using Microsoft.Extensions.Options;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EmailService : IEmailService
     {
-        public Task SendEmailConfirmationAsync(string email, string link)
+        private readonly IOptions<EmailSettings> _emailSettings;
+
+        public EmailService(IOptions<EmailSettings> emailSettings)
         {
-            return SendEmailAsync(email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{ HtmlEncoder.Default.Encode(link) }'>link</a>");
+            _emailSettings = emailSettings ?? throw new System.ArgumentNullException(nameof(emailSettings));
         }
 
-        public Task SendEmailAsync(string email, string subject, string message)
+        public async Task SendEmailConfirmationAsync(string email, string link)
         {
-            // Plug in your email service here to send an email.
-            return Task.FromResult(0);
+            await SendEmailAsync(email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{ HtmlEncoder.Default.Encode(link) }'>link</a>");
+        }
+
+        public async Task SendEmailAsync(string email, string subject, string message)
+        {
+            var msg = new SendGridMessage
+            {
+                Subject = subject,
+                HtmlContent = message,
+                From = new EmailAddress(_emailSettings.Value.Address)
+            };
+
+            msg.AddTo(email);
+            var client = new SendGridClient(_emailSettings.Value.ApiKey);
+            await client.SendEmailAsync(msg);
         }
     }
 }

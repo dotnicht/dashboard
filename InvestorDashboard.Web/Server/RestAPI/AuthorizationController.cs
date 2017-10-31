@@ -13,7 +13,6 @@ using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Web.Models;
 using InvestorDashboard.Web.Models.AccountViewModels;
 using InvestorDashboard.Web.Server.Helpers;
-using InvestorDashboard.Web.Server.Models;
 using InvestorDashboard.Web.Server.Models.AccountViewModels;
 using InvestorDashboard.Web.Server.Models.AuthorizationViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -37,6 +36,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -44,16 +44,18 @@ namespace InvestorDashboard.Web.Server.RestAPI
           SignInManager<ApplicationUser> signInManager,
           UserManager<ApplicationUser> userManager,
           ILogger<AuthorizationController> loger,
-          IEnumerable<ICryptoService> cryptoServices, 
-          IMapper mapper)
+          IEnumerable<ICryptoService> cryptoServices,
+          IMapper mapper,
+          IEmailService emailService)
         {
             _applicationManager = applicationManager;
             _identityOptions = identityOptions;
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = loger;
-            _cryptoServices = cryptoServices;
+            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         }
 
         [HttpPost("~/connect/register"), Produces("application/json")]
@@ -80,7 +82,9 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 {
                     Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(appUser.Id));
 
-                    await ConfirmEmail(appUser.Id, await _userManager.GenerateEmailConfirmationTokenAsync(appUser));
+                    // TODO: replace token with URI.
+                    await _emailService.SendEmailConfirmationAsync(appUser.Email, await _userManager.GenerateEmailConfirmationTokenAsync(appUser));
+
                     return Ok();
                 }
                 return BadRequest(new OpenIdConnectResponse
