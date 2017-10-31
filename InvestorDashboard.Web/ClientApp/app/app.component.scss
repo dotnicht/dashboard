@@ -21,12 +21,13 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
     border-color: #761c19;
   }
 }
-
+#toasty.toasty-position-top-right {}
 register-rules-dialog {
     display: block;
-  .mat-checkbox-layout {
-    white-space: initial;
-  }
+
+    .mat-checkbox-layout {
+        white-space: initial;
+    }
 }
 
 body {

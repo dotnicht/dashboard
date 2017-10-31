@@ -100,11 +100,11 @@ namespace InvestorDashboard.Web
                 options.EnableAuthorizationEndpoint("/connect/authorize")
                   .EnableLogoutEndpoint("/connect/logout")
                   .EnableTokenEndpoint("/connect/token")
-                  .EnableUserinfoEndpoint("/api/userinfo");
+                                    .EnableUserinfoEndpoint("/api/userinfo");
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.
-                options //.AllowAuthorizationCodeFlow()
+                options.AllowAuthorizationCodeFlow()
                   .AllowPasswordFlow()
                   .AllowRefreshTokenFlow();
 
@@ -113,14 +113,14 @@ namespace InvestorDashboard.Web
                 //options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
 
                 // Make the "client_id" parameter mandatory when sending a token request.
-                // options.RequireClientIdentification();
+                 options.RequireClientIdentification();
 
                 // When request caching is enabled, authorization and logout requests
                 // are stored in the distributed cache by OpenIddict and the user agent
                 // is redirected to the same page with a single parameter (request_id).
                 // This allows flowing large OpenID Connect requests even when using
                 // an external authentication provider like Google, Facebook or Twitter.
-                // options.EnableRequestCaching();
+                options.EnableRequestCaching();
 
                 // During development, you can disable the HTTPS requirement.
                 options.DisableHttpsRequirement();

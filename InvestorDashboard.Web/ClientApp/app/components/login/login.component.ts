@@ -37,8 +37,8 @@ export class LoginComponent implements OnInit, OnDestroy {
             });
         }
 
-        //this.userLogin.email = 'denis.skvortsow@gmail.com';
-        //this.userLogin.password = '123456_Kol';
+        this.userLogin.email = 'denis.skvortsow@gmail.com';
+        this.userLogin.password = '123456_Kol';
 
         
     }

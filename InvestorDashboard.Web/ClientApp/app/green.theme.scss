@@ -34,7 +34,9 @@ body {
         background-color: initial;
     }
 }
-
+.mat-checkbox-checked.mat-primary .mat-checkbox-background, .mat-checkbox-indeterminate.mat-primary .mat-checkbox-background{
+    background-color: $main-color;
+}
 .mat-fab.mat-primary,
 .mat-mini-fab.mat-primary,
 .mat-raised-button.mat-primary {

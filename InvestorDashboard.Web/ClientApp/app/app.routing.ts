@@ -12,6 +12,7 @@ import { SettingsComponent } from './containers/settings/settings.component';
 import { UserInfoComponent } from './components/controls/user-info.component';
 import { TfaComponent } from './components/controls/tfa/tfa.component';
 import { RestorePasswordComponent } from "./components/controls/restore-password/restore.password.component";
+import { FaqComponent } from './containers/faq/faq.component';
 
 export const routingComponents = [
     HomeComponent, NotFoundComponent
@@ -29,6 +30,7 @@ const routes: Routes = [
         redirectTo: '/',
         pathMatch: 'full'
     },
+
     {
         path: '', component: DashboardComponent, canActivate: [AuthGuard],
         // *** SEO Magic ***
@@ -62,6 +64,12 @@ const routes: Routes = [
         children: SETTINGS_ROUTES,
         data: {
             title: 'Settings'
+        }
+    },
+    {
+        path: 'faq', component: FaqComponent,
+        data: {
+            title: 'FAQ'
         }
     },
     {

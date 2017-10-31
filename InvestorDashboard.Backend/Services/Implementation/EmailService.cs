@@ -18,7 +18,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task SendEmailConfirmationAsync(string email, string link)
         {
-            await SendEmailAsync(email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{ HtmlEncoder.Default.Encode(link) }'>link</a>");
+            await SendEmailAsync(email, "Confirm your email", $"Please confirm your account by clicking this link: <a href=\"{link}\">link</a>");
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
@@ -29,7 +29,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 HtmlContent = message,
                 From = new EmailAddress(_emailSettings.Value.Address)
             };
-
+            
             msg.AddTo(email);
             var client = new SendGridClient(_emailSettings.Value.ApiKey);
             await client.SendEmailAsync(msg);

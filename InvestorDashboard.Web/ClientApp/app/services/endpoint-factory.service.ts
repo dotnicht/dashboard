@@ -103,8 +103,10 @@ export class EndpointFactory {
 
         let searchParams = new URLSearchParams();
         searchParams.append('refresh_token', this.authService.refreshToken);
+        searchParams.append('client_id', 'ID');
+        searchParams.append('client_secret', '901564A5-E7FE-42CB-B10D-61EF6A8F3654');
         searchParams.append('grant_type', 'refresh_token');
-        searchParams.append('scope', 'offline_access');
+        searchParams.append('scope', 'openid profile offline_access');
 
         let requestBody = searchParams.toString();
 

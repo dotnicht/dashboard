@@ -44,8 +44,8 @@
             </mat-form-field>
 
             <div style="display: flex;justify-content: space-between;align-items: center;">
-              <button type="submit" [disabled]="!f.form.valid" mat-raised-button color="primary">
-                <span>{{'buttons.Register' | translate}}</span>
+              <button type="submit" [disabled]="!f.form.valid || isLoading" mat-raised-button color="primary">
+                <i class='fa fa-circle-o-notch fa-spin'></i><span>{{'buttons.Register' | translate}}</span>
               </button>
               
               <span>{{'other.Or' | translate}}</span>

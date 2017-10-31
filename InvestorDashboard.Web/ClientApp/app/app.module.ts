@@ -45,12 +45,13 @@ import { ClientInfoEndpointService } from './services/client-info.service';
 import { SettingsModule } from './containers/settings/settings.module';
 
 import { ClipboardModule } from 'ngx-clipboard';
+import { FaqComponent } from './containers/faq/faq.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         ClientInfoComponent,
-
+        FaqComponent,
         routingComponents,
         ResponsiveDirective
         

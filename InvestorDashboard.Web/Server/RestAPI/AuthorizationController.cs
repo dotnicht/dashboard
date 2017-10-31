@@ -83,7 +83,10 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(appUser.Id));
 
                     // TODO: replace token with URI.
-                    await _emailService.SendEmailConfirmationAsync(appUser.Email, await _userManager.GenerateEmailConfirmationTokenAsync(appUser));
+                    appUser = await _userManager.FindByEmailAsync(appUser.Email);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+                    code = System.Web.HttpUtility.UrlEncode(code);
+                    await _emailService.SendEmailConfirmationAsync(appUser.Email, $"{Request.Scheme}://{Request.Host}/connect/confirm_email?userId={appUser.Id}&code={code}");
 
                     return Ok();
                 }
@@ -478,7 +481,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             return Json(User.Identity.IsAuthenticated);
         }
 
-        [HttpGet]
+        [HttpGet("~/connect/confirm_email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
             if (userId == null || code == null)
@@ -502,14 +505,18 @@ namespace InvestorDashboard.Web.Server.RestAPI
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                return Ok();
+                return RedirectPermanent("/");
             }
             else
             {
+                var errors = "";
+                foreach(var e in result.Errors){
+                    errors += e.Description;
+                }
                 return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.ServerError,
-                    ErrorDescription = ""
+                    ErrorDescription = errors
                 });
             }
         }

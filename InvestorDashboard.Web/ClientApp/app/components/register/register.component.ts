@@ -22,7 +22,7 @@ export class RegisterComponent implements OnInit {
     registerRules: RegisterRules[] = [
         { name: this.translationService.getTranslation('users.register.rules.first'), checked: false },
         { name: this.translationService.getTranslation('users.register.rules.second'), checked: false },
-        { name: this.translationService.getTranslation('users.register.rules.third'), checked: false },
+        // { name: this.translationService.getTranslation('users.register.rules.third'), checked: false },
         { name: this.translationService.getTranslation('users.register.rules.fourth'), checked: false }
     ];
     formResetToggle = true;
@@ -52,9 +52,9 @@ export class RegisterComponent implements OnInit {
 
     /** Called by Angular after register component initialized */
     ngOnInit(): void {
-        //this.registerForm.email = 'denis.skvortsow@gmail.com';
-        //this.registerForm.password = '123456_Kol';
-        //this.registerForm.confirmPassword = '123456_Kol';
+        this.registerForm.email = 'denis.skvortsow@gmail.com';
+        this.registerForm.password = '123456_Kol';
+        this.registerForm.confirmPassword = '123456_Kol';
 
 
 
@@ -62,9 +62,48 @@ export class RegisterComponent implements OnInit {
     openRegisterRulesDialog(): void {
         this.dialogRef = this.dialog.open(RegisterRulesDialogComponent, this.config);
         this.dialogRef.afterClosed().subscribe((result: RegisterRules[]) => {
+            this.isLoading = true;
             this.registerRules = result;
-            console.log(this.registerRules);
             this.dialogRef = undefined;
+
+            this.registerRules.forEach(element => {
+                element.checked = false;
+            });
+
+            this.alertService.startLoadingMessage();
+            this.authService.register(this.registerForm).subscribe(responce => {
+                setTimeout(() => {
+                    this.alertService.stopLoadingMessage();
+                    this.isLoading = false;
+                    this.reset();
+                    this.alertService.showMessage('Register', `Successful registration!`, MessageSeverity.success);
+                    this.alertService.showMessage('Message Has Been Sent', `Link to complete registration has been sent to` + this.registerForm.email, MessageSeverity.info);
+                }, 1000);
+            },
+                error => {
+
+                    this.alertService.stopLoadingMessage();
+
+                    if (Utilities.checkNoNetwork(error)) {
+                        this.alertService.showStickyMessage(Utilities.noNetworkMessageCaption, Utilities.noNetworkMessageDetail, MessageSeverity.error, error);
+                    }
+                    else {
+                        let errorType = Utilities.findHttpResponseMessage('error', error);
+                        let errorMessage = Utilities.findHttpResponseMessage('error_description', error);
+
+                        if (errorType == 'user_exist') {
+                            this.alertService.showStickyMessage('Unable to register', 'User already exists!', MessageSeverity.error, error);
+                        }
+                        else if (errorMessage)
+                            this.alertService.showStickyMessage('Unable to register', errorMessage, MessageSeverity.error, error);
+                        else
+                            this.alertService.showStickyMessage('Unable to register', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
+                    }
+
+                    setTimeout(() => {
+                        this.isLoading = false;
+                    }, 1000);
+                });
         });
     }
     OnSubmit() {
@@ -81,6 +120,7 @@ export class RegisterComponent implements OnInit {
                     this.isLoading = false;
                     this.reset();
                     this.alertService.showMessage('Register', `Successful registration!`, MessageSeverity.success);
+                    this.alertService.showMessage('Message Has Been Sent', `Link to complete registration has been sent to` + this.registerForm.email, MessageSeverity.info);
                 }, 1000);
             },
                 error => {
@@ -137,5 +177,9 @@ export class RegisterRulesDialogComponent {
 
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this._acceptRules = data;
+    }
+
+    get acceptAllRules() {
+        return this._acceptRules.every((element, index, array) => { return element.checked; });
     }
 }
