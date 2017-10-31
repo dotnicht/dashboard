@@ -71,7 +71,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 if (appUser == null)
                     return NotFound(this.User.Identity.Name);
 
-                UserViewModel userVM = await GetUserViewModelHelper(appUser.Id);
+                UserViewModel userVM = await GetUserViewModelHelper(appUser);
 
                 if (userVM != null)
                     return Ok(userVM);
@@ -168,13 +168,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
         //}
 
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
-
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -221,9 +214,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost("reset_password")]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -253,9 +245,10 @@ namespace InvestorDashboard.Web.Server.RestAPI
         }
 
         #region Helpers
-        private async Task<UserViewModel> GetUserViewModelHelper(string userId)
+        private async Task<UserViewModel> GetUserViewModelHelper(ApplicationUser user)
         {
-            var userVM = Mapper.Map<UserViewModel>(_context.Users.SingleOrDefault());
+
+            var userVM = Mapper.Map<UserViewModel>(user);
             userVM.Roles = new string[0];
 
             return userVM;

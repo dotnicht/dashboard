@@ -1,8 +1,9 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ResizeService } from '../../services/resize.service';
 import { ClientInfo } from '../../models/client-info.model';
 import { ClientInfoEndpointService } from '../../services/client-info.service';
+import { AppComponent } from '../../app.component';
 
 @Component({
     selector: 'app-client-info',
@@ -11,6 +12,9 @@ import { ClientInfoEndpointService } from '../../services/client-info.service';
 })
 
 export class ClientInfoComponent implements OnInit {
+
+    @ViewChild('start') public sideNav: ElementRef;
+    
     get isTab(): boolean {
         return this.resizeService.isTab;
     }

@@ -67,17 +67,17 @@
             <!-- <div class="currency-icon"></div> -->
             <div class="value">{{type.currency}}</div>
             <div class="title">1 {{type.currency}} = {{type.rate}} USD</div>
-          
+
           </button>
         </div>
         <div class="right" *ngIf="selectedPaymentType.address">
-          
+
           <div id="qrCode" class="qrCode"></div>
           <div>
             <mat-form-field>
-              <input matInput name="example" [value]="selectedPaymentType.address" type="text">
+              <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
             </mat-form-field>
-            <button [color]="'primary'" mat-raised-button>Copy</button>
+            <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
           </div>
         </div>
       </div>

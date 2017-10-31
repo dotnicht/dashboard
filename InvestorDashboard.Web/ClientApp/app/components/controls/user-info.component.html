@@ -1,6 +1,6 @@
 ﻿<mat-card>
-  <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" name="userInfoForm"
-    #f="ngForm" novalidate (ngSubmit)="f.form.valid ? save() :
+  <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" name="userInfoForm" #f="ngForm" novalidate
+    (ngSubmit)="f.form.valid ? save() :
 
          null">
 
@@ -41,15 +41,14 @@
 
     <mat-form-field *ngIf="isEditMode">
       <input matInput attr.id="countryCode-{{uniqueId}}" #countryCode="ngModel" name="countryCode" placeholder="Enter country code"
-        [(ngModel)]="userEdit.countryCode" pattern="[A-Z]{0,3}" case='uppercase' maxLength="3" />
+        [(ngModel)]="userEdit.countryCode" pattern="[A-Z]{3}"  minlength="3" maxLength="3" />
       <mat-icon *ngIf="f.submitted && countryCode.valid" matSuffix>done</mat-icon>
       <mat-hint align="end">
         <mat-icon>mode_edit</mat-icon>
-        <span aria-live="polite">{{userEdit.countryCode.length}} / 3</span>
+        <span aria-live="polite">{{userEdit.countryCode!=undefined ? userEdit.countryCode.length: 0}} / 3</span>
       </mat-hint>
       <mat-error *ngIf="countryCode.invalid && (countryCode.dirty || countryCode.touched)">
-        <div *ngIf="countryCode.errors.pattern">pattern </div>
-        <div> {{countryCode.errors | json}}</div>
+        <div *ngIf="countryCode.errors.pattern">{{'users.editor.CountryCodePattern' | translate}} </div>
 
       </mat-error>
     </mat-form-field>

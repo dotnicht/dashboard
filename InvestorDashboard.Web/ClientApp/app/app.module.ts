@@ -44,6 +44,8 @@ import { DashboardModule } from './containers/dashboard/dashboard.module';
 import { ClientInfoEndpointService } from './services/client-info.service';
 import { SettingsModule } from './containers/settings/settings.module';
 
+import { ClipboardModule } from 'ngx-clipboard';
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -51,9 +53,11 @@ import { SettingsModule } from './containers/settings/settings.module';
 
         routingComponents,
         ResponsiveDirective
+        
     ],
     imports: [
         CommonModule,
+        ClipboardModule,
         HttpModule,
         FormsModule,
 

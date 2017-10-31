@@ -7,13 +7,17 @@ import { AppTranslationService, TranslateLanguageLoader } from '../../services/a
 import { ClientInfoEndpointService } from '../../services/client-info.service';
 import { CommonModule } from '@angular/common';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
+import { ClipboardModule } from 'ngx-clipboard';
+import { RestorePasswordComponent } from '../../components/controls/restore-password/restore.password.component';
 
 @NgModule({
     declarations: [
-        DashboardComponent
+      DashboardComponent,
+      RestorePasswordComponent
     ],
     imports: [
         CommonModule,
+        ClipboardModule,
         MaterialModule,
         RouterModule,
 

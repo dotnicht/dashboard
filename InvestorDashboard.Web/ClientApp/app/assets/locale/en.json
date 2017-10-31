@@ -15,9 +15,9 @@
     "TotalInvestments": "Total Investments",
     "PaymentMethod": "Payment method"
   },
-  "dashboard":{
-    "HTU_BTC":"<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 6 confirmations (1 hour)",
-    "HTU_ETH":"<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 12 confirmations (up to 10 minutes)"
+  "dashboard": {
+    "HTU_BTC": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 6 confirmations (1 hour)",
+    "HTU_ETH": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 12 confirmations (up to 10 minutes)"
   },
   "languages": {
     "en": "Eng",
@@ -147,7 +147,8 @@
       "Saving": "Saving...",
       "Address": "Address",
       "City": "City",
-      "CountryCode": "Country code"
+      "CountryCode": "Country code",
+      "CountryCodePattern": "Code must be 3 characters with uppercase"
     },
     "register": {
       "rules": {
@@ -164,7 +165,9 @@
   "buttons": {
     "Login": "Login",
     "Register": "Register",
-    "LogginIn": "Loggin in..."
+    "LogginIn": "Loggin in...",
+    "Copy": "Copy",
+    "Copied": "Copied"
   },
   "other": {
     "Or": "or"

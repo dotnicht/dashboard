@@ -17,12 +17,12 @@
         <span mat-line>{{'mainMenu.Home' | translate}}</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        [routerLink]="['/']" (click)="start.close()">
+        [routerLink]="['/']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
         <mat-icon mat-list-icon>dashboard</mat-icon>
         <span mat-line>{{'mainMenu.Dashboard' | translate}}</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        [routerLink]="['/faq']" (click)="start.close()">
+        [routerLink]="['/faq']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
         <mat-icon mat-list-icon>info</mat-icon>
         <span mat-line>{{'mainMenu.Faq' | translate}}</span>
       </a>
@@ -49,7 +49,7 @@
           </a>
 
 
-          <button mat-button [routerLink]="['/']">
+          <button mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')" >
             <mat-icon>dashboard</mat-icon>
             <span>{{'mainMenu.Dashboard' | translate}}</span>
           </button>
