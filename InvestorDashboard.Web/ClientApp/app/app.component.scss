@@ -22,7 +22,6 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
   }
 }
 
-
 register-rules-dialog {
   display: block;
   max-width: 600px;
@@ -95,6 +94,46 @@ body {
   box-sizing: border-box;
 }
 
+.footer {
+  bottom: 0;
+  z-index: 2;
+  &.mat-toolbar {
+    .mat-toolbar-row {
+      height: auto;
+      white-space: normal;
+    }
+  }
+  .main-content {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    .block {
+      font-size: 14px;
+      display: inline-flex;
+      height: 50px;
+      line-height: normal;
+      margin-right: 55px;
+      .icon {
+        width: 30px;
+        margin-right: 10px;
+      }
+    }
+    .right {
+      display: inline-flex;
+      font-size: 12px;
+      height: 50px;
+      .icon {
+        width: 80px;
+        margin-right: 5px;
+      }
+      .copyright {
+        top: 15px;
+        position: relative;
+      }
+    }
+  }
+}
+
 .qrCode {
   img {
     display: none !important;
@@ -107,6 +146,13 @@ body {
 @media (max-width: 1024px) {
   .main-content {
     width: 767px;
+  }
+  .footer {
+    .main-content {
+      .block {
+        margin-right: 0;
+      }
+    }
   }
 }
 

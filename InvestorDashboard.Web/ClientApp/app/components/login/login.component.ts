@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     formResetToggle = true;
     modalClosedCallback: () => void;
     loginStatusSubscription: any;
+    errorMsg: string;
 
 
     @Input() isModal = false;
@@ -25,7 +26,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.userLogin.rememberMe = this.authService.rememberMe;
-        
+
         if (this.getShouldRedirect()) {
             this.authService.redirectLoginUser();
         }
@@ -40,7 +41,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         //this.userLogin.email = 'denis.skvortsow@gmail.com';
         //this.userLogin.password = '123456_Kol';
 
-        
+
     }
     ngOnDestroy() {
         if (this.loginStatusSubscription)
@@ -74,10 +75,10 @@ export class LoginComponent implements OnInit, OnDestroy {
                     if (!this.isModal) {
                         this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
 
-                      
+
                     }
                     else {
-                      
+
                         this.alertService.showMessage('Login', `Session for ${user.userName} restored!`, MessageSeverity.success);
                         setTimeout(() => {
                             this.alertService.showStickyMessage('Session Restored', 'Please try your last operation again', MessageSeverity.default);
@@ -98,8 +99,10 @@ export class LoginComponent implements OnInit, OnDestroy {
                 else {
                     let errorMessage = Utilities.findHttpResponseMessage('error_description', error);
 
-                    if (errorMessage)
-                        this.alertService.showStickyMessage('Unable to login', errorMessage, MessageSeverity.error, error);
+                    if (errorMessage) {
+                        // this.alertService.showStickyMessage('Unable to login', errorMessage, MessageSeverity.error, error);
+                        this.errorMsg = errorMessage;
+                    }
                     else
                         this.alertService.showStickyMessage('Unable to login', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
                 }
