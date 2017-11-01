@@ -1,7 +1,7 @@
 
 import { NgModule } from '@angular/core';
 import { LoginComponent } from '../../components/login/login.component';
-import { RegisterComponent, RegisterRulesDialogComponent } from '../../components/register/register.component';
+import { RegisterComponent, RegisterRulesDialogComponent, ConfirmEmailDialogComponent } from '../../components/register/register.component';
 import { RouterModule, PreloadAllModules } from '@angular/router';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -22,7 +22,8 @@ import { MaterialModule } from '../../app.material.module';
     LoginComponent,
     RegisterComponent,
     EqualValidator,
-    RegisterRulesDialogComponent
+    RegisterRulesDialogComponent,
+    ConfirmEmailDialogComponent
 
   ],
   imports: [
@@ -47,7 +48,8 @@ import { MaterialModule } from '../../app.material.module';
     EndpointFactory
   ],
   entryComponents: [
-    RegisterRulesDialogComponent
+    RegisterRulesDialogComponent,
+    ConfirmEmailDialogComponent
   ],
   exports: [
     LoginComponent
