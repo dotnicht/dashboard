@@ -36,6 +36,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         }
 
         [HttpGet("ico_status")]
+        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
             var transactions = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment);
@@ -57,6 +58,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         }
 
         [HttpGet("payment_status"), Authorize]
+        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetPaymentInfo()
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
@@ -80,19 +82,22 @@ namespace InvestorDashboard.Web.Server.RestAPI
         }
 
         [HttpGet("client_info"), Authorize]
+        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetClientInfo()
         {
+        
             if (ApplicationUser != null)
             {
                 var clientInfo = new ClientInfoModel
                 {
                     Balance = ApplicationUser.Balance,
+                    IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
                         ?.Address
                 };
 
-                return Ok(clientInfo);
+                return  Ok(clientInfo);
             }
 
             return Unauthorized();

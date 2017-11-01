@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
+using InvestorDashboard.Web.Server.Services;
 
 namespace InvestorDashboard.Web
 {
@@ -146,6 +147,8 @@ namespace InvestorDashboard.Web
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
 
             services.AddAuthorization();
+
+            services.AddScoped<ViewRender, ViewRender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

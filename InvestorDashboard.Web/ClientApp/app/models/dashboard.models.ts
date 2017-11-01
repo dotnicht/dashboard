@@ -12,6 +12,7 @@ export class IcoInfo {
     totalCoins: number;
     totalCoinsBought: number;
     totalCoinsBoughtPercent: number;
+    isTokenSaleDisabled: boolean;
     constructor() {
         this.totalCoins = 0;
         this.totalInvestors = 0;
