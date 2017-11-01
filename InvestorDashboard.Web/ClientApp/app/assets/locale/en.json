@@ -168,7 +168,9 @@
     "Register": "Register",
     "LogginIn": "Loggin in...",
     "Copy": "Copy",
-    "Copied": "Copied"
+    "Copied": "Copied",
+    "Close": "Close",
+    "Cancel": "Cancel"
   },
   "other": {
     "Or": "or"
@@ -222,6 +224,6 @@
       "Important": "Mark as important",
       "AddTask": "Add Task"
     }
-   
+
   }
 }

@@ -21,13 +21,18 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
     border-color: #761c19;
   }
 }
-#toasty.toasty-position-top-right {}
-register-rules-dialog {
-    display: block;
 
-    .mat-checkbox-layout {
-        white-space: initial;
-    }
+#toasty.toasty-position-top-right {
+  top: auto;
+  bottom: 0;
+}
+
+register-rules-dialog {
+  display: block;
+  max-width: 600px;
+  .mat-checkbox-layout {
+    white-space: initial;
+  }
 }
 
 body {

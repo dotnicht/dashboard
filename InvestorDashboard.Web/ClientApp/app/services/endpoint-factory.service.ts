@@ -79,9 +79,9 @@ export class EndpointFactory {
         user.grant_type = 'password';
         user.scope = 'openid email phone profile offline_access roles';
         user.resource = window.location.origin;
-
         let searchParams = new URLSearchParams();
-        searchParams.append('username', user.email);
+        
+        searchParams.append('username', encodeURIComponent(user.email));
         searchParams.append('password', user.password);
         searchParams.append('client_id', 'ID');
         searchParams.append('client_secret', '901564A5-E7FE-42CB-B10D-61EF6A8F3654');
@@ -112,7 +112,7 @@ export class EndpointFactory {
 
         return this.http.post(this.loginUrl, requestBody, { headers: header })
             .map((response: Response) => {
-                
+
                 return response;
             })
             .catch(error => {
@@ -122,7 +122,7 @@ export class EndpointFactory {
     public isAuth(): Observable<Response> {
         return this.http.get(this._isAuthUrl, this.getAuthHeader())
             .map((response: Response) => {
-                
+
                 return response;
             })
             .catch(error => {
