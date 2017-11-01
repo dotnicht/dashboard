@@ -2,7 +2,7 @@
   <mat-card class="first">
     <mat-card-content>
       <h4>{{'clientInfo.Balance' | translate}}:
-        <p style="    font-size: 35px;
+        <p style="font-size: 35px;
         font-weight: bold;">{{clientInfo.balance}} DTT</p>
       </h4>
 
@@ -70,15 +70,23 @@
 
           </button>
         </div>
-        <div class="right" *ngIf="selectedPaymentType.address">
-          <p>Send your {{selectedPaymentType.currency}} to this address</p>
-          <div id="qrCode" class="qrCode"></div>
-          <div>
-            <mat-form-field>
-              <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
-            </mat-form-field>
-            <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+        <div class="right">
+          <div *ngIf="!clientInfo.isTokenSaleDisabled && !icoInfo.isTokenSaleDisabled">
+            <p>Send your {{selectedPaymentType.currency}} to this address</p>
+            <div id="qrCode" class="qrCode"></div>
+            <div>
+              <mat-form-field>
+                <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
+              </mat-form-field>
+              <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+            </div>
           </div>
+          <div *ngIf="clientInfo.isTokenSaleDisabled || icoInfo.isTokenSaleDisabled">
+              <p>Sorry, payment is not available at this time.
+                </p>
+                If you have any questions you can contact with us at <a href="mailto:support@data-trading.com">support@data-trading.com</a> 
+          </div>
+
         </div>
       </div>
     </mat-card-content>

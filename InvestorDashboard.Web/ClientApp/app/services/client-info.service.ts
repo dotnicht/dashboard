@@ -25,6 +25,7 @@ export class ClientInfoEndpointService extends EndpointFactory {
     public updateClientInfo() {
         this.getClientInfoEndpoint().subscribe(info => {
             let model = info.json() as ClientInfo;
+            // model.isTokenSaleDisabled=true;
             model.balance = Math.round(model.balance * 100) / 100;
             this.clientInfo = model;
         });

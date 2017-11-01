@@ -80,16 +80,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     }
     changePayment(payment: PaymentType) {
-        this.qrLoaded = false;
-        this.isCopied = false;
-        this.selectedPaymentType = payment;
-        this.alertService.startLoadingMessage();
-        setTimeout(() => {
-            this.qrLoaded = true;
-            this.qrInitialize(payment.address);
-            this.alertService.stopLoadingMessage();
+        if (!this.clientInfo.isTokenSaleDisabled && !this.icoInfo.isTokenSaleDisabled) {
+            this.selectedPaymentType = payment;
+            this.qrLoaded = false;
+            this.isCopied = false;
+            this.selectedPaymentType = payment;
+            this.alertService.startLoadingMessage();
+            setTimeout(() => {
+                this.qrLoaded = true;
+                this.qrInitialize(payment.address);
+                this.alertService.stopLoadingMessage();
 
-        }, 100);
+            }, 100);
+        }
+
 
     }
 
@@ -97,7 +101,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.icoInfoSubscription = this.dashboardService.getIcoInfo().subscribe(info => {
             let icoInfo = info.json() as IcoInfo;
-            console.log(icoInfo);
+            // icoInfo.isTokenSaleDisabled=true;
             icoInfo.totalCoinsBoughtPercent = Math.round((icoInfo.totalCoinsBought * 100 / icoInfo.totalCoins) * 100) / 100;
             this.icoInfo = icoInfo;
         });
@@ -109,7 +113,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             });
             this.paymentTypes = pt;
             if (pt.length > 0) {
-                this.selectedPaymentType = pt[0];
+               
                 this.changePayment(pt[0]);
             }
 

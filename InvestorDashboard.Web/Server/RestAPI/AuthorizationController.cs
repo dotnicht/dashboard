@@ -90,7 +90,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     appUser = await _userManager.FindByEmailAsync(appUser.Email);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);
-                    var emailBody = _view.Render("Home/EmailBody", $"{Request.Scheme}://{Request.Host}/connect/confirm_email?userId={appUser.Id}&code={code}");
+                    var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/connect/confirm_email?userId={appUser.Id}&code={code}");
                     await _emailService.SendEmailConfirmationAsync(appUser.Email, emailBody);
 
                     return Ok();
