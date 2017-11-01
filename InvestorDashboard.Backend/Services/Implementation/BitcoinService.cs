@@ -18,13 +18,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public override Currency Currency => Currency.BTC;
 
-        public BitcoinService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<BitcoinSettings> bitcoinSettings)
-            : base(context, exchangeRateService, keyVaultService, mapper, tokenSettings)
+        public BitcoinService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<BitcoinSettings> bitcoinSettings)
+            : base(context, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
             => _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            var networkType = _bitcoinSettings.Value.NetworkType.Equals("BTC", StringComparison.InvariantCultureIgnoreCase)
+            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
                 ? Network.Main
                 : Network.TestNet;
 
@@ -35,7 +35,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 UserId = userId,
                 Currency = Currency,
-                PrivateKey = privateKey.ToString(networkType), // TODO: encrypt private key with password.
+                PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
                 Type = CryptoAddressType.Investment,
                 Address = address
             });
@@ -43,7 +43,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Context.SaveChanges();
         }
 
-        protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockChain(string address)
+        protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
             var uri = $"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}";
             var result = await RestUtil.Get<ChainResponse>(uri);

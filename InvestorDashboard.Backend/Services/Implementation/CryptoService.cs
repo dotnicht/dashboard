@@ -16,16 +16,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public abstract Currency Currency { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
+        protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
         protected IOptions<TokenSettings> TokenSettings { get; }
 
-        protected CryptoService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IMapper mapper, IOptions<TokenSettings> tokenSettings)
+        protected CryptoService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings)
             : base(context)
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
+            KeyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
+            EmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             Mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
-            KeyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
         }
 
         public Task UpdateUserDetails(string userId)
@@ -44,7 +46,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment).ToArray())
             {
-                foreach (var transaction in await GetTransactionsFromBlockChain(address.Address))
+                foreach (var transaction in await GetTransactionsFromBlockchain(address.Address))
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {
@@ -56,6 +58,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         Context.CryptoTransactions.Add(transaction);
                         Context.SaveChanges();
+
+                        // TODO: send transaction confirmed email.
                     }
                 }
             }
@@ -63,6 +67,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected abstract Task UpdateUserDetailsInternal(string userId);
 
-        protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockChain(string address);
+        protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
     }
 }

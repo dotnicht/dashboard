@@ -19,8 +19,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public override Currency Currency => Currency.ETH;
 
-        public EthereumService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
-            : base(context, exchangeRateService, keyVaultService, mapper, tokenSettings)
+        public EthereumService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
+            : base(context, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
             => _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
 
         protected override async Task UpdateUserDetailsInternal(string userId)
@@ -45,7 +45,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Context.SaveChanges();
         }
 
-        protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockChain(string address)
+        protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
             var uri = $"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}";
             var result = await RestUtil.Get<EtherscanResponse>(uri);
