@@ -42,7 +42,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
 
             var status = new IcoInfoModel
             {
-                IsTokenSaleDisabled = _tokenSettings.Value.IsTokenSaleDisabled,
                 TotalCoins = _tokenSettings.Value.TotalCoins,
                 TotalCoinsBought = _context.Users.Sum(x => x.Balance),
                 TotalInvestors = transactions
@@ -50,6 +49,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     .Distinct()
                     .Count(),
                 TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate),
+                TokenPrice = _tokenSettings.Value.Price,
+                IsTokenSaleDisabled = _tokenSettings.Value.IsTokenSaleDisabled
             };
 
             return Ok(status);
@@ -88,7 +89,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     Balance = ApplicationUser.Balance,
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
-                        ?.Address,
+                        ?.Address
                 };
 
                 return Ok(clientInfo);
