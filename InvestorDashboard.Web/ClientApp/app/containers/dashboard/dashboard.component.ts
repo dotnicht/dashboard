@@ -97,7 +97,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.icoInfoSubscription = this.dashboardService.getIcoInfo().subscribe(info => {
             let icoInfo = info.json() as IcoInfo;
-
+            console.log(icoInfo);
             icoInfo.totalCoinsBoughtPercent = Math.round((icoInfo.totalCoinsBought * 100 / icoInfo.totalCoins) * 100) / 100;
             this.icoInfo = icoInfo;
         });

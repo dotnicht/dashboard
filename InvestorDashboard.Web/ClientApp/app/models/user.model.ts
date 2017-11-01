@@ -29,7 +29,7 @@ export class User {
     public phoneNumber: string;
     public isEnabled: boolean;
     public isLockedOut: boolean;
-    public isEligibleForTokenSale: boolean;
+    
     // Note: Using only optional constructor properties without backing store disables typescript's type checking for the type
     constructor(id?: string,
         userName?: string,

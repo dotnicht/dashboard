@@ -16,9 +16,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _emailSettings = emailSettings ?? throw new System.ArgumentNullException(nameof(emailSettings));
         }
 
-        public async Task SendEmailConfirmationAsync(string email, string link)
+        public async Task SendEmailConfirmationAsync(string email, string body)
         {
-            await SendEmailAsync(email, "Confirm your email", $"Please confirm your account by clicking this link: <a href=\"{link}\">link</a>");
+            await SendEmailAsync(email, "Confirm your email", body);
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
