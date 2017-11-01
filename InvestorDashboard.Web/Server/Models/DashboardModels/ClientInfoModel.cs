@@ -9,5 +9,6 @@ namespace InvestorDashboard.Web.Server.Models.DashboardModels
     {
         public string Address { get; set; }
         public decimal Balance { get; set; }
+        public bool IsTokenSaleDisabled{ get; set; }
     }
 }

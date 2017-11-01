@@ -49,7 +49,7 @@
           </a>
 
 
-          <button mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')" >
+          <button mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
             <mat-icon>dashboard</mat-icon>
             <span>{{'mainMenu.Dashboard' | translate}}</span>
           </button>
@@ -84,4 +84,38 @@
   <div class="main-content">
     <router-outlet></router-outlet>
   </div>
+
+  <mat-toolbar [style.position]="!isTab?'fixed':'inherit'" class="footer" color="primary">
+    <div class="main-content">
+      <div>
+        <div class="block">
+          <img class="icon" src="/img/phone-call.svg">
+          <div>
+            <a href="tel:+380934142932">+38 (093) 414 29 32</a>
+            <div>info@data-trading.com</div>
+          </div>
+        </div>
+        <div class="block">
+          <img class="icon" src="/img/placeholder.svg">
+          <div>
+            <div>Ukraine, Kiyv City</div>
+            <div>Vozdvyzhens'ka St, 36</div>
+          </div>
+        </div>
+        <div class="block">
+          <img class="icon" src="/img/placeholder.svg">
+          <div>
+            <div>China, Shenzhen City, Futian Fuhua 3 Street,</div>
+            <div>Rongchao international Business Center,</div>
+            <div>Room 4601</div>
+          </div>
+        </div>
+        <div class="right">
+            <img class="icon" src="/img/logo.svg">
+            <div class="copyright">(c) {{year}}</div>
+        </div>
+      </div>
+
+    </div>
+  </mat-toolbar>
 </mat-drawer-container>

@@ -36,13 +36,13 @@ namespace InvestorDashboard.Web.Server.RestAPI
         }
 
         [HttpGet("ico_status")]
+        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
             var transactions = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment);
 
             var status = new IcoInfoModel
             {
-                IsTokenSaleDisabled = _tokenSettings.Value.IsTokenSaleDisabled,
                 TotalCoins = _tokenSettings.Value.TotalCoins,
                 TotalCoinsBought = _context.Users.Sum(x => x.Balance),
                 TotalInvestors = transactions
@@ -50,12 +50,15 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     .Distinct()
                     .Count(),
                 TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate),
+                TokenPrice = _tokenSettings.Value.Price,
+                IsTokenSaleDisabled = _tokenSettings.Value.IsTokenSaleDisabled
             };
 
             return Ok(status);
         }
 
         [HttpGet("payment_status"), Authorize]
+        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetPaymentInfo()
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
@@ -79,19 +82,22 @@ namespace InvestorDashboard.Web.Server.RestAPI
         }
 
         [HttpGet("client_info"), Authorize]
+        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetClientInfo()
         {
+        
             if (ApplicationUser != null)
             {
                 var clientInfo = new ClientInfoModel
                 {
                     Balance = ApplicationUser.Balance,
+                    IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
-                        ?.Address,
+                        ?.Address
                 };
 
-                return Ok(clientInfo);
+                return  Ok(clientInfo);
             }
 
             return Unauthorized();

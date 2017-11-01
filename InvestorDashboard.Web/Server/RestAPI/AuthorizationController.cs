@@ -23,12 +23,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.Models;
+using InvestorDashboard.Web.Server.Services;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
     [Route("[controller]/[action]")]
     public class AuthorizationController : Controller
     {
+        private readonly ViewRender _view;
         private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -46,7 +48,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
           ILogger<AuthorizationController> loger,
           IEnumerable<ICryptoService> cryptoServices,
           IMapper mapper,
-          IEmailService emailService)
+          IEmailService emailService,
+          ViewRender view)
         {
             _applicationManager = applicationManager;
             _identityOptions = identityOptions;
@@ -56,6 +59,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _view = view;
         }
 
         [HttpPost("~/connect/register"), Produces("application/json")]
@@ -86,7 +90,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     appUser = await _userManager.FindByEmailAsync(appUser.Email);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);
-                    await _emailService.SendEmailConfirmationAsync(appUser.Email, $"{Request.Scheme}://{Request.Host}/connect/confirm_email?userId={appUser.Id}&code={code}");
+                    var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/connect/confirm_email?userId={appUser.Id}&code={code}");
+                    await _emailService.SendEmailConfirmationAsync(appUser.Email, emailBody);
 
                     return Ok();
                 }

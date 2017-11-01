@@ -53,7 +53,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     public isMobile: boolean;
     public isTab: boolean;
-
+    public year: number;
     // This will go at the END of your title for example "Home - Angular Universal..." <-- after the dash (-)
     private endPageTitle: string = 'Investor Dashboard';
     // If no Title is provided, we'll use a default one before the dash(-)
@@ -108,8 +108,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.toastyConfig.showClose = true;
 
         this.appTitleService.appName = this.appTitle;
-
-
+        let curDate = new Date();
+        
     }
     selectLanguage(lang: string) {
         this.configurations.language = lang;
@@ -119,6 +119,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // Titles come from the data.title property on all Routes (see app.routes.ts)
         this._changeTitleOnNavigation();
         if (isPlatformBrowser) {
+            this.year = new Date().getFullYear();
             this.resizeService.width = window.innerWidth;
             this.isMobile = this.resizeService.isMobile;
             this.isTab = this.resizeService.isTab;

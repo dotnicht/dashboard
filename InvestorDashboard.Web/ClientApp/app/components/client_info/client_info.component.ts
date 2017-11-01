@@ -31,7 +31,6 @@ export class ClientInfoComponent implements OnInit {
 
     }
     get clientInfo() {
-        //  return new ClientInfo();
         return this.clientInfoService.clientInfo;
     }
     logout() {
