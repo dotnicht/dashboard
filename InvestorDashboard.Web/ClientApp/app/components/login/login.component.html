@@ -15,28 +15,32 @@
                         <mat-form-field>
                             <input matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
                                 required />
-                            <mat-error *ngIf="email.invalid && (email.dirty || email.touched)">
-                                <div *ngIf="email.errors.required">Email is
-                                    <strong>required</strong>
-                                </div>
-                                <div *ngIf="email.errors.email">Email is not
-                                    <strong>valid</strong>
-                                </div>
-                            </mat-error>
+
                         </mat-form-field>
                         <mat-form-field>
                             <input matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
                                 #password="ngModel" required />
-                            <mat-error *ngIf="password.invalid && (password.dirty || password.touched)">
-                                <div *ngIf="email.errors.required">Password is
-                                    <strong>required</strong>
-                                </div>
-                            </mat-error>
+
                         </mat-form-field>
                         <!-- <mat-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
                             Remember me
                         </mat-checkbox> -->
-                        <p class="errors" *ngIf="errorMsg">{{errorMsg}} </p>
+                        <div class="errors">
+                            <div *ngIf="email.invalid && (email.dirty || email.touched)">
+                                <p *ngIf="email.errors.required">Email is
+                                    <strong>required</strong>
+                                </p>
+                                <p *ngIf="email.errors.email">Email is not
+                                    <strong>valid</strong>
+                                </p>
+                            </div>
+                            <div *ngIf="password.invalid && (password.dirty || password.touched)">
+                                <p *ngIf="email.errors.required">Password is
+                                    <strong>required</strong>
+                                </p>
+                            </div>
+                            {{errorMsg}}
+                        </div>
                         <div style="display: flex;justify-content: space-between;align-items: center;">
                             <button type="submit" mat-raised-button color="primary" [disabled]="isLoading">
                                 <i *ngIf="isLoading" class='fa fa-circle-o-notch fa-spin'></i> {{isLoading ? ('buttons.LogginIn' | translate) : ('buttons.Login' | translate)}}

@@ -29,6 +29,7 @@ export class RegisterComponent implements OnInit {
     ];
     formResetToggle = true;
     isLoading = false;
+    errorMsg: string;
     registerForm = new UserRegister();
 
 
@@ -95,7 +96,7 @@ export class RegisterComponent implements OnInit {
                     this.reset();
                     this.openEmailConfirmDialog();
                     this.alertService.showMessage('Register', `Successful registration!`, MessageSeverity.success);
-                    this.alertService.showMessage('Message Has Been Sent', `Link to complete registration has been sent to` + this.registerForm.email, MessageSeverity.info);
+                    //this.alertService.showMessage('Message Has Been Sent', `Link to complete registration has been sent to` + this.registerForm.email, MessageSeverity.info);
                 }, 1000);
             },
                 error => {
