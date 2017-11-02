@@ -167,7 +167,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
         //  }
         //}
 
-
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]

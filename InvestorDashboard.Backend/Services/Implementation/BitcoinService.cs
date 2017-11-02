@@ -50,6 +50,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }
 
+        protected override async Task TransferAssets(CryptoAddress address, string destinationAddress)
+        {
+            throw new NotImplementedException();
+        }
+
         internal class ChainResponse
         {
             public string Status { get; set; }

@@ -3,6 +3,7 @@
     public enum CryptoTransactionDirection
     {
         Inbound,
-        Outbound
+        Outbound,
+        Internal
     }
 }

@@ -12,9 +12,9 @@ using InvestorDashboard.Console.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
-using static System.Console;
 
 namespace InvestorDashboard.Console
 {
@@ -35,7 +35,7 @@ namespace InvestorDashboard.Console
             var configuration = configurationBuilder.Build();
 
             var serviceCollection = new ServiceCollection()
-                .AddLogging()
+                .AddLogging(x => x.AddConsole())
                 .AddAutoMapper(typeof(DependencyInjection));
 
             Configuration.Configure(serviceCollection, configuration);
@@ -46,7 +46,7 @@ namespace InvestorDashboard.Console
                 .GetRequiredService<IKeyVaultService>();
 
             serviceCollection.AddDbContext<ApplicationDbContext>(
-                x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")), 
+                x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")),
                 ServiceLifetime.Transient);
 
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
@@ -65,23 +65,25 @@ namespace InvestorDashboard.Console
                         .Create(x)
                         .Build();
 
-                    var period = (serviceCollection.BuildServiceProvider().GetService(x) as JobBase).Period;
+                    var period = (serviceCollection.BuildServiceProvider().GetService(x) as JobBase)?.Period;
 
-                    var trigger = TriggerBuilder
-                        .Create()
-                        .StartNow()
-                        .WithSimpleSchedule(y => y.WithInterval(period).RepeatForever())
-                        .Build();
+                    if (period != null)
+                    {
+                        var trigger = TriggerBuilder
+                            .Create()
+                            .StartNow()
+                            .WithSimpleSchedule(y => y.WithInterval(period.Value).RepeatForever())
+                            .Build();
 
-                    await scheduler.ScheduleJob(job, trigger);
+                        await scheduler.ScheduleJob(job, trigger);
+                    }
                 });
 
             scheduler.JobFactory = new JobFactory(serviceCollection.BuildServiceProvider());
 
             await scheduler.Start().ConfigureAwait(false);
 
-            WriteLine("Press the escape key (ESC) to quit.");
-            while (ReadKey(true).Key != ConsoleKey.Escape)
+            while (System.Console.ReadKey(true).Key != ConsoleKey.Escape)
             {
                 Task.Delay(TimeSpan.FromSeconds(3)).Wait();
             }

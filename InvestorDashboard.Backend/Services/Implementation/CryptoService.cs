@@ -51,13 +51,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     if (!hashes.Contains(transaction.Hash))
                     {
                         transaction.CryptoAddress = address;
-                        transaction.Direction = CryptoTransactionDirection.Inbound;
+                        transaction.Direction = CryptoTransactionDirection.Inbound; // TODO: determine transaction type from 
                         transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Currency, Currency.USD, transaction.TimeStamp, true);
                         transaction.TokenPrice = TokenSettings.Value.Price;
                         transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
 
-                        Context.CryptoTransactions.Add(transaction);
-                        Context.SaveChanges();
+                        await Context.CryptoTransactions.AddAsync(transaction);
+                        await Context.SaveChangesAsync();
 
                         // TODO: send transaction confirmed email.
                     }
@@ -65,8 +65,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected abstract Task UpdateUserDetailsInternal(string userId);
+        public async Task TransferAssets(string destinationAddress)
+        {
+            if (destinationAddress == null)
+            {
+                throw new ArgumentNullException(nameof(destinationAddress));
+            }
 
+            foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment))
+            {
+                await TransferAssets(address, destinationAddress);
+            }
+        }
+
+        protected abstract Task UpdateUserDetailsInternal(string userId);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
+        protected abstract Task TransferAssets(CryptoAddress address, string destinationAddress);
     }
 }
