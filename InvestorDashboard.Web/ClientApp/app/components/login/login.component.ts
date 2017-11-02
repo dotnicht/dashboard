@@ -15,7 +15,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     userLogin = new UserLogin();
     isLoading = false;
     formResetToggle = true;
-    modalClosedCallback: () => void;
     loginStatusSubscription: any;
     errorMsg: string;
 
@@ -53,19 +52,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         return !this.isModal && this.authService.isLoggedIn && !this.authService.isSessionExpired;
     }
 
-
-    showErrorAlert(caption: string, message: string) {
-        this.alertService.showMessage(caption, message, MessageSeverity.error);
-    }
-
-    closeModal() {
-        if (this.modalClosedCallback) {
-            this.modalClosedCallback();
-        }
-    }
     login() {
         this.isLoading = true;
-      
+
         this.authService.login(this.userLogin)
             .subscribe(
             user => {
@@ -74,20 +63,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                     this.isLoading = false;
                     this.reset();
 
-                    if (!this.isModal) {
-                        this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
-
-
-                    }
-                    else {
-
-                        this.alertService.showMessage('Login', `Session for ${user.userName} restored!`, MessageSeverity.success);
-                        setTimeout(() => {
-                            this.alertService.showStickyMessage('Session Restored', 'Please try your last operation again', MessageSeverity.default);
-                        }, 500);
-
-                        this.closeModal();
-                    }
+                    this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
                 }, 500);
             },
             error => {
@@ -96,7 +72,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
                 if (Utilities.checkNoNetwork(error)) {
                     this.alertService.showStickyMessage(Utilities.noNetworkMessageCaption, Utilities.noNetworkMessageDetail, MessageSeverity.error, error);
-                    this.offerAlternateHost();
                 }
                 else {
                     let errorMessage = Utilities.findHttpResponseMessage('error_description', error);
@@ -106,28 +81,13 @@ export class LoginComponent implements OnInit, OnDestroy {
                         this.errorMsg = errorMessage;
                     }
                     else
-                    this.errorMsg='An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
-                        // this.alertService.showStickyMessage('Unable to login', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
+                        this.errorMsg = 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
+                    // this.alertService.showStickyMessage('Unable to login', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
                 }
 
             });
     }
-    offerAlternateHost() {
 
-        if (Utilities.checkIsLocalHost(location.origin) && Utilities.checkIsLocalHost(this.configurations.baseUrl)) {
-            this.alertService.showDialog('Dear Developer!\nIt appears your backend Web API service is not running...\n' +
-                'Would you want to temporarily switch to the online Demo API below?(Or specify another)',
-                DialogType.prompt,
-                (value: string) => {
-                    this.configurations.baseUrl = value;
-                    this.alertService.showStickyMessage('API Changed!', 'The target Web API has been changed to: ' + value, MessageSeverity.warn);
-                },
-                null,
-                null,
-                null,
-                this.configurations.fallbackBaseUrl);
-        }
-    }
     reset() {
         this.formResetToggle = false;
 

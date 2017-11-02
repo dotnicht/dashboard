@@ -9,9 +9,7 @@
             </mat-card-title>
             <mat-card-content class="panel-body">
                 <div class="col-mat-12 ">
-                    <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login() :
-                        (!email.valid && showErrorAlert('Email is required', 'Please enter a valid email'));
-                        (!password.valid && showErrorAlert('Password is required', 'Please enter a valid password'))">
+                    <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login():''">
                         <mat-form-field>
                             <input matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
                                 required />
@@ -35,7 +33,7 @@
                                 </p>
                             </div>
                             <div *ngIf="password.invalid && (password.dirty || password.touched)">
-                                <p *ngIf="email.errors.required">Password is
+                                <p *ngIf="password.errors.required">Password is
                                     <strong>required</strong>
                                 </p>
                             </div>
