@@ -83,7 +83,7 @@ namespace InvestorDashboard.Console
 
             await scheduler.Start().ConfigureAwait(false);
 
-            while (ReadKey(true).Key != ConsoleKey.Escape)
+            while (System.Console.ReadKey(true).Key != ConsoleKey.Escape)
             {
                 Task.Delay(TimeSpan.FromSeconds(3)).Wait();
             }

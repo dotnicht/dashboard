@@ -85,19 +85,18 @@ namespace InvestorDashboard.Web.Server.RestAPI
         [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetClientInfo()
         {
-        
             if (ApplicationUser != null)
             {
                 var clientInfo = new ClientInfoModel
                 {
-                    Balance = ApplicationUser.Balance,
+                    Balance = ApplicationUser.Balance + ApplicationUser.BonusBalance,
                     IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
                         ?.Address
                 };
 
-                return  Ok(clientInfo);
+                return Ok(clientInfo);
             }
 
             return Unauthorized();
