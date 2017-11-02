@@ -118,7 +118,7 @@ export class AuthService {
   }
 
   constructor(private router: Router, private configurations: ConfigurationService, private endpointFactory: EndpointFactory, private localStorage: LocalStoreManager) {
-    this.initializeLoginStatus();
+    //this.initializeLoginStatus();
   }
 
 

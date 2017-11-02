@@ -25,7 +25,7 @@
             </div>
             <mat-form-field>
               <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password"
-                [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$_%&*])).{8,}$">
+                [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
               <mat-error *ngIf="password.invalid && (password.dirty || password.touched)">
                 <div *ngIf="password.errors.required">Password is
                   <strong>required</strong>
