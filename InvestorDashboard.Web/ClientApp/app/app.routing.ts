@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
-import { HomeComponent } from './containers/home/home.component';
 import { NotFoundComponent } from './containers/not-found/not-found.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
@@ -15,7 +14,7 @@ import { RestorePasswordComponent } from "./components/controls/restore-password
 import { FaqComponent } from './containers/faq/faq.component';
 
 export const routingComponents = [
-    HomeComponent, NotFoundComponent
+    NotFoundComponent
 ];
 
 export const SETTINGS_ROUTES: Routes = [
