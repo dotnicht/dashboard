@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
-using static System.Console;
 
 namespace InvestorDashboard.Console.Jobs
 {
@@ -17,20 +17,23 @@ namespace InvestorDashboard.Console.Jobs
 
         public override TimeSpan Period => Options.Value.RefreshTransactionsPeriod;
 
-        public RefreshTransactionsJob(ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
-            : base(context, options)
+        public RefreshTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
+            : base(loggerFactory, context, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            _cryptoServices.ToList().ForEach(x =>
-            {
-                x.RefreshInboundTransactions().Wait();
-                x.Dispose();
-            });
-            await Out.WriteLineAsync($"Transaction refresh completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Currency.ToString())) }");
+            _cryptoServices.ToList().ForEach(x => x.RefreshInboundTransactions().Wait());
+            //Parallel.ForEach(_cryptoServices, async x => await x.RefreshInboundTransactions());
+            Logger.LogInformation($"Transaction refresh completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Currency.ToString())) }");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _cryptoServices.ToList().ForEach(x => x.Dispose());
+            base.Dispose(disposing);
         }
     }
 }

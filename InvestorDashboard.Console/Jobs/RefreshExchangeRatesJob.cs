@@ -5,9 +5,9 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
-using static System.Console;
 
 namespace InvestorDashboard.Console.Jobs
 {
@@ -17,8 +17,8 @@ namespace InvestorDashboard.Console.Jobs
 
         public override TimeSpan Period => Options.Value.RefreshExchangeRatesPeriod;
 
-        public RefreshExchangeRatesJob(ApplicationDbContext context, IOptions<JobsSettings> options, IExchangeRateService exchangeRateService) 
-            : base(context, options)
+        public RefreshExchangeRatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IExchangeRateService exchangeRateService) 
+            : base(loggerFactory, context, options)
         {
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
         }
@@ -31,7 +31,13 @@ namespace InvestorDashboard.Console.Jobs
                 await _exchangeRateService.RefreshExchangeRate(currency);
             }
 
-            await Out.WriteLineAsync($"Exchange rates update completed for currencies: { string.Join(", ", currencies.Select(x => x.ToString())) }");
+            Logger.LogInformation($"Exchange rates update completed for currencies: { string.Join(", ", currencies.Select(x => x.ToString())) }");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _exchangeRateService.Dispose();
+            base.Dispose(disposing);
         }
     }
 }

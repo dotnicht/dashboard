@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
-using static System.Console;
 
 namespace InvestorDashboard.Console.Jobs
 {
@@ -16,8 +16,8 @@ namespace InvestorDashboard.Console.Jobs
 
         public override TimeSpan Period => Options.Value.RefreshTokenBalancePeriod;
 
-        public RefreshTokenBalanceJob(ApplicationDbContext context, IOptions<JobsSettings> options, ITokenService tokenService) 
-            : base(context, options)
+        public RefreshTokenBalanceJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, ITokenService tokenService) 
+            : base(loggerFactory, context, options)
         {
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
@@ -30,7 +30,13 @@ namespace InvestorDashboard.Console.Jobs
                 await _tokenService.RefreshTokenBalance(userId);
             }
 
-            await Out.WriteLineAsync($"Token refresh completed for {ids.Length} users.");
+            Logger.LogInformation($"Token refresh completed for {ids.Length} users.");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _tokenService.Dispose();
+            base.Dispose(disposing);
         }
     }
 }
