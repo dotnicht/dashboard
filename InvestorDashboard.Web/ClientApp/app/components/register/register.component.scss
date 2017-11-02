@@ -1,6 +1,13 @@
-﻿.login{
+﻿.login {
     width: 100%;
 }
+
 .errors {
     color: #d9534f;
+}
+
+@media (max-width: 500px) {
+    .mat-form-field {
+        width: 100%;
+    }
 }

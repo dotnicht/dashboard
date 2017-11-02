@@ -64,6 +64,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
     }
     login() {
+        this.isLoading = true;
+      
         this.authService.login(this.userLogin)
             .subscribe(
             user => {
@@ -89,7 +91,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                 }, 500);
             },
             error => {
-
+                this.isLoading = false;
                 this.alertService.stopLoadingMessage();
 
                 if (Utilities.checkNoNetwork(error)) {
@@ -104,12 +106,10 @@ export class LoginComponent implements OnInit, OnDestroy {
                         this.errorMsg = errorMessage;
                     }
                     else
-                        this.alertService.showStickyMessage('Unable to login', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
+                    this.errorMsg='An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
+                        // this.alertService.showStickyMessage('Unable to login', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
                 }
 
-                setTimeout(() => {
-                    this.isLoading = false;
-                }, 500);
             });
     }
     offerAlternateHost() {

@@ -11,7 +11,7 @@
               <mat-form-field class="login">
                 <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
                   required email>
-          
+
               </mat-form-field>
 
             </div>
@@ -38,11 +38,12 @@
               </div>
               <div *ngIf="password.invalid && (password.dirty || password.touched)">
                 <p *ngIf="password.errors.minlength">Min length is 8</p>
-                <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,<br/> 1 LowerCase Alphabet, 1 Number</p>
+                <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
+                  <br/> 1 LowerCase Alphabet, 1 Number</p>
               </div>
 
               <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
-              {{errorMsg}}
+              <p *ngIf="errorMsg">{{errorMsg}}</p>
             </div>
             <div style="display: flex;justify-content: space-between;align-items: center;">
 
@@ -51,7 +52,7 @@
               </button>
               <span>{{'other.Or' | translate}}</span>
               <button type="submit" [disabled]="!f.form.valid || isLoading" mat-raised-button color="primary">
-                <i class='fa fa-circle-o-notch fa-spin'></i>
+                  <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
                 <span>{{'buttons.Register' | translate}}</span>
               </button>
             </div>
