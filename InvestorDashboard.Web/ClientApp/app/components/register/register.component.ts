@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Inject } from '@angular/core';
+﻿import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
@@ -8,6 +8,7 @@ import { Utilities } from '../../services/utilities';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material';
 import { DOCUMENT } from '@angular/platform-browser';
 import { AppTranslationService } from '../../services/app-translation.service';
+import { Router, ActivatedRouteSnapshot } from '@angular/router';
 
 const defaultDialogConfig = new MatDialogConfig();
 
@@ -190,11 +191,46 @@ export class ConfirmEmailDialogComponent {
 }
 
 @Component({
-  selector: 'confirmed-email',
-  templateUrl: './confirmed-email.component.html'
+    selector: 'confirmed-email',
+    templateUrl: './confirmed-email.component.html'
 })
-export class ConfirmedEmailComponent {
+export class ConfirmedEmailComponent implements OnInit, OnDestroy {
+    public timer: number = 5;
+    public progress: number = 0;
 
-  constructor() {  }
+    private timerA;
+    private timerB;
+
+    ngOnInit(): void {
+       
+    }
+
+    ngOnDestroy() {
+        if (this.timerA) {
+            clearInterval(this.timerA);
+        } if (this.timerB) {
+            clearInterval(this.timerB);
+        }
+    }
+
+    constructor(private router: Router) { 
+        //  this.timerA = setInterval(() => {
+        //     if (this.timer >= 1) {
+        //         this.timer -= 1;
+        //     } else {
+        //         clearInterval(this.timerA);
+        //         //this.router.navigate(['/login']);
+        //     }
+        // }, 1000);
+        // this.timerB = setInterval(() => {
+        //    if (this.progress <= 100) {
+        //        this.progress += 10;
+        //    } else {
+
+
+        //    }
+        // }, 500);
+    }
+
 
 }
