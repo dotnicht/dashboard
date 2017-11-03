@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID, ViewChildren, QueryList, HostListener } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Inject, ViewEncapsulation, RendererFactory2, PLATFORM_ID, ViewChildren, QueryList, HostListener, AfterViewInit } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute, PRIMARY_OUTLET, NavigationStart } from '@angular/router';
 import { Meta, Title, DOCUMENT, MetaDefinition, DomSanitizer } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
@@ -29,7 +29,9 @@ import { Observable } from 'rxjs/Observable';
     styleUrls: ['./app.component.scss', './green.theme.scss'],
     encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
+    loadTimer: number;
+
     isAppLoaded: boolean;
     isUserLoggedIn: boolean;
     shouldShowLoginModal: boolean;
@@ -78,7 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
         private toastyConfig: ToastyConfig,
         private alertService: AlertService,
         private domSanitizer: DomSanitizer,
-        storageManager: LocalStoreManager,
+        private storageManager: LocalStoreManager,
         private authService: AuthService,
         private configurations: ConfigurationService,
         private translationService: AppTranslationService,
@@ -95,80 +97,79 @@ export class AppComponent implements OnInit, OnDestroy {
     ) {
 
 
-        storageManager.initialiseStorageSyncListener();
 
 
-
-        translationService.addLanguages(['en']);
-        translationService.setDefaultLanguage('en');
-
-        this.toastyConfig.theme = 'bootstrap';
-        this.toastyConfig.position = 'top-right';
-        this.toastyConfig.limit = 100;
-        this.toastyConfig.showClose = true;
-
-        this.appTitleService.appName = this.appTitle;
-        let curDate = new Date();
-        
     }
     selectLanguage(lang: string) {
         this.configurations.language = lang;
     }
     ngOnInit() {
-        // Change "Title" on every navigationEnd event
-        // Titles come from the data.title property on all Routes (see app.routes.ts)
-        this._changeTitleOnNavigation();
-        if (isPlatformBrowser) {
-            this.year = new Date().getFullYear();
-            this.resizeService.width = window.innerWidth;
-            this.isMobile = this.resizeService.isMobile;
-            this.isTab = this.resizeService.isTab;
-            this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
-
-        }
-
-        this.isUserLoggedIn = this.authService.isLoggedIn;
-
-        if (this.isUserLoggedIn) {
-            this.refreshData();
-        }
-        setTimeout(() => {
-            if (this.isUserLoggedIn) {
-
-                this.alertService.resetStickyMessage();
-
-                // if (!this.authService.isSessionExpired)
-                this.alertService.showMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
-                // else
-                //     this.alertService.showStickyMessage('Session Expired', 'Your Session has expired. Please log in again', MessageSeverity.warn);
-            }
-        }, 100);
-
-        this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
-        this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
-
-        this.authService.reLoginDelegate = () => this.shouldShowLoginModal = true;
-
-        this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
-            this.isUserLoggedIn = isLoggedIn;
+         this.configurations.loadLocalChanges();
+         this.storageManager.initialiseStorageSyncListener();
 
 
 
-            setTimeout(() => {
-                if (!this.isUserLoggedIn) {
-                    this.alertService.showMessage('Session Ended!', '', MessageSeverity.default);
-                }
-            }, 100);
-        });
-        this.router.events.subscribe(event => {
-            if (event instanceof NavigationStart) {
-                let url = (<NavigationStart>event).url;
+         this.translationService.addLanguages(['en']);
+         this.translationService.setDefaultLanguage('en');
 
-                if (url !== url.toLowerCase()) {
-                    this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
-                }
-            }
-        });
+         this.toastyConfig.theme = 'bootstrap';
+         this.toastyConfig.position = 'top-right';
+         this.toastyConfig.limit = 100;
+         this.toastyConfig.showClose = true;
+
+         this.appTitleService.appName = this.appTitle;
+         let curDate = new Date();
+
+         // Change "Title" on every navigationEnd event
+         // Titles come from the data.title property on all Routes (see app.routes.ts)
+         this._changeTitleOnNavigation();
+         if (isPlatformBrowser) {
+             this.year = new Date().getFullYear();
+             this.resizeService.width = window.innerWidth;
+             this.isMobile = this.resizeService.isMobile;
+             this.isTab = this.resizeService.isTab;
+             this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
+
+         }
+
+         this.isUserLoggedIn = this.authService.isLoggedIn;
+
+         if (this.isUserLoggedIn) {
+             this.refreshData();
+         }
+         setTimeout(() => {
+             if (this.isUserLoggedIn) {
+
+                 this.alertService.resetStickyMessage();
+                 this.alertService.showMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
+             }
+         }, 100);
+
+         this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
+         this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
+
+         this.authService.reLoginDelegate = () => this.shouldShowLoginModal = true;
+
+         this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
+             this.isUserLoggedIn = isLoggedIn;
+
+
+
+             setTimeout(() => {
+                 if (!this.isUserLoggedIn) {
+                     this.alertService.showMessage('Session Ended!', '', MessageSeverity.default);
+                 }
+             }, 100);
+         });
+         this.router.events.subscribe(event => {
+             if (event instanceof NavigationStart) {
+                 let url = (<NavigationStart>event).url;
+
+                 if (url !== url.toLowerCase()) {
+                     this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
+                 }
+             }
+         });
 
 
     }
@@ -183,7 +184,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
     }
 
+    ngAfterViewInit() {
 
+    }
     getYear() {
         return new Date().getUTCFullYear();
     }

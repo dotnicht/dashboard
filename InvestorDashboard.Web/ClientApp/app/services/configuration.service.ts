@@ -54,12 +54,12 @@ export class ConfigurationService {
 
 
     constructor(private localStorage: LocalStoreManager, private translationService: AppTranslationService) {
-        this.loadLocalChanges();
+       // this.loadLocalChanges();
     }
 
 
 
-    private loadLocalChanges() {
+    public loadLocalChanges() {
 
         if (this.localStorage.exists(DBkeys.LANGUAGE)) {
             this._language = this.localStorage.getDataObject<string>(DBkeys.LANGUAGE);
