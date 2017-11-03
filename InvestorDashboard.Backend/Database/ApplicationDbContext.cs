@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -24,20 +26,30 @@ namespace InvestorDashboard.Backend.Database
 
             builder.UseOpenIddict();
 
-            builder.Entity<CryptoTransaction>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("GETUTCDATE()");
+            //builder.Entity<CryptoTransaction>()
+            //    .Property(b => b.Created)
+            //    .HasDefaultValueSql("GETUTCDATE()");
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.Hash)
                 .IsUnique();
 
-            builder.Entity<CryptoAddress>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("GETUTCDATE()");
+            //builder.Entity<CryptoAddress>()
+            //    .Property(b => b.Created)
+            //    .HasDefaultValueSql("GETUTCDATE()");
 
-            builder.Entity<ExchangeRate>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("GETUTCDATE()");
+            //builder.Entity<ExchangeRate>()
+            //    .Property(b => b.Created)
+            //    .HasDefaultValueSql("GETUTCDATE()");
+
+            foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(decimal)))
+            {
+                property.Relational().ColumnType = "decimal(18, 6)";
+            }
+
+            foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(DateTime) && p.Name == "Created"))
+            {
+                property.Relational().DefaultValueSql = "GETUTCDATE()";
+            }
         }
     }
 }

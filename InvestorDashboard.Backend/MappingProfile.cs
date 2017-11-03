@@ -18,7 +18,7 @@ namespace InvestorDashboard.Backend
 
             CreateMap<BitcoinService.ChainResponse.Transaction, CryptoTransaction>()
                 .ForMember(x => x.Hash, x => x.MapFrom(y => y.Txid))
-                .ForMember(x => x.Amount, x => x.MapFrom(y => double.Parse(y.Incoming.Value)))
+                .ForMember(x => x.Amount, x => x.MapFrom(y => decimal.Parse(y.Incoming.Value)))
                 .ForMember(x => x.TimeStamp, x => x.MapFrom(y => DateTimeOffset.FromUnixTimeSeconds(y.Time).UtcDateTime));
         }
     }
