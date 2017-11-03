@@ -83,6 +83,7 @@ export class RegisterComponent implements OnInit {
             if (this.registerRules !== undefined && this.registerRules.every((element, index, array) => {
                 return element.checked;
             })) {
+                this.errorMsg = '';
                 this.isLoading = true;
                 this.registerRules = result;
                 this.registerRulesDialogRef = undefined;

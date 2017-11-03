@@ -40,7 +40,7 @@
                             <p *ngIf="errorMsg">{{errorMsg}}</p>
                         </div>
                         <div style="display: flex;justify-content: space-between;align-items: center;">
-                            <button type="submit" mat-raised-button color="primary" [disabled]="isLoading">
+                            <button type="submit" mat-raised-button color="primary"  [disabled]="!f.form.valid || isLoading">
                                 <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
                                 {{isLoading ? ('buttons.LogginIn' | translate) : ('buttons.Login' | translate)}}
                             </button>

@@ -137,30 +137,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
          if (this.isUserLoggedIn) {
              this.refreshData();
          }
-         setTimeout(() => {
-             if (this.isUserLoggedIn) {
-
-                 this.alertService.resetStickyMessage();
-                 this.alertService.showMessage('Login', `Welcome back ${this.userName}!`, MessageSeverity.default);
-             }
-         }, 100);
 
          this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
          this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
 
-         this.authService.reLoginDelegate = () => this.shouldShowLoginModal = true;
-
-         this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
-             this.isUserLoggedIn = isLoggedIn;
-
-
-
-             setTimeout(() => {
-                 if (!this.isUserLoggedIn) {
-                     this.alertService.showMessage('Session Ended!', '', MessageSeverity.default);
-                 }
-             }, 100);
-         });
          this.router.events.subscribe(event => {
              if (event instanceof NavigationStart) {
                  let url = (<NavigationStart>event).url;

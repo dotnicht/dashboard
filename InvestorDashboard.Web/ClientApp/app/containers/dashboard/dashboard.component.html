@@ -17,6 +17,21 @@
   </mat-card>
   <mat-card class="second">
     <mat-card-content>
+      <div class="right">
+          <div style="margin-top: 0;margin-bottom: 26px;font-weight: bold; font-size: 18px;"> PRE-ORDER  <br/> IS IN PROGRESS        </div>
+          <p style="font-size: 20px;">Bonus 30%       </p>
+        <!-- <div style="margin-bottom: 25px;">
+          {{'clientInfo.IcoHasStarted' | translate}}
+        </div>
+        <div style="margin-bottom: 30px;">
+          <p>{{'clientInfo.TotalInvestments' | translate}} &#8212; {{icoInfo.totalCoinsBoughtPercent}} %</p>
+          {{icoInfo.totalCoinsBought}} / {{icoInfo.totalCoins}} DTT
+        </div>
+        <div>
+          <mat-progress-bar mode="determinate" [value]="icoInfo.totalCoinsBoughtPercent" [color]="'primary'">
+          </mat-progress-bar>
+        </div> -->
+      </div>
       <div class="left">
         <div class="item">
           <!-- <div class="color-block"></div> -->
@@ -36,23 +51,7 @@
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div>
       </div>
-      <div class="right">
 
-        <div style="margin-bottom: 25px;">
-          {{'clientInfo.IcoHasStarted' | translate}}
-        </div>
-        <div style="margin-bottom: 30px;">
-          <p>{{'clientInfo.TotalInvestments' | translate}} - {{icoInfo.totalCoinsBoughtPercent}} %</p>
-          {{icoInfo.totalCoinsBought}} DTT / {{icoInfo.totalCoins}} DTT
-        </div>
-        <div>
-          <mat-progress-bar mode="determinate" [value]="icoInfo.totalCoinsBoughtPercent" [color]="'primary'">
-          </mat-progress-bar>
-        </div>
-        <div>
-
-        </div>
-      </div>
     </mat-card-content>
 
   </mat-card>
@@ -82,9 +81,10 @@
             </div>
           </div>
           <div *ngIf="clientInfo.isTokenSaleDisabled || icoInfo.isTokenSaleDisabled">
-              <p>Sorry, payment is not available at this time.
-                </p>
-                If you have any questions you can contact with us at <a href="mailto:support@data-trading.com">support@data-trading.com</a> 
+            <p>Sorry, payment is not available at this time.
+            </p>
+            If you have any questions you can contact with us at
+            <a href="mailto:support@data-trading.com">support@data-trading.com</a>
           </div>
 
         </div>

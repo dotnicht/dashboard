@@ -54,21 +54,21 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     login() {
         this.isLoading = true;
-
+        this.errorMsg = '';
         this.authService.login(this.userLogin)
             .subscribe(
             user => {
                 setTimeout(() => {
-                    this.alertService.stopLoadingMessage();
+                    //this.alertService.stopLoadingMessage();
                     this.isLoading = false;
                     this.reset();
 
-                    this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
+                    //this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
                 }, 500);
             },
             error => {
                 this.isLoading = false;
-                this.alertService.stopLoadingMessage();
+               // this.alertService.stopLoadingMessage();
 
                 if (Utilities.checkNoNetwork(error)) {
                     this.alertService.showStickyMessage(Utilities.noNetworkMessageCaption, Utilities.noNetworkMessageDetail, MessageSeverity.error, error);
