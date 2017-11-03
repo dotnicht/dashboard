@@ -49,25 +49,27 @@ namespace InvestorDashboard.Web
             services.AddAutoMapper(typeof(DependencyInjection), GetType());
 
             services.AddDbContext<ApplicationDbContext>(options =>
-              {
-                  options.UseSqlServer(services.BuildServiceProvider().GetRequiredService<IKeyVaultService>().DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
-                  // Register the entity sets needed by OpenIddict.
-                  // Note: use the generic overload if you need
-                  // to replace the default OpenIddict entities.
-                  options.UseOpenIddict();
-              }
+                {
+                    options.UseSqlServer(
+                        services.BuildServiceProvider().GetRequiredService<IKeyVaultService>().DatabaseConnectionString,
+                        b => b.MigrationsAssembly("InvestorDashboard.Backend"));
+                    // Register the entity sets needed by OpenIddict.
+                    // Note: use the generic overload if you need
+                    // to replace the default OpenIddict entities.
+                    options.UseOpenIddict();
+                }
             );
-            //services.Configure<MvcOptions>(options =>
-            //{
-            //    options.Filters.Add(new RequireHttpsAttribute());
-            //});
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new RequireHttpsAttribute());
+            });
             // add identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
-            {
-                config.SignIn.RequireConfirmedEmail = true;
-            })
-              .AddEntityFrameworkStores<ApplicationDbContext>()
-              .AddDefaultTokenProviders();
+                {
+                    config.SignIn.RequireConfirmedEmail = true;
+                })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             // Configure Identity options and password complexity here
             services.Configure<IdentityOptions>(options =>
@@ -104,15 +106,15 @@ namespace InvestorDashboard.Web
 
                 // Enable the authorization, logout, token and userinfo endpoints.
                 options.EnableAuthorizationEndpoint("/connect/authorize")
-                  .EnableLogoutEndpoint("/connect/logout")
-                  .EnableTokenEndpoint("/connect/token")
-                                    .EnableUserinfoEndpoint("/api/userinfo");
+                    .EnableLogoutEndpoint("/connect/logout")
+                    .EnableTokenEndpoint("/connect/token")
+                    .EnableUserinfoEndpoint("/api/userinfo");
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.
                 options.AllowAuthorizationCodeFlow()
-                  .AllowPasswordFlow()
-                  .AllowRefreshTokenFlow();
+                    .AllowPasswordFlow()
+                    .AllowRefreshTokenFlow();
 
                 options.SetAccessTokenLifetime(TimeSpan.FromMinutes(30));
                 // Mark the "profile" scope as a supported scope in the discovery document.
@@ -143,13 +145,13 @@ namespace InvestorDashboard.Web
                     options.DefaultAuthenticateScheme = OAuthValidationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme;
                 }
-              ).AddOAuthValidation();
+            ).AddOAuthValidation();
 
             services.AddMvc();
             services.AddNodeServices();
 
             // Register the Swagger generator, defining one or more Swagger documents
-            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info { Title = "ID Api", Version = "v1" }));
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info {Title = "ID Api", Version = "v1"}));
 
             services.AddAuthorization();
 
@@ -162,14 +164,12 @@ namespace InvestorDashboard.Web
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            //var options = new RewriteOptions().AddRedirectToHttps();
 
-            //app.UseRewriter(options);
 
             app.UseCors(builder => builder
-              .AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod());
 
             app.UseStaticFiles();
 
@@ -188,32 +188,37 @@ namespace InvestorDashboard.Web
 
                 // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
 
-                app.MapWhen(x => !x.Request.Path.Value.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase), builder =>
-                {
-                    builder.UseMvc(routes =>
-            {
-                routes.MapSpaFallbackRoute(
-            name: "spa-fallback",
-            defaults: new { controller = "Home", action = "Index" });
-            });
-                });
+                app.MapWhen(x => !x.Request.Path.Value.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase),
+                    builder =>
+                    {
+                        builder.UseMvc(routes =>
+                        {
+                            routes.MapSpaFallbackRoute(
+                                name: "spa-fallback",
+                                defaults: new {controller = "Home", action = "Index"});
+                        });
+                    });
             }
             else
             {
+                var options = new RewriteOptions().AddRedirectToHttps();
+
+                app.UseRewriter(options);
+
                 app.UseMvc(routes =>
                 {
                     routes.MapRoute(
-             name: "default",
-             template: "{controller=Home}/{action=Index}/{id?}");
+                        name: "default",
+                        template: "{controller=Home}/{action=Index}/{id?}");
 
                     routes.MapRoute(
-             "Sitemap",
-             "sitemap.xml",
-             new { controller = "Home", action = "SitemapXml" });
+                        "Sitemap",
+                        "sitemap.xml",
+                        new {controller = "Home", action = "SitemapXml"});
 
                     routes.MapSpaFallbackRoute(
-              name: "spa-fallback",
-              defaults: new { controller = "Home", action = "Index" });
+                        name: "spa-fallback",
+                        defaults: new {controller = "Home", action = "Index"});
                 });
                 app.UseExceptionHandler("/Home/Error");
             }
@@ -231,7 +236,8 @@ namespace InvestorDashboard.Web
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 await context.Database.MigrateAsync();
 
-                var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
+                var manager = scope.ServiceProvider
+                    .GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
                 if (await manager.FindByClientIdAsync("ID", cancellationToken) == null)
                 {

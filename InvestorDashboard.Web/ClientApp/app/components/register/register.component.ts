@@ -188,3 +188,13 @@ export class ConfirmEmailDialogComponent {
     }
 
 }
+
+@Component({
+  selector: 'confirmed-email',
+  templateUrl: './confirmed-email.component.html'
+})
+export class ConfirmedEmailComponent {
+
+  constructor() {  }
+
+}

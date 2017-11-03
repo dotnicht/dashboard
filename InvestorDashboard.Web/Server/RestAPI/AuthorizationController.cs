@@ -510,7 +510,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                return RedirectPermanent("/");
+                return RedirectPermanent("/email_confirmed");
             }
             else
             {

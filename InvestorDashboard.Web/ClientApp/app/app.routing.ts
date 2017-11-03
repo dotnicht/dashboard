@@ -3,7 +3,7 @@ import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
 import { NotFoundComponent } from './containers/not-found/not-found.component';
 import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
+import { RegisterComponent, ConfirmedEmailComponent } from './components/register/register.component';
 import { AuthService } from './services/auth.service';
 import { AuthGuard } from './services/auth-guard.service';
 import { DashboardComponent } from './containers/dashboard/dashboard.component';
@@ -59,6 +59,9 @@ const routes: Routes = [
         }
     },
     {
+      path: 'email_confirmed', component: ConfirmedEmailComponent
+    },
+    {
         path: 'settings', component: SettingsComponent, canActivate: [AuthGuard],
         children: SETTINGS_ROUTES,
         data: {
@@ -85,7 +88,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-    imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { enableTracing: true })],
     exports: [
         RouterModule
     ],
