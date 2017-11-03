@@ -11,10 +11,14 @@
         <span mat-line>{{'mainMenu.Login' | translate}}</span>
       </a>
 
-      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <!-- <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         href="http://www.data-trading.com/" (click)="start.close()">
         <mat-icon mat-list-icon>home</mat-icon>
         <span mat-line>{{'mainMenu.Home' | translate}}</span>
+      </a> -->
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        href="token.data-trading.com" (click)="start.close()">
+        <span mat-line>Info</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
@@ -42,12 +46,16 @@
       <img src="/img/logo.svg" style="width: 120px;">
       <div>
         <span *ngIf="!isTab">
-          <a href="http://www.data-trading.com/">
+          <!-- <a href="http://www.data-trading.com/">
             <button mat-button>
               <mat-icon>home</mat-icon>{{'mainMenu.Home' | translate}}
             </button>
+          </a> -->
+          <a href="token.data-trading.com">
+            <button mat-button>
+              Info
+            </button>
           </a>
-
 
           <button mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
             <mat-icon>dashboard</mat-icon>
@@ -111,8 +119,8 @@
           </div>
         </div>
         <div class="right">
-            <img class="icon" src="/img/logo.svg">
-            <div class="copyright">(c) {{year}}</div>
+          <img class="icon" src="/img/logo.svg">
+          <div class="copyright">&#169; {{year}}</div>
         </div>
       </div>
 

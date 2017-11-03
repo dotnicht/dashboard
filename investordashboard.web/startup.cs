@@ -21,6 +21,8 @@ using OpenIddict.Core;
 using OpenIddict.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using InvestorDashboard.Web.Server.Services;
+using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Mvc;
 
 namespace InvestorDashboard.Web
 {
@@ -55,7 +57,10 @@ namespace InvestorDashboard.Web
                   options.UseOpenIddict();
               }
             );
-
+            //services.Configure<MvcOptions>(options =>
+            //{
+            //    options.Filters.Add(new RequireHttpsAttribute());
+            //});
             // add identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
             {
@@ -114,7 +119,7 @@ namespace InvestorDashboard.Web
                 //options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
 
                 // Make the "client_id" parameter mandatory when sending a token request.
-                 options.RequireClientIdentification();
+                options.RequireClientIdentification();
 
                 // When request caching is enabled, authorization and logout requests
                 // are stored in the distributed cache by OpenIddict and the user agent
@@ -124,7 +129,7 @@ namespace InvestorDashboard.Web
                 options.EnableRequestCaching();
 
                 // During development, you can disable the HTTPS requirement.
-                options.DisableHttpsRequirement();
+                // options.DisableHttpsRequirement();
 
                 // Note: to use JWT access tokens instead of the default
                 // encrypted format, the following lines are required:
@@ -157,6 +162,10 @@ namespace InvestorDashboard.Web
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            //var options = new RewriteOptions().AddRedirectToHttps();
+
+            //app.UseRewriter(options);
+
             app.UseCors(builder => builder
               .AllowAnyOrigin()
               .AllowAnyHeader()
@@ -183,10 +192,10 @@ namespace InvestorDashboard.Web
                 {
                     builder.UseMvc(routes =>
             {
-                      routes.MapSpaFallbackRoute(
-                  name: "spa-fallback",
-                  defaults: new { controller = "Home", action = "Index" });
-                  });
+                routes.MapSpaFallbackRoute(
+            name: "spa-fallback",
+            defaults: new { controller = "Home", action = "Index" });
+            });
                 });
             }
             else
