@@ -51,11 +51,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     if (!hashes.Contains(transaction.Hash))
                     {
                         transaction.CryptoAddress = address;
-                        transaction.Direction = CryptoTransactionDirection.Inbound; // TODO: determine transaction type from 
+                        transaction.Direction = CryptoTransactionDirection.Inbound; // TODO: determine transaction type.
                         transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Currency, Currency.USD, transaction.TimeStamp, true);
                         transaction.TokenPrice = TokenSettings.Value.Price;
                         transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
-
+                         
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
 
