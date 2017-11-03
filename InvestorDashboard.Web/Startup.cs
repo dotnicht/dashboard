@@ -220,7 +220,6 @@ namespace InvestorDashboard.Web
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                //await context.Database.EnsureCreatedAsync();
                 await context.Database.MigrateAsync();
 
                 var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
