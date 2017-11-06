@@ -116,7 +116,7 @@ namespace InvestorDashboard.Web
 
                 options.SetAccessTokenLifetime(TimeSpan.FromMinutes(30));
                 // Mark the "profile" scope as a supported scope in the discovery document.
-                //options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
+                options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
 
                 // Make the "client_id" parameter mandatory when sending a token request.
                 options.RequireClientIdentification();

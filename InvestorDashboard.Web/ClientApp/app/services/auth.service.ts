@@ -175,7 +175,7 @@ export class AuthService {
 
     user.isEnabled = true;
 
-    console.log(decodedIdToken);
+    console.log(response_token);
 
     this.saveUserDetails(user, permissions, accessToken, idToken, refreshToken, accessTokenExpiry, rememberMe);
 
