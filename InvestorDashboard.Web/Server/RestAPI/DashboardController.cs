@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -15,28 +16,29 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Web.Server.RestAPI
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]"), Authorize]
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IExchangeRateService _exchangeRateService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
+        private readonly IMapper _mapper;
 
         private ApplicationUser ApplicationUser => _context.Users
                 .Include(x => x.CryptoAddresses)
                 .SingleOrDefault(x => x.UserName == User.Identity.Name);
 
-        public DashboardController(ApplicationDbContext context, IExchangeRateService exchangeRateService, UserManager<ApplicationUser> userManager, IOptions<TokenSettings> tokenSettings)
+        public DashboardController(ApplicationDbContext context, IExchangeRateService exchangeRateService, UserManager<ApplicationUser> userManager, IOptions<TokenSettings> tokenSettings, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [HttpGet("ico_status")]
-        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
             var transactions = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment);
@@ -57,8 +59,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
             return Ok(status);
         }
 
-        [HttpGet("payment_status"), Authorize]
-        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
+        [HttpGet("payment_status")]
         public async Task<IActionResult> GetPaymentInfo()
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
@@ -81,15 +82,15 @@ namespace InvestorDashboard.Web.Server.RestAPI
             return Unauthorized();
         }
 
-        [HttpGet("client_info"), Authorize]
-        [ResponseCache(VaryByHeader = "authorization", Duration = 30)]
+        [HttpGet("client_info")]
         public async Task<IActionResult> GetClientInfo()
         {
             if (ApplicationUser != null)
             {
                 var clientInfo = new ClientInfoModel
                 {
-                    Balance = ApplicationUser.Balance + ApplicationUser.BonusBalance,
+                    Balance = ApplicationUser.Balance,
+                    BonusBalance = ApplicationUser.BonusBalance,
                     IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
