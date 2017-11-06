@@ -18,16 +18,17 @@
       </a> -->
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         href="http://token.data-trading.com" (click)="start.close()">
+        <mat-icon mat-list-icon>info</mat-icon>
         <span mat-line>Info</span>
       </a>
-      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
         <mat-icon mat-list-icon>dashboard</mat-icon>
         <span mat-line>{{'mainMenu.Dashboard' | translate}}</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/faq']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
-        <mat-icon mat-list-icon>info</mat-icon>
+        <mat-icon mat-list-icon>help</mat-icon>
         <span mat-line>{{'mainMenu.Faq' | translate}}</span>
       </a>
 
@@ -53,16 +54,16 @@
           </a> -->
           <a href="http://token.data-trading.com">
             <button mat-button>
-              Info
+                <mat-icon>info</mat-icon><span>Info</span>
             </button>
           </a>
 
-          <button mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <button *ngIf="isUserLoggedIn" mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
             <mat-icon>dashboard</mat-icon>
             <span>{{'mainMenu.Dashboard' | translate}}</span>
           </button>
           <button mat-button [routerLink]="['/faq']">
-            <mat-icon>info</mat-icon>
+            <mat-icon>help</mat-icon>
             <span>{{'mainMenu.Faq' | translate}}</span>
           </button>
           <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
