@@ -57,10 +57,10 @@ namespace InvestorDashboard.Web
                   options.UseOpenIddict();
               }
             );
-            //services.Configure<MvcOptions>(options =>
-            //{
-            //    options.Filters.Add(new RequireHttpsAttribute());
-            //});
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new RequireHttpsAttribute());
+            });
             // add identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
             {
@@ -116,7 +116,7 @@ namespace InvestorDashboard.Web
 
                 options.SetAccessTokenLifetime(TimeSpan.FromMinutes(30));
                 // Mark the "profile" scope as a supported scope in the discovery document.
-                //options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
+                options.RegisterScopes(OpenIdConnectConstants.Scopes.Profile);
 
                 // Make the "client_id" parameter mandatory when sending a token request.
                 options.RequireClientIdentification();
@@ -162,9 +162,9 @@ namespace InvestorDashboard.Web
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            //var options = new RewriteOptions().AddRedirectToHttps();
+            var options = new RewriteOptions().AddRedirectToHttps();
 
-            //app.UseRewriter(options);
+            app.UseRewriter(options);
 
             app.UseCors(builder => builder
               .AllowAnyOrigin()
@@ -200,6 +200,8 @@ namespace InvestorDashboard.Web
             }
             else
             {
+               
+
                 app.UseMvc(routes =>
                 {
                     routes.MapRoute(
