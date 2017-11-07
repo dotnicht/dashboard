@@ -16,8 +16,7 @@
         <mat-icon mat-list-icon>home</mat-icon>
         <span mat-line>{{'mainMenu.Home' | translate}}</span>
       </a> -->
-      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        href="http://data-trading.com/token-en/" (click)="start.close()">
+      <a mat-list-item target="_blank" href="http://data-trading.com/token-en/" (click)="start.close()">
         <mat-icon mat-list-icon>info</mat-icon>
         <span mat-line>Info</span>
       </a>
@@ -52,7 +51,7 @@
               <mat-icon>home</mat-icon>{{'mainMenu.Home' | translate}}
             </button>
           </a> -->
-          <a href="http://data-trading.com/token-en/">
+          <a target="_blank" href="http://data-trading.com/token-en/">
             <button mat-button>
                 <mat-icon>info</mat-icon><span>Info</span>
             </button>
