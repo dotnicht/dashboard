@@ -17,12 +17,25 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class EthereumService : CryptoService, IEthereumService
     {
         private readonly IOptions<EthereumSettings> _ethereumSettings;
+        private readonly IRestService<EtherscanResponse> _restService;
 
         public override Currency Currency => Currency.ETH;
 
-        public EthereumService(ApplicationDbContext context, ILoggerFactory loggerFactory, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
+        public EthereumService(
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IExchangeRateService exchangeRateService,
+            IKeyVaultService keyVaultService,
+            IEmailService emailService,
+            IMapper mapper,
+            IOptions<TokenSettings> tokenSettings,
+            IOptions<EthereumSettings> ethereumSettings,
+            IRestService<EtherscanResponse> restService)
             : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
-            => _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
+        {
+            _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+        }
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
@@ -48,8 +61,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = $"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}";
-            var result = await RestUtil.Get<EtherscanResponse>(uri);
+            var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}");
+            var result = await _restService.GetAsync(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 

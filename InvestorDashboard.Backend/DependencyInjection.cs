@@ -1,7 +1,10 @@
-﻿using InvestorDashboard.Backend.Services;
+﻿using System;
+using System.Collections.Generic;
+using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Backend.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
-using System;
+using static InvestorDashboard.Backend.Services.Implementation.BitcoinService;
+using static InvestorDashboard.Backend.Services.Implementation.EthereumService;
 
 namespace InvestorDashboard.Backend
 {
@@ -14,14 +17,21 @@ namespace InvestorDashboard.Backend
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddTransient<IKeyVaultService, KeyVaultService>();
-            services.AddTransient<IEmailService, EmailService>();
-            services.AddTransient<IExchangeRateService, ExchangeRateService>();
-            services.AddTransient<ITokenService, TokenService>();
+            // rest services.
+            services.AddTransient<IRestService<List<decimal>>, RestService<List<decimal>>>();
+            services.AddTransient<IRestService<ChainResponse>, RestService<ChainResponse>>();
+            services.AddTransient<IRestService<EtherscanResponse>, RestService<EtherscanResponse>>();
+
+            // crypto currencies services.
             services.AddTransient<IBitcoinService, BitcoinService>();
             services.AddTransient<IEthereumService, EthereumService>();
             services.AddTransient<ICryptoService, BitcoinService>();
             services.AddTransient<ICryptoService, EthereumService>();
+
+            services.AddTransient<IKeyVaultService, KeyVaultService>();
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IExchangeRateService, ExchangeRateService>();
+            services.AddTransient<ITokenService, TokenService>();
         }
     }
 }
