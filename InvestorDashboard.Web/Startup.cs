@@ -126,7 +126,7 @@ namespace InvestorDashboard.Web
                 // is redirected to the same page with a single parameter (request_id).
                 // This allows flowing large OpenID Connect requests even when using
                 // an external authentication provider like Google, Facebook or Twitter.
-                //options.EnableRequestCaching();
+                options.EnableRequestCaching();
 
                 // During development, you can disable the HTTPS requirement.
                 // options.DisableHttpsRequirement();
