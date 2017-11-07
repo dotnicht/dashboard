@@ -7,6 +7,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -20,8 +21,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IMapper Mapper { get; }
         protected IOptions<TokenSettings> TokenSettings { get; }
 
-        protected CryptoService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings)
-            : base(context)
+        protected CryptoService(ApplicationDbContext context, ILoggerFactory loggerFactory, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings)
+            : base(context, loggerFactory)
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             KeyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));

@@ -3,13 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Models;
+using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class TokenService : ContextService, ITokenService
     {
-        public TokenService(ApplicationDbContext context)
-            : base(context)
+        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory)
+            : base(context, loggerFactory)
         {
         }
 

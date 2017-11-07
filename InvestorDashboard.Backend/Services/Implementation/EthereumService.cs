@@ -7,6 +7,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
@@ -19,8 +20,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public override Currency Currency => Currency.ETH;
 
-        public EthereumService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
-            : base(context, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
+        public EthereumService(ApplicationDbContext context, ILoggerFactory loggerFactory, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
             => _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
 
         protected override async Task UpdateUserDetailsInternal(string userId)
