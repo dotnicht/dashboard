@@ -97,59 +97,62 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     ) {
 
 
+        this.storageManager.initialiseStorageSyncListener();
 
+
+
+        this.translationService.addLanguages(['en']);
+        this.translationService.setDefaultLanguage('en');
+
+        this.toastyConfig.theme = 'bootstrap';
+        this.toastyConfig.position = 'top-right';
+        this.toastyConfig.limit = 100;
+        this.toastyConfig.showClose = true;
+
+        this.appTitleService.appName = this.appTitle;
 
     }
     selectLanguage(lang: string) {
         this.configurations.language = lang;
     }
     ngOnInit() {
-         this.configurations.loadLocalChanges();
-         this.storageManager.initialiseStorageSyncListener();
 
 
+        let curDate = new Date();
 
-         this.translationService.addLanguages(['en']);
-         this.translationService.setDefaultLanguage('en');
+        // Change "Title" on every navigationEnd event
+        // Titles come from the data.title property on all Routes (see app.routes.ts)
+        this._changeTitleOnNavigation();
+        if (isPlatformBrowser) {
+            this.year = new Date().getFullYear();
+            this.resizeService.width = window.innerWidth;
+            this.isMobile = this.resizeService.isMobile;
+            this.isTab = this.resizeService.isTab;
 
-         this.toastyConfig.theme = 'bootstrap';
-         this.toastyConfig.position = 'top-right';
-         this.toastyConfig.limit = 100;
-         this.toastyConfig.showClose = true;
+        }
 
-         this.appTitleService.appName = this.appTitle;
-         let curDate = new Date();
+        this.isUserLoggedIn = this.authService.isLoggedIn;
 
-         // Change "Title" on every navigationEnd event
-         // Titles come from the data.title property on all Routes (see app.routes.ts)
-         this._changeTitleOnNavigation();
-         if (isPlatformBrowser) {
-             this.year = new Date().getFullYear();
-             this.resizeService.width = window.innerWidth;
-             this.isMobile = this.resizeService.isMobile;
-             this.isTab = this.resizeService.isTab;
-             this.alertService.getDialogEvent().subscribe(alert => this.showDialog(alert));
+        if (this.isUserLoggedIn) {
+            this.refreshData();
+        }
 
-         }
+        this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
+        this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
 
-         this.isUserLoggedIn = this.authService.isLoggedIn;
+        this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
+            this.isUserLoggedIn = isLoggedIn;
+        });
 
-         if (this.isUserLoggedIn) {
-             this.refreshData();
-         }
+        this.router.events.subscribe(event => {
+            if (event instanceof NavigationStart) {
+                let url = (<NavigationStart>event).url;
 
-         this.alertService.getMessageEvent().subscribe(message => this.showToast(message, false));
-         this.alertService.getStickyMessageEvent().subscribe(message => this.showToast(message, true));
-
-         this.router.events.subscribe(event => {
-             if (event instanceof NavigationStart) {
-                 let url = (<NavigationStart>event).url;
-
-                 if (url !== url.toLowerCase()) {
-                     this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
-                 }
-             }
-         });
+                if (url !== url.toLowerCase()) {
+                    this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
+                }
+            }
+        });
 
 
     }
@@ -213,51 +216,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
             default: break;
         }
     }
-    showDialog(dialog: AlertDialog) {
-        if (isPlatformBrowser) {
-            var alertify: any = require('../app/assets/scripts/alertify.js');
-            alertify.set({
-                labels: {
-                    ok: dialog.okLabel || 'OK',
-                    cancel: dialog.cancelLabel || 'Cancel'
-                }
-            });
 
-            switch (dialog.type) {
-                case DialogType.alert:
-                    alertify.alert(dialog.message);
-
-                    break;
-                case DialogType.confirm:
-                    alertify
-                        .confirm(dialog.message, (e) => {
-                            if (e) {
-                                dialog.okCallback();
-                            }
-                            else {
-                                if (dialog.cancelCallback)
-                                    dialog.cancelCallback();
-                            }
-                        });
-
-                    break;
-                case DialogType.prompt:
-                    alertify
-                        .prompt(dialog.message, (e, val) => {
-                            if (e) {
-                                dialog.okCallback(val);
-                            }
-                            else {
-                                if (dialog.cancelCallback)
-                                    dialog.cancelCallback();
-                            }
-                        }, dialog.defaultValue);
-
-                    break;
-                default: break;
-            }
-        }
-    }
     public refreshData() {
 
 
