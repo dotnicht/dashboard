@@ -5,7 +5,7 @@
         <p style="font-size: 35px;
         font-weight: bold;">{{clientInfo.balance}} DTT</p>
       </h4>
-
+      <p *ngIf="clientInfo.bonusBalance>0">+ {{clientInfo.bonusBalance}} DTT bonuses</p>
       <div>
 
       </div>
@@ -18,8 +18,9 @@
   <mat-card class="second">
     <mat-card-content>
       <div class="right">
-          <div style="margin-top: 0;margin-bottom: 26px;font-weight: bold; font-size: 18px;"> PRE-ORDER  <br/> IS IN PROGRESS        </div>
-          <p style="font-size: 20px;">Bonus 30%       </p>
+        <div style="margin-top: 0;margin-bottom: 26px;font-weight: bold; font-size: 18px;"> PRE-ORDER
+          <br/> IS IN PROGRESS </div>
+        <p style="font-size: 20px;">Bonus 30% </p>
         <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div>

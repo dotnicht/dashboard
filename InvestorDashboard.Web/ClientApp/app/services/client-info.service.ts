@@ -27,6 +27,7 @@ export class ClientInfoEndpointService extends EndpointFactory {
             let model = info.json() as ClientInfo;
             // model.isTokenSaleDisabled=true;
             model.balance = Math.round(model.balance * 100) / 100;
+            model.bonusBalance = Math.round(model.bonusBalance * 100) / 100;
             this.clientInfo = model;
         });
     }

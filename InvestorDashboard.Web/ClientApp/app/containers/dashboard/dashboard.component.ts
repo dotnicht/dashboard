@@ -49,12 +49,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     /** Called by Angular after dashboard component initialized */
     ngOnInit(): void {
-        this.alertService.startLoadingMessage();
         if (this.authService.isLoggedIn) {
             this.loadData();
         }
-
-        this.alertService.stopLoadingMessage();
     }
     public ngOnDestroy(): void {
         if (this.paymentTypesSubscription) {

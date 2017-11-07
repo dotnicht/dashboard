@@ -80,12 +80,11 @@ export class AuthService {
 
     this.localStorage.deleteData(DBkeys.TOKEN_EXPIRES_IN);
 
-    //if (this.reLoginDelegate) {
-    //  this.reLoginDelegate();
-    //}
-    //else {
-    this.redirectForLogin();
-    //}
+    if (this.reLoginDelegate) {
+      this.reLoginDelegate();
+    } else {
+      this.redirectForLogin();
+    }
   }
 
 
@@ -118,7 +117,7 @@ export class AuthService {
   }
 
   constructor(private router: Router, private configurations: ConfigurationService, private endpointFactory: EndpointFactory, private localStorage: LocalStoreManager) {
-    //this.initializeLoginStatus();
+    this.initializeLoginStatus();
   }
 
 
@@ -279,7 +278,7 @@ export class AuthService {
     //   });
    // });
 
-    return (this.currentUser != null);
+    return this.currentUser != null;
     // return this.isAuth && (this.currentUser != null);
   }
 
