@@ -4,11 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Console.Jobs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,8 +38,37 @@ namespace InvestorDashboard.Console
             var configuration = configurationBuilder.Build();
 
             var serviceCollection = new ServiceCollection()
-                .AddLogging(x => x.AddConsole())
+                .AddLogging(x =>
+                {
+                    x.AddConsole();
+                    x.SetMinimumLevel(LogLevel.Warning);
+                })
                 .AddAutoMapper(typeof(DependencyInjection));
+
+            serviceCollection.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
+              .AddEntityFrameworkStores<ApplicationDbContext>()
+              .AddDefaultTokenProviders();
+
+            serviceCollection.Configure<IdentityOptions>(options =>
+            {
+                // User settings
+                options.User.RequireUniqueEmail = true;
+
+                // Password settings
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = false;
+
+                // Lockout settings
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(60 * 24);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+
+                options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
+                options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
+                options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
+            });
 
             Configuration.Configure(serviceCollection, configuration);
             DependencyInjection.Configure(serviceCollection);

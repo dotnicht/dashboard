@@ -16,9 +16,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class BitcoinService : CryptoService, IBitcoinService
     {
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
-        private readonly IRestService<ChainResponse> _restService;
+        private readonly IRestService _restService;
 
         public override Currency Currency => Currency.BTC;
+        public override int Confirmations => _bitcoinSettings.Value.Confirmations;
 
         public BitcoinService(
             ApplicationDbContext context,
@@ -29,7 +30,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
-            IRestService<ChainResponse> restService)
+            IRestService restService)
             : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
@@ -60,7 +61,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
             var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
-            var result = await _restService.GetAsync(uri);
+            var result = await _restService.GetAsync<ChainResponse>(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }
 

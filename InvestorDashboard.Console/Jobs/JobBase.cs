@@ -5,7 +5,6 @@ using InvestorDashboard.Backend.Database;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
-using static System.Console;
 
 namespace InvestorDashboard.Console.Jobs
 {
@@ -38,9 +37,6 @@ namespace InvestorDashboard.Console.Jobs
             }
             catch (Exception ex)
             {
-                //await Out.WriteLineAsync($"An error occurred while executing job {GetType().Name}");
-                //await Out.WriteLineAsync(ex.ToString());
-
                 Logger.LogError(ex, $"An error occurred while executing the job.");
             }
         }
