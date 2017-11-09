@@ -122,13 +122,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task<int> ClearInvestors()
         {
-            var users = await Context.Users
-                .ToAsyncEnumerable()
-                .Where(x => x.ExternalId != null)
-                .ToList();
+            var count = 0;
 
-            users.ForEach(async x => await _userManager.DeleteAsync(x));
-            return users.Count;
+            foreach (var id in Context.Users.Where(x => x.ExternalId != null).Select(x => x.Id).ToArray())
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private class InvestorRecord

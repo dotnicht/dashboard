@@ -23,6 +23,8 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
+            //await _investorsService.ClearInvestors();
+
             Logger.LogInformation($"Total { await _investorsService.LoadInvestorsData() } users loaded.");
             Logger.LogInformation($"Total { await _investorsService.ActivateInvestors() } users activated.");
         }
