@@ -99,7 +99,7 @@ namespace InvestorDashboard.Console
 
                     var period = (serviceCollection.BuildServiceProvider().GetService(x) as JobBase)?.Period;
 
-                    if (period != null)
+                    if (period != null && period.Value != default(TimeSpan))
                     {
                         var trigger = TriggerBuilder
                             .Create()

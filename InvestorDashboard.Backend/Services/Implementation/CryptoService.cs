@@ -73,7 +73,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         // TODO: send transaction confirmed email.
                     }
 
-                    await Task.Delay(300);
+                    await Task.Delay(1000);
                 }
             }
         }
