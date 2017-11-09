@@ -60,8 +60,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
+            Logger.LogInformation($"time: {DateTimeOffset.Now},address: {address}");
+
             var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+
+            Logger.LogInformation($"time: {DateTimeOffset.Now},uri: {uri}");
+
             var result = await _restService.GetAsync<ChainResponse>(uri);
+
+            Logger.LogInformation($"time: {DateTimeOffset.Now},result.Message: {result.Message}, result.Code: {result.Code}");
+
             return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }
 
