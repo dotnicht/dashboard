@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IKeyVaultService KeyVaultService { get; }
         protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
-        protected IOptions<TokenSettings> TokenSettings { get; }        
+        protected IOptions<TokenSettings> TokenSettings { get; }
 
         protected CryptoService(
             ApplicationDbContext context,
@@ -67,7 +67,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Currency, Currency.USD, transaction.TimeStamp, true);
                         transaction.TokenPrice = TokenSettings.Value.Price;
                         transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
-                         
+
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
                         // TODO: send transaction confirmed email.

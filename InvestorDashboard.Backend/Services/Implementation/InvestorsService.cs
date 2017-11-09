@@ -97,6 +97,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         ? Currency.BTC
                         : Currency.ETH;
 
+                    var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == id && x.Currency == currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+                    if (address == null)
+                    {
+                        throw new InvalidOperationException($"The enabled investment {currency} address for user {id} was not found.");
+                    }
+
                     var transaction = new CryptoTransaction
                     {
                         Amount = currency == Currency.BTC
@@ -106,7 +112,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         ExchangeRate = await _exchangeRateService.GetExchangeRate(currency, Currency.USD, DateTime.UtcNow, true),
                         TokenPrice = _tokenSettings.Value.Price,
                         BonusPercentage = _tokenSettings.Value.BonusPercentage,
-                        CryptoAddress = Context.CryptoAddresses.Single(x => x.UserId == id && x.Currency == currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled),
+                        CryptoAddress = address,
                         TimeStamp = DateTime.UtcNow
                     };
 

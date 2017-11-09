@@ -62,10 +62,7 @@ namespace InvestorDashboard.Web
                 options.Filters.Add(new RequireHttpsAttribute());
             });
             // add identity
-            services.AddIdentity<ApplicationUser, ApplicationRole>(config =>
-            {
-                config.SignIn.RequireConfirmedEmail = true;
-            })
+            services.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
               .AddEntityFrameworkStores<ApplicationDbContext>()
               .AddDefaultTokenProviders();
 
