@@ -66,7 +66,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             Logger.LogInformation($"time: {DateTimeOffset.Now},uri: {uri}");
 
-            var result = await _restService.GetAsync(uri);
+            var result = await _restService.GetAsync<ChainResponse>(uri);
 
             Logger.LogInformation($"time: {DateTimeOffset.Now},result.Message: {result.Message}, result.Code: {result.Code}");
 
