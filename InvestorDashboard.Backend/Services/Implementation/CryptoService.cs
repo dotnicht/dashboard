@@ -59,9 +59,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                          
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
-
                         // TODO: send transaction confirmed email.
                     }
+
+                    await Task.Delay(300);
                 }
             }
         }
