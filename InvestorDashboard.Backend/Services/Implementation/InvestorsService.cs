@@ -40,18 +40,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public async Task<int> LoadInvestorsData()
         {
             var assembly = Assembly.GetExecutingAssembly();
+
             using (var stream = assembly.GetManifestResourceStream(GetType(), "InvestorsData.csv"))
             using (var reader = new StreamReader(stream))
             {
                 var csv = new CsvReader(reader);
                 var records = csv.GetRecords<InvestorRecord>().ToArray();
+
                 Logger.LogDebug($"Total { records.Length } to be loaded.");
+
                 var count = 0;
+
                 foreach (var record in records)
                 {
                     if (!Context.Users.Any(x => x.ExternalId == record.Id))
                     {
                         var email = $"{Guid.NewGuid()}@{Guid.NewGuid()}.com";
+
                         var user = new ApplicationUser
                         {
                             Email = email,
@@ -63,8 +68,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         };
 
                         await _userManager.CreateAsync(user, "Us3g5!LrBFZ)E,G$");
+
                         Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(user.Id));
-                        user.ConfirmationCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
                         await Context.SaveChangesAsync();
 
                         count++;
@@ -89,7 +95,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             foreach (var id in ids)
             {
                 var user = await _userManager.FindByIdAsync(id);
-                var result = await _userManager.ConfirmEmailAsync(user, user.ConfirmationCode);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var result = await _userManager.ConfirmEmailAsync(user, code);
 
                 if (result.Succeeded)
                 {
@@ -97,7 +104,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         ? Currency.BTC
                         : Currency.ETH;
 
-                    var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == id && x.Currency == currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+                    var address = Context.CryptoAddresses
+                        .SingleOrDefault(x => x.UserId == id && x.Currency == currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+
                     if (address == null)
                     {
                         throw new InvalidOperationException($"The enabled investment {currency} address for user {id} was not found.");
@@ -134,6 +143,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var user = await _userManager.FindByIdAsync(id);
                 var result = await _userManager.DeleteAsync(user);
+
                 if (result.Succeeded)
                 {
                     count++;

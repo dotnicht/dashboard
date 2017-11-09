@@ -13,7 +13,7 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IInvestorsService _investorsService;
 
-        public override TimeSpan Period => Options.Value.InvestorsActivationPeriod;
+        public override TimeSpan Period => Options.Value.InvestorsClearPeriod;
 
         public InvestorsClearJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInvestorsService investorsService)
             : base(loggerFactory, context, options)
