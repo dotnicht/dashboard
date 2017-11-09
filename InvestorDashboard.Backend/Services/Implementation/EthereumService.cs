@@ -17,9 +17,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class EthereumService : CryptoService, IEthereumService
     {
         private readonly IOptions<EthereumSettings> _ethereumSettings;
-        private readonly IRestService<EtherscanResponse> _restService;
+        private readonly IRestService _restService;
 
         public override Currency Currency => Currency.ETH;
+        public override int Confirmations => _ethereumSettings.Value.Confirmations;
 
         public EthereumService(
             ApplicationDbContext context,
@@ -30,7 +31,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
-            IRestService<EtherscanResponse> restService)
+            IRestService restService)
             : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
@@ -62,7 +63,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
             var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}");
-            var result = await _restService.GetAsync(uri);
+            var result = await _restService.GetAsync<EtherscanResponse>(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 

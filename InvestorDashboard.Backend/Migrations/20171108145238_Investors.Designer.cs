@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171108145238_Investors")]
+    partial class Investors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,8 +55,6 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<int>("AccessFailedCount");
 
-                    b.Property<DateTime?>("ActivationDate");
-
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18, 6)");
 
@@ -69,8 +68,6 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<string>("Configuration");
 
-                    b.Property<string>("ConfirmationCode");
-
                     b.Property<string>("CountryCode")
                         .HasMaxLength(3);
 
@@ -78,10 +75,6 @@ namespace InvestorDashboard.Backend.Migrations
                         .HasMaxLength(256);
 
                     b.Property<bool>("EmailConfirmed");
-
-                    b.Property<decimal?>("ExternalBitcoinInvestment");
-
-                    b.Property<decimal?>("ExternalEthereumInvestment");
 
                     b.Property<Guid?>("ExternalId");
 
@@ -182,7 +175,8 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<decimal>("ExchangeRate")
                         .HasColumnType("decimal(18, 6)");
 
-                    b.Property<string>("Hash");
+                    b.Property<string>("Hash")
+                        .IsRequired();
 
                     b.Property<DateTime>("TimeStamp");
 
@@ -194,8 +188,7 @@ namespace InvestorDashboard.Backend.Migrations
                     b.HasIndex("CryptoAddressId");
 
                     b.HasIndex("Hash")
-                        .IsUnique()
-                        .HasFilter("[Hash] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("CryptoTransactions");
                 });

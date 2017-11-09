@@ -15,13 +15,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal abstract class CryptoService : ContextService, ICryptoService
     {
         public abstract Currency Currency { get; }
+        public abstract int Confirmations { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
         protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
-        protected IOptions<TokenSettings> TokenSettings { get; }
+        protected IOptions<TokenSettings> TokenSettings { get; }        
 
-        protected CryptoService(ApplicationDbContext context, ILoggerFactory loggerFactory, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings)
+        protected CryptoService(
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IExchangeRateService exchangeRateService,
+            IKeyVaultService keyVaultService,
+            IEmailService emailService,
+            IMapper mapper,
+            IOptions<TokenSettings> tokenSettings)
             : base(context, loggerFactory)
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
@@ -43,7 +51,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshInboundTransactions()
         {
-            var hashes = Context.CryptoTransactions.Select(x => x.Hash).ToHashSet();
+            var hashes = Context.CryptoTransactions
+                .Where(x => x.Hash != null)
+                .Select(x => x.Hash)
+                .ToHashSet();
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment).ToArray())
             {

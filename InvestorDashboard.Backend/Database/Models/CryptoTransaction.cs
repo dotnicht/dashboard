@@ -12,7 +12,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public Guid CryptoAddressId { get; set; }
         [ForeignKey("CryptoAddressId")]
         public CryptoAddress CryptoAddress { get; set; }
-        [Required]
         public string Hash { get; set; }
         public CryptoTransactionDirection Direction { get; set; }
         public decimal Amount { get; set; }

@@ -7,9 +7,9 @@ using RestSharp.Portable.HttpClient;
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     // TODO: refactor shitty copypaste. 
-    internal class RestService<TResponse> : IRestService<TResponse> where TResponse : class, new()
+    internal class RestService : IRestService
     {
-        public TResponse Get(Uri uri)
+        public TResponse Get<TResponse>(Uri uri) where TResponse : class, new()
         {
             if (uri == null)
             {
@@ -33,7 +33,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return response.Data;
         }
 
-        public async Task<TResponse> GetAsync(Uri uri)
+        public async Task<TResponse> GetAsync<TResponse>(Uri uri) where TResponse : class, new()
         {
             if (uri == null)
             {
