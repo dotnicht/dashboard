@@ -86,7 +86,6 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 {
                     Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(appUser.Id));
 
-                    // TODO: replace token with URI.
                     appUser = await _userManager.FindByEmailAsync(appUser.Email);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);

@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171108154444_ExternalTransactions")]
+    partial class ExternalTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,6 +69,8 @@ namespace InvestorDashboard.Backend.Migrations
                         .IsConcurrencyToken();
 
                     b.Property<string>("Configuration");
+
+                    b.Property<string>("ConfirmationCode");
 
                     b.Property<string>("CountryCode")
                         .HasMaxLength(3);
@@ -180,7 +183,8 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<decimal>("ExchangeRate")
                         .HasColumnType("decimal(18, 6)");
 
-                    b.Property<string>("Hash");
+                    b.Property<string>("Hash")
+                        .IsRequired();
 
                     b.Property<DateTime>("TimeStamp");
 
@@ -192,8 +196,7 @@ namespace InvestorDashboard.Backend.Migrations
                     b.HasIndex("CryptoAddressId");
 
                     b.HasIndex("Hash")
-                        .IsUnique()
-                        .HasFilter("[Hash] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("CryptoTransactions");
                 });

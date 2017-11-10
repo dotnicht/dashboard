@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171108175115_OptionalHash")]
+    partial class OptionalHash
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,6 +69,8 @@ namespace InvestorDashboard.Backend.Migrations
                         .IsConcurrencyToken();
 
                     b.Property<string>("Configuration");
+
+                    b.Property<string>("ConfirmationCode");
 
                     b.Property<string>("CountryCode")
                         .HasMaxLength(3);

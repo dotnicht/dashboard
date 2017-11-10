@@ -7,39 +7,70 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
+using Polly;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : CryptoService, IEthereumService
     {
         private readonly IOptions<EthereumSettings> _ethereumSettings;
+        private readonly IRestService _restService;
 
         public override Currency Currency => Currency.ETH;
+        public override int Confirmations => _ethereumSettings.Value.Confirmations;
 
-        public EthereumService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<EthereumSettings> ethereumSettings)
-            : base(context, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
-            => _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
+        public EthereumService(
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IExchangeRateService exchangeRateService,
+            IKeyVaultService keyVaultService,
+            IEmailService emailService,
+            IMapper mapper,
+            IOptions<TokenSettings> tokenSettings,
+            IOptions<EthereumSettings> ethereumSettings,
+            IRestService restService)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
+        {
+            _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+        }
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            var ecKey = EthECKey.GenerateKey();
-            var address = ecKey.GetPublicAddress();
+            const int retryCount = 5;
+            var policy = Policy
+                .Handle<ArgumentException>(x => x.Message == "Private key should be 32 bytes")
+                .Retry(retryCount, (e, i) =>
+                {
+                    Logger.LogError(e, $"Key generation failed. User { userId }.");
 
-            var invsetmentAddress = await Context.CryptoAddresses.AddAsync(new CryptoAddress
+                    if (i == retryCount)
+                    {
+                        throw new InvalidOperationException($"An error occurred while generating Ethereum keys. User { userId }.", e);
+                    }
+                });
+
+            var keys = policy.Execute(GenerateEthereumKeys);
+
+            var address = new CryptoAddress
             {
                 UserId = userId,
                 Currency = Currency,
-                PrivateKey = new KeyStorePbkdf2Service().EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, ecKey.GetPrivateKeyAsBytes(), address),
+                PrivateKey = keys.PrivateKey,
                 Type = CryptoAddressType.Investment,
-                Address = address
-            });
+                Address = keys.Address
+            };
+
+            var invsetmentAddressEntry = await Context.CryptoAddresses.AddAsync(address);
 
             // duplicate the same address as the contract address.
-            var contractAddress = Mapper.Map<CryptoAddress>(invsetmentAddress.Entity);
+            var contractAddress = Mapper.Map<CryptoAddress>(invsetmentAddressEntry.Entity);
             contractAddress.Type = CryptoAddressType.Contract;
+
             await Context.CryptoAddresses.AddAsync(contractAddress);
 
             Context.SaveChanges();
@@ -47,14 +78,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = $"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}";
-            var result = await RestUtil.Get<EtherscanResponse>(uri);
+            var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={ address }&startblock=0&endblock=99999999&sort=asc&apikey={ _ethereumSettings.Value.ApiKey }");
+            var result = await _restService.GetAsync<EtherscanResponse>(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 
         protected override async Task TransferAssets(CryptoAddress address, string destinationAddress)
         {
             throw new NotImplementedException();
+        }
+
+        private (string Address, string PrivateKey) GenerateEthereumKeys()
+        {
+            var ecKey = EthECKey.GenerateKey();
+            var address = ecKey.GetPublicAddress();
+            var bytes = ecKey.GetPrivateKeyAsBytes();
+            var service = new KeyStorePbkdf2Service();
+            var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
+            return (Address: address, PrivateKey: privateKey);
         }
 
         internal class EtherscanResponse

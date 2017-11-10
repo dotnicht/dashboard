@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -24,18 +25,26 @@ namespace InvestorDashboard.Web.Server.RestAPI
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IMapper _mapper;
+        private readonly IEnumerable<ICryptoService> _cryptoServices;
 
         private ApplicationUser ApplicationUser => _context.Users
                 .Include(x => x.CryptoAddresses)
                 .SingleOrDefault(x => x.UserName == User.Identity.Name);
 
-        public DashboardController(ApplicationDbContext context, IExchangeRateService exchangeRateService, UserManager<ApplicationUser> userManager, IOptions<TokenSettings> tokenSettings, IMapper mapper)
+        public DashboardController(
+            ApplicationDbContext context,
+            IExchangeRateService exchangeRateService,
+            UserManager<ApplicationUser> userManager,
+            IOptions<TokenSettings> tokenSettings,
+            IEnumerable<ICryptoService> cryptoServices,
+            IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
         [HttpGet("ico_status")]
@@ -71,7 +80,8 @@ namespace InvestorDashboard.Web.Server.RestAPI
                     {
                         Currency = x.Currency.ToString(),
                         Address = x.Address,
-                        Rate = await _exchangeRateService.GetExchangeRate(x.Currency)
+                        Rate = await _exchangeRateService.GetExchangeRate(x.Currency),
+                        Confirmations = _cryptoServices.Single(y => y.Currency == x.Currency).Confirmations
                     })
                     .Select(m => m.Result)
                     .ToList();

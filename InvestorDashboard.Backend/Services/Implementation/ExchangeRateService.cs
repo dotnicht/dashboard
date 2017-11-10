@@ -14,13 +14,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class ExchangeRateService : ContextService, IExchangeRateService
     {
         private readonly IOptions<ExchangeRateSettings> _options;
-        private readonly ILogger _logger;
+        private readonly IRestService _restService;
 
-        public ExchangeRateService(ApplicationDbContext context, IOptions<ExchangeRateSettings> options, ILogger<ExchangeRateService> logger)
-            : base(context)
+        public ExchangeRateService(ApplicationDbContext context, ILoggerFactory loggerFactory, IOptions<ExchangeRateSettings> options, IRestService restService)
+            : base(context, loggerFactory)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
         public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency = Currency.USD, DateTime? dateTime = null)
@@ -54,7 +54,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (fallbackToCurrent)
                 {
-                    _logger.LogInformation(ex.Message);
+                    Logger.LogInformation(ex.Message);
                     return await GetExchangeRateFromApi(baseCurrency, quoteCurrency);
                 }
 
@@ -78,7 +78,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return 1;
             }
 
-            var result = await RestUtil.Get<List<decimal>>($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
+            var uri = new Uri($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
+            var result = await _restService.GetAsync<List<decimal>>(uri);
 
             if (result == null || result.Count == 0)
             {

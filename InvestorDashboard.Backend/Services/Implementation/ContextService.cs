@@ -1,5 +1,6 @@
 ﻿using System;
 using InvestorDashboard.Backend.Database;
+using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -8,8 +9,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private bool isDisposed;
 
         protected ApplicationDbContext Context { get; }
+        protected ILogger Logger { get; }
 
-        protected ContextService(ApplicationDbContext context) => Context = context ?? throw new ArgumentNullException(nameof(context));
+        protected ContextService(ApplicationDbContext context, ILoggerFactory loggerFactory)
+        {
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
+        }
 
         public void Dispose()
         {

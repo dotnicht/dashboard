@@ -26,20 +26,9 @@ namespace InvestorDashboard.Backend.Database
 
             builder.UseOpenIddict();
 
-            //builder.Entity<CryptoTransaction>()
-            //    .Property(b => b.Created)
-            //    .HasDefaultValueSql("GETUTCDATE()");
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.Hash)
                 .IsUnique();
-
-            //builder.Entity<CryptoAddress>()
-            //    .Property(b => b.Created)
-            //    .HasDefaultValueSql("GETUTCDATE()");
-
-            //builder.Entity<ExchangeRate>()
-            //    .Property(b => b.Created)
-            //    .HasDefaultValueSql("GETUTCDATE()");
 
             foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(decimal)))
             {

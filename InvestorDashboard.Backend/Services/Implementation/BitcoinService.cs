@@ -7,6 +7,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
 
@@ -15,12 +16,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class BitcoinService : CryptoService, IBitcoinService
     {
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
+        private readonly IRestService _restService;
 
         public override Currency Currency => Currency.BTC;
+        public override int Confirmations => _bitcoinSettings.Value.Confirmations;
 
-        public BitcoinService(ApplicationDbContext context, IExchangeRateService exchangeRateService, IKeyVaultService keyVaultService, IEmailService emailService, IMapper mapper, IOptions<TokenSettings> tokenSettings, IOptions<BitcoinSettings> bitcoinSettings)
-            : base(context, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
-            => _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
+        public BitcoinService(
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IExchangeRateService exchangeRateService,
+            IKeyVaultService keyVaultService,
+            IEmailService emailService,
+            IMapper mapper,
+            IOptions<TokenSettings> tokenSettings,
+            IOptions<BitcoinSettings> bitcoinSettings,
+            IRestService restService)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
+        {
+            _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+        }
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
@@ -45,8 +60,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = $"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}";
-            var result = await RestUtil.Get<ChainResponse>(uri);
+            var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var result = await _restService.GetAsync<ChainResponse>(uri);
+            // TODO: handle invalid internal status code.
             return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }
 
