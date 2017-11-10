@@ -41,15 +41,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
+            const int retryCount = 5;
             var policy = Policy
-                .Handle<ArgumentException>()
-                .Retry((e, i) =>
+                .Handle<ArgumentException>(x => x.Message == "Private key should be 32 bytes")
+                .Retry(retryCount, (e, i) =>
                 {
-                    Logger.LogError(e, "Key generation failed.");
+                    Logger.LogError(e, $"Key generation failed. User { userId }.");
 
-                    if (i == 5)
+                    if (i == retryCount)
                     {
-                        throw new InvalidOperationException("An error occurred while generating Ethereum keys.", e);
+                        throw new InvalidOperationException($"An error occurred while generating Ethereum keys. User { userId }.", e);
                     }
                 });
 
@@ -77,7 +78,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey={_ethereumSettings.Value.ApiKey}");
+            var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={ address }&startblock=0&endblock=99999999&sort=asc&apikey={ _ethereumSettings.Value.ApiKey }");
             var result = await _restService.GetAsync<EtherscanResponse>(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
