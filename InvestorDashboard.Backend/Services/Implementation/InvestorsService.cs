@@ -71,8 +71,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(user.Id));
 
-                        await Context.SaveChangesAsync();
-
                         count++;
                     }
                 }
@@ -139,7 +137,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var count = 0;
 
-            foreach (var id in Context.Users.Where(x => x.ExternalId != null).Select(x => x.Id).ToArray())
+            var ids = Context.Users
+                .Where(x => x.ExternalId != null)
+                .Select(x => x.Id)
+                .ToArray();
+
+            foreach (var id in ids)
             {
                 var user = await _userManager.FindByIdAsync(id);
                 var result = await _userManager.DeleteAsync(user);

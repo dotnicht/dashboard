@@ -41,18 +41,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            const int retryCount = 5;
             var policy = Policy
-                .Handle<ArgumentException>(x => x.Message == "Private key should be 32 bytes")
-                .Retry(retryCount, (e, i) =>
-                {
-                    Logger.LogError(e, $"Key generation failed. User { userId }.");
-
-                    if (i == retryCount)
-                    {
-                        throw new InvalidOperationException($"An error occurred while generating Ethereum keys. User { userId }.", e);
-                    }
-                });
+                .Handle<ArgumentException>()
+                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. User { userId }."));
 
             var keys = policy.Execute(GenerateEthereumKeys);
 

@@ -56,7 +56,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Select(x => x.Hash)
                 .ToHashSet();
 
-            foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment).ToArray())
+            var addresses = Context.CryptoAddresses
+                .Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.User.ExternalId == null)
+                .ToArray();
+
+            foreach (var address in addresses)
             {
                 foreach (var transaction in await GetTransactionsFromBlockchain(address.Address))
                 {
