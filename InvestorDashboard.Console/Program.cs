@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
+using NLog.Extensions.Logging;
 
 namespace InvestorDashboard.Console
 {
@@ -38,11 +39,6 @@ namespace InvestorDashboard.Console
             var configuration = configurationBuilder.Build();
 
             var serviceCollection = new ServiceCollection()
-                .AddLogging(x =>
-                {
-                    x.AddConsole();
-                    x.SetMinimumLevel(LogLevel.Warning);
-                })
                 .AddAutoMapper(typeof(DependencyInjection));
 
             serviceCollection.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
@@ -72,6 +68,22 @@ namespace InvestorDashboard.Console
 
             Configuration.Configure(serviceCollection, configuration);
             DependencyInjection.Configure(serviceCollection);
+
+            #region NLog config
+
+            serviceCollection.AddSingleton<ILoggerFactory, LoggerFactory>();
+            serviceCollection.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            serviceCollection.AddLogging((builder) => builder.SetMinimumLevel(LogLevel.Trace));
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+            //configure NLog
+            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+            loggerFactory.ConfigureNLog("nlog.config");
+
+            #endregion
 
             var keyVaultService = serviceCollection
                 .BuildServiceProvider()
