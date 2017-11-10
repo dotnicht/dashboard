@@ -100,13 +100,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
             let icoInfo = info.json() as IcoInfo;
             // icoInfo.isTokenSaleDisabled=true;
             icoInfo.totalCoinsBoughtPercent = Math.round((icoInfo.totalCoinsBought * 100 / icoInfo.totalCoins) * 100) / 100;
+            icoInfo.totalUsdInvested = Math.round(icoInfo.totalUsdInvested * 100) / 100;
+            icoInfo.totalCoinsBought = Math.round(icoInfo.totalCoinsBought * 100) / 100;
             this.icoInfo = icoInfo;
-        });
+      });
         this.paymentTypesSubscription = this.dashboardService.getPaymentTypes().subscribe(info => {
             let pt = info.json() as PaymentType[];
             pt.forEach(element => {
                 element.image = `/img/${element.currency}.svg`;
                 element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
+                element.rate = Math.round((element.rate / this.icoInfo.tokenPrice) * 100) / 100;
+                
             });
             this.paymentTypes = pt;
             if (pt.length > 0) {

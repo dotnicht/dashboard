@@ -82,7 +82,7 @@ namespace InvestorDashboard.Web
                 options.Password.RequireLowercase = false;
 
                 // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(60 * 24);
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
                 options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;

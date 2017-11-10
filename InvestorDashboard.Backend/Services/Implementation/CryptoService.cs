@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IKeyVaultService KeyVaultService { get; }
         protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
-        protected IOptions<TokenSettings> TokenSettings { get; }        
+        protected IOptions<TokenSettings> TokenSettings { get; }
 
         protected CryptoService(
             ApplicationDbContext context,
@@ -56,7 +56,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Select(x => x.Hash)
                 .ToHashSet();
 
-            foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment).ToArray())
+            var addresses = Context.CryptoAddresses
+                .Where(x => x.Currency == Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.User.ExternalId == null)
+                .ToArray();
+
+            foreach (var address in addresses)
             {
                 foreach (var transaction in await GetTransactionsFromBlockchain(address.Address))
                 {
@@ -67,13 +71,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Currency, Currency.USD, transaction.TimeStamp, true);
                         transaction.TokenPrice = TokenSettings.Value.Price;
                         transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
-                         
+
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
                         // TODO: send transaction confirmed email.
                     }
 
-                    await Task.Delay(300);
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }
         }

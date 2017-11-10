@@ -58,7 +58,7 @@ namespace InvestorDashboard.Console
                 options.Password.RequireLowercase = false;
 
                 // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(60 * 24);
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
                 options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
@@ -111,7 +111,7 @@ namespace InvestorDashboard.Console
 
                     var period = (serviceCollection.BuildServiceProvider().GetService(x) as JobBase)?.Period;
 
-                    if (period != null)
+                    if (period != null && period.Value != default(TimeSpan))
                     {
                         var trigger = TriggerBuilder
                             .Create()
