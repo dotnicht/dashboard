@@ -19,7 +19,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected JobBase(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options)
         {
-            Logger = (loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory))).CreateLogger(GetType());
+            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Options = options ?? throw new ArgumentNullException(nameof(options));
         }

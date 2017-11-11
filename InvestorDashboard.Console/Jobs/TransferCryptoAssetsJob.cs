@@ -27,7 +27,7 @@ namespace InvestorDashboard.Console.Jobs
         {
             // TODO: determine address for crypto assets transfer.
             // _cryptoServices.ToList().ForEach(x => x.TransferAssets(null).Wait());
-            Logger.LogInformation($"Crypto assets transfer completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Currency.ToString())) }");
+            Logger.LogInformation($"Crypto assets transfer completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Settings.Value.Currency.ToString())) }");
         }
 
         protected override void Dispose(bool disposing)

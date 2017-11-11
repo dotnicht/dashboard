@@ -20,9 +20,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IRestService _restService;
 
-        public override Currency Currency => Currency.ETH;
-        public override int Confirmations => _ethereumSettings.Value.Confirmations;
-
         public EthereumService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
@@ -33,7 +30,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings, ethereumSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
@@ -50,7 +47,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var address = new CryptoAddress
             {
                 UserId = userId,
-                Currency = Currency,
+                Currency = Settings.Value.Currency,
                 PrivateKey = keys.PrivateKey,
                 Type = CryptoAddressType.Investment,
                 Address = keys.Address

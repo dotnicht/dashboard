@@ -76,12 +76,13 @@ namespace InvestorDashboard.Web.Server.RestAPI
                 var paymentInfo = ApplicationUser.CryptoAddresses
                     .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
                     .ToList()
+                    .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, Settings = y.Settings })
                     .Select(async x => new PaymentInfoModel
                     {
-                        Currency = x.Currency.ToString(),
-                        Address = x.Address,
-                        Rate = await _exchangeRateService.GetExchangeRate(x.Currency),
-                        Confirmations = _cryptoServices.Single(y => y.Currency == x.Currency).Confirmations
+                        Currency = x.Address.Currency.ToString(),
+                        Address = x.Address.Address,
+                        Rate = await _exchangeRateService.GetExchangeRate(x.Address.Currency),
+                        Confirmations = x.Settings.Value.Confirmations
                     })
                     .Select(m => m.Result)
                     .ToList();
