@@ -23,6 +23,8 @@ using Swashbuckle.AspNetCore.Swagger;
 using InvestorDashboard.Web.Server.Services;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Mvc;
+using NLog.Extensions.Logging;
+using NLog.Web;
 
 namespace InvestorDashboard.Web
 {
@@ -80,7 +82,7 @@ namespace InvestorDashboard.Web
                 options.Password.RequireLowercase = false;
 
                 // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(60 * 24);
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
                 options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
@@ -156,8 +158,8 @@ namespace InvestorDashboard.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+            loggerFactory.AddNLog();
+            app.AddNLogWeb();
 
             var options = new RewriteOptions().AddRedirectToHttps();
 

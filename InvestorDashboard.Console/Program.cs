@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
+using NLog.Extensions.Logging;
 
 namespace InvestorDashboard.Console
 {
@@ -30,6 +31,9 @@ namespace InvestorDashboard.Console
 
         private static async Task Run()
         {
+            var serviceCollection = new ServiceCollection()
+                .AddAutoMapper(typeof(DependencyInjection));
+
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", false, true)
@@ -37,14 +41,26 @@ namespace InvestorDashboard.Console
 
             var configuration = configurationBuilder.Build();
 
-            var serviceCollection = new ServiceCollection()
-                .AddLogging(x =>
-                {
-                    x.AddConsole();
-                    x.SetMinimumLevel(LogLevel.Warning);
-                })
-                .AddAutoMapper(typeof(DependencyInjection));
+            Configuration.Configure(serviceCollection, configuration);
+            DependencyInjection.Configure(serviceCollection);
 
+            SetupLogging(serviceCollection);
+
+            SetupIdentity(serviceCollection);
+
+            var keyVaultService = serviceCollection
+                .BuildServiceProvider()
+                .GetRequiredService<IKeyVaultService>();
+
+            serviceCollection.AddDbContext<ApplicationDbContext>(
+                x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")),
+                ServiceLifetime.Transient);
+
+            await SetupScheduling(serviceCollection);
+        }
+
+        private static void SetupIdentity(IServiceCollection serviceCollection)
+        {
             serviceCollection.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
               .AddEntityFrameworkStores<ApplicationDbContext>()
               .AddDefaultTokenProviders();
@@ -62,25 +78,38 @@ namespace InvestorDashboard.Console
                 options.Password.RequireLowercase = false;
 
                 // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(60 * 24);
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
                 options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
                 options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
                 options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
             });
+        }
 
-            Configuration.Configure(serviceCollection, configuration);
-            DependencyInjection.Configure(serviceCollection);
+        private static void SetupLogging(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.SetMinimumLevel(LogLevel.Warning);
+            });
 
-            var keyVaultService = serviceCollection
-                .BuildServiceProvider()
-                .GetRequiredService<IKeyVaultService>();
+            /*
+            serviceCollection.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace));
 
-            serviceCollection.AddDbContext<ApplicationDbContext>(
-                x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")),
-                ServiceLifetime.Transient);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
 
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+            //configure NLog
+            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+            loggerFactory.ConfigureNLog("nlog.config");
+            */
+        }
+
+        private static async Task SetupScheduling(IServiceCollection serviceCollection)
+        {
             var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 

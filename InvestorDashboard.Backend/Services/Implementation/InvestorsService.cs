@@ -10,6 +10,7 @@ using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -39,84 +40,75 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task<int> LoadInvestorsData()
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            var count = 0;
 
-            using (var stream = assembly.GetManifestResourceStream(GetType(), "InvestorsData.csv"))
-            using (var reader = new StreamReader(stream))
+            foreach (var record in GetRecords())
             {
-                var csv = new CsvReader(reader);
-                var records = csv.GetRecords<InvestorRecord>().ToArray();
-
-                Logger.LogDebug($"Total { records.Length } to be loaded.");
-
-                var count = 0;
-
-                foreach (var record in records)
+                if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
-                    if (!Context.Users.Any(x => x.ExternalId == record.Id))
+                    var email = $"{Guid.NewGuid()}@{Guid.NewGuid()}.com";
+
+                    var user = new ApplicationUser
                     {
-                        var email = $"{Guid.NewGuid()}@{Guid.NewGuid()}.com";
+                        Email = email,
+                        UserName = email,
+                        ExternalId = record.Id
+                    };
 
-                        var user = new ApplicationUser
-                        {
-                            Email = email,
-                            UserName = email,
-                            ExternalId = record.Id,
-                            ActivationDate = record.Day,
-                            ExternalBitcoinInvestment = record.BTC,
-                            ExternalEthereumInvestment = record.ETH
-                        };
+                    await _userManager.CreateAsync(user, "Us3g5!LrBFZ)E,G$");
 
-                        await _userManager.CreateAsync(user, "Us3g5!LrBFZ)E,G$");
+                    Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(user.Id));
 
-                        Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(user.Id));
-
-                        await Context.SaveChangesAsync();
-
-                        count++;
-                    }
+                    count++;
                 }
-
-                return count;
             }
+
+            return count;
         }
 
         public async Task<int> ActivateInvestors()
         {
-            var ids = Context.Users
-                .Where(x => x.ExternalId != null && x.ActivationDate <= DateTime.UtcNow && !x.EmailConfirmed)
-                .Select(x => x.Id)
-                .ToArray();
+            var users = Context.Users
+                .Where(x => x.ExternalId != null && !x.EmailConfirmed)
+                .ToArray()
+                .Join(GetRecords(), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
+                .Where(x => x.Record.Day <= DateTime.UtcNow);
 
-            Logger.LogDebug($"Total { ids.Length } users to be activated.");
+            Logger.LogDebug($"Total { users.Count() } users to be activated.");
 
             var count = 0;
 
-            foreach (var id in ids)
+            foreach (var user in users)
             {
-                var user = await _userManager.FindByIdAsync(id);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var result = await _userManager.ConfirmEmailAsync(user, code);
+                var managedUser = await _userManager.FindByIdAsync(user.User.Id);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(managedUser);
+                var result = await _userManager.ConfirmEmailAsync(managedUser, code);
 
                 if (result.Succeeded)
                 {
-                    var currency = new Random().Next(0, 2) == 0
-                        ? Currency.BTC
-                        : Currency.ETH;
+                    var services = _cryptoServices
+                        .Where(x => !x.Settings.Value.IsDisabled)
+                        .ToArray();
+
+                    if (services.Length == 0)
+                    {
+                        throw new InvalidOperationException("At least one crypto currency should be enabled.");
+                    }
+
+                    var currency = services[new Random().Next(0, services.Length)].Settings.Value.Currency;
 
                     var address = Context.CryptoAddresses
-                        .SingleOrDefault(x => x.UserId == id && x.Currency == currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+                        .SingleOrDefault(x => x.UserId == user.User.Id && x.Currency == currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
 
                     if (address == null)
                     {
-                        throw new InvalidOperationException($"The enabled investment {currency} address for user {id} was not found.");
+                        throw new InvalidOperationException($"The enabled investment {currency} address for user {user.User.Id} was not found.");
                     }
-
                     var transaction = new CryptoTransaction
                     {
                         Amount = currency == Currency.BTC
-                            ? user.ExternalBitcoinInvestment.Value
-                            : user.ExternalEthereumInvestment.Value,
+                            ? user.Record.BTC
+                            : user.Record.ETH,
                         Direction = CryptoTransactionDirection.Inbound,
                         ExchangeRate = await _exchangeRateService.GetExchangeRate(currency, Currency.USD, DateTime.UtcNow, true),
                         TokenPrice = _tokenSettings.Value.Price,
@@ -139,7 +131,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var count = 0;
 
-            foreach (var id in Context.Users.Where(x => x.ExternalId != null).Select(x => x.Id).ToArray())
+            var ids = Context.Users
+                .Where(x => x.ExternalId != null)
+                .Select(x => x.Id)
+                .ToArray();
+
+            foreach (var id in ids)
             {
                 var user = await _userManager.FindByIdAsync(id);
                 var result = await _userManager.DeleteAsync(user);
@@ -151,6 +148,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return count;
+        }
+
+        private IEnumerable<InvestorRecord> GetRecords()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+
+            using (var stream = assembly.GetManifestResourceStream(GetType(), "InvestorsData.csv"))
+            using (var reader = new StreamReader(stream))
+            {
+                var csv = new CsvReader(reader);
+                return csv.GetRecords<InvestorRecord>().ToArray();
+            }
         }
 
         private class InvestorRecord

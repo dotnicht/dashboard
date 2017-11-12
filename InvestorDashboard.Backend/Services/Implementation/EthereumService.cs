@@ -20,9 +20,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IRestService _restService;
 
-        public override Currency Currency => Currency.ETH;
-        public override int Confirmations => _ethereumSettings.Value.Confirmations;
-
         public EthereumService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
@@ -33,7 +30,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings, ethereumSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
@@ -41,25 +38,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            const int retryCount = 5;
             var policy = Policy
-                .Handle<ArgumentException>(x => x.Message == "Private key should be 32 bytes")
-                .Retry(retryCount, (e, i) =>
-                {
-                    Logger.LogError(e, $"Key generation failed. User { userId }.");
-
-                    if (i == retryCount)
-                    {
-                        throw new InvalidOperationException($"An error occurred while generating Ethereum keys. User { userId }.", e);
-                    }
-                });
+                .Handle<ArgumentException>()
+                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. User { userId }."));
 
             var keys = policy.Execute(GenerateEthereumKeys);
 
             var address = new CryptoAddress
             {
                 UserId = userId,
-                Currency = Currency,
+                Currency = Settings.Value.Currency,
                 PrivateKey = keys.PrivateKey,
                 Type = CryptoAddressType.Investment,
                 Address = keys.Address

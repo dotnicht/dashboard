@@ -18,9 +18,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
-        public override Currency Currency => Currency.BTC;
-        public override int Confirmations => _bitcoinSettings.Value.Confirmations;
-
         public BitcoinService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
@@ -31,7 +28,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
@@ -39,7 +36,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task UpdateUserDetailsInternal(string userId)
         {
-            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
+            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
                 ? Network.Main
                 : Network.TestNet;
 
@@ -49,7 +46,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
-                Currency = Currency,
+                Currency = Settings.Value.Currency,
                 PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
                 Type = CryptoAddressType.Investment,
                 Address = address

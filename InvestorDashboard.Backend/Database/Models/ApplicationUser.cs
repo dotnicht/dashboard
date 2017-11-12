@@ -18,9 +18,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public bool IsTokenSaleDisabled { get; set; }
         public string PhoneCode{ get; set; }
         public Guid? ExternalId { get; set; }
-        public DateTime? ActivationDate { get; set; }
-        public decimal? ExternalBitcoinInvestment { get; set; }
-        public decimal? ExternalEthereumInvestment { get; set; }
         public virtual ICollection<IdentityUserClaim<string>> Claims { get; set; }
         public virtual ICollection<CryptoAddress> CryptoAddresses { get; set; }
     }

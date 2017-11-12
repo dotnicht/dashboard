@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using Microsoft.Extensions.Options;
@@ -12,7 +13,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public EmailService(IOptions<EmailSettings> emailSettings)
         {
-            _emailSettings = emailSettings ?? throw new System.ArgumentNullException(nameof(emailSettings));
+            _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
         }
 
         public async Task SendEmailConfirmationAsync(string email, string link)

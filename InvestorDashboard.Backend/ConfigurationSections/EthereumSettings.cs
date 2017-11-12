@@ -1,9 +1,8 @@
 ﻿namespace InvestorDashboard.Backend.ConfigurationSections
 {
-    public class EthereumSettings
+    public class EthereumSettings : CryptoSettings
     {
         public string ApiUri { get; set; }
         public string ApiKey { get; set; }
-        public int Confirmations { get; set; }
     }
 }
