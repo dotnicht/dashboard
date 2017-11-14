@@ -15,11 +15,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal abstract class CryptoService : ContextService, ICryptoService
     {
         public IOptions<CryptoSettings> Settings { get; }
+        protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
         protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
-        protected IOptions<TokenSettings> TokenSettings { get; }
 
         protected CryptoService(
             ApplicationDbContext context,
@@ -68,7 +68,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.User.ExternalId == null)
+                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.ExternalId == null && (!x.IsDisabled || Settings.Value.ImportTransactionsForDisabledAdresses))
                 .ToArray();
 
             foreach (var address in addresses)

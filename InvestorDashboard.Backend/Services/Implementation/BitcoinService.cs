@@ -74,7 +74,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             catch (Exception ex)
             {
                 // TODO: handle fallback.
-                Logger.LogError(ex, "An error occurred while getting transactions from chain.");
+                Logger.LogError(ex, "An error occurred while getting transactions from block explorer.");
                 var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
                 var result = await _restService.GetAsync<ChainResponse>(uri);
                 // TODO: handle invalid internal status code.

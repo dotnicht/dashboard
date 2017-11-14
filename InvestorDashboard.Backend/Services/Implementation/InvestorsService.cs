@@ -104,6 +104,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         throw new InvalidOperationException($"The enabled investment {currency} address for user {user.User.Id} was not found.");
                     }
+
                     var transaction = new CryptoTransaction
                     {
                         Amount = currency == Currency.BTC
