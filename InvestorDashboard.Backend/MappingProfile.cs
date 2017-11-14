@@ -2,6 +2,7 @@
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services.Implementation;
 using System;
+using System.Linq;
 
 namespace InvestorDashboard.Backend
 {
@@ -23,7 +24,6 @@ namespace InvestorDashboard.Backend
 
             CreateMap<BitcoinService.BlockExplorerResponse.Tx, CryptoTransaction>()
                 .ForMember(x => x.Hash, x => x.MapFrom(y => y.Txid))
-                .ForMember(x => x.Amount, x => x.MapFrom(y => y.ValueOut))
                 .ForMember(x => x.TimeStamp, x => x.MapFrom(y => DateTimeOffset.FromUnixTimeSeconds(y.Time).UtcDateTime));
         }
     }

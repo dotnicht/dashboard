@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -24,7 +26,14 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            return;
+            foreach (var service in _cryptoServices)
+            {
+                Context.Users
+                    .Where(x => !x.CryptoAddresses.Any(y => !y.IsDisabled && y.Type == CryptoAddressType.Investment && y.Currency == service.Settings.Value.Currency))
+                    .Select(x => x.Id)
+                    .ToList()
+                    .ForEach(async x => await service.UpdateUserDetails(x));
+            }
         }
     }
 }

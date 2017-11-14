@@ -61,7 +61,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
                 var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
-                return Mapper.Map<List<CryptoTransaction>>(result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
+                var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
+                var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
+
+                foreach (var tx in unmapped)
+                {
+                    mapped.Single(x => x.Hash == tx.Txid).Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                }
+
+                return mapped;
             }
             catch (Exception ex)
             {
