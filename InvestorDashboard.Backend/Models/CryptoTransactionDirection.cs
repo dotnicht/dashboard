@@ -2,8 +2,8 @@
 {
     public enum CryptoTransactionDirection
     {
-        Inbound,
-        Outbound,
-        Internal
+        Inbound = 0,
+        Outbound = 1,
+        Internal = 2
     }
 }

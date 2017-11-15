@@ -29,26 +29,56 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 if (!Context.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
                 {
-                    var user = Context.Users.Include(x => x.CryptoAddresses).SingleOrDefault(x => x.Email == record.Email);
-                    if (user == null)
+                    try
                     {
-                        throw new InvalidOperationException($"User not found with email { record.Email }.");
+                        var user = Context.Users
+                            .Include(x => x.CryptoAddresses)
+                            .SingleOrDefault(x => x.Email == record.Email);
+
+                        if (user == null)
+                        {
+                            throw new InvalidOperationException($"User not found with email { record.Email }.");
+                        }
+
+                        var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.DTT)
+                            ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.DTT, Type = CryptoAddressType.Internal }).Entity;
+
+                        Context.CryptoTransactions.Add(new CryptoTransaction
+                        {
+                            Amount = record.DTT,
+                            ExternalId = record.Guid,
+                            CryptoAddress = address,
+                            TokenPrice = _options.Value.Price,
+                            Direction = CryptoTransactionDirection.Internal
+                        });
+
+                        await Context.SaveChangesAsync();
                     }
-
-                    var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.DTT)
-                        ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.DTT, Type = CryptoAddressType.Intenral }).Entity;
-
-                    Context.CryptoTransactions.Add(new CryptoTransaction
+                    catch (Exception ex)
                     {
-                        Amount = record.DTT,
-                        ExternalId = record.Guid,
-                        CryptoAddress = address,
-                        TokenPrice = _options.Value.Price
-                    });
-
-                    await Context.SaveChangesAsync();
+                        Logger.LogError(ex, $"An error occurred while processing record { record.Guid }.");
+                    }
                 }
             }
+        }
+
+        public async Task<decimal> GetUserAffilicateBalance(string userId)
+        {
+            if (userId == null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            return Context.Users
+                    .Include(x => x.CryptoAddresses)
+                    .ThenInclude(x => x.CryptoTransactions)
+                    .SingleOrDefault(x => x.Id == userId)
+                    ?.CryptoAddresses
+                    .SingleOrDefault(x => !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT)
+                    ?.CryptoTransactions
+                    .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.ExternalId != null)
+                    .Sum(x => x.Amount)
+                ?? 0;
         }
 
         private class AffiliatesRecord

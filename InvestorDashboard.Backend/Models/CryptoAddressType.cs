@@ -2,9 +2,9 @@
 {
     public enum CryptoAddressType
     {
-        Investment,
-        Refund,
-        Contract,
-        Intenral
+        Investment = 0,
+        Refund = 1,
+        Contract = 2,
+        Internal = 3
     }
 }

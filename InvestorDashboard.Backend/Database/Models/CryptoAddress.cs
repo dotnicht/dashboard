@@ -17,7 +17,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public Currency Currency { get; set; }
         public string PrivateKey { get; set; }
         public CryptoAddressType Type { get; set; }
-        [Required]
         public string Address { get; set; }
         public DateTime Created { get; set; }
         public bool IsDisabled { get; set; }

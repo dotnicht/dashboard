@@ -17,7 +17,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var assembly = Assembly.GetExecutingAssembly();
-
             var resource = GetType().Namespace + ".Data." + name;
 
             using (var stream = assembly.GetManifestResourceStream(resource))

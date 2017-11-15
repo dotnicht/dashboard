@@ -24,13 +24,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            var ids = Context.Users.Select(x => x.Id).ToArray();
-            foreach (var userId in ids)
-            {
-                await _tokenService.RefreshTokenBalance(userId);
-            }
-
-            Logger.LogInformation($"Token refresh completed for {ids.Length} users.");
+            await _tokenService.RefreshTokenBalance();
         }
 
         protected override void Dispose(bool disposing)

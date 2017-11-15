@@ -95,14 +95,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task TransferAssets(string destinationAddress)
         {
-            if (Settings.Value.IsDisabled)
-            {
-                return;
-            }
-
             if (destinationAddress == null)
             {
                 throw new ArgumentNullException(nameof(destinationAddress));
+            }
+
+            if (Settings.Value.IsDisabled)
+            {
+                return;
             }
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
