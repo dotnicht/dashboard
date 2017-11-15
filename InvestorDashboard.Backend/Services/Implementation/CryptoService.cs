@@ -9,6 +9,7 @@ using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -71,9 +72,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.ExternalId == null && (!x.IsDisabled || Settings.Value.ImportDisabledAdressesTransactions))
                 .ToArray();
 
+            const string addressKey = "address";
+
+            var policy = Policy
+                .Handle<Exception>()
+                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: { Settings.Value.Currency }. Address: { c[addressKey] }. Retry attempt: {i}."));
+
             foreach (var address in addresses)
             {
-                foreach (var transaction in await GetTransactionsFromBlockchain(address.Address))
+                var data = new Dictionary<string, object> { { addressKey, address } };
+                foreach (var transaction in await policy.Execute(() =>  GetTransactionsFromBlockchain(address.Address), data))
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {

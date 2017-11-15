@@ -66,7 +66,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 foreach (var tx in unmapped)
                 {
-                    mapped.Single(x => x.Hash == tx.Txid).Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                    var amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                    mapped.Single(x => x.Hash == tx.Txid).Amount = amount;
                 }
 
                 return mapped;
