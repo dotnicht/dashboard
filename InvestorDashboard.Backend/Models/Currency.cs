@@ -2,8 +2,9 @@
 {
     public enum Currency
     {
-        USD,
-        ETH,
-        BTC
+        USD = 0,
+        ETH = 1,
+        BTC = 2,
+        DTT = 666
     }
 }

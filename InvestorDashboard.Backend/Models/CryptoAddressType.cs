@@ -4,6 +4,7 @@
     {
         Investment,
         Refund,
-        Contract
+        Contract,
+        Intenral
     }
 }

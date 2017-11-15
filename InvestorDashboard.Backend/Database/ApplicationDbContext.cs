@@ -34,6 +34,10 @@ namespace InvestorDashboard.Backend.Database
                 .HasIndex(x => x.Hash)
                 .IsUnique();
 
+            builder.Entity<CryptoTransaction>()
+                .HasIndex(x => x.ExternalId)
+                .IsUnique();
+
             foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(decimal)))
             {
                 property.Relational().ColumnType = "decimal(18, 6)";

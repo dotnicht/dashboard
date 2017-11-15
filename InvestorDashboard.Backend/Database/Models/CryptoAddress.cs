@@ -15,7 +15,6 @@ namespace InvestorDashboard.Backend.Database.Models
         [ForeignKey("UserId"), Required]
         public ApplicationUser User { get; set; }
         public Currency Currency { get; set; }
-        [Required]
         public string PrivateKey { get; set; }
         public CryptoAddressType Type { get; set; }
         [Required]

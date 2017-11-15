@@ -11,6 +11,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public TimeSpan InvestorsActivationPeriod { get; set; }
         public TimeSpan InvestorsLoadPeriod { get; set; }
         public TimeSpan InvestorsClearPeriod { get; set; }
+        public TimeSpan AffilicatesSyncPeriod { get; set; }
         public TimeSpan UpdateUserDetailsPeriod { get; set; }
     }
 }

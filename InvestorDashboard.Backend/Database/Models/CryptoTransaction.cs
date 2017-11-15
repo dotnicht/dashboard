@@ -20,5 +20,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public decimal ExchangeRate { get; set; }
         public decimal TokenPrice { get; set; }
         public decimal BonusPercentage { get; set; }
+        public Guid? ExternalId { get; set; }
     }
 }
