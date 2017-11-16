@@ -1,0 +1,229 @@
+{
+  "app": {
+    "Welcome": "Welcome",
+    "Notifications": "Notifications",
+    "New": "New",
+    "FAQ": "<h2>FAQ</h2><p><div><b>What is pre-order?</b></div>Pre-order is a reservation (or pre-ordering) of tokens that would be on sale during pre-sale. Bonus for pre-order is the same as for pre-sale (30%), your pre-ordered tokens would be minted and available for transfer after pre-sale. In order to participate in pre-order you should send Bitcoin on the address that is shown in your personal dashboard account.</p><p><div><b>Can I pay with Ethereum?</b></div>We temporarily turned off Ethereum payment during pre-order because of certain problems with some Ethereum wallets. We will make this option available soon.</p> <p><div><b>Do I need to open an Ethereum account to participate in pre-sale/token sale?</b>  </div>  <span>No, we create an Ethereum account and will mint tokens to this account after a few days of token sale end.</span></p><p><div>    <b>      What if I already have an Ethereum account and want to have DTT tokens on this account?    </b>  </div>  <span>    After token minting you will be able to transfer DTT tokens to any Ethereum account from dashboard.  </span></p><p>  <div>    <b>      When will tokens be minted (released)?      </b>  </div>  <span>    Tokens will be minted after each stage of the token sale (after pre-sale, after Round A of the token sale and after Round B of the token sale)  </span></p><p>  <div>    <b>      What is a schedule of token sale?    </b>  </div>  <span>    Crowdsale of DataTrading Tokens (DTT) will be conducted in three stages:  </span>      <ul>    <li>      pre-sale 11.20.2017–11.30.2017    </li>    <li>      token sale: round A, for the eastern region 12.18.2017–01.08.2018    </li>    <li>      token sale: round B, for the western region 02.01.2018–02.22.2018    </li>  </ul></p><p>  <div>    <b>      Does DataTrading Tokens conforms ERC20 standart?    </b>  </div>  <span>Yes.</span>    </p><p>  <div>    <b>      Do you have bounty program?    </b>  </div>  <div>Yes, you can get detailed info at <a href=\"https://bitcointalk.org/index.php?topic=2308274.0\">bitcointalk</a></div>  <div>  </div></p><p>  <div>    <b>      What payment options do you have?    </b>  </div>  <div>On pre-sale — BTC, ETH</div>  <div>On token-sale — BTC, ETH, LTC, DASH</div><div>On pre-order — BTC</div></p><p>  <div>    <b>      What bonuses can I receive?    </b>  </div>  <span>    30% bonuses for all pre-sale participants, up to 20% for token-sale participants.  </span></p><p>  <div>    <b>      What limits does pre-sale have?    </b>  </div>  <span>    Hard cap of pre-sale is 1,000,000 USD, the maximum amount of tokens to purchase is $30,000 at the current exchange rate.  </span></p>"
+  },
+  "clientInfo": {
+    "Balance": "Your balance",
+    "TotalInvestors": "Total participants",
+    "TotalUSD": "Total USD",
+    "TotalCoins": "Total Coins",
+    "IcoHasStarted": " TOKEN SALE HAS STARTED -> PRE-ORDER IS IN PROGRESS",
+    "MyEtherAddress": "My Ether address",
+    "ChoosePaymentMethod": " Choose payment method",
+    "TotalInvestments": "Total progress",
+    "PaymentMethod": "Payment method"
+  },
+  "dashboard": {
+    "HTU_BTC": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 6 confirmations (1 hour)",
+    "HTU_ETH": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 12 confirmations (up to 10 minutes)"
+  },
+  "languages": {
+    "en": "Eng",
+    "ru": "Rus"
+  },
+  "mainMenu": {
+    "Dashboard": "Dashboard",
+    "Home": "Home",
+    "Settings": "Settings",
+    "Faq": "FAQ",
+    "Login": "Login",
+    "Logout": "Logout"
+  },
+  "pageHeader": {
+    "Dashboard": "Dashboard",
+    "Customers": "Customers",
+    "Products": "Products",
+    "Orders": "Orders",
+    "NotFound": "Not-Found",
+    "About": "About",
+    "Settings": "Settings"
+  },
+  "home": {
+    "NoWidgets1": "You have no widgets displayed. Goto",
+    "NoWidgets2": "to configure available widgets",
+    "StatisticsTitle": "Some Important Stuff"
+  },
+  "notFound": {
+    "404": "404",
+    "pageNotFound": "The page you are looking for does not exist",
+    "backToHome": "Back to home"
+  },
+  "settings": {
+    "tab": {
+      "Profile": "Profile",
+      "2fa": "Two-factor authentication",
+      "Password": "Password",
+      "Roles": "Roles"
+    },
+    "header": {
+      "UserProfile": "User Profile",
+      "UserPreferences": "User Preferences",
+      "UserDepartments": "User Departments",
+      "UsersManagements": "Users Managements",
+      "RolesManagement": "Roles Management"
+    }
+  },
+  "preferences": {
+    "ReloadPreferences": "Reload Preferences:",
+    "ReloadPreferencesHint": "Load default preferences (local changes are discarded)",
+    "Language": "Language:",
+    "English": "English",
+    "French": "French",
+    "German": "German",
+    "Arabic": "Arabic",
+    "Korean": "Korean",
+    "LanguageHint": "Select the preferred language for your account",
+    "HomePage": "Home Page:",
+    "Dashboard": "Dashboard",
+    "Customers": "Customers",
+    "Products": "Products",
+    "Orders": "Orders",
+    "About": "About",
+    "Settings": "Settings",
+    "HomePageHint": "Select the default page to navigate to on login",
+    "Theme": "Theme:",
+    "DefaultColor": "<span class='default-theme-option'>Default</span>",
+    "RedColor": "<span class='red-theme-option'>Red</span>",
+    "OrangeColor": "<span class='orange-theme-option'>Orange</span>",
+    "GreenColor": "<span class='green-theme-option'>Green</span>",
+    "GrayColor": "<span class='gray-theme-option'>Gray</span>",
+    "BlackColor": "<span class='black-theme-option'>Black</span>",
+    "ThemeHint": "Select the default color theme for your account",
+    "DashboardStatistics": "Dashboard Statistics:",
+    "DashboardStatisticsHint": "Show demo graph widget on the dashboard",
+    "DashboardNotifications": "Dashboard Notifications:",
+    "DashboardNotificationsHint": "Show application notifications on the dashboard",
+    "DashboardTodo": "Dashboard Todo:",
+    "DashboardTodoHint": "Shows demo todo widget on the dashboard",
+    "DashboardBanner": "Dashboard Banner:",
+    "DashboardBannerHint": "Show demo information banner widget on the dashboard",
+    "ResetDefault": "Reset default",
+    "SetDefault": "Set as default"
+  },
+  "users": {
+    "management": {
+      "Search": "Search for user...",
+      "NewUser": "New User",
+      "Edit": "Edit",
+      "Delete": "Delete",
+      "EditUser": "Edit User \"{{name}}\"",
+      "Title": "Title",
+      "UserName": "User Name",
+      "FullName": "Full Name",
+      "Email": "Email",
+      "Roles": "Roles",
+      "PhoneNumber": "Phone Number"
+    },
+    "editor": {
+      "FirstName": "First name: ",
+      "LastName": "Last name: ",
+      "UserName": "User Name:",
+      "UserNameRequired": "User name is required (minimum of 2 and maximum of 200 characters)",
+      "Password": "Password:",
+      "PasswordHint": "Your password is required when changing user name",
+      "CurrentPasswordRequired": "Current password is required",
+      "Email": "Email:",
+      "EmailRequired": "Email address is required (maximum of 200 characters)",
+      "InvalidEmail": "Specified email is not valid",
+      "ChangePassword": "Change Password",
+      "CurrentPassword": "Current Password:",
+      "NewPassword": "New Password:",
+      "NewPasswordRequired": "New password is required (minimum of 6 characters)",
+      "ConfirmPassword": "Confirm Password:",
+      "ConfirmationPasswordRequired": "Confirmation password is required",
+      "PasswordMismatch": "New password and confirmation password do not match",
+      "Roles": "Roles:",
+      "FullName": " Full Name:",
+      "RoleRequired": " Role is required",
+      "PhoneNumber": "Phone number:",
+      "Enabled": "Enabled",
+      "Unblock": "Unblock",
+      "Close": "Close",
+      "Edit": "Edit",
+      "Cancel": "Cancel",
+      "Save": "Save",
+      "Saving": "Saving...",
+      "Address": "Address",
+      "City": "Country",
+      "CountryCode": "Country code",
+      "CountryCodePattern": "Code must be 3 characters with uppercase"
+    },
+    "register": {
+      "rules": {
+        "first": "I confirm hereby that I am not U.S. citizen/permanent resident/representing U.S. company or citizen/permanent resident/representing company of any jurisdiction, where purchase of DTT tokens is illegal, restricted or requires special accreditation.",
+        "second": "Check here to confirm that you have read and understand the <a href='http://data-trading.com/pdf/terms_of_use.pdf'>Terms of Use</a> and <a href='http://data-trading.com/pdf/privacy_policy.pdf'>Privacy Policy</a> and expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
+        "third": "Check here to confirm that you have read and understand the Terms of Token Saleand expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
+        "fourth": "Check here to confirm that you have read and understand the <a href='http://data-trading.com/pdf/datatrading_whitepaper_en.pdf'>White Paper</a>."
+      }
+    },
+    "login": {
+      "EnterEmail": "Enter email"
+    }
+  },
+  "buttons": {
+    "Login": "Login",
+    "Register": "Register",
+    "LogginIn": "Loggin in...",
+    "Copy": "Copy",
+    "Copied": "Copied",
+    "Close": "Close",
+    "Cancel": "Cancel"
+  },
+  "other": {
+    "Or": "or"
+  },
+  "roles": {
+    "management": {
+      "Search": "Search for role...",
+      "NewRole": "New Role",
+      "Edit": "Edit",
+      "Details": "Details",
+      "Delete": "Delete",
+      "RoleDetails": "Role Details",
+      "EditRole": "Edit Role \"{{name}}\"",
+      "Name": "Name",
+      "Description": "Description",
+      "Users": "Users"
+    },
+    "editor": {
+      "Name": "Name:",
+      "Description": "Description:",
+      "RoleNameRequired": "Role name is required (minimum of 2 and maximum of 200 characters)",
+      "SelectAll": "Select all",
+      "SelectNone": "Select none",
+      "Close": "Close",
+      "Cancel": "Cancel",
+      "Save": "Save",
+      "Saving": "Saving..."
+    }
+  },
+  "notifications": {
+    "Delete": "Delete notification",
+    "Pin": "Pin notification",
+    "Date": "Date",
+    "Notification": "Notification"
+  },
+  "todoDemo": {
+    "management": {
+      "Search": "Search for task...",
+      "HideCompleted": "Hide Completed",
+      "AddTask": "Add Task",
+      "Delete": "Delete task",
+      "Important": "Mark as important",
+      "Task": "Task",
+      "Description": "Description"
+    },
+    "editor": {
+      "NewTask": "New Task",
+      "Name": "Name",
+      "TaskNameRequired": "Task name is required",
+      "Description": "Description",
+      "Important": "Mark as important",
+      "AddTask": "Add Task"
+    }
+
+  }
+}
