@@ -68,15 +68,7 @@ namespace InvestorDashboard.Web.Server.RestAPI
         {
             try
             {
-                //user.FirstName = "FirstName";
-                //user.LastName = "LastName";
                 user.UserName = user.Email;
-                //user.Address = "Address";
-                //user.PhoneCode = "+380";
-                //user.PhoneNumber = "00 000 0000";
-                //user.IsEligibleForTokenSale = true;
-                //user.CountryCode = "UKR".ToUpper();
-                //user.City = "Boston".ToUpper();
                 user.IsEnabled = true;
 
                 ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);

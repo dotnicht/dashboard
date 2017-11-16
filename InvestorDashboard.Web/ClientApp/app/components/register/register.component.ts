@@ -57,6 +57,7 @@ export class RegisterComponent implements OnInit {
 
     /** Called by Angular after register component initialized */
     ngOnInit(): void {
+    
         // if (this.authService.isLoggedIn) {
 
         // }
@@ -94,6 +95,7 @@ export class RegisterComponent implements OnInit {
                 });
 
                 // this.alertService.startLoadingMessage();
+                this.registerForm.registrationRequest = window.location.href;
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
                         // this.alertService.stopLoadingMessage();
