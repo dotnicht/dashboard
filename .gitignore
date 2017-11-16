@@ -263,3 +263,4 @@ __pycache__/
 .vscode/
 InvestorDashboard.Web/wwwroot/dist/
 InvestorDashboard.Web/ClientApp/dist/
+InvestorDashboard.Web/wwwroot/

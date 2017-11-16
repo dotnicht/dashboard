@@ -4,7 +4,7 @@
 /dist
 /tmp
 /out-tsc
-/wwwroot
+InvestorDashboard.Web/wwwroot
 
 # dependencies
 /node_modules

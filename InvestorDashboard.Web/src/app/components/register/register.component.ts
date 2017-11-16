@@ -98,7 +98,7 @@ export class RegisterComponent implements OnInit {
                 this.registerRules.forEach(element => {
                     element.checked = false;
                 });
-
+                this.registerForm.registrationRequest = window.location.href;
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
