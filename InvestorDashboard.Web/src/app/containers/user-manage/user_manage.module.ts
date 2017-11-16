@@ -16,7 +16,7 @@ import { LocalStoreManager } from '../../services/local-store-manager.service';
 import { AppTranslationService, TranslateLanguageLoader } from '../../services/app-translation.service';
 import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
-
+import { ReCaptchaModule } from 'angular2-recaptcha';
 
 @NgModule({
   declarations: [
@@ -32,6 +32,7 @@ import { MaterialModule } from '../../app.material.module';
     CommonModule,
     MaterialModule,
     FormsModule,
+    ReCaptchaModule,
     ReactiveFormsModule,
     RouterModule,
     TranslateModule.forRoot({

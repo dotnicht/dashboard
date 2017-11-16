@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
@@ -10,6 +10,7 @@ import { AppTranslationService } from '../../services/app-translation.service';
 import { Router, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie-service';
+import { ReCaptchaComponent } from 'angular2-recaptcha';
 
 const defaultDialogConfig = new MatDialogConfig();
 
@@ -21,7 +22,7 @@ const defaultDialogConfig = new MatDialogConfig();
 export class RegisterComponent implements OnInit {
 
 
-
+    @ViewChild(ReCaptchaComponent) captcha: ReCaptchaComponent;
     registerRulesDialogRef: MatDialogRef<RegisterRulesDialogComponent> | null;
     emailConfirmDialogRef: MatDialogRef<ConfirmEmailDialogComponent> | null;
 
@@ -35,6 +36,7 @@ export class RegisterComponent implements OnInit {
     isLoading = false;
     errorMsg: string;
     registerForm = new UserRegister();
+    reCaptchaStatus = false;
 
 
     config = {
@@ -86,6 +88,13 @@ export class RegisterComponent implements OnInit {
         this.emailConfirmDialogRef = this.dialog.open(ConfirmEmailDialogComponent, config);
     }
 
+    handleCorrectCaptcha(event) {
+        this.reCaptchaStatus = true;
+    }
+    handleCaptchaExpired() {
+        this.reCaptchaStatus = false;
+    }
+
     openRegisterRulesDialog(): void {
         this.registerRulesDialogRef = this.dialog.open(RegisterRulesDialogComponent, this.config);
         this.registerRulesDialogRef.afterClosed().subscribe((result: RegisterRules[]) => {
@@ -110,7 +119,7 @@ export class RegisterComponent implements OnInit {
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
                         // this.alertService.stopLoadingMessage();
-                        this.isLoading = false;
+
                         this.reset();
                         this.openEmailConfirmDialog();
                         //this.alertService.showMessage('Register', `Successful registration!`, MessageSeverity.success);
@@ -120,7 +129,8 @@ export class RegisterComponent implements OnInit {
                     error => {
 
                         // this.alertService.stopLoadingMessage();
-                        this.isLoading = false;
+
+                        this.reset();
                         if (Utilities.checkNoNetwork(error)) {
                             //this.alertService.showStickyMessage(Utilities.noNetworkMessageCaption, Utilities.noNetworkMessageDetail, MessageSeverity.error, error);
                         }
@@ -160,6 +170,10 @@ export class RegisterComponent implements OnInit {
 
     reset() {
         this.formResetToggle = false;
+        this.captcha.reset();
+        this.reCaptchaStatus = false;
+        this.registerForm = new UserRegister();
+        this.isLoading = false;
 
         setTimeout(() => {
             this.formResetToggle = true;

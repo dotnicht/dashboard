@@ -1,13 +1,21 @@
 ﻿.login {
-    width: 100%;
+  width: 100%;
 }
 
 .errors {
-    color: #d9534f;
+  color: #d9534f;
+}
+
+.recaptcha {
+  margin-bottom: 10px;
+  text-align: center;
+  re-captcha {
+    display: inline-block;
+  }
 }
 
 @media (max-width: 500px) {
-    .mat-form-field {
-        width: 100%;
-    }
+  .mat-form-field {
+    width: 100%;
+  }
 }

@@ -45,14 +45,18 @@
               <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
               <p *ngIf="errorMsg">{{errorMsg}}</p>
             </div>
+            <div class="recaptcha">
+              <re-captcha (captchaExpired)="handleCaptchaExpired()" (captchaResponse)="handleCorrectCaptcha($event)" site_key="6LdmAjkUAAAAAJdKqXjRbDK586VXRNchP1e7sQlb"></re-captcha>
+            </div>
+
             <div style="display: flex;justify-content: space-between;align-items: center;">
 
               <button type="button" [routerLink]="['/login']" mat-raised-button>
                 <span>{{'buttons.Login' | translate}}</span>
               </button>
               <span>{{'other.Or' | translate}}</span>
-              <button type="submit" [disabled]="!f.form.valid || isLoading" mat-raised-button color="primary">
-                  <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
+              <button type="submit" [disabled]="!f.form.valid || isLoading ||  !reCaptchaStatus" mat-raised-button color="primary">
+                <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
                 <span>{{'buttons.Register' | translate}}</span>
               </button>
             </div>
