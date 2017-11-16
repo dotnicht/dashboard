@@ -54,6 +54,7 @@ export class UserRegister {
     confirmPassword: string;
     registrationRequest: string;
 
+
     constructor(email?: string, password?: string, confirmPassword?: string) {
         this.email = email;
         this.password = password;
