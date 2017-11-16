@@ -4,5 +4,6 @@
     {
         public string ApiBaseUrl { get; set; }
         public string NetworkType { get; set; }
+        public string ApiUri { get; set; }
     }
 }

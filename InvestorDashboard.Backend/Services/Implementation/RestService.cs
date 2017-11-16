@@ -6,7 +6,6 @@ using RestSharp.Portable.HttpClient;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    // TODO: refactor shitty copypaste. 
     internal class RestService : IRestService
     {
         public TResponse Get<TResponse>(Uri uri) where TResponse : class, new()

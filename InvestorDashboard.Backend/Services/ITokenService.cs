@@ -5,6 +5,6 @@ namespace InvestorDashboard.Backend.Services
 {
     public interface ITokenService : IDisposable
     {
-        Task<decimal> RefreshTokenBalance(string userId);
+        Task RefreshTokenBalance(string userId = null);
     }
 }

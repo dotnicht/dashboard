@@ -5,7 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Services\Implementation\InvestorsData.csv" />
+    <None Remove="Services\Implementation\Data\AffiliatesData.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Services\Implementation\Data\AffiliatesData.csv" />
+    <EmbeddedResource Include="Services\Implementation\Data\InvestorsData.csv" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using CsvHelper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,6 +18,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IExchangeRateService _exchangeRateService;
+        private readonly ICsvService _csvService;
 
         public InvestorsService(
             ApplicationDbContext context,
@@ -29,6 +26,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             UserManager<ApplicationUser> userManager,
             IEnumerable<ICryptoService> cryptoServices,
             IExchangeRateService exchangeRateService,
+            ICsvService csvService,
             IOptions<TokenSettings> tokenSettings)
             : base(context, loggerFactory)
         {
@@ -36,13 +34,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
+            _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
         }
 
         public async Task<int> LoadInvestorsData()
         {
             var count = 0;
 
-            foreach (var record in GetRecords())
+            foreach (var record in _csvService.GetRecords<InvestorRecord>("InvestorsData.csv"))
             {
                 if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
@@ -71,7 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var users = Context.Users
                 .Where(x => x.ExternalId != null && !x.EmailConfirmed)
                 .ToArray()
-                .Join(GetRecords(), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
+                .Join(_csvService.GetRecords<InvestorRecord>("InvestorsData.csv"), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
                 .Where(x => x.Record.Day <= DateTime.UtcNow);
 
             Logger.LogDebug($"Total { users.Count() } users to be activated.");
@@ -104,6 +103,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         throw new InvalidOperationException($"The enabled investment {currency} address for user {user.User.Id} was not found.");
                     }
+
                     var transaction = new CryptoTransaction
                     {
                         Amount = currency == Currency.BTC
@@ -148,18 +148,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return count;
-        }
-
-        private IEnumerable<InvestorRecord> GetRecords()
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-
-            using (var stream = assembly.GetManifestResourceStream(GetType(), "InvestorsData.csv"))
-            using (var reader = new StreamReader(stream))
-            {
-                var csv = new CsvReader(reader);
-                return csv.GetRecords<InvestorRecord>().ToArray();
-            }
         }
 
         private class InvestorRecord

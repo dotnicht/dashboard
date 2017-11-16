@@ -40,7 +40,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var policy = Policy
                 .Handle<ArgumentException>()
-                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. User { userId }."));
+                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. User { userId }. Retry attempt: {i}."));
 
             var keys = policy.Execute(GenerateEthereumKeys);
 

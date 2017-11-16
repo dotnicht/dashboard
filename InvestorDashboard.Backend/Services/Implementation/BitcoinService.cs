@@ -57,10 +57,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
-            var result = await _restService.GetAsync<ChainResponse>(uri);
-            // TODO: handle invalid internal status code.
-            return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
+            try
+            {
+                var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
+                var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
+                var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
+                var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
+
+                foreach (var tx in unmapped)
+                {
+                    var amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                    mapped.Single(x => x.Hash == tx.Txid).Amount = amount;
+                }
+
+                return mapped;
+            }
+            catch (Exception ex)
+            {
+                // TODO: handle fallback.
+                Logger.LogError(ex, "An error occurred while getting transactions from block explorer.");
+                var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+                var result = await _restService.GetAsync<ChainResponse>(uri);
+                // TODO: handle invalid internal status code.
+                return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
+            }
         }
 
         protected override async Task TransferAssets(CryptoAddress address, string destinationAddress)
@@ -138,6 +158,67 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 public string Txid { get; set; }
                 public int Output_no { get; set; }
+            }
+        }
+
+        internal class BlockExplorerResponse
+        {
+            public int PagesTotal { get; set; }
+            public List<Tx> Txs { get; set; }
+
+            public class ScriptSig
+            {
+                public string Asm { get; set; }
+                public string Hex { get; set; }
+            }
+
+            public class Vin
+            {
+                public string Txid { get; set; }
+                public int Vout { get; set; }
+                public ScriptSig ScriptSig { get; set; }
+                public object Sequence { get; set; }
+                public int N { get; set; }
+                public string Addr { get; set; }
+                public int ValueSat { get; set; }
+                public double Value { get; set; }
+                public object DoubleSpentTxID { get; set; }
+            }
+
+            public class ScriptPubKey
+            {
+                public string Hex { get; set; }
+                public string Asm { get; set; }
+                public List<string> Addresses { get; set; }
+                public string Type { get; set; }
+            }
+
+            public class Vout
+            {
+                public string Value { get; set; }
+                public int N { get; set; }
+                public ScriptPubKey ScriptPubKey { get; set; }
+                public object SpentTxId { get; set; }
+                public object SpentIndex { get; set; }
+                public object SpentHeight { get; set; }
+            }
+
+            public class Tx
+            {
+                public string Txid { get; set; }
+                public int Version { get; set; }
+                public int Locktime { get; set; }
+                public List<Vin> Vin { get; set; }
+                public List<Vout> Vout { get; set; }
+                public string Blockhash { get; set; }
+                public int Blockheight { get; set; }
+                public int Confirmations { get; set; }
+                public int Time { get; set; }
+                public int Blocktime { get; set; }
+                public double ValueOut { get; set; }
+                public int Size { get; set; }
+                public double ValueIn { get; set; }
+                public double Fees { get; set; }
             }
         }
     }

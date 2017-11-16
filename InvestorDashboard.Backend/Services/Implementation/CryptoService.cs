@@ -9,17 +9,18 @@ using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
         public IOptions<CryptoSettings> Settings { get; }
+        protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
         protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
-        protected IOptions<TokenSettings> TokenSettings { get; }
 
         protected CryptoService(
             ApplicationDbContext context,
@@ -68,12 +69,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.User.ExternalId == null)
+                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.ExternalId == null && (!x.IsDisabled || Settings.Value.ImportDisabledAdressesTransactions))
                 .ToArray();
+
+            const string addressKey = "address";
+
+            var policy = Policy
+                .Handle<Exception>()
+                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: { Settings.Value.Currency }. Address: { c[addressKey] }. Retry attempt: {i}."));
 
             foreach (var address in addresses)
             {
-                foreach (var transaction in await GetTransactionsFromBlockchain(address.Address))
+                var data = new Dictionary<string, object> { { addressKey, address } };
+                foreach (var transaction in await policy.Execute(() =>  GetTransactionsFromBlockchain(address.Address), data))
                 {
                     if (!hashes.Contains(transaction.Hash))
                     {
@@ -95,14 +103,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task TransferAssets(string destinationAddress)
         {
-            if (Settings.Value.IsDisabled)
-            {
-                return;
-            }
-
             if (destinationAddress == null)
             {
                 throw new ArgumentNullException(nameof(destinationAddress));
+            }
+
+            if (Settings.Value.IsDisabled)
+            {
+                return;
             }
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))

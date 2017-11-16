@@ -26,8 +26,16 @@ namespace InvestorDashboard.Backend.Database
 
             builder.UseOpenIddict();
 
+            builder.Entity<ApplicationUser>()
+                .HasIndex(x => x.ExternalId)
+                .IsUnique();
+
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.Hash)
+                .IsUnique();
+
+            builder.Entity<CryptoTransaction>()
+                .HasIndex(x => x.ExternalId)
                 .IsUnique();
 
             foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(decimal)))
