@@ -15,6 +15,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
+        private readonly IAffiliatesService _affiliatesService;
+
         public IOptions<CryptoSettings> Settings { get; }
         protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
@@ -28,6 +30,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IEmailService emailService,
+            IAffiliatesService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)
@@ -39,6 +42,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
+            _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
         public Task UpdateUserDetails(string userId)
@@ -93,6 +97,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
+
                         // TODO: send transaction confirmed email.
                     }
 

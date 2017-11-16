@@ -24,11 +24,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IEmailService emailService,
+            IAffiliatesService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, mapper, tokenSettings, bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, affiliatesService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
