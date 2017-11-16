@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 
-
+import { CookieService } from 'ngx-cookie-service';
 import { AppComponent } from './app.component';
 import { ResizeService } from './services/resize.service';
 import { LocalStoreManager } from './services/local-store-manager.service';
@@ -67,7 +67,8 @@ import { AccountEndpoint } from './services/account-endpoint.service';
     TranslateService,
 
     LocalStoreManager,
-    ResizeService
+    ResizeService,
+    CookieService
   ],
   bootstrap: [AppComponent]
 })
