@@ -9,6 +9,7 @@ import { DOCUMENT } from '@angular/platform-browser';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { Router, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
+import { CookieService } from 'ngx-cookie-service';
 
 const defaultDialogConfig = new MatDialogConfig();
 
@@ -46,6 +47,7 @@ export class RegisterComponent implements OnInit {
     constructor(private router: Router,
         private translationService: AppTranslationService,
         private authService: AuthService,
+        private cookieService: CookieService,
         private dialog: MatDialog,
         @Inject(DOCUMENT) doc: any) {
 
@@ -98,7 +100,12 @@ export class RegisterComponent implements OnInit {
                 this.registerRules.forEach(element => {
                     element.checked = false;
                 });
-                this.registerForm.registrationRequest = window.location.href;
+                let registrationRequest = '';
+
+                if (this.cookieService.get('clickid') != '') {
+                    registrationRequest += `clickid=${this.cookieService.get('clickid')};`;
+                }
+                this.registerForm.registrationRequest = registrationRequest;
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
