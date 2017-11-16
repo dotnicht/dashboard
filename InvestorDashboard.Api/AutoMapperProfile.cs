@@ -1,10 +1,10 @@
 using AutoMapper;
+using InvestorDashboard.Api.Models;
+using InvestorDashboard.Api.Models.AccountViewModels;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Web.Server.Models;
-using InvestorDashboard.Web.Server.Models.AccountViewModels;
 using Microsoft.AspNetCore.Identity;
 
-namespace InvestorDashboard.Web
+namespace InvestorDashboard.Api
 {
     public class AutoMapperProfile : Profile
     {

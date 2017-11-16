@@ -6,5 +6,6 @@ namespace InvestorDashboard.Backend.Services
     {
         Task SyncAffiliates();
         Task<decimal> GetUserAffilicateBalance(string userId);
+        Task NotifyTransactionsCreated();
     }
 }

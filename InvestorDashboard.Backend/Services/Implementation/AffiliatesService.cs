@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -15,12 +16,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly ICsvService _csvService;
         private readonly IOptions<TokenSettings> _options;
+        private readonly IRestService _restService;
 
-        public AffiliatesService(ApplicationDbContext context, ILoggerFactory loggerFactory, ICsvService csvService, IOptions<TokenSettings> options)
+        public AffiliatesService(
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            ICsvService csvService,
+            IRestService restService,
+            IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
         public async Task SyncAffiliates()
@@ -81,11 +89,50 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 ?? 0;
         }
 
+        public async Task NotifyTransactionsCreated()
+        {
+            var transactions = Context.Users
+                .Where(x => x.ClickId != null)
+                .SelectMany(x => x.CryptoAddresses)
+                .Where(x => x.Type == CryptoAddressType.Investment && x.Address != null && x.PrivateKey != null)
+                .SelectMany(x => x.CryptoTransactions)
+                .Where(x => !x.IsNotified && x.ExternalId == null && x.Hash != null)
+                .ToArray();
+
+            foreach (var tx in transactions)
+            {
+                var clickId = tx.CryptoAddress.User.ClickId;
+                if (!string.IsNullOrWhiteSpace(clickId))
+                {
+                    var amount = tx.Amount * tx.ExchangeRate;
+                    var date = tx.TimeStamp.ToShortDateString();
+                    var time = tx.TimeStamp.ToShortTimeString();
+
+                    var address = $"http://offers.proffico.affise.com/postback?clickid={ clickId }&action_id={ tx.Hash }&sum={ amount }&currency=USD&custom_field1={ date }&custom_field2={ time }&custom_field3={ tx.CryptoAddress.Currency }&custom_field4={ tx.Amount }&custom_field5={ tx.ExchangeRate }";
+
+                    var uri = new Uri(address);
+                    var response = await _restService.GetAsync<AffiseResponse>(uri);
+                    
+                    if (response.Status == 1)
+                    {
+                        tx.IsNotified = true;
+                        await Context.SaveChangesAsync();
+                    }
+                }
+            }
+        }
+
         private class AffiliatesRecord
         {
             public Guid Guid { get; set; }
             public string Email { get; set; }
             public decimal DTT { get; set; }
+        }
+
+        private class AffiseResponse
+        {
+            public int Status { get; set; }
+            public string Message { get; set; }
         }
     }
 }
