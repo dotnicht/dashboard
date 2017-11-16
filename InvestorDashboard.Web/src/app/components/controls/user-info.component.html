@@ -1,0 +1,153 @@
+﻿<mat-card>
+  <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" name="userInfoForm" #f="ngForm" novalidate
+    (ngSubmit)="f.form.valid ? save() :
+
+         null">
+
+
+    <mat-form-field *ngIf="isEditMode">
+      <input matInput attr.id="firstName-{{uniqueId}}" #firstName="ngModel" name="firstName" placeholder="Enter first name" [(ngModel)]="userEdit.firstName"
+      />
+    </mat-form-field>
+    <div class="form-group" *ngIf="!isEditMode">
+      <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="firstName-{{uniqueId}}">{{'users.editor.FirstName' | translate}}</label>
+      <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <p class="form-control-static">{{user.firstName}}</p>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="!isEditMode">
+      <div class="col-mat-12">
+        <hr [class.separator-hr]="!isEditMode" />
+      </div>
+    </div>
+
+    <mat-form-field *ngIf="isEditMode">
+      <input matInput attr.id="lastName-{{uniqueId}}" #lastName="ngModel" name="lastName" placeholder="Enter last name" [(ngModel)]="userEdit.lastName"
+      />
+    </mat-form-field>
+    <div class="form-group" *ngIf="!isEditMode">
+      <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="lastName-{{uniqueId}}">{{'users.editor.LastName' | translate}}</label>
+      <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <p class="form-control-static">{{user.lastName}}</p>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="!isEditMode">
+      <div class="col-mat-12">
+        <hr [class.separator-hr]="!isEditMode" />
+      </div>
+    </div>
+
+    <mat-form-field *ngIf="isEditMode">
+      <input matInput attr.id="countryCode-{{uniqueId}}" #countryCode="ngModel" name="countryCode" placeholder="Enter country code"
+        [(ngModel)]="userEdit.countryCode" pattern="[A-Z]{3}"  minlength="3" maxLength="3" />
+      <mat-icon *ngIf="f.submitted && countryCode.valid" matSuffix>done</mat-icon>
+      <mat-hint align="end">
+        <mat-icon>mode_edit</mat-icon>
+        <span aria-live="polite">{{userEdit.countryCode!=undefined ? userEdit.countryCode.length: 0}} / 3</span>
+      </mat-hint>
+      <mat-error *ngIf="countryCode.invalid && (countryCode.dirty || countryCode.touched)">
+        <div *ngIf="countryCode.errors.pattern">{{'users.editor.CountryCodePattern' | translate}} </div>
+
+      </mat-error>
+    </mat-form-field>
+    <div class="form-group" *ngIf="!isEditMode">
+      <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="countryCode-{{uniqueId}}">{{'users.editor.CountryCode' | translate}}</label>
+      <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <p class="form-control-static">{{user.countryCode}}</p>
+      </div>
+    </div>
+
+
+
+    <!--******************************************************************************************************-->
+
+    <div class="row" *ngIf="!isEditMode">
+      <div class="col-mat-12">
+        <hr [class.separator-hr]="!isEditMode" />
+      </div>
+    </div>
+
+    <mat-form-field *ngIf="isEditMode">
+      <input matInput attr.id="city-{{uniqueId}}" #city="ngModel" name="city" placeholder="Enter city" [(ngModel)]="userEdit.city"
+        case='uppercase' />
+    </mat-form-field>
+
+
+    <div class="form-group" *ngIf="!isEditMode">
+      <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="city-{{uniqueId}}">{{'users.editor.City' | translate}}</label>
+      <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <p class="form-control-static">{{user.city}}</p>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="!isEditMode">
+      <div class="col-mat-12">
+        <hr [class.separator-hr]="!isEditMode" />
+      </div>
+    </div>
+
+    <!-- <div class="form-group has-feedback">
+      <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
+      <div *ngIf="!isEditMode" [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <p class="form-control-static">{{user.phoneNumber}}</p>
+      </div>
+      <div *ngIf="isEditMode" [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <input type="text" attr.id="phoneNumber-{{uniqueId}}" name="phoneNumber" placeholder="Enter phone number" class="form-control"
+          [(ngModel)]="userEdit.phoneNumber" />
+      </div>
+    </div> -->
+    <div class="phoneBlock">
+      <mat-form-field *ngIf="isEditMode" class="phoneCode">
+        <mat-select placeholder="Select phone code" name="phoneCode" [(value)]="userEdit.phoneCode">
+          <mat-option *ngFor="let code of countryCodes" [value]="code.dial_code">
+            {{ code.dial_code }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+
+      <mat-form-field *ngIf="isEditMode" class="phone">
+
+        <input matInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
+          [(ngModel)]="userEdit.phoneNumber" />
+        <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
+          <!-- <div *ngIf="phoneNumber.errors.pattern">pattern </div> -->
+          <div> {{phoneNumber.errors | json}}</div>
+
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-group" *ngIf="!isEditMode">
+      <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
+      <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+        <p class="form-control-static">{{user.phoneCode}} {{user.phoneNumber}}</p>
+      </div>
+
+    </div>
+
+
+    <div *ngIf="!isViewOnly" class="form-group">
+      <div class="col-sm-5">
+
+      </div>
+      <div class="col-sm-7">
+        <div class="pull-right">
+
+          <button mat-raised-button *ngIf="!isEditMode " color="primary" type="button" (click)="edit()" class="btn btn-default">
+            <i class='fa fa-edit'></i> {{'users.editor.Edit' | translate}}</button>
+          <button mat-raised-button *ngIf="isEditMode" type="button" (click)="cancel()" class="btn btn-default btn-danger" color="primary"
+            [disabled]="isSaving">
+            <i class='fa fa-times'></i> {{'users.editor.Cancel' | translate}}</button>
+          <button mat-raised-button *ngIf="isEditMode" type="submit" color="primary" [disabled]="isSaving">
+            <i *ngIf="!isSaving" class='fa fa-save'></i>
+            <i *ngIf="isSaving" class='fa fa-circle-o-notch fa-spin'></i> {{isSaving ? ('users.editor.Saving' | translate) : ('users.editor.Save' | translate)}}
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </form>
+</mat-card>

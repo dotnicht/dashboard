@@ -1,0 +1,13 @@
+﻿<mat-card>
+
+  <mat-card-content>
+
+    <h3>Your email was confirmed. Please
+      <a href="/login">login</a> to access DataTrading dashboard. </h3>
+    <p>You will be redirected in {{timer}}... seconds</p>
+  </mat-card-content> 
+  <mat-card-footer>
+    <mat-progress-bar mode="determinate" [value]="progress" [color]="'primary'">
+    </mat-progress-bar>
+  </mat-card-footer>
+</mat-card>
