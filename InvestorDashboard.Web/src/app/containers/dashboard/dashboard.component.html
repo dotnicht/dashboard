@@ -18,10 +18,10 @@
   <mat-card class="second">
     <mat-card-content>
       <div class="right">
-        <!-- <div style="margin-top: 0;margin-bottom: 26px;font-weight: bold; font-size: 18px;"> PRE-ORDER
+        <div style="margin-top: 0;margin-bottom: 26px;font-weight: bold; font-size: 18px;"> PRE-ORDER
           <br/> IS IN PROGRESS </div>
-        <p style="font-size: 20px;">Bonus 30% </p> -->
-        <div style="margin-bottom: 25px;">
+        <p style="font-size: 20px;">Bonus 30% </p>
+        <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div>
         <div style="margin-bottom: 30px;">
@@ -31,7 +31,7 @@
         <div>
           <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
           </mat-progress-bar>
-        </div>
+        </div> -->
       </div>
       <div class="left">
         <div class="item">
@@ -79,6 +79,32 @@
                 <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
               </mat-form-field>
               <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+            </div>
+            <h3>Token calculator</h3>
+            <div class="token_calculator">
+              <table cellspacing="0" style="width: 100%">
+                <tbody>
+                  <tr>
+                    <td>
+                      <mat-form-field>
+                        <input matInput [(ngModel)]="calculateValue" type="number" min="1">
+                        <span matPrefix>$&nbsp;</span>
+                      </mat-form-field>
+                    </td>
+                    <td style="text-align: center;">
+                      <mat-icon>swap_horiz</mat-icon>
+                    </td>
+                    <td>
+                      <mat-form-field>
+                        <input matInput disabled [value]="selectedPaymentType.rate*calculateValue" type="text">
+                      </mat-form-field>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+
+
             </div>
           </div>
           <div *ngIf="dashboard.clientInfoModel.isTokenSaleDisabled || dashboard.icoInfoModel.isTokenSaleDisabled">

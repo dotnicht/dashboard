@@ -25,11 +25,13 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public dashboard: Dashboard = new Dashboard();
 
     public selectedPaymentType: PaymentType = new PaymentType();
-
-    public qrLoaded: boolean = true;
-    public isCopied: boolean = false;
+    public calculateValue = 1;
+    public qrLoaded = true;
+    public isCopied = false;
 
     private subscription: any;
+
+
 
     /** dashboard ctor */
     constructor(
@@ -37,7 +39,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         private dashboardService: DashboardEndpoint,
         private clientInfoService: ClientInfoEndpointService,
         private authService: AuthService) {
-       
+
 
     }
     ngOnInit(): void {

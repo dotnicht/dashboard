@@ -8,6 +8,7 @@ import { ClientInfoEndpointService } from '../../services/client-info.service';
 import { CommonModule } from '@angular/common';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 import { ClipboardModule } from 'ngx-clipboard';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
     declarations: [
@@ -18,6 +19,7 @@ import { ClipboardModule } from 'ngx-clipboard';
         ClipboardModule,
         MaterialModule,
         RouterModule,
+        FormsModule,
 
         TranslateModule.forRoot({
             loader: {
