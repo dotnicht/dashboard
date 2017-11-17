@@ -11,11 +11,11 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class InvestorsActivationJob : JobBase
     {
-        private readonly IInvestorsService _investorsService;
+        private readonly IInvestorService _investorsService;
 
         public override TimeSpan Period => Options.Value.InvestorsActivationPeriod;
 
-        public InvestorsActivationJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInvestorsService investorsService)
+        public InvestorsActivationJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInvestorService investorsService)
             : base(loggerFactory, context, options)
         {
             _investorsService = investorsService ?? throw new ArgumentNullException(nameof(investorsService));

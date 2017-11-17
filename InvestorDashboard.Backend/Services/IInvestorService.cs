@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IInvestorsService : IDisposable
+    public interface IInvestorService : IDisposable
     {
         Task<int> LoadInvestorsData();
         Task<int> ActivateInvestors();

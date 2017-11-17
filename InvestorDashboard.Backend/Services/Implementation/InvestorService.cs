@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class InvestorsService : ContextService, IInvestorsService
+    internal class InvestorService : ContextService, IInvestorService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IExchangeRateService _exchangeRateService;
         private readonly ICsvService _csvService;
 
-        public InvestorsService(
+        public InvestorService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
             UserManager<ApplicationUser> userManager,

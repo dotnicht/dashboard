@@ -9,12 +9,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class TokenService : ContextService, ITokenService
     {
-        private readonly IAffiliatesService _affiliatesService;
+        private readonly IInternalUserService _internalUserService;
 
-        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory, IAffiliatesService affiliatesService)
+        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory, IInternalUserService internalUserService)
             : base(context, loggerFactory)
         {
-            _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
+            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
         }
 
         public async Task RefreshTokenBalance(string userId = null)
@@ -47,7 +47,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => x.Direction == CryptoTransactionDirection.Inbound)
                 .ToArray();
 
-            var affiliateBalance = await _affiliatesService.GetUserAffilicateBalance(userId);
+            var affiliateBalance = await _internalUserService.GetInternalUserBalance(userId);
             user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice) + affiliateBalance;
             user.BonusBalance = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
 

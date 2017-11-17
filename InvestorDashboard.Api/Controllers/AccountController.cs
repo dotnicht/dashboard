@@ -1,24 +1,16 @@
-
-
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
-using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Api.Controllers;
-using InvestorDashboard.Api.Models.AccountViewModels;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
-using Microsoft.AspNetCore.Authentication;
+using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.JsonPatch;
+using System;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -30,7 +22,6 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        //private readonly IEmailService _emailSender;
         private readonly ILogger _logger;
         private const string GetUserByIdActionName = "GetUserById";
         private const string GetRoleByIdActionName = "GetRoleById";
@@ -42,14 +33,12 @@ namespace InvestorDashboard.Api.Controllers
           UserManager<ApplicationUser> userManager,
           IAuthorizationService authorizationService,
           SignInManager<ApplicationUser> signInManager,
-          //IEmailService emailSender,
           ILogger<AccountController> logger,
           IOptions<IdentityOptions> identityOptions, 
           IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            //_emailSender = emailSender;
             _logger = logger;
             _identityOptions = identityOptions;
             _authorizationService = authorizationService;
@@ -112,60 +101,6 @@ namespace InvestorDashboard.Api.Controllers
 
             return BadRequest(ModelState);
         }
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null)
-        //{
-        //  // Ensure the user has gone through the username & password screen first
-        //  var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-        //  if (user == null)
-        //  {
-        //    throw new ApplicationException($"Unable to load two-factor authentication user.");
-        //  }
-
-        //  ViewData["ReturnUrl"] = returnUrl;
-
-        //  return View();
-        //}
-
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> LoginWithRecoveryCode(LoginWithRecoveryCodeViewModel model,
-        //  string returnUrl = null)
-        //{
-        //  if (!ModelState.IsValid)
-        //  {
-        //    return View(model);
-        //  }
-
-        //  var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-        //  if (user == null)
-        //  {
-        //    throw new ApplicationException($"Unable to load two-factor authentication user.");
-        //  }
-
-        //  var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
-
-        //  var result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
-
-        //  if (result.Succeeded)
-        //  {
-        //    _logger.LogInformation("User with ID {UserId} logged in with a recovery code.", user.Id);
-        //    return RedirectToLocal(returnUrl);
-        //  }
-        //  if (result.IsLockedOut)
-        //  {
-        //    _logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
-        //    return RedirectToAction(nameof(Lockout));
-        //  }
-        //  else
-        //  {
-        //    _logger.LogWarning("Invalid recovery code entered for user with ID {UserId}", user.Id);
-        //    ModelState.AddModelError(string.Empty, "Invalid recovery code entered.");
-        //    return View();
-        //  }
-        //}
 
         [HttpPost]
         [AllowAnonymous]
@@ -252,6 +187,7 @@ namespace InvestorDashboard.Api.Controllers
 
             return userVM;
         }
+
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)
@@ -259,9 +195,6 @@ namespace InvestorDashboard.Api.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
             }
         }
-
-
-
         #endregion
     }
 }

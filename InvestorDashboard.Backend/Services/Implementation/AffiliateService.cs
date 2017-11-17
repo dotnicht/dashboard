@@ -12,13 +12,13 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class AffiliatesService : ContextService, IAffiliatesService
+    internal class AffiliateService : ContextService, IAffiliateService
     {
         private readonly ICsvService _csvService;
         private readonly IOptions<TokenSettings> _options;
         private readonly IRestService _restService;
 
-        public AffiliatesService(
+        public AffiliateService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
             ICsvService csvService,
@@ -101,7 +101,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var tx in transactions)
             {
-                var clickId = tx.CryptoAddress.User.ClickId;
+                var clickId = Context.CryptoTransactions
+                    .Include(x => x.CryptoAddress)
+                    .ThenInclude(x => x.User)
+                    .SingleOrDefault(x => x.Id == tx.Id)
+                    ?.CryptoAddress
+                    ?.User
+                    ?.ClickId;
+
                 if (!string.IsNullOrWhiteSpace(clickId))
                 {
                     var amount = tx.Amount * tx.ExchangeRate;
@@ -112,7 +119,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);
-                    
+
                     if (response.Status == 1)
                     {
                         tx.IsNotified = true;

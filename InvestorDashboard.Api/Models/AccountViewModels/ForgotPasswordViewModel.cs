@@ -3,7 +3,7 @@ using InvestorDashboard.Api.Models;
 
 namespace InvestorDashboard.Api.Models.AccountViewModels
 {
-    public class ForgotPasswordViewModel : UserViewModel
+    public class ForgotPasswordViewModel
   {
         [Required]
         [EmailAddress]

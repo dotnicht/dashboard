@@ -2,10 +2,8 @@
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IAffiliatesService
+    public interface IAffiliateService
     {
-        Task SyncAffiliates();
-        Task<decimal> GetUserAffilicateBalance(string userId);
         Task NotifyTransactionsCreated();
     }
 }

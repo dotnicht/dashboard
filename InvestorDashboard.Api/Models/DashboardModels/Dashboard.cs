@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace InvestorDashboard.Api.Models.DashboardModels
 {
     public class Dashboard
     {
-        public ClientInfoModel clientInfoModel { get; set; }
-        public List<PaymentInfoModel> paymentInfoList { get; set; }
-        public IcoInfoModel icoInfoModel { get; set; }
+        public ClientInfoModel ClientInfoModel { get; set; }
+        public List<PaymentInfoModel> PaymentInfoList { get; set; }
+        public IcoInfoModel IcoInfoModel { get; set; }
     }
 }

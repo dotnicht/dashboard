@@ -68,9 +68,9 @@ namespace InvestorDashboard.Api.Controllers
             try
             {
                 user.UserName = user.Email;
-                user.IsEnabled = true;
 
                 ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
+
                 var result = await _userManager.CreateAsync(appUser, user.Password);
 
                 if (result.Succeeded)

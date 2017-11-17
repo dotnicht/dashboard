@@ -15,7 +15,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
-        private readonly IAffiliatesService _affiliatesService;
+        private readonly IAffiliateService _affiliatesService;
 
         public IOptions<CryptoSettings> Settings { get; }
         protected IOptions<TokenSettings> TokenSettings { get; }
@@ -30,7 +30,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IEmailService emailService,
-            IAffiliatesService affiliatesService,
+            IAffiliateService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)

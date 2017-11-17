@@ -13,11 +13,11 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class AffilicatesTransactionNotifyJob : JobBase
     {
-        private readonly IAffiliatesService _affiliatesService;
+        private readonly IAffiliateService _affiliatesService;
 
         public override TimeSpan Period => Options.Value.AffilicatesTransactionNotifyPeriod;
 
-        public AffilicatesTransactionNotifyJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliatesService affiliatesService)
+        public AffilicatesTransactionNotifyJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
             : base(loggerFactory, context, options)
         {
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));

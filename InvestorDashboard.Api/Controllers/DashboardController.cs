@@ -58,9 +58,70 @@ namespace InvestorDashboard.Api.Controllers
             return Ok(status);
         }
 
+
+        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location =ResponseCacheLocation.Client)]
+        [HttpGet("payment_status")]
+        public async Task<IActionResult> GetPaymentInfo()
+        {
+            if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
+            {
+                var paymentInfo = GetPaymentInfoModel();
+
+                return Ok(paymentInfo);
+            }
+
+            return Unauthorized();
+        }
+
+        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
+        [HttpGet("client_info")]
+        public async Task<IActionResult> GetClientInfo()
+        {
+            if (ApplicationUser != null)
+            {
+                var clientInfo = GetClientInfoModel();
+
+                return Ok(clientInfo);
+            }
+
+            return Unauthorized();
+        }
+
+        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
+        [HttpGet("full_info")]
+        public async Task<IActionResult> GetDashboard()
+        {
+            if (ApplicationUser != null)
+            {
+                var dashboard = new Dashboard();
+                dashboard.ClientInfoModel = GetClientInfoModel();
+                dashboard.PaymentInfoList = GetPaymentInfoModel();
+                dashboard.IcoInfoModel = GetIcoStatusModel();
+
+                return Ok(dashboard);
+            }
+
+            return Unauthorized();
+        }
+
+        private ClientInfoModel GetClientInfoModel()
+        {
+            var clientInfo = new ClientInfoModel
+            {
+                Balance = ApplicationUser.Balance,
+                BonusBalance = ApplicationUser.BonusBalance,
+                IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
+                Address = ApplicationUser.CryptoAddresses
+                            .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
+                            ?.Address
+            };
+            return clientInfo;
+        }
+
         private IcoInfoModel GetIcoStatusModel()
         {
-            var transactions = _context.CryptoTransactions.Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment);
+            var transactions = _context.CryptoTransactions
+                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment && x.CryptoAddress.Currency != Currency.DTT && x.CryptoAddress.Address != null);
 
             var status = new IcoInfoModel
             {
@@ -78,80 +139,23 @@ namespace InvestorDashboard.Api.Controllers
             return status;
         }
 
-        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location =ResponseCacheLocation.Client)]
-        [HttpGet("payment_status")]
-        public async Task<IActionResult> GetPaymentInfo()
-        {
-            if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
-            {
-                var paymentInfo = GetPaymentInfoModel();
-
-                return Ok(paymentInfo);
-            }
-
-            return Unauthorized();
-        }
-
         private List<PaymentInfoModel> GetPaymentInfoModel()
         {
             var paymentInfo = ApplicationUser.CryptoAddresses
-                     .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
-                     .ToList()
-                     .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, Settings = y.Settings })
-                     .Select(async x => new PaymentInfoModel
-                     {
-                         Currency = x.Address.Currency.ToString(),
-                         Address = x.Address.Address,
-                         Rate = await _exchangeRateService.GetExchangeRate(x.Address.Currency),
-                         Confirmations = x.Settings.Value.Confirmations
-                     })
-                     .Select(m => m.Result)
-                     .ToList();
+                .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
+                .ToList()
+                .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, Settings = y.Settings })
+                .Select(async x => new PaymentInfoModel
+                {
+                    Currency = x.Address.Currency.ToString(),
+                    Address = x.Address.Address,
+                    Rate = await _exchangeRateService.GetExchangeRate(x.Address.Currency),
+                    Confirmations = x.Settings.Value.Confirmations
+                })
+                .Select(m => m.Result)
+                .ToList();
 
             return paymentInfo;
-        }
-        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
-        [HttpGet("client_info")]
-        public async Task<IActionResult> GetClientInfo()
-        {
-            if (ApplicationUser != null)
-            {
-                var clientInfo = GetClientInfoModel();
-
-                return Ok(clientInfo);
-            }
-
-            return Unauthorized();
-        }
-        private ClientInfoModel GetClientInfoModel()
-        {
-            var clientInfo = new ClientInfoModel
-            {
-                Balance = ApplicationUser.Balance,
-                BonusBalance = ApplicationUser.BonusBalance,
-                IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
-                Address = ApplicationUser.CryptoAddresses
-                            .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
-                            ?.Address
-            };
-            return clientInfo;
-        }
-
-        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
-        [HttpGet("full_info")]
-        public async Task<IActionResult> GetDashboard()
-        {
-
-            if (ApplicationUser != null)
-            {
-                var dashboard = new Dashboard();
-                dashboard.clientInfoModel = GetClientInfoModel();
-                dashboard.paymentInfoList = GetPaymentInfoModel();
-                dashboard.icoInfoModel = GetIcoStatusModel();
-
-                return Ok(dashboard);
-            }
-            return Unauthorized();
         }
     }
 }
