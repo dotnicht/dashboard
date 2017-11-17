@@ -109,12 +109,11 @@ export class RegisterComponent implements OnInit {
                 this.registerRules.forEach(element => {
                     element.checked = false;
                 });
-                let registrationRequest = '';
 
                 if (this.cookieService.get('clickid') != '') {
-                    registrationRequest += `clickid=${this.cookieService.get('clickid')};`;
+                    this.registerForm.clickId = this.cookieService.get('clickid');
                 }
-                this.registerForm.registrationRequest = registrationRequest;
+
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {

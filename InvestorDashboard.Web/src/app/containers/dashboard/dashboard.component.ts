@@ -24,7 +24,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
     public dashboard: Dashboard = new Dashboard();
 
-    public selectedPaymentType: PaymentType = new PaymentType();
+    public selectedPaymentType: PaymentType;
     public calculateValue = 1;
     public qrLoaded = true;
     public isCopied = false;
@@ -69,7 +69,6 @@ export class DashboardComponent implements OnDestroy, OnInit {
             this.selectedPaymentType = payment;
             this.qrLoaded = false;
             this.isCopied = false;
-            this.selectedPaymentType = payment;
             //this.alertService.startLoadingMessage();
             setTimeout(() => {
                 this.qrLoaded = true;
@@ -95,7 +94,12 @@ export class DashboardComponent implements OnDestroy, OnInit {
                 });
 
                 if (db.paymentInfoList.length > 0) {
-                    this.changePayment(db.paymentInfoList[0]);
+                    if (this.selectedPaymentType == undefined) {
+                        this.changePayment(db.paymentInfoList[0]);
+                    } else {
+                        //this.changePayment(db.paymentInfoList[0])
+                    }
+
                 }
                 db.clientInfoModel = this.clientInfoService.clientInfo;
                 this.dashboard = db;

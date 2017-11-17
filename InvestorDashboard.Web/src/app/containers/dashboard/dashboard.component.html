@@ -72,40 +72,49 @@
         </div>
         <div class="right">
           <div *ngIf="!dashboard.clientInfoModel.isTokenSaleDisabled && !dashboard.icoInfoModel.isTokenSaleDisabled">
-            <p>Send your {{selectedPaymentType.currency}} to this address</p>
-            <div id="qrCode" class="qrCode"></div>
-            <div>
-              <mat-form-field>
-                <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
-              </mat-form-field>
-              <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+            <div *ngIf="selectedPaymentType">
+              <p>Send your {{selectedPaymentType.currency}} to this address</p>
+              <div class="qr_block">
+                <div id="qrCode" class="qrCode"></div>
+                <div>
+                  <mat-form-field>
+                    <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
+                  </mat-form-field>
+                  <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+                </div>
+              </div>
+
+              <div *ngIf="dashboard.paymentInfoList">
+                <h3>{{'dashboard.TokenCalc' | translate}}</h3>
+                <div class="token_calculator">
+                  <table cellspacing="0" style="width: 100%">
+                    <tbody>
+                      <tr>
+                        <td>
+                          <mat-form-field>
+                            <input matInput [(ngModel)]="calculateValue" type="number" min="1">
+                            <span matSuffix >{{selectedPaymentType.currency}}</span>
+                          </mat-form-field>
+                        </td>
+                        <td style="text-align: center;">
+                          <mat-icon>forward</mat-icon>
+                        </td>
+                        <td>
+                          <mat-form-field>
+                            <input matInput disabled [value]="selectedPaymentType.rate*calculateValue" type="text">
+                            <span matSuffix >DTT</span>
+                          </mat-form-field>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-            <h3>Token calculator</h3>
-            <div class="token_calculator">
-              <table cellspacing="0" style="width: 100%">
-                <tbody>
-                  <tr>
-                    <td>
-                      <mat-form-field>
-                        <input matInput [(ngModel)]="calculateValue" type="number" min="1">
-                        <span matPrefix>$&nbsp;</span>
-                      </mat-form-field>
-                    </td>
-                    <td style="text-align: center;">
-                      <mat-icon>swap_horiz</mat-icon>
-                    </td>
-                    <td>
-                      <mat-form-field>
-                        <input matInput disabled [value]="selectedPaymentType.rate*calculateValue" type="text">
-                      </mat-form-field>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-
-
+            <div *ngIf="!selectedPaymentType">
+              <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>
             </div>
+
           </div>
           <div *ngIf="dashboard.clientInfoModel.isTokenSaleDisabled || dashboard.icoInfoModel.isTokenSaleDisabled">
             <p>Sorry, payment is not available at this time.
@@ -121,21 +130,19 @@
   <mat-card class="fourth">
 
     <mat-card-content>
-      <div class="info">
-        <div class="info-container">
+      <div class="info" style="display: inline-table;">
+        <div class="info-container" *ngIf="selectedPaymentType">
           <div class="header">Payment method:
             <b>{{selectedPaymentType.currency}}</b>
           </div>
           <div class="header">How to use:</div>
           <div [innerHTML]="selectedPaymentType.faq"></div>
         </div>
-
       </div>
 
 
     </mat-card-content>
   </mat-card>
-  <!-- <mat-card class="fifth" >dashboard Component</mat-card> -->
 </div>
 <div>
 

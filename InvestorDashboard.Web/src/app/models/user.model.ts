@@ -52,7 +52,7 @@ export class UserRegister {
     email: string;
     password: string;
     confirmPassword: string;
-    registrationRequest: string;
+    clickId: string;
 
 
     constructor(email?: string, password?: string, confirmPassword?: string) {
