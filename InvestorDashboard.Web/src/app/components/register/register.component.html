@@ -1,5 +1,15 @@
 ﻿<div class="vertical-center-flex">
   <div class="login-container center-block">
+    <nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="'primary'">
+
+      <a mat-tab-link [routerLink]="['/login']" [active]="false" [disabled]="false">
+        {{'buttons.Login' | translate}}
+      </a>
+      <a mat-tab-link [active]="true" [disabled]="true">
+        {{'buttons.Register' | translate}}
+      </a>
+
+    </nav>
     <mat-card class="panel ">
       <mat-card-title class="panel-heading">
         <span class="glyphicon glyphicon-lock"></span> Registration
@@ -49,12 +59,7 @@
               <re-captcha (captchaExpired)="handleCaptchaExpired()" (captchaResponse)="handleCorrectCaptcha($event)" site_key="6LdmAjkUAAAAAJdKqXjRbDK586VXRNchP1e7sQlb"></re-captcha>
             </div>
 
-            <div style="display: flex;justify-content: space-between;align-items: center;">
-
-              <button type="button" [routerLink]="['/login']" mat-raised-button>
-                <span>{{'buttons.Login' | translate}}</span>
-              </button>
-              <span>{{'other.Or' | translate}}</span>
+            <div style="float: right;">
               <button type="submit" [disabled]="!f.form.valid || isLoading ||  !reCaptchaStatus" mat-raised-button color="primary">
                 <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
                 <span>{{'buttons.Register' | translate}}</span>

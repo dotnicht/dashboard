@@ -19,6 +19,24 @@ body {
   background-color: rgba(103, 206, 151, 0.53);
 }
 
+.mat-tab-group.mat-background-primary .mat-tab-header,
+.mat-tab-group.mat-background-primary .mat-tab-links,
+.mat-tab-nav-bar.mat-background-primary .mat-tab-header,
+.mat-tab-nav-bar.mat-background-primary .mat-tab-links {
+  background-color: $main-color;
+}
+
+.mat-tab-group.mat-background-primary .mat-tab-label,
+.mat-tab-group.mat-background-primary .mat-tab-link,
+.mat-tab-nav-bar.mat-background-primary .mat-tab-label,
+.mat-tab-nav-bar.mat-background-primary .mat-tab-link,
+.mat-tab-group.mat-background-primary .mat-tab-label.mat-tab-disabled,
+.mat-tab-group.mat-background-primary .mat-tab-link.mat-tab-disabled,
+.mat-tab-nav-bar.mat-background-primary .mat-tab-label.mat-tab-disabled,
+.mat-tab-nav-bar.mat-background-primary .mat-tab-link.mat-tab-disabled {
+  opacity: 1;
+}
+
 .mat-progress-spinner circle,
 .mat-spinner circle {
   stroke: $main-color;

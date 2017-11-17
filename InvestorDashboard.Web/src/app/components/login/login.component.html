@@ -1,65 +1,63 @@
 <div class="vertical-center-flex">
-    <div class="login-container center-block">
-        <mat-card class="panel ">
-            <mat-card-title class="panel-heading">
-                <span class="glyphicon glyphicon-lock"></span> Login
-                <button *ngIf="isModal" type="button" class="close pull-right" aria-label="Close" (click)="closeModal()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </mat-card-title>
-            <mat-card-content class="panel-body">
-                <div class="col-mat-12 ">
-                    <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login():''">
-                        <mat-form-field>
-                            <input matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
-                                required />
+  <div class="login-container center-block">
+    <nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="'primary'">
 
-                        </mat-form-field>
-                        <mat-form-field>
-                            <input matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
-                                #password="ngModel" required />
+      <a mat-tab-link [active]="true" [disabled]="true">
+        {{'buttons.Login' | translate}}
+      </a>
+      <a mat-tab-link [routerLink]="['/register']" [active]="false" [disabled]="false">
+        {{'buttons.Register' | translate}}
+      </a>
 
-                        </mat-form-field>
-                        <!-- <mat-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
+    </nav>
+    <mat-card class="panel ">
+      <mat-card-title class="panel-heading">
+        <span class="glyphicon glyphicon-lock"></span> Login
+        <button *ngIf="isModal" type="button" class="close pull-right" aria-label="Close" (click)="closeModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </mat-card-title>
+      <mat-card-content class="panel-body">
+        <div class="col-mat-12 ">
+          <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login():''">
+            <mat-form-field>
+              <input matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
+                required />
+
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
+                #password="ngModel" required />
+
+            </mat-form-field>
+            <!-- <mat-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
                             Remember me
                         </mat-checkbox> -->
-                        <div class="errors">
-                            <div *ngIf="email.invalid && (email.dirty || email.touched)">
-                                <p *ngIf="email.errors.required">Email is
-                                    <strong>required</strong>
-                                </p>
-                                <p *ngIf="email.errors.email">Email is not
-                                    <strong>valid</strong>
-                                </p>
-                            </div>
-                            <div *ngIf="password.invalid && (password.dirty || password.touched)">
-                                <p *ngIf="password.errors.required">Password is
-                                    <strong>required</strong>
-                                </p>
-                            </div>
-                            <p *ngIf="errorMsg">{{errorMsg}}</p>
-                        </div>
-                        <div style="display: flex;justify-content: space-between;align-items: center;">
-                            <button type="submit" mat-raised-button color="primary"  [disabled]="!f.form.valid || isLoading">
-                                <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
-                                {{isLoading ? ('buttons.LogginIn' | translate) : ('buttons.Login' | translate)}}
-                            </button>
-                            <span>{{'other.Or' | translate}}</span>
-                            <button type="button" [routerLink]="['/register']" mat-raised-button>
-                                <span>{{'buttons.Register' | translate}}</span>
-                            </button>
-                        </div>
-
-                        <!--<div *ngIf="!isModal" class="col-mat-12">
-                          <hr class="separator-hr" />
-                      </div>
-
-                      <div *ngIf="!isModal" class="col-mat-12 last-control-group">
-                          <span>Don't have an account?</span><a href="javascript:;" class="btn btn-link" (click)="signUp()">Sign Up</a>
-                      </div>-->
-                    </form>
-                </div>
-            </mat-card-content>
-        </mat-card>
-    </div>
+            <div class="errors">
+              <div *ngIf="email.invalid && (email.dirty || email.touched)">
+                <p *ngIf="email.errors.required">Email is
+                  <strong>required</strong>
+                </p>
+                <p *ngIf="email.errors.email">Email is not
+                  <strong>valid</strong>
+                </p>
+              </div>
+              <div *ngIf="password.invalid && (password.dirty || password.touched)">
+                <p *ngIf="password.errors.required">Password is
+                  <strong>required</strong>
+                </p>
+              </div>
+              <p *ngIf="errorMsg">{{errorMsg}}</p>
+            </div>
+            <div style="float: right;">
+              <button type="submit" mat-raised-button color="primary" [disabled]="!f.form.valid || isLoading">
+                <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
+                {{isLoading ? ('buttons.LogginIn' | translate) : ('buttons.Login' | translate)}}
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>
