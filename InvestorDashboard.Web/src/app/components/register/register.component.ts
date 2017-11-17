@@ -120,8 +120,9 @@ export class RegisterComponent implements OnInit {
                     setTimeout(() => {
                         // this.alertService.stopLoadingMessage();
 
-                        this.reset();
                         this.openEmailConfirmDialog();
+                        this.reset();
+
                         //this.alertService.showMessage('Register', `Successful registration!`, MessageSeverity.success);
                         //this.alertService.showMessage('Message Has Been Sent', `Link to complete registration has been sent to` + this.registerForm.email, MessageSeverity.info);
                     }, 1000);
@@ -210,9 +211,14 @@ export class ConfirmEmailDialogComponent {
 
     constructor(
         public dialogRef: MatDialogRef<ConfirmEmailDialogComponent>,
-
+        private router: Router,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.email = data;
+    }
+
+    close() {
+        this.dialogRef.close();
+        this.router.navigate(['/login']);
     }
 
 }
