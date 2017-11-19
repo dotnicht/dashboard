@@ -46,5 +46,11 @@ namespace InvestorDashboard.Console.Jobs
             addresses.Select((a, i) => a.IsDisabled = i != 0).ToArray();
             Context.SaveChanges();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            _cryptoServices.ToList().ForEach(x => x.Dispose());
+            base.Dispose(disposing);
+        }
     }
 }

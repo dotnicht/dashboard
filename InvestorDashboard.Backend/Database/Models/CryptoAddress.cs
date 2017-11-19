@@ -10,6 +10,7 @@ namespace InvestorDashboard.Backend.Database.Models
     {
         [Key]
         public Guid Id { get; set; }
+        public DateTime Created { get; set; }
         [Required]
         public string UserId { get; set; }
         [ForeignKey("UserId"), Required]
@@ -17,8 +18,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public Currency Currency { get; set; }
         public string PrivateKey { get; set; }
         public CryptoAddressType Type { get; set; }
-        public string Address { get; set; }
-        public DateTime Created { get; set; }
+        public string Address { get; set; }        
         public bool IsDisabled { get; set; }
         public virtual ICollection<CryptoTransaction> CryptoTransactions { get; set; }
     }

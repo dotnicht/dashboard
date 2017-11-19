@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IInternalUserService
+    public interface IInternalUserService : IDisposable
     {
         Task SyncInternalUsers();
         Task<decimal> GetInternalUserBalance(string userId);
