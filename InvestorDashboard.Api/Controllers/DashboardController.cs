@@ -94,7 +94,7 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     ClientInfoModel = GetClientInfoModel(),
                     PaymentInfoList = GetPaymentInfoModel(),
-                    IcoInfoModel = GetIcoStatusModel()
+                    IcoInfoModel = await GetIcoStatusModel()
                 };
 
                 return Ok(dashboard);
