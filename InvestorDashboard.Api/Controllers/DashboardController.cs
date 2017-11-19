@@ -18,7 +18,7 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Api.Controllers
 {
-    [Route("[controller]"), Authorize]
+    [Route("[controller]")]
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -49,8 +49,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
 
-        [HttpGet("ico_status")]
-        [ResponseCache(Duration = 30)]
+        [HttpGet("ico_status"), ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
             var status = GetIcoStatusModel();
@@ -58,9 +57,7 @@ namespace InvestorDashboard.Api.Controllers
             return Ok(status);
         }
 
-
-        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location =ResponseCacheLocation.Client)]
-        [HttpGet("payment_status")]
+        [Authorize, HttpGet("payment_status"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> GetPaymentInfo()
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
@@ -73,8 +70,7 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
-        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
-        [HttpGet("client_info")]
+        [Authorize, HttpGet("client_info"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> GetClientInfo()
         {
             if (ApplicationUser != null)
@@ -87,16 +83,17 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
-        [ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
-        [HttpGet("full_info")]
+        [Authorize, HttpGet("full_info"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> GetDashboard()
         {
             if (ApplicationUser != null)
             {
-                var dashboard = new Dashboard();
-                dashboard.ClientInfoModel = GetClientInfoModel();
-                dashboard.PaymentInfoList = GetPaymentInfoModel();
-                dashboard.IcoInfoModel = GetIcoStatusModel();
+                var dashboard = new Dashboard
+                {
+                    ClientInfoModel = GetClientInfoModel(),
+                    PaymentInfoList = GetPaymentInfoModel(),
+                    IcoInfoModel = GetIcoStatusModel()
+                };
 
                 return Ok(dashboard);
             }
@@ -115,6 +112,7 @@ namespace InvestorDashboard.Api.Controllers
                             .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
                             ?.Address
             };
+
             return clientInfo;
         }
 
@@ -126,7 +124,7 @@ namespace InvestorDashboard.Api.Controllers
             var status = new IcoInfoModel
             {
                 TotalCoins = _tokenSettings.Value.TotalCoins,
-                TotalCoinsBought = _context.Users.Sum(x => x.Balance),
+                TotalCoinsBought = transactions.Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice),
                 TotalInvestors = transactions
                    .Select(x => x.CryptoAddress.UserId)
                    .Distinct()
