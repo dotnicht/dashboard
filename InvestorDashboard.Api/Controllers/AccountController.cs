@@ -60,7 +60,8 @@ namespace InvestorDashboard.Api.Controllers
                 if (appUser == null)
                     return NotFound(this.User.Identity.Name);
 
-                UserViewModel userVM = await GetUserViewModelHelper(appUser);
+                var userVM = _mapper.Map<UserViewModel>(appUser);
+                userVM.Roles = new string[0];
 
                 if (userVM != null)
                     return Ok(userVM);
@@ -167,7 +168,12 @@ namespace InvestorDashboard.Api.Controllers
             {
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
             }
-            AddErrors(result);
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
             return View();
         }
 
@@ -177,24 +183,5 @@ namespace InvestorDashboard.Api.Controllers
         {
             return View();
         }
-
-        #region Helpers
-        private async Task<UserViewModel> GetUserViewModelHelper(ApplicationUser user)
-        {
-
-            var userVM = Mapper.Map<UserViewModel>(user);
-            userVM.Roles = new string[0];
-
-            return userVM;
-        }
-
-        private void AddErrors(IdentityResult result)
-        {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
-        }
-        #endregion
     }
 }

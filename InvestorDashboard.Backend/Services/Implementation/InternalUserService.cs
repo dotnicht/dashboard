@@ -76,12 +76,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            return Context.Users
-                    .Include(x => x.CryptoAddresses)
-                    .ThenInclude(x => x.CryptoTransactions)
-                    .SingleOrDefault(x => x.Id == userId)
-                    ?.CryptoAddresses
-                    .SingleOrDefault(x => !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT)
+            var address = await Context.Users
+                .Include(x => x.CryptoAddresses)
+                .ThenInclude(x => x.CryptoTransactions)
+                .SingleOrDefault(x => x.Id == userId)
+                ?.CryptoAddresses
+                .ToAsyncEnumerable()
+                .SingleOrDefault(x => !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT);
+
+            return address
                     ?.CryptoTransactions
                     .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.ExternalId != null)
                     .Sum(x => x.Amount)
