@@ -93,6 +93,7 @@ namespace InvestorDashboard.Console
             {
                 builder.AddConsole();
                 builder.SetMinimumLevel(LogLevel.Warning);
+                builder.AddNLog();
             });
 
             /*
