@@ -28,7 +28,7 @@ namespace InvestorDashboard.Api
                 .ForMember(d => d.Value, map => map.MapFrom(s => s.ClaimValue))
                 .ReverseMap();
 
-            CreateMap<IcoInfoModel, DashboardHistoryItem>();
+            CreateMap<DashboardHistoryItem, IcoInfoModel>();
         }
     }
 }

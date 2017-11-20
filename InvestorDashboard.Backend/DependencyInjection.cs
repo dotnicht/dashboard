@@ -23,6 +23,7 @@ namespace InvestorDashboard.Backend
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IExchangeRateService, ExchangeRateService>();
             services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IDashboardHistoryService, DashboardHistoryService>();
 
             services.AddTransient<IBitcoinService, BitcoinService>();
             services.AddTransient<IEthereumService, EthereumService>();
