@@ -25,5 +25,11 @@ namespace InvestorDashboard.Console.Jobs
         {
             await _internalUserService.SyncInternalUsers();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            _internalUserService.Dispose();
+            base.Dispose(disposing);
+        }
     }
 }

@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using InvestorDashboard.Backend.ConfigurationSections;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
-using InvestorDashboard.Backend.Services;
+using System;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {
@@ -26,6 +24,12 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _affiliatesService.NotifyTransactionsCreated();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _affiliatesService.Dispose();
+            base.Dispose(disposing);
         }
     }
 }

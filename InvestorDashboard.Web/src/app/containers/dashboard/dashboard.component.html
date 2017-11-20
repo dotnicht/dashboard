@@ -18,20 +18,10 @@
   <mat-card class="second">
     <mat-card-content>
       <div class="right">
-        <div style="margin-top: 0;margin-bottom: 26px;font-weight: bold; font-size: 18px;"> PRE-ORDER
+        <div style="margin-top: 0;margin-bottom: 85px;font-weight: bold; font-size: 18px;"> PRE-SALE
           <br/> IS IN PROGRESS </div>
         <p style="font-size: 20px;">Bonus 30% </p>
-        <!-- <div style="margin-bottom: 25px;">
-          {{'clientInfo.IcoHasStarted' | translate}}
-        </div>
-        <div style="margin-bottom: 30px;">
-          <p>{{'clientInfo.TotalInvestments' | translate}} &#8212; {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p>
-          {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT
-        </div>
-        <div>
-          <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
-          </mat-progress-bar>
-        </div> -->
+
       </div>
       <div class="left">
         <div class="item">
@@ -46,10 +36,21 @@
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
-        <div class="item">
+        <!-- <div class="item">
           <img class="color-block" src="assets/img/coin.svg">
           <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
+        </div> -->
+        <!-- <div style="margin-bottom: 25px;">
+          {{'clientInfo.IcoHasStarted' | translate}}
+        </div> -->
+        <div style="margin-top: 20px;">
+          <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p>
+          <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT -->
+        </div>
+        <div>
+          <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
+          </mat-progress-bar>
         </div>
       </div>
 
@@ -84,7 +85,7 @@
                 </div>
               </div>
 
-              <div *ngIf="dashboard.paymentInfoList">
+              <!-- <div *ngIf="dashboard.paymentInfoList">
                 <h3>{{'dashboard.TokenCalc' | translate}}</h3>
                 <div class="token_calculator">
                   <table cellspacing="0" style="width: 100%">
@@ -109,7 +110,7 @@
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </div> -->
             </div>
             <div *ngIf="!selectedPaymentType">
               <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>

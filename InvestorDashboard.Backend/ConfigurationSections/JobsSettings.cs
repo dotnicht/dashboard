@@ -7,6 +7,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public TimeSpan RefreshExchangeRatesPeriod { get; set; }
         public TimeSpan RefreshTokenBalancePeriod { get; set; }
         public TimeSpan RefreshTransactionsPeriod { get; set; }
+        public TimeSpan RefreshDashboardHistoryPeriod { get; set; }
         public TimeSpan TransferCryptoAssetsPeriod { get; set; }
         public TimeSpan InvestorsActivationPeriod { get; set; }
         public TimeSpan InvestorsLoadPeriod { get; set; }

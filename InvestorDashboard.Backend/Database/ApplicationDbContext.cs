@@ -1,9 +1,11 @@
-using System;
-using System.Linq;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace InvestorDashboard.Backend.Database
 {
@@ -14,6 +16,7 @@ namespace InvestorDashboard.Backend.Database
         public DbSet<CryptoTransaction> CryptoTransactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
+        public DbSet<DashboardHistoryItem> DashboardHistoryItems { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -38,15 +41,27 @@ namespace InvestorDashboard.Backend.Database
                 .HasIndex(x => x.ExternalId)
                 .IsUnique();
 
-            foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(decimal)))
+            builder.Entity<DashboardHistoryItem>()
+                .HasIndex(x => x.Created)
+                .IsUnique();
+
+            foreach (var property in GetProperties(builder, p => p.ClrType == typeof(decimal)))
             {
                 property.Relational().ColumnType = "decimal(18, 6)";
             }
 
-            foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()).Where(p => p.ClrType == typeof(DateTime) && p.Name == "Created"))
+            foreach (var property in GetProperties(builder, p => p.ClrType == typeof(DateTime) && p.Name == "Created"))
             {
                 property.Relational().DefaultValueSql = "GETUTCDATE()";
             }
+        }
+
+        private IEnumerable<IMutableProperty> GetProperties(ModelBuilder builder, Func<IMutableProperty, bool> predicate)
+        {
+            return builder.Model
+                .GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(predicate);
         }
     }
 }

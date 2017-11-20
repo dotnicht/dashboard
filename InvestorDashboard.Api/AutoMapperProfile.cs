@@ -1,6 +1,7 @@
 using AutoMapper;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
+using InvestorDashboard.Api.Models.DashboardModels;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -26,6 +27,8 @@ namespace InvestorDashboard.Api
                 .ForMember(d => d.Type, map => map.MapFrom(s => s.ClaimType))
                 .ForMember(d => d.Value, map => map.MapFrom(s => s.ClaimValue))
                 .ReverseMap();
+
+            CreateMap<DashboardHistoryItem, IcoInfoModel>();
         }
     }
 }

@@ -1,10 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using AspNet.Security.OAuth.Validation;
+﻿using AspNet.Security.OAuth.Validation;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
+using InvestorDashboard.Api.Services;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -12,19 +9,18 @@ using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SpaServices.Webpack;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
-using InvestorDashboard.Api.Services;
-using Microsoft.AspNetCore.Rewrite;
-using Microsoft.AspNetCore.Mvc;
-using NLog.Extensions.Logging;
-using NLog.Web;
-
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api
 {
@@ -39,6 +35,7 @@ namespace InvestorDashboard.Api
                 .AddJsonFile("appsettings.json", false, true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
                 .AddEnvironmentVariables();
+
             Configuration = builder.Build();
         }
 
@@ -57,12 +54,13 @@ namespace InvestorDashboard.Api
                 // Note: use the generic overload if you need
                 // to replace the default OpenIddict entities.
                 options.UseOpenIddict();
-            }
-            );
+            });
+
             services.Configure<MvcOptions>(options =>
             {
                 options.Filters.Add(new RequireHttpsAttribute());
             });
+
             // add identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
               .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -105,7 +103,7 @@ namespace InvestorDashboard.Api
                 options.EnableAuthorizationEndpoint("/connect/authorize")
                   .EnableLogoutEndpoint("/connect/logout")
                   .EnableTokenEndpoint("/connect/token")
-                                    .EnableUserinfoEndpoint("/userinfo");
+                  .EnableUserinfoEndpoint("/userinfo");
 
                 // Note: the Mvc.Client sample only uses the code flow and the password flow, but you
                 // can enable the other flows if you need to support implicit or client credentials.
@@ -126,23 +124,11 @@ namespace InvestorDashboard.Api
                 // This allows flowing large OpenID Connect requests even when using
                 // an external authentication provider like Google, Facebook or Twitter.
                 options.EnableRequestCaching();
-
-                // During development, you can disable the HTTPS requirement.
-                //options.DisableHttpsRequirement();
-
-                // Note: to use JWT access tokens instead of the default
-                // encrypted format, the following lines are required:
-                //
-                //options.UseJsonWebTokens();
-                //options.AddEphemeralSigningKey();
             });
 
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = OAuthValidationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme;
-            }
-              ).AddOAuthValidation();
+            services
+                .AddAuthentication(options => options.DefaultAuthenticateScheme = options.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme)
+                .AddOAuthValidation();
 
             services.AddMvc();
             services.AddNodeServices();
@@ -179,6 +165,7 @@ namespace InvestorDashboard.Api
                      name: "default",
                      template: "{controller=Home}/{action=Index}/{id?}");
             });
+
             // Seed the database with the sample applications.
             // Note: in a real world application, this step should be part of a setup script.
             InitializeAsync(app.ApplicationServices, CancellationToken.None).GetAwaiter().GetResult();
