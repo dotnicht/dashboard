@@ -18,7 +18,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<TokenSettings> _options;
         private readonly IMapper _mapper;
 
-        public DashboardHistoryService(ApplicationDbContext context, ILoggerFactory loggerFactory, IEnumerable<ICryptoService> cryptoServices, IOptions<TokenSettings> options, IMapper mapper) 
+        public DashboardHistoryService(ApplicationDbContext context, ILoggerFactory loggerFactory, IEnumerable<ICryptoService> cryptoServices, IOptions<TokenSettings> options, IMapper mapper)
             : base(context, loggerFactory)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
@@ -54,7 +54,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await RefreshHistory();
             }
 
-            return Context.DashboardHistoryItems.Single(x => x.Created == Context.DashboardHistoryItems.Max(y => y.Created));
+            return Context.DashboardHistoryItems.OrderByDescending(x => x.Created).FirstOrDefault()
+                ?? throw new InvalidOperationException($"Failed to populate dashboard history.");
         }
     }
 }
