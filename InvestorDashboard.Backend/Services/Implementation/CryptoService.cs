@@ -87,8 +87,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var data = new Dictionary<string, object> { { addressKey, address } };
                 foreach (var transaction in await policy.Execute(() =>  GetTransactionsFromBlockchain(address.Address), data))
                 {
+                    Logger.LogInformation($"Received { Settings.Value.Currency } transaction list for address { address }.");
+
                     if (!hashes.Contains(transaction.Hash))
                     {
+                        Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
+
                         transaction.CryptoAddress = address;
                         transaction.Direction = CryptoTransactionDirection.Inbound; // TODO: determine transaction type.
                         transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
@@ -99,6 +103,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         await Context.SaveChangesAsync();
 
                         // TODO: send transaction confirmed email.
+                        // TODO: send transaction received bot message.
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
