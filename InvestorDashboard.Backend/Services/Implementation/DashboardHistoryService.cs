@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Telegram.Bot;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -39,7 +40,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             item.TotalCoinsBought = transactions.Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice);
             item.TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate);
-            item.TotalInvestors = transactions.Select(x => x.CryptoAddress.UserId)
+            item.TotalInvestors = transactions
+                .Select(x => x.CryptoAddress.UserId)
+                .Distinct()
+                .Count();
+
+            var nonInternalTransactions = transactions
+                .Where(x => x.ExternalId == null && x.CryptoAddress.Currency != Currency.DTT && x.CryptoAddress.User.ExternalId == null);
+
+            item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
+            item.TotalNonInternalInvestors = nonInternalTransactions
+                .Select(x => x.CryptoAddress.UserId)
                 .Distinct()
                 .Count();
 

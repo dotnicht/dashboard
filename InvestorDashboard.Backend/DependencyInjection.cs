@@ -20,6 +20,7 @@ namespace InvestorDashboard.Backend
             services.AddTransient<IAffiliateService, AffiliateService>();
             services.AddTransient<IInternalUserService, InternalUserService>();
             services.AddTransient<IKeyVaultService, KeyVaultService>();
+            services.AddTransient<ITelegramService, TelegramService>();
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IExchangeRateService, ExchangeRateService>();
             services.AddTransient<ITokenService, TokenService>();

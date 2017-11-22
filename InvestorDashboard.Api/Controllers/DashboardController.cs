@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using InvestorDashboard.Api.Models;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -23,6 +24,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IExchangeRateService _exchangeRateService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
+        private readonly ITelegramService _telegramService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IMapper _mapper;
@@ -36,6 +38,7 @@ namespace InvestorDashboard.Api.Controllers
             ApplicationDbContext context,
             IExchangeRateService exchangeRateService,
             IDashboardHistoryService dashboardHistoryService,
+            ITelegramService telegramService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IEnumerable<ICryptoService> cryptoServices,
@@ -44,6 +47,7 @@ namespace InvestorDashboard.Api.Controllers
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            _telegramService = telegramService ?? throw new ArgumentNullException(nameof(telegramService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -56,6 +60,17 @@ namespace InvestorDashboard.Api.Controllers
         {
             var status = await GetIcoStatusModel();
             return Ok(status);
+        }
+
+        [HttpPost("webhook")]
+        public async Task<IActionResult> PostTelegramBotData(TelegramBotWebhookViewModel telegramBotWebhookViewModel)
+        {
+            if (telegramBotWebhookViewModel != null && telegramBotWebhookViewModel.Message != null)
+            {
+                await _telegramService.HandleIncomingMessage(telegramBotWebhookViewModel.Message.From?.Username, telegramBotWebhookViewModel.Message.Text);
+            }
+
+            return Ok();
         }
 
         [Authorize, HttpGet("payment_status"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]

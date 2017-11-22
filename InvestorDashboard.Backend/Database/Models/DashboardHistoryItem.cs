@@ -15,5 +15,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public decimal TokenPrice { get; set; }
         public decimal BonusPercentage { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
+        public int TotalNonInternalInvestors { get; set; }
+        public decimal TotalNonInternalUsdInvested { get; set; }
     }
 }
