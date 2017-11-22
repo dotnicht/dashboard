@@ -48,6 +48,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(message));
             }
 
+            _logger.LogInformation($"Handle incoming message from user { user }. Text: { message }");
+
             if (string.Compare(user, "@McKlavishnikov", true) == 0)
             {
                 await SendMessage("Женя, отстань.");
