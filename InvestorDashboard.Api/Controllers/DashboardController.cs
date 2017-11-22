@@ -67,7 +67,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [HttpPost("webhook")]
-        public async Task<IActionResult> PostTelegramBotData(TelegramBotWebhookViewModel telegramBotWebhookViewModel)
+        public async Task<IActionResult> PostTelegramBotData([FromBody]TelegramBotWebhookViewModel telegramBotWebhookViewModel)
         {
             if (telegramBotWebhookViewModel != null && telegramBotWebhookViewModel.Message != null)
             {
