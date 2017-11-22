@@ -8,11 +8,13 @@ using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api.Controllers
@@ -135,8 +137,8 @@ namespace InvestorDashboard.Api.Controllers
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-                var callbackUrl = Url.ResetPasswordCallbackLink(user.Email, code, Request.Scheme);
+                code = System.Web.HttpUtility.UrlEncode(code);
+                var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/account/reset_password?email={System.Web.HttpUtility.UrlEncode(user.Email)}&code={code}";
 
 
                 await _emailService.SendEmailAsync(model.Email, "Reset Password",
@@ -153,13 +155,19 @@ namespace InvestorDashboard.Api.Controllers
             });
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
 
+        [HttpGet("reset_password"), Produces("application/json")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(string email, string code)
+        {
+            var options = new CookieOptions();
+            options.Expires = DateTimeOffset.Now.AddDays(1);
+
+            Response.Cookies.Append("reset_token", code, options);
+            Response.Cookies.Append("reset_email", email, options);
+
+            return RedirectPermanent("/reset_password");
+        }
 
         [HttpPost("reset_password"), Produces("application/json")]
         [AllowAnonymous]
@@ -167,7 +175,19 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                var errors = string.Empty;
+                foreach (var i in ModelState.Values)
+                {
+                    foreach (var e in i.Errors)
+                    {
+                        errors += $"{e.ErrorMessage}";
+                    }
+                }
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = errors
+                });
             }
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
@@ -177,15 +197,30 @@ namespace InvestorDashboard.Api.Controllers
                     Error = OpenIdConnectConstants.Errors.ServerError
                 });
             }
-            //var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            //if (result.Succeeded)
-            //{
-            //    return RedirectPermanent($"/reset_password?code={model.Code}");
-            //}
-            return BadRequest(new OpenIdConnectResponse
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (result.Succeeded)
             {
-                Error = OpenIdConnectConstants.Errors.ServerError
-            });
+                Response.Cookies.Delete("reset_token");
+                Response.Cookies.Delete("reset_email");
+
+                return Ok();
+            }
+            else
+            {
+                var errors = string.Empty;
+
+                foreach (var e in result.Errors)
+                {
+                    errors += $"{e.Description}";
+                }
+
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = errors
+                });
+            }
+
         }
 
         [HttpPost("change_password"), Produces("application/json")]

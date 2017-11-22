@@ -15,8 +15,8 @@ import { BaseComponent } from '../../../base.component';
 /** restore-password component*/
 export class ForgotPasswordComponent extends BaseComponent implements OnInit {
 
-    resetPasswordDialogRef: MatDialogRef<ResetPasswordDialogComponent> | null;
-    resetPassword: ForgotPassWord = new ForgotPassWord();
+    forgotPasswordDialogRef: MatDialogRef<ForgotPasswordDialogComponent> | null;
+    forgotPassword: ForgotPassWord = new ForgotPassWord();
 
     /** restore-password ctor */
     constructor(private accountEndpoint: AccountEndpoint,
@@ -38,26 +38,26 @@ export class ForgotPasswordComponent extends BaseComponent implements OnInit {
     /** Called by Angular after restore-password component initialized */
     ngOnInit(): void { }
 
-    openResetPasswordDialog() {
+    openForgotPasswordDialog() {
         let config = {
             disableClose: true,
             hasBackdrop: false,
             panelClass: 'email-confirm-dialog',
-            data: this.resetPassword.email
+            data: this.forgotPassword.email
         };
 
-        this.resetPasswordDialogRef = this.dialog.open(ResetPasswordDialogComponent, config);
+        this.forgotPasswordDialogRef = this.dialog.open(ForgotPasswordDialogComponent, config);
     }
 
     OnSubmit() {
         this.isLoading = true;
         this.errorMsg = '';
-        this.accountEndpoint.forgotPasswordEndpoint(this.resetPassword).subscribe(
+        this.accountEndpoint.forgotPasswordEndpoint(this.forgotPassword).subscribe(
             resp => {
                 setTimeout(() => {
                     this.isLoading = false;
                     this.errorMsg = '';
-                    this.openResetPasswordDialog();
+                    this.openForgotPasswordDialog();
                 }, 2000);
             },
             error => {
@@ -77,21 +77,19 @@ export class ForgotPasswordComponent extends BaseComponent implements OnInit {
     }
 }
 @Component({
-    selector: 'app-reset-password-dialog',
+    selector: 'app-forgot-password-dialog',
     template: `
-    <p>
-    Please check your email to reset your password.
-        <b>{{email}}</b>
-    </p>
-    <button style="float: right" (click)="close()" mat-raised-button>
+    <h2 mat-dialog-title><mat-icon>announcement</mat-icon> Please check your email to reset your password.
+    <b>{{email}}</b></h2>
+    <button style="float: right" (click)="close()" mat-raised-button tabindex="1">
         <span>{{'buttons.Close' | translate}}</span>
     </button>
     `
 })
-export class ResetPasswordDialogComponent {
+export class ForgotPasswordDialogComponent {
 
     email: string;
-    constructor(public dialogRef: MatDialogRef<ResetPasswordDialogComponent>,
+    constructor(public dialogRef: MatDialogRef<ForgotPasswordDialogComponent>,
         private router: Router,
         @Inject(MAT_DIALOG_DATA) public data: any) {
 

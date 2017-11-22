@@ -20,6 +20,12 @@ export class ChangePassWord {
     public password: string;
     public confirmPassword: string;
 }
+export class ResetPassword {
+    public password: string;
+    public confirmPassword: string;
+    public code: string;
+    public email: string;
+}
 export class ForgotPassWord {
     public email: string;
 }

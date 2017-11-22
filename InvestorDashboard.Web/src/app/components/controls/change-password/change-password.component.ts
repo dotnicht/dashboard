@@ -72,7 +72,7 @@ export class ChangePasswordComponent extends BaseComponent {
     }
 }
 @Component({
-    selector: 'app-reset-password-dialog',
+    selector: 'app-change-password-dialog',
     template: `
 
     <h2 mat-dialog-title><mat-icon>check_circle</mat-icon>Password successfully changed</h2>

@@ -17,8 +17,11 @@ import { AppTranslationService, TranslateLanguageLoader } from '../../services/a
 import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
 import { ReCaptchaModule } from 'angular2-recaptcha';
-import { ForgotPasswordComponent, ResetPasswordDialogComponent } from '../../components/controls/forgot-password/forgot.password.component';
-import { ResetPasswordComponent } from '../../components/controls/reset-password/reset-password.component';
+import {
+  ForgotPasswordComponent,
+  ForgotPasswordDialogComponent
+} from '../../components/controls/forgot-password/forgot.password.component';
+import { ResetPasswordComponent, ResetPasswordDialogComponent } from '../../components/controls/reset-password/reset-password.component';
 import { SharedModule } from '../../app.shared.module';
 
 
@@ -26,13 +29,13 @@ import { SharedModule } from '../../app.shared.module';
   declarations: [
     LoginComponent,
     RegisterComponent,
-    // EqualValidator,
     RegisterRulesDialogComponent,
     ConfirmEmailDialogComponent,
     ConfirmedEmailComponent,
     ForgotPasswordComponent,
-    ResetPasswordDialogComponent,
-    ResetPasswordComponent
+    ForgotPasswordDialogComponent,
+    ResetPasswordComponent,
+    ResetPasswordDialogComponent
   ],
   imports: [
     CommonModule,
@@ -59,6 +62,7 @@ import { SharedModule } from '../../app.shared.module';
   entryComponents: [
     RegisterRulesDialogComponent,
     ConfirmEmailDialogComponent,
+    ForgotPasswordDialogComponent,
     ResetPasswordDialogComponent
   ],
   exports: [

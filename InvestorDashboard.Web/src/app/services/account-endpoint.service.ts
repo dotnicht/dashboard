@@ -7,7 +7,7 @@ import { ConfigurationService } from './configuration.service';
 import { BaseService } from './base.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { ForgotPassWord, ChangePassWord } from '../models/user-edit.model';
+import { ForgotPassWord, ChangePassWord, ResetPassword } from '../models/user-edit.model';
 
 
 @Injectable()
@@ -18,6 +18,7 @@ export class AccountEndpoint extends BaseService {
     private readonly _currentUserPreferencesUrl: string = environment.host + '/account/users/me/preferences';
     private readonly _forgotPasswordUrl: string = environment.host + '/account/forgot_password';
     private readonly _changePasswordUrl: string = environment.host + '/account/change_password';
+    private readonly _resetPasswordUrl: string = environment.host + '/account/reset_password';
 
 
     get usersUrl() { return this._usersUrl; }
@@ -50,6 +51,18 @@ export class AccountEndpoint extends BaseService {
             })
             .catch(error => {
                 return this.handleError(error, () => this.changePasswordEndpoint(form));
+
+            });
+        return res;
+    }
+    resetPasswordEndpoint(form: ResetPassword): Observable<Response> {
+        console.log(form);
+        const res = this.http.post(this._resetPasswordUrl, form, this.authService.getAuthHeader())
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.resetPasswordEndpoint(form));
 
             });
         return res;

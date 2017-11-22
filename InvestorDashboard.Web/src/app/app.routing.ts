@@ -31,7 +31,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'forgot_password', component: ForgotPasswordComponent },
     { path: 'email_confirmed', component: ConfirmedEmailComponent },
-    { path: 'reset_password', component: ResetPasswordComponent },
+    { path: 'reset_password', component: ResetPasswordComponent,  },
     {
         path: 'settings', canActivate: [AuthGuard],
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'
