@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -50,13 +51,25 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             _logger.LogInformation($"Handle incoming message from user { user }. Text: { message }");
 
-            if (string.Compare(user, "@McKlavishnikov", true) == 0)
+            if (string.Compare(user, "McKlavishnikov", true) == 0)
             {
                 await SendMessage("Женя, отстань.");
             }
-            else if (string.Compare(message.Trim(), "ping", true) == 0)
+
+            var msg = message.Trim();
+            var commands = new Dictionary<string, Action>
             {
-                await SendMessage("pong");
+                { "/ping", async () => await SendMessage("pong") },
+                { "/status", async () => await SendDashboardHistoryMessage() }
+            };
+
+            foreach (var item in commands)
+            {
+                if (string.Compare(msg, item.Key, true) == 0)
+                {
+                    item.Value();
+                    break;
+                }
             }
         }
     }
