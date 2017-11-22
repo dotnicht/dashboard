@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class AffilicatesTransactionNotifyJob : JobBase
+    public class NotifyAffilicatesTransactionsJob : JobBase
     {
         private readonly IAffiliateService _affiliatesService;
 
-        public override TimeSpan Period => Options.Value.AffilicatesTransactionNotifyPeriod;
+        public override TimeSpan Period => Options.Value.NotifyAffilicatesTransactionsPeriod;
 
-        public AffilicatesTransactionNotifyJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
+        public NotifyAffilicatesTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
             : base(loggerFactory, context, options)
         {
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));

@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using InvestorDashboard.Api.Models;
+using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -23,9 +25,11 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IExchangeRateService _exchangeRateService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
+        private readonly ITelegramService _telegramService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IMapper _mapper;
+        private readonly ILogger<DashboardController> _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
         private ApplicationUser ApplicationUser => _context.Users
@@ -36,17 +40,21 @@ namespace InvestorDashboard.Api.Controllers
             ApplicationDbContext context,
             IExchangeRateService exchangeRateService,
             IDashboardHistoryService dashboardHistoryService,
+            ITelegramService telegramService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IEnumerable<ICryptoService> cryptoServices,
-            IMapper mapper)
+            IMapper mapper, 
+            ILogger<DashboardController> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            _telegramService = telegramService ?? throw new ArgumentNullException(nameof(telegramService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
@@ -56,6 +64,22 @@ namespace InvestorDashboard.Api.Controllers
         {
             var status = await GetIcoStatusModel();
             return Ok(status);
+        }
+
+        [HttpPost("webhook")]
+        public async Task<IActionResult> PostTelegramBotData([FromBody]TelegramBotWebhookViewModel telegramBotWebhookViewModel)
+        {
+            if (telegramBotWebhookViewModel != null && telegramBotWebhookViewModel.Message != null)
+            {
+                _logger.LogInformation($"Incoming webhook message. ID: { telegramBotWebhookViewModel.Update_id }.");
+                await _telegramService.HandleIncomingMessage(telegramBotWebhookViewModel.Message.From?.Username, telegramBotWebhookViewModel.Message.Text);
+            }
+            else 
+            {
+                _logger.LogError($"Invalid incoming webhook message.");
+            }
+
+            return Ok();
         }
 
         [Authorize, HttpGet("payment_status"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
