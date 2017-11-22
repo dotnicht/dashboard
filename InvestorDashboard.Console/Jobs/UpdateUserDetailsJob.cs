@@ -35,16 +35,20 @@ namespace InvestorDashboard.Console.Jobs
 
             foreach (var user in users)
             {
-                Disable(user.CryptoAddresses.Where(x => x.Currency == Currency.BTC).ToArray());
-                Disable(user.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment).ToArray());
-                Disable(user.CryptoAddresses.Where(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract).ToArray());
+                await Disable(user.CryptoAddresses, x => x.Currency == Currency.BTC);
+                await Disable(user.CryptoAddresses, x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment);
+                await Disable(user.CryptoAddresses, x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract);
             }
         }
 
-        private void Disable(CryptoAddress[] addresses)
+        private async Task Disable(IEnumerable<CryptoAddress> addresses, Func<CryptoAddress, bool> predicate)
         {
-            addresses.Select((a, i) => a.IsDisabled = i != 0).ToArray();
-            Context.SaveChanges();
+            addresses
+                .Where(predicate)
+                .Select((a, i) => a.IsDisabled = i != 0)
+                .ToArray();
+
+            await Context.SaveChangesAsync();
         }
 
         protected override void Dispose(bool disposing)

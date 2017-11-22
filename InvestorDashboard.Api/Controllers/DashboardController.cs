@@ -54,8 +54,7 @@ namespace InvestorDashboard.Api.Controllers
         [HttpGet("ico_status"), ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
-            var status = GetIcoStatusModel();
-
+            var status = await GetIcoStatusModel();
             return Ok(status);
         }
 
@@ -64,8 +63,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
             {
-                var paymentInfo = GetPaymentInfoModel();
-
+                var paymentInfo = await GetPaymentInfoModel();
                 return Ok(paymentInfo);
             }
 
@@ -77,7 +75,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null)
             {
-                var clientInfo = GetClientInfoModel();
+                var clientInfo = await GetClientInfoModel();
 
                 return Ok(clientInfo);
             }
@@ -92,8 +90,8 @@ namespace InvestorDashboard.Api.Controllers
             {
                 var dashboard = new Dashboard
                 {
-                    ClientInfoModel = GetClientInfoModel(),
-                    PaymentInfoList = GetPaymentInfoModel(),
+                    ClientInfoModel = await GetClientInfoModel(),
+                    PaymentInfoList = await GetPaymentInfoModel(),
                     IcoInfoModel = await GetIcoStatusModel()
                 };
 
@@ -103,16 +101,18 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
-        private ClientInfoModel GetClientInfoModel()
+        private async Task<ClientInfoModel> GetClientInfoModel()
         {
+            var address = await ApplicationUser.CryptoAddresses
+                .ToAsyncEnumerable()
+                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract);
+
             var clientInfo = new ClientInfoModel
             {
                 Balance = ApplicationUser.Balance,
                 BonusBalance = ApplicationUser.BonusBalance,
                 IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
-                Address = ApplicationUser.CryptoAddresses
-                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract)
-                    ?.Address
+                Address = address?.Address
             };
 
             return clientInfo;
@@ -123,11 +123,14 @@ namespace InvestorDashboard.Api.Controllers
             return _mapper.Map<IcoInfoModel>(await _dashboardHistoryService.GetLatestHistoryItem());
         }
 
-        private List<PaymentInfoModel> GetPaymentInfoModel()
+        private async Task<List<PaymentInfoModel>> GetPaymentInfoModel()
         {
-            var paymentInfo = ApplicationUser.CryptoAddresses
+            var addresses = await ApplicationUser.CryptoAddresses
+                .ToAsyncEnumerable()
                 .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
-                .ToList()
+                .ToArray();
+
+            var paymentInfo = addresses
                 .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, Settings = y.Settings })
                 .Select(async x => new PaymentInfoModel
                 {

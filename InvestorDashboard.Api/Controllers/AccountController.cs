@@ -66,7 +66,8 @@ namespace InvestorDashboard.Api.Controllers
                 if (appUser == null)
                     return NotFound(this.User.Identity.Name);
 
-                UserViewModel userVM = await GetUserViewModelHelper(appUser);
+                var userVM = _mapper.Map<UserViewModel>(appUser);
+                userVM.Roles = new string[0];
 
                 if (userVM != null)
                     return Ok(userVM);
@@ -226,17 +227,5 @@ namespace InvestorDashboard.Api.Controllers
                 Error = OpenIdConnectConstants.Errors.ServerError
             });
         }
-
-        #region Helpers
-        private async Task<UserViewModel> GetUserViewModelHelper(ApplicationUser user)
-        {
-
-            var userVM = Mapper.Map<UserViewModel>(user);
-
-            return userVM;
-        }
-
-
-        #endregion
     }
 }
