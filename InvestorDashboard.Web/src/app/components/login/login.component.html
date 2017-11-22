@@ -2,10 +2,10 @@
   <div class="login-container center-block">
     <nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="'primary'">
 
-      <a mat-tab-link [active]="true" [disabled]="true">
+      <a mat-tab-link [active]="true">
         {{'buttons.Login' | translate}}
       </a>
-      <a mat-tab-link [routerLink]="['/register']" [active]="false" [disabled]="false">
+      <a mat-tab-link [routerLink]="['/register']" [active]="false">
         {{'buttons.Register' | translate}}
       </a>
 
@@ -49,6 +49,8 @@
               </div>
               <p *ngIf="errorMsg">{{errorMsg}}</p>
             </div>
+            <div> <a [routerLink]="['/forgot_password']">Forgot your password?</a></div>
+           
             <div style="float: right;">
               <button type="submit" mat-raised-button color="primary" [disabled]="!f.form.valid || isLoading">
                 <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>

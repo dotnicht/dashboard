@@ -1,12 +1,4 @@
-﻿// ======================================
-// Author: Ebenezer Monney
-// Email:  info@ebenmonney.com
-// Copyright (c) 2017 www.ebenmonney.com
-// 
-// ==> Gun4Hire: contact@ebenmonney.com
-// ======================================
-
-import { User } from './user.model';
+﻿import { User } from './user.model';
 
 
 export class UserEdit extends User {
@@ -21,7 +13,13 @@ export class UserEdit extends User {
         this.newPassword = newPassword;
         this.confirmPassword = confirmPassword;
     }
+}
 
-   
-
+export class ChangePassWord {
+    public oldPassword: string;
+    public password: string;
+    public confirmPassword: string;
+}
+export class ForgotPassWord {
+    public email: string;
 }

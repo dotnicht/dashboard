@@ -14,12 +14,16 @@ import { AccountService } from '../../services/account.service';
 import { AccountEndpoint } from '../../services/account-endpoint.service';
 import { CaseFormatterDirective } from '../../directives/case-formater.directive';
 import { TfaComponent } from '../../components/controls/tfa/tfa.component';
-import { RestorePasswordComponent } from '../../components/controls/restore-password/restore.password.component';
+
+import { EqualValidator } from '../../directives/equal-validator.directive';
+import { ChangePasswordComponent } from '../../components/controls/change-password/change-password.component';
+
+
 export const SETTINGS_ROUTES: Routes = [
     { path: '', redirectTo: 'profile', pathMatch: 'full' },
     { path: 'profile', component: UserInfoComponent },
     { path: '2fa', component: TfaComponent },
-    { path: 'restore_password', component: RestorePasswordComponent }
+    { path: 'change_password', component: ChangePasswordComponent }
 ];
 @NgModule({
     declarations: [
@@ -27,14 +31,19 @@ export const SETTINGS_ROUTES: Routes = [
         UserInfoComponent,
         TfaComponent,
         CaseFormatterDirective,
-        RestorePasswordComponent
+        ChangePasswordComponent
     ],
     imports: [
         CommonModule,
         MaterialModule,
         FormsModule,
         ReactiveFormsModule,
-        RouterModule.forChild(SETTINGS_ROUTES),
+        RouterModule.forChild([
+            {
+                path: '', component: SettingsComponent,
+                children: SETTINGS_ROUTES
+            }
+        ]),
 
         TranslateModule.forRoot({
             loader: {
@@ -50,9 +59,6 @@ export const SETTINGS_ROUTES: Routes = [
         ConfigurationService,
         LocalStoreManager,
         AppTranslationService
-    ],
-    exports: [
-        SettingsComponent
     ]
 })
 export class SettingsModule {

@@ -1,28 +1,25 @@
 ﻿/// <reference path="../../../../../node_modules/@types/jasmine/index.d.ts" />
 import { TestBed, async, ComponentFixture, ComponentFixtureAutoDetect } from '@angular/core/testing';
 import { BrowserModule, By } from "@angular/platform-browser";
-import { RestorePasswordComponent } from './restore.password.component';
+import { ChangePasswordComponent } from './change-password.component';
 
-let component: RestorePasswordComponent;
-let fixture: ComponentFixture<RestorePasswordComponent>;
+let component: ChangePasswordComponent;
+let fixture: ComponentFixture<ChangePasswordComponent>;
 
-describe('restore-password component', () =>
-{
-    beforeEach(async(() =>
-    {
+describe('change-password component', () => {
+    beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [RestorePasswordComponent],
+            declarations: [ ChangePasswordComponent ],
             imports: [ BrowserModule ],
             providers: [
                 { provide: ComponentFixtureAutoDetect, useValue: true }
             ]
         });
-        fixture = TestBed.createComponent(RestorePasswordComponent);
+        fixture = TestBed.createComponent(ChangePasswordComponent);
         component = fixture.componentInstance;
     }));
 
-    it('should do something', async(() =>
-    {
+    it('should do something', async(() => {
         expect(true).toEqual(true);
     }));
 });

@@ -7,6 +7,7 @@ import { ConfigurationService } from './configuration.service';
 import { BaseService } from './base.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
+import { ForgotPassWord, ChangePassWord } from '../models/user-edit.model';
 
 
 @Injectable()
@@ -15,12 +16,13 @@ export class AccountEndpoint extends BaseService {
     private readonly _usersUrl: string = environment.host + '/account/users';
     private readonly _currentUserUrl: string = environment.host + '/account/users/me';
     private readonly _currentUserPreferencesUrl: string = environment.host + '/account/users/me/preferences';
+    private readonly _forgotPasswordUrl: string = environment.host + '/account/forgot_password';
+    private readonly _changePasswordUrl: string = environment.host + '/account/change_password';
 
 
     get usersUrl() { return this._usersUrl; }
     get currentUserUrl() { return this._currentUserUrl; }
     get currentUserPreferencesUrl() { return this._currentUserPreferencesUrl; }
-
 
 
     constructor(http: Http, authService: AuthService, private configurations: ConfigurationService) {
@@ -29,7 +31,29 @@ export class AccountEndpoint extends BaseService {
     }
 
 
+    forgotPasswordEndpoint(form: ForgotPassWord): Observable<Response> {
+        const res = this.http.post(this._forgotPasswordUrl, form)
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.forgotPasswordEndpoint(form));
 
+            });
+        return res;
+    }
+    changePasswordEndpoint(form: ChangePassWord): Observable<Response> {
+        console.log(form);
+        const res = this.http.post(this._changePasswordUrl, form, this.authService.getAuthHeader())
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.changePasswordEndpoint(form));
+
+            });
+        return res;
+    }
 
     getUserEndpoint(userId?: string): Observable<Response> {
         const endpointUrl = userId ? `${this.usersUrl}/${userId}` : this.currentUserUrl;
@@ -68,8 +92,7 @@ export class AccountEndpoint extends BaseService {
             patchDocument = from ?
                 [{ 'value': valueOrPatch, 'path': path, 'op': opOrUserId, 'from': from }] :
                 [{ 'value': valueOrPatch, 'path': path, 'op': opOrUserId }];
-        }
-        else {
+        } else {
             endpointUrl = opOrUserId ? `${this.usersUrl}/${opOrUserId}` : this.currentUserUrl;
             patchDocument = valueOrPatch;
         }

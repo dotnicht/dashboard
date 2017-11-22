@@ -15,7 +15,7 @@ namespace InvestorDashboard.Api.Extensions
     //    protocol: scheme);
     //}
 
-    public static string ResetPasswordCallbackLink(this IUrlHelper urlHelper, Guid userId, string code, string scheme)
+    public static string ResetPasswordCallbackLink(this IUrlHelper urlHelper, String userId, string code, string scheme)
     {
       return urlHelper.Action(
         action: nameof(AccountController.ResetPassword),
