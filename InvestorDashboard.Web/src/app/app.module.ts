@@ -34,8 +34,7 @@ import { EqualValidator } from './directives/equal-validator.directive';
     AppComponent,
     ClientInfoComponent,
     FaqComponent,
-    routingComponents,
-    EqualValidator
+    routingComponents
   ],
   imports: [
     BrowserModule,

@@ -19,12 +19,14 @@ import { MaterialModule } from '../../app.material.module';
 import { ReCaptchaModule } from 'angular2-recaptcha';
 import { ForgotPasswordComponent, ResetPasswordDialogComponent } from '../../components/controls/forgot-password/forgot.password.component';
 import { ResetPasswordComponent } from '../../components/controls/reset-password/reset-password.component';
+import { SharedModule } from '../../app.shared.module';
 
 
 @NgModule({
   declarations: [
     LoginComponent,
     RegisterComponent,
+    // EqualValidator,
     RegisterRulesDialogComponent,
     ConfirmEmailDialogComponent,
     ConfirmedEmailComponent,
@@ -39,6 +41,7 @@ import { ResetPasswordComponent } from '../../components/controls/reset-password
     ReCaptchaModule,
     ReactiveFormsModule,
     RouterModule,
+    SharedModule,
 
     TranslateModule.forRoot({
       loader: {

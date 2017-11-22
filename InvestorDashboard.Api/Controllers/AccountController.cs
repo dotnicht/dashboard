@@ -202,13 +202,22 @@ namespace InvestorDashboard.Api.Controllers
                     });
                 }
 
-                //var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.Password);
-                //if (!changePasswordResult.Succeeded)
-                //{
-                //    return View(model);
-                //}
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.Password);
+                if (!changePasswordResult.Succeeded)
+                {
+                    var errors = string.Empty;
+                    foreach (var e in changePasswordResult.Errors)
+                    {
+                        errors += $"{e.Description}";
+                    }
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = OpenIdConnectConstants.Errors.ServerError,
+                        ErrorDescription = errors
+                    });
+                }
 
-                //await _signInManager.SignInAsync(user, isPersistent: false);
+                await _signInManager.SignInAsync(user, isPersistent: false);
 
                 return Ok();
             }

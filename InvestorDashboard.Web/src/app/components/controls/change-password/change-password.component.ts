@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ViewChildren } from '@angular/core';
 import { ChangePassWord } from '../../../models/user-edit.model';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { BaseComponent } from '../../../base.component';
 import { AccountEndpoint } from '../../../services/account-endpoint.service';
 import { DOCUMENT } from '@angular/common';
 import { Utilities } from '../../../services/utilities';
+import { EqualValidator } from '../../../directives/equal-validator.directive';
 
 @Component({
     selector: 'app-change-password',
@@ -19,6 +20,7 @@ export class ChangePasswordComponent extends BaseComponent {
     public changePassWordForm = new ChangePassWord();
     isLoading = false;
     errorMsg: string;
+
     /** restore-password ctor */
     constructor(
         private accountEndpoint: AccountEndpoint,
@@ -72,12 +74,11 @@ export class ChangePasswordComponent extends BaseComponent {
 @Component({
     selector: 'app-reset-password-dialog',
     template: `
-    <p>
-    Password successfully changed
-    </p>
-    <button style="float: right" (click)="close()" mat-raised-button>
-        <span>{{'buttons.Close' | translate}}</span>
-    </button>
+
+    <h2 mat-dialog-title><mat-icon>check_circle</mat-icon>Password successfully changed</h2>
+        <button style="float: right" (click)="close()" mat-raised-button tabindex="1">
+            <span>{{'buttons.Close' | translate}}</span>
+        </button>
     `
 })
 export class ChangePasswordDialogComponent {

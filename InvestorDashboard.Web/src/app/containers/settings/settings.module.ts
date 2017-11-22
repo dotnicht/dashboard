@@ -16,7 +16,8 @@ import { CaseFormatterDirective } from '../../directives/case-formater.directive
 import { TfaComponent } from '../../components/controls/tfa/tfa.component';
 
 import { EqualValidator } from '../../directives/equal-validator.directive';
-import { ChangePasswordComponent } from '../../components/controls/change-password/change-password.component';
+import { ChangePasswordComponent, ChangePasswordDialogComponent } from '../../components/controls/change-password/change-password.component';
+import { SharedModule } from '../../app.shared.module';
 
 
 export const SETTINGS_ROUTES: Routes = [
@@ -31,11 +32,13 @@ export const SETTINGS_ROUTES: Routes = [
         UserInfoComponent,
         TfaComponent,
         CaseFormatterDirective,
-        ChangePasswordComponent
+        ChangePasswordComponent,
+        ChangePasswordDialogComponent
     ],
     imports: [
         CommonModule,
         MaterialModule,
+        SharedModule,
         FormsModule,
         ReactiveFormsModule,
         RouterModule.forChild([
@@ -51,6 +54,9 @@ export const SETTINGS_ROUTES: Routes = [
                 useClass: TranslateLanguageLoader
             }
         })
+    ],
+    entryComponents: [
+        ChangePasswordDialogComponent
     ],
     providers: [
         AccountService,
