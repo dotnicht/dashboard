@@ -71,9 +71,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => x.ExternalId != null && !x.EmailConfirmed)
                 .ToArray()
                 .Join(_csvService.GetRecords<InvestorRecord>("InvestorsData.csv"), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
-                .Where(x => x.Record.Day <= DateTime.UtcNow);
+                .Where(x => x.Record.Day <= DateTime.UtcNow)
+                .ToArray();
 
-            Logger.LogDebug($"Total { users.Count() } users to be activated.");
+            Logger.LogDebug($"Total { users.Length } users to be activated.");
 
             var count = 0;
 
