@@ -21,12 +21,12 @@
         <div class="col-mat-12 ">
           <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login():''">
             <mat-form-field>
-              <input matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
+              <input (focus)="onFocus()" matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
                 required />
 
             </mat-form-field>
             <mat-form-field>
-              <input matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
+              <input (focus)="onFocus()" matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
                 #password="ngModel" required />
 
             </mat-form-field>

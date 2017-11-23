@@ -38,7 +38,12 @@ register-rules-dialog {
     white-space: initial;
   }
 }
-
+a{
+  &.disabled{
+    pointer-events: none;
+    color: rgba(0,0,0,.38) !important;
+  }
+}
 .token_calculator {
   .mat-form-field-infix {
     width: auto;

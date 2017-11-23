@@ -281,13 +281,15 @@ export class AuthService {
     }
 
     const user = new User(
+
       decodedIdToken.sub,
       decodedIdToken.name,
-      decodedIdToken.email);
+      decodedIdToken.email,
+      decodedIdToken.twoFactorEnabled);
 
     user.isEnabled = true;
 
-
+    console.log(decodedIdToken);
     this.saveUserDetails(user, permissions, accessToken, idToken, refreshToken, accessTokenExpiry, rememberMe);
 
     this.reevaluateLoginStatus(user);

@@ -26,12 +26,13 @@ const routes: Routes = [
         pathMatch: 'full'
     },
 
-    { path: '', component: DashboardComponent, canActivate: [AuthGuard] },
+    { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+    { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'forgot_password', component: ForgotPasswordComponent },
     { path: 'email_confirmed', component: ConfirmedEmailComponent },
-    { path: 'reset_password', component: ResetPasswordComponent,  },
+    { path: 'reset_password', component: ResetPasswordComponent, },
     {
         path: 'settings', canActivate: [AuthGuard],
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'

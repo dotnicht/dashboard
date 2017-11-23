@@ -23,6 +23,7 @@ using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using InvestorDashboard.Api.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -104,7 +105,7 @@ namespace InvestorDashboard.Api.Controllers
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
         [HttpGet]
-        public async Task<IActionResult> LoginWith2fa(bool rememberMe, string returnUrl = null)
+        public async Task<IActionResult> LoginWith2fa()
         {
             // Ensure the user has gone through the username & password screen first
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -119,10 +120,7 @@ namespace InvestorDashboard.Api.Controllers
                 });
             }
 
-            var model = new LoginWith2faViewModel { RememberMe = rememberMe };
-            ViewData["ReturnUrl"] = returnUrl;
-
-            return View(model);
+            return Ok();
         }
 
         [HttpPost]
@@ -475,11 +473,16 @@ namespace InvestorDashboard.Api.Controllers
                     identity.AddClaim(CustomClaimTypes.Email, user.Email, OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
+
+
             if (ticket.HasScope(OpenIdConnectConstants.Scopes.Phone))
             {
                 if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
                     identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber, OpenIdConnectConstants.Destinations.IdentityToken);
+                   
             }
+
+            identity.AddClaim(CustomClaimTypes.TwoFactorEnabled, user.TwoFactorEnabled.ToString().ToLower(), OpenIdConnectConstants.Destinations.IdentityToken);
             return ticket;
         }
 
@@ -492,27 +495,26 @@ namespace InvestorDashboard.Api.Controllers
         [HttpGet("~/connect/confirm_email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
+            var options = new CookieOptions();
+            options.Expires = DateTimeOffset.Now.AddMinutes(30);
+
+           
+
             if (userId == null || code == null)
             {
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.AccessDenied,
-                    ErrorDescription = ""
-                });
+                Response.Cookies.Append("confirm_status", "invalid_parametrs", options);
+                return RedirectPermanent("/email_confirmed");
             }
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.AccessDenied,
-                    ErrorDescription = ""
-                });
-                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+                Response.Cookies.Append("confirm_status", "invalid_user", options);
+                return RedirectPermanent("/email_confirmed");
             }
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
+                Response.Cookies.Append("confirm_status", "success", options);
                 return RedirectPermanent("/email_confirmed");
             }
             else
@@ -521,11 +523,9 @@ namespace InvestorDashboard.Api.Controllers
                 foreach(var e in result.Errors){
                     errors += e.Description;
                 }
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.ServerError,
-                    ErrorDescription = errors
-                });
+                Response.Cookies.Append("confirm_status", errors, options);
+                return RedirectPermanent("/email_confirmed");
+
             }
         }
     }
