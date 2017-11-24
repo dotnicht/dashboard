@@ -51,24 +51,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             _logger.LogInformation($"Handle incoming message from user { user }. Text: { message }");
 
-            //if (string.Compare(user, "McKlavishnikov", true) == 0)
-            //{
-            //    await SendMessage("Женя, отстань.");
-            //}
-
             var msg = message.Trim();
-            var commands = new Dictionary<string, Action>
+            var commands = new Dictionary<string, Func<Task>>
             {
-                { "/ping", async () => await SendMessage("pong") },
-                { "/status", async () => await SendDashboardHistoryMessage() },
-                { "/pong", async () => await SendMessage("ping") }
+                { "/ping", () => SendMessage("pong") },
+                { "/status", () => SendDashboardHistoryMessage() },
+                { "/pong", () => SendMessage("ping") }
             };
 
             foreach (var item in commands)
             {
                 if (string.Compare(msg, item.Key, true) == 0)
                 {
-                    item.Value();
+                    await item.Value();
                     break;
                 }
             }

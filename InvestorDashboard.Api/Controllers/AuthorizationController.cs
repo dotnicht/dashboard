@@ -1,19 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using AutoMapper;
-using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Services;
+using InvestorDashboard.Api.Helpers;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
-using InvestorDashboard.Api.Helpers;
 using InvestorDashboard.Api.Models.AuthorizationViewModels;
+using InvestorDashboard.Api.Services;
+using InvestorDashboard.Backend.Database.Models;
+using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -22,7 +17,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenIddict.Core;
 using OpenIddict.Models;
-using InvestorDashboard.Api.Services;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -37,7 +38,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IMapper _mapper;
-        private readonly IEmailService _emailService;
+        private readonly INotificationService _notificationService;
 
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -47,7 +48,7 @@ namespace InvestorDashboard.Api.Controllers
           ILogger<AuthorizationController> loger,
           IEnumerable<ICryptoService> cryptoServices,
           IMapper mapper,
-          IEmailService emailService,
+          INotificationService notificationService,
           ViewRender view)
         {
             _applicationManager = applicationManager;
@@ -57,7 +58,7 @@ namespace InvestorDashboard.Api.Controllers
             _logger = loger;
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
             _view = view;
         }
 
@@ -79,9 +80,9 @@ namespace InvestorDashboard.Api.Controllers
 
                     appUser = await _userManager.FindByEmailAsync(appUser.Email);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                    code = System.Web.HttpUtility.UrlEncode(code);
+                    code = HttpUtility.UrlEncode(code);
                     var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
-                    await _emailService.SendEmailConfirmationAsync(appUser.Email, emailBody);
+                    await _notificationService.NotifyRegistrationConfirmationRequired(appUser.Id, emailBody);
 
                     return Ok();
                 }
