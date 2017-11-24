@@ -82,7 +82,7 @@ namespace InvestorDashboard.Api.Controllers
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);
                     var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
-                    await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Email, emailBody);
+                    await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
                     return Ok();
                 }
