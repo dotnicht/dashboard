@@ -5,7 +5,7 @@
   </mat-tab>
 </mat-tab-group>
 <router-outlet></router-outlet> -->
-<nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="tabNavBackground">
+<nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="'primary'">
   <a mat-tab-link
      *ngFor="let tabLink of tabLinks; let i = index"
      [routerLink]="tabLink.link"
@@ -16,3 +16,4 @@
   </a>
 </nav>
 <router-outlet></router-outlet>
+

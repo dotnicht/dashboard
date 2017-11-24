@@ -1,12 +1,4 @@
-﻿// ======================================
-// Author: Ebenezer Monney
-// Email:  info@ebenmonney.com
-// Copyright (c) 2017 www.ebenmonney.com
-// 
-// ==> Gun4Hire: contact@ebenmonney.com
-// ======================================
-
-import { Directive, forwardRef, Attribute } from '@angular/core';
+﻿import { Directive, forwardRef, Attribute, AfterViewInit } from '@angular/core';
 import { Validator, AbstractControl, NG_VALIDATORS } from '@angular/forms';
 
 
@@ -30,7 +22,6 @@ export class EqualValidator implements Validator {
 
         return this.reverse === 'true' ? this.validateReverse(c, other) : this.validateNoReverse(c, other);
     }
-
     private validateNoReverse(c: AbstractControl, other: AbstractControl): { [key: string]: any } {
         return other.value === c.value ? null : { validateEqual: true }
     }

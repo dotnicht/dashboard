@@ -19,13 +19,13 @@
         <mat-icon mat-list-icon>info</mat-icon>
         <span mat-line>Sale terms</span>
       </a>
-      <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        [routerLink]="['/']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
+      <a *ngIf="isUserLoggedIn"mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        [routerLink]="['/dashboard']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')" (click)="start.close()">
         <mat-icon mat-list-icon>dashboard</mat-icon>
         <span mat-line>{{'mainMenu.Dashboard' | translate}}</span>
       </a>
       <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        [routerLink]="['/faq']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'active' : '')" (click)="start.close()">
+        [routerLink]="['/faq']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')" (click)="start.close()">
         <mat-icon mat-list-icon>help</mat-icon>
         <span mat-line>{{'mainMenu.Faq' | translate}}</span>
       </a>
@@ -42,7 +42,7 @@
 
     <div class="main-toolbar">
       <!-- <h2>{{appTitle}}</h2> -->
-      <img src="assets/img/logo.svg" style="width: 120px;">
+     <a target="_blank" href="https://data-trading.com"><img src="assets/img/logo.svg" style="width: 120px;"></a>
       <div>
         <span *ngIf="!isTab">
           <!-- <a href="http://www.data-trading.com/">
@@ -56,11 +56,11 @@
             </button>
           </a>
 
-          <button *ngIf="isUserLoggedIn" mat-button [routerLink]="['/']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <button *ngIf="isUserLoggedIn" mat-button [disabled]="routerLinkActiveInstance.isActive" [routerLink]="['/dashboard']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
             <mat-icon>dashboard</mat-icon>
             <span>{{'mainMenu.Dashboard' | translate}}</span>
           </button>
-          <button mat-button [routerLink]="['/faq']">
+          <button mat-button [routerLink]="['/faq']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive">
             <mat-icon>help</mat-icon>
             <span>{{'mainMenu.Faq' | translate}}</span>
           </button>

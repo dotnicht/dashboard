@@ -42,11 +42,6 @@ export class LoginComponent implements OnInit, OnDestroy {
                 }
             });
         }
-
-        //this.userLogin.email = 'denis.skvortsow@gmail.com';
-        //this.userLogin.password = '123456_Kol';
-
-
     }
     ngOnDestroy() {
         if (this.loginStatusSubscription)
@@ -101,6 +96,8 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.formResetToggle = true;
         });
     }
-
+    onFocus() {
+        this.errorMsg = '';
+    }
 
 }

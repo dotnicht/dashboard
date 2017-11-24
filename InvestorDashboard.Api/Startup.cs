@@ -84,6 +84,8 @@ namespace InvestorDashboard.Api
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
+                
+
                 options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
                 options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
                 options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
