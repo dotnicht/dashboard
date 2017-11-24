@@ -44,6 +44,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Select(x => x.CryptoAddress.UserId)
                 .Distinct()
                 .Count();
+            item.TotalUsers = Context.Users.Count();
 
             var nonInternalTransactions = transactions
                 .Where(x => x.ExternalId == null && x.CryptoAddress.Currency != Currency.DTT && x.CryptoAddress.User.ExternalId == null);
@@ -53,6 +54,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Select(x => x.CryptoAddress.UserId)
                 .Distinct()
                 .Count();
+            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
 
             await Context.DashboardHistoryItems.AddAsync(item);
             await Context.SaveChangesAsync();
