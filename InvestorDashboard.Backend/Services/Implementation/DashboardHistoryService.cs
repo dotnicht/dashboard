@@ -38,23 +38,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var item = _mapper.Map<DashboardHistoryItem>(_options.Value);
 
+            item.TotalUsers = Context.Users.Count();
             item.TotalCoinsBought = transactions.Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice);
             item.TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate);
             item.TotalInvestors = transactions
                 .Select(x => x.CryptoAddress.UserId)
                 .Distinct()
                 .Count();
-            item.TotalUsers = Context.Users.Count();
 
             var nonInternalTransactions = transactions
                 .Where(x => x.ExternalId == null && x.CryptoAddress.Currency != Currency.DTT && x.CryptoAddress.User.ExternalId == null);
 
+            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
             item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
             item.TotalNonInternalInvestors = nonInternalTransactions
                 .Select(x => x.CryptoAddress.UserId)
                 .Distinct()
                 .Count();
-            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
 
             await Context.DashboardHistoryItems.AddAsync(item);
             await Context.SaveChangesAsync();
