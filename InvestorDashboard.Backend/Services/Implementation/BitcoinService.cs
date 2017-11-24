@@ -54,7 +54,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 Address = address
             });
 
-            await Context.SaveChangesAsync();
+            Context.SaveChanges();
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
