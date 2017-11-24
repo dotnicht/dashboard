@@ -5,6 +5,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -47,7 +48,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         {
                             Html = new Content
                             {
-                                Charset = System.Text.Encoding.UTF8.BodyName.ToUpper(),
+                                Charset = Encoding.UTF8.BodyName,
                                 Data = message
                             }
                         }

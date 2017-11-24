@@ -38,7 +38,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IMapper _mapper;
-        private readonly INotificationService _notificationService;
+        private readonly IMessageService _messageService;
 
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -48,7 +48,7 @@ namespace InvestorDashboard.Api.Controllers
           ILogger<AuthorizationController> loger,
           IEnumerable<ICryptoService> cryptoServices,
           IMapper mapper,
-          INotificationService notificationService,
+          IMessageService messageService,
           ViewRender view)
         {
             _applicationManager = applicationManager;
@@ -58,7 +58,7 @@ namespace InvestorDashboard.Api.Controllers
             _logger = loger;
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _view = view;
         }
 
@@ -82,7 +82,7 @@ namespace InvestorDashboard.Api.Controllers
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);
                     var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
-                    await _notificationService.NotifyRegistrationConfirmationRequired(appUser.Email, emailBody);
+                    await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Email, emailBody);
 
                     return Ok();
                 }

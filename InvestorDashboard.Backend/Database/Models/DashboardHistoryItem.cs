@@ -8,6 +8,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [Key]
         public Guid Id { get; set; }
         public DateTime Created { get; set; }
+        public int TotalUsers { get; set; }
         public int TotalInvestors { get; set; }
         public decimal TotalUsdInvested { get; set; }
         public decimal TotalCoinsBought { get; set; }
@@ -15,6 +16,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public decimal TokenPrice { get; set; }
         public decimal BonusPercentage { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
+        public int TotalNonInternalUsers { get; set; }
         public int TotalNonInternalInvestors { get; set; }
         public decimal TotalNonInternalUsdInvested { get; set; }
     }

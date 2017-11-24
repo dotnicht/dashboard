@@ -11,19 +11,25 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class NotifyDashboardHistoryJob : JobBase
     {
-        private readonly ITelegramService _telegramService;
+        private readonly IMessageService _messageService;
 
         public override TimeSpan Period => Options.Value.NotifyDashboardHistoryPeriod;
 
-        public NotifyDashboardHistoryJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, ITelegramService telegramService) 
+        public NotifyDashboardHistoryJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IMessageService messageService) 
             : base(loggerFactory, context, options)
         {
-            _telegramService = telegramService ?? throw new ArgumentNullException(nameof(telegramService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _telegramService.SendDashboardHistoryMessage();
+            await _messageService.SendDashboardHistoryMessage();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _messageService.Dispose();
+            base.Dispose(disposing);
         }
     }
 }
