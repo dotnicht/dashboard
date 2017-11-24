@@ -25,6 +25,12 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
   }
 }
 
+form {
+  .errors {
+    color: #d9534f;
+  }
+}
+
 register-rules-dialog {
   display: block;
   max-width: 600px;
@@ -32,10 +38,22 @@ register-rules-dialog {
     white-space: initial;
   }
 }
-
+a{
+  &.disabled{
+    pointer-events: none;
+    color: rgba(0,0,0,.38) !important;
+  }
+}
 .token_calculator {
   .mat-form-field-infix {
     width: auto;
+  }
+}
+
+.mat-card-title, .mat-dialog-container {
+  .mat-icon {
+    top: 4px;
+    position: relative;
   }
 }
 

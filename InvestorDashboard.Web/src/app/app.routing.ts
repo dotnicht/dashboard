@@ -10,8 +10,9 @@ import { DashboardComponent } from './containers/dashboard/dashboard.component';
 import { SettingsComponent } from './containers/settings/settings.component';
 import { UserInfoComponent } from './components/controls/user-info.component';
 import { TfaComponent } from './components/controls/tfa/tfa.component';
-import { RestorePasswordComponent } from "./components/controls/restore-password/restore.password.component";
 import { FaqComponent } from './containers/faq/faq.component';
+import { ForgotPasswordComponent } from './components/controls/forgot-password/forgot.password.component';
+import { ResetPasswordComponent } from './components/controls/reset-password/reset-password.component';
 
 export const routingComponents = [
     NotFoundComponent
@@ -25,19 +26,13 @@ const routes: Routes = [
         pathMatch: 'full'
     },
 
-    {
-        path: '', component: DashboardComponent, canActivate: [AuthGuard]
-
-    },
-    {
-        path: 'login', component: LoginComponent
-    },
-    {
-        path: 'register', component: RegisterComponent
-    },
-    {
-        path: 'email_confirmed', component: ConfirmedEmailComponent
-    },
+    { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+    { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+    { path: 'login', component: LoginComponent },
+    { path: 'register', component: RegisterComponent },
+    { path: 'forgot_password', component: ForgotPasswordComponent },
+    { path: 'email_confirmed', component: ConfirmedEmailComponent },
+    { path: 'reset_password', component: ResetPasswordComponent, },
     {
         path: 'settings', canActivate: [AuthGuard],
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'
@@ -48,9 +43,7 @@ const routes: Routes = [
             title: 'FAQ'
         }
     },
-    {
-        path: '**', component: NotFoundComponent
-    }
+    { path: '**', component: NotFoundComponent }
 ];
 
 @NgModule({

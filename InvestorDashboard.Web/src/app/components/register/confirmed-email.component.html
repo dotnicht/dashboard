@@ -1,12 +1,14 @@
 ﻿<mat-card>
 
   <mat-card-content>
-
-    <h3>Your email was confirmed. Please
-      <a href="/login">login</a> to access DataTrading dashboard. </h3>
-    <p>You will be redirected in {{timer}}... seconds</p>
-  </mat-card-content> 
-  <mat-card-footer>
+    <div *ngIf="!error">
+      <h3>Your email was confirmed. Please
+        <a href="/login">login</a> to access DataTrading dashboard. </h3>
+      <p>You will be redirected in {{timer}}... seconds</p>
+    </div>
+    <div *ngIf="error" style="color: red;" class="error"><h3><mat-icon style="color: red;position: relative;top: 4px;">error</mat-icon>{{error}}</h3></div>
+  </mat-card-content>
+  <mat-card-footer *ngIf="!error">
     <mat-progress-bar mode="determinate" [value]="progress" [color]="'primary'">
     </mat-progress-bar>
   </mat-card-footer>

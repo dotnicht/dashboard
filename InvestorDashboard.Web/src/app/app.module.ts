@@ -26,6 +26,7 @@ import { SettingsModule } from './containers/settings/settings.module';
 import { TransferHttpModule } from './modules/transfer-http/transfer-http.module';
 import { AccountService } from './services/account.service';
 import { AccountEndpoint } from './services/account-endpoint.service';
+import { EqualValidator } from './directives/equal-validator.directive';
 
 
 @NgModule({

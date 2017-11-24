@@ -1,15 +1,20 @@
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
+using InvestorDashboard.Api.Extensions;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
+using InvestorDashboard.Api.Models.ManageViewModels;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
+using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api.Controllers
@@ -27,6 +32,7 @@ namespace InvestorDashboard.Api.Controllers
         private const string GetRoleByIdActionName = "GetRoleById";
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
         public AccountController(
           ApplicationDbContext context,
@@ -34,7 +40,8 @@ namespace InvestorDashboard.Api.Controllers
           IAuthorizationService authorizationService,
           SignInManager<ApplicationUser> signInManager,
           ILogger<AccountController> logger,
-          IOptions<IdentityOptions> identityOptions, 
+          IOptions<IdentityOptions> identityOptions,
+          IEmailService emailService,
           IMapper mapper)
         {
             _userManager = userManager;
@@ -43,6 +50,7 @@ namespace InvestorDashboard.Api.Controllers
             _identityOptions = identityOptions;
             _authorizationService = authorizationService;
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -103,85 +111,156 @@ namespace InvestorDashboard.Api.Controllers
             return BadRequest(ModelState);
         }
 
-        [HttpPost]
+        [HttpPost("forgot_password"), Produces("application/json")]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = "user_not_exist"
+                    });
+                }
+                if (!(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = "user_not_confirmed"
+                    });
                 }
 
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                //var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-                //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                //  $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                code = System.Web.HttpUtility.UrlEncode(code);
+                var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/account/reset_password?email={System.Web.HttpUtility.UrlEncode(user.Email)}&code={code}";
+
+
+                await _emailService.SendEmailAsync(model.Email, "Reset Password",
+                  $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                return Ok();
+                //return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
-        {
-            if (code == null)
+            // return View(model);
+            return BadRequest(new OpenIdConnectResponse
             {
-                throw new ApplicationException("A code must be supplied for password reset.");
-            }
-            var model = new ResetPasswordViewModel { Code = code };
-            return View(model);
+                Error = OpenIdConnectConstants.Errors.ServerError
+            });
         }
 
-        [HttpPost("reset_password")]
+
+        [HttpGet("reset_password"), Produces("application/json")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword(string email, string code)
+        {
+            var options = new CookieOptions();
+            options.Expires = DateTimeOffset.Now.AddDays(1);
+
+            Response.Cookies.Append("reset_token", code, options);
+            Response.Cookies.Append("reset_email", email, options);
+
+            return RedirectPermanent("/reset_password");
+        }
+
+        [HttpPost("reset_password"), Produces("application/json")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                var errors = string.Empty;
+                foreach (var i in ModelState.Values)
+                {
+                    foreach (var e in i.Errors)
+                    {
+                        errors += $"{e.ErrorMessage}";
+                    }
+                }
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = errors
+                });
             }
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError
+                });
             }
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(ResetPasswordConfirmation));
-            }
+                Response.Cookies.Delete("reset_token");
+                Response.Cookies.Delete("reset_email");
 
-            foreach (var error in result.Errors)
+                return Ok();
+            }
+            else
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                var errors = string.Empty;
+
+                foreach (var e in result.Errors)
+                {
+                    errors += $"{e.Description}";
+                }
+
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = errors
+                });
             }
 
-            return View();
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation()
+        [HttpPost("change_password"), Produces("application/json")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordViewModel model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = OpenIdConnectConstants.Errors.ServerError,
+                        ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                    });
+                }
+
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.Password);
+                if (!changePasswordResult.Succeeded)
+                {
+                    var errors = string.Empty;
+                    foreach (var e in changePasswordResult.Errors)
+                    {
+                        errors += $"{e.Description}";
+                    }
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = OpenIdConnectConstants.Errors.ServerError,
+                        ErrorDescription = errors
+                    });
+                }
+
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                return Ok();
+            }
+            return BadRequest(new OpenIdConnectResponse
+            {
+                Error = OpenIdConnectConstants.Errors.ServerError
+            });
         }
     }
 }

@@ -18,6 +18,7 @@ const defaultDialogConfig = new MatDialogConfig();
     selector: 'app-register',
     templateUrl: './register.component.html',
     styleUrls: ['./register.component.scss']
+
 })
 export class RegisterComponent implements OnInit {
 
@@ -233,6 +234,8 @@ export class ConfirmedEmailComponent implements OnInit, OnDestroy {
     private timerA;
     private timerB;
 
+    error: string;
+
     ngOnInit(): void {
 
     }
@@ -245,23 +248,31 @@ export class ConfirmedEmailComponent implements OnInit, OnDestroy {
         }
     }
 
-    constructor(private router: Router) {
-        this.timerA = setInterval(() => {
-            if (this.timer >= 1) {
-                this.timer -= 1;
-            } else {
-                clearInterval(this.timerA);
-                this.router.navigate(['/login']);
-            }
-        }, 1000);
-        this.timerB = setInterval(() => {
-            if (this.progress <= 100) {
-                this.progress += 10;
-            } else {
+    constructor(private cookieService: CookieService,
+        private router: Router,
+        private translationService: AppTranslationService) {
+        const status = this.cookieService.get('confirm_status');
+        if (status == 'success') {
+            this.timerA = setInterval(() => {
+                if (this.timer >= 1) {
+                    this.timer -= 1;
+                } else {
+                    clearInterval(this.timerA);
+                    this.router.navigate(['/login']);
+                }
+            }, 1000);
+            this.timerB = setInterval(() => {
+                if (this.progress <= 100) {
+                    this.progress += 10;
+                } else {
 
 
-            }
-        }, 500);
+                }
+            }, 500);
+        } else {
+            this.error = this.translationService.getTranslation(status);
+        }
+
     }
 
 

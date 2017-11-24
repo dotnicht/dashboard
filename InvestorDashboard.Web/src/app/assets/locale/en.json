@@ -19,7 +19,7 @@
   "dashboard": {
     "HTU_BTC": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 6 confirmations (1 hour)",
     "HTU_ETH": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> Transactions show up as soon as at least one confirmation is received, but they will only be eligible once we get at least 12 confirmations (up to 10 minutes)",
-    "TokenCalc":"Token calculator"
+    "TokenCalc": "Token calculator"
   },
   "languages": {
     "en": "Eng",
@@ -171,7 +171,12 @@
     "Copy": "Copy",
     "Copied": "Copied",
     "Close": "Close",
-    "Cancel": "Cancel"
+    "Cancel": "Cancel",
+    "Back": "Back",
+    "Edit": "Edit",
+    "Submit": "Submit",
+    "Reset": "Reset",
+    "Save": "Save"
   },
   "other": {
     "Or": "or"

@@ -17,16 +17,25 @@ import { AppTranslationService, TranslateLanguageLoader } from '../../services/a
 import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
 import { ReCaptchaModule } from 'angular2-recaptcha';
+import {
+  ForgotPasswordComponent,
+  ForgotPasswordDialogComponent
+} from '../../components/controls/forgot-password/forgot.password.component';
+import { ResetPasswordComponent, ResetPasswordDialogComponent } from '../../components/controls/reset-password/reset-password.component';
+import { SharedModule } from '../../app.shared.module';
+
 
 @NgModule({
   declarations: [
     LoginComponent,
     RegisterComponent,
-    EqualValidator,
     RegisterRulesDialogComponent,
     ConfirmEmailDialogComponent,
-    ConfirmedEmailComponent
-
+    ConfirmedEmailComponent,
+    ForgotPasswordComponent,
+    ForgotPasswordDialogComponent,
+    ResetPasswordComponent,
+    ResetPasswordDialogComponent
   ],
   imports: [
     CommonModule,
@@ -35,6 +44,8 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
     ReCaptchaModule,
     ReactiveFormsModule,
     RouterModule,
+    SharedModule,
+
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -50,7 +61,9 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
   ],
   entryComponents: [
     RegisterRulesDialogComponent,
-    ConfirmEmailDialogComponent
+    ConfirmEmailDialogComponent,
+    ForgotPasswordDialogComponent,
+    ResetPasswordDialogComponent
   ],
   exports: [
     LoginComponent
