@@ -67,7 +67,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         public async Task SendDashboardHistoryMessage()
         {
             var item = await _dashboardHistoryService.GetLatestHistoryItem();
-            await _telegramService.SendMessage($"Status on { item.Created } | Total investors: { item.TotalNonInternalInvestors } | Total USD: { item.TotalNonInternalUsdInvested } | Total users: { item.TotalUsers }");
+            await _telegramService.SendMessage($"Status on { item.Created } | Total investors: { item.TotalNonInternalInvestors } | Total USD: { item.TotalNonInternalUsdInvested } | Total users: { item.TotalNonInternalUsers }");
         }
     }
 }
