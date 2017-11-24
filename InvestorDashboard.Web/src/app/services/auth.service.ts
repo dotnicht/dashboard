@@ -289,7 +289,7 @@ export class AuthService {
 
     user.isEnabled = true;
 
-    console.log(decodedIdToken);
+    // console.log(decodedIdToken);
     this.saveUserDetails(user, permissions, accessToken, idToken, refreshToken, accessTokenExpiry, rememberMe);
 
     this.reevaluateLoginStatus(user);
