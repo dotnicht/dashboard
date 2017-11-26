@@ -60,15 +60,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await Context.SaveChangesAsync();
         }
 
-        public async Task<DashboardHistoryItem> GetLatestHistoryItem()
+        public async Task<DashboardHistoryItem> GetLatestHistoryItem(bool includeCurrencies = false)
         {
             if (!Context.DashboardHistoryItems.Any())
             {
                 await RefreshHistory();
             }
 
-            return Context.DashboardHistoryItems.OrderByDescending(x => x.Created).FirstOrDefault()
-                ?? throw new InvalidOperationException($"Failed to populate dashboard history.");
+            var item = Context.DashboardHistoryItems.OrderByDescending(x => x.Created).First();
+
+            if (includeCurrencies)
+            {
+                item.Currencies = Context.CryptoTransactions.Where(
+                    x => x.Direction == CryptoTransactionDirection.Inbound
+                    && x.CryptoAddress.Type == CryptoAddressType.Investment
+                    && x.ExternalId == null
+                    && x.CryptoAddress.Currency != Currency.DTT
+                    && x.CryptoAddress.User.ExternalId == null)
+                        .GroupBy(x => x.CryptoAddress.Currency)
+                        .ToList()
+                        .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))
+                        .ToList();
+            }
+
+            return item;
         }
     }
 }

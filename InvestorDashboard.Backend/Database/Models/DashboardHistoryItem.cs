@@ -1,5 +1,8 @@
-﻿using System;
+﻿using InvestorDashboard.Backend.Models;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InvestorDashboard.Backend.Database.Models
 {
@@ -19,5 +22,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public int TotalNonInternalUsers { get; set; }
         public int TotalNonInternalInvestors { get; set; }
         public decimal TotalNonInternalUsdInvested { get; set; }
+        [NotMapped]
+        public IEnumerable<(Currency Currency, decimal Amount)> Currencies { get; set; }
     }
 }
