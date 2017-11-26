@@ -3,6 +3,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -71,16 +72,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (includeCurrencies)
             {
-                item.Currencies = Context.CryptoTransactions.Where(
-                    x => x.Direction == CryptoTransactionDirection.Inbound
-                    && x.CryptoAddress.Type == CryptoAddressType.Investment
-                    && x.ExternalId == null
-                    && x.CryptoAddress.Currency != Currency.DTT
-                    && x.CryptoAddress.User.ExternalId == null)
-                        .GroupBy(x => x.CryptoAddress.Currency)
-                        .ToList()
-                        .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))
-                        .ToList();
+                item.Currencies = Context.CryptoTransactions
+                    .Include(x => x.CryptoAddress)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Inbound
+                        && x.CryptoAddress.Type == CryptoAddressType.Investment
+                        && x.ExternalId == null
+                        && x.CryptoAddress.Currency != Currency.DTT
+                        && x.CryptoAddress.User.ExternalId == null)
+                    .ToList()
+                    .GroupBy(x => x.CryptoAddress.Currency)
+                    .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))
+                    .ToList();
             }
 
             return item;
