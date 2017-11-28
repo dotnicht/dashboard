@@ -37,7 +37,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task UpdateUserDetailsInternal(string userId)
+        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
             var policy = Policy
                 .Handle<ArgumentException>()
@@ -50,19 +50,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 UserId = userId,
                 Currency = Settings.Value.Currency,
                 PrivateKey = keys.PrivateKey,
-                Type = CryptoAddressType.Investment,
+                Type = addressType,
                 Address = keys.Address
             };
 
-            var invsetmentAddressEntry = await Context.CryptoAddresses.AddAsync(address);
+            var result = await Context.CryptoAddresses.AddAsync(address);
 
-            // duplicate the same address as the contract address.
-            var contractAddress = Mapper.Map<CryptoAddress>(invsetmentAddressEntry.Entity);
-            contractAddress.Type = CryptoAddressType.Contract;
-
-            await Context.CryptoAddresses.AddAsync(contractAddress);
+            if (addressType == CryptoAddressType.Investment)
+            {
+                // duplicate the same address as the contract address.
+                var contractAddress = Mapper.Map<CryptoAddress>(result.Entity);
+                contractAddress.Type = CryptoAddressType.Contract;
+                await Context.CryptoAddresses.AddAsync(contractAddress);
+            }
 
             Context.SaveChanges();
+
+            return result.Entity;
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)

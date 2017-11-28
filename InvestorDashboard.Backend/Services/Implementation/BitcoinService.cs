@@ -36,7 +36,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task UpdateUserDetailsInternal(string userId)
+        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
             var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
                 ? Network.Main
@@ -45,16 +45,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(networkType).ToString();
 
-            await Context.CryptoAddresses.AddAsync(new CryptoAddress
+            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Settings.Value.Currency,
                 PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
-                Type = CryptoAddressType.Investment,
+                Type = addressType,
                 Address = address
             });
 
             Context.SaveChanges();
+
+            return result.Entity;
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
@@ -89,6 +91,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
         {
+
+
             throw new NotImplementedException();
         }
 

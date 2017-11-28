@@ -3,6 +3,7 @@ using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
 using InvestorDashboard.Api.Services;
 using InvestorDashboard.Backend;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
@@ -15,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NLog.Web;
 using OpenIddict.Core;
 using OpenIddict.Models;
@@ -34,7 +36,7 @@ namespace InvestorDashboard.Api
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
+                .AddJsonFile($"appsettings.{ env.EnvironmentName }.json", true, true)
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();

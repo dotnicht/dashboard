@@ -23,9 +23,12 @@ namespace InvestorDashboard.Console.Jobs
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        protected override Task ExecuteInternal(IJobExecutionContext context)
+        protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            throw new NotImplementedException();
+            foreach (var service in _cryptoServices)
+            {
+                await service.TransferAssets();
+            }
         }
 
         protected override void Dispose(bool disposing)

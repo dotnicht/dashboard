@@ -57,7 +57,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return Task.CompletedTask;
             }
 
-            return UpdateUserDetailsInternal(userId);
+            return CreateAddress(userId, CryptoAddressType.Investment);
         }
 
         public async Task RefreshInboundTransactions()
@@ -111,25 +111,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task TransferAssets(string destinationAddress)
+        public async Task TransferAssets()
         {
-            if (destinationAddress == null)
-            {
-                throw new ArgumentNullException(nameof(destinationAddress));
-            }
-
             if (Settings.Value.IsDisabled)
             {
                 return;
             }
 
+            var destination = Context.CryptoAddresses
+                    .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled)
+                    .OrderBy(x => Guid.NewGuid())
+                    .FirstOrDefault()
+                ?? await CreateAddress("d8033986-1220-47a8-a43e-98b9842d5c5e", CryptoAddressType.Internal);
+
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
             {
-                await TransferAssets(address, destinationAddress);
+                await TransferAssets(address, destination.Address);
             }
         }
 
-        protected abstract Task UpdateUserDetailsInternal(string userId);
+        protected abstract Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task TransferAssets(CryptoAddress address, string destinationAddress);
     }
