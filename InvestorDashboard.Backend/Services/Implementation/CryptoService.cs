@@ -132,6 +132,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected abstract Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task TransferAssets(CryptoAddress address, string destinationAddress);
+        protected abstract Task TransferAssets(CryptoAddress sourceAddress, string destinationAddress);
     }
 }

@@ -19,6 +19,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
+        private Network Network
+        {
+            get
+            {
+                return _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                    ? Network.Main
+                    : Network.TestNet;
+            }
+        }
+
         public BitcoinService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
@@ -38,18 +48,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
-            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                ? Network.Main
-                : Network.TestNet;
-
             var privateKey = new Key();
-            var address = privateKey.PubKey.GetAddress(networkType).ToString();
+            var address = privateKey.PubKey.GetAddress(Network).ToString();
 
             var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Settings.Value.Currency,
-                PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
+                PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, Network).ToString(),
                 Type = addressType,
                 Address = address
             });
@@ -89,11 +95,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override async Task TransferAssets(CryptoAddress sourceAddress, string destinationAddress)
         {
+            var encrypted = new BitcoinEncryptedSecretNoEC(sourceAddress.PrivateKey, Network);
+            var secret = encrypted.GetSecret(KeyVaultService.KeyStoreEncryptionPassword);
 
+            var explorer = new BlockExplorer();
+            var address = await explorer.GetBase58AddressAsync(sourceAddress.Address);
 
-            throw new NotImplementedException();
+            var uri = new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended");
+            var fee = await _restService.GetAsync<EarnResponse>(uri);
+
+            var tb = new TransactionBuilder();
+            var tx = tb
+                .SetChange(secret.GetAddress())
+                .BuildTransaction(true);
+
+            var verified = tb.Verify(tx);
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
@@ -250,6 +268,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 public double ValueIn { get; set; }
                 public double Fees { get; set; }
             }
+        }
+
+        private class EarnResponse
+        {
+            public int FastestFee { get; set; }
+            public int HalfHourFee { get; set; }
+            public int HourFee { get; set; }
         }
     }
 }
