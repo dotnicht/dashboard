@@ -18,6 +18,7 @@ import { TfaComponent } from '../../components/controls/tfa/tfa.component';
 import { EqualValidator } from '../../directives/equal-validator.directive';
 import { ChangePasswordComponent, ChangePasswordDialogComponent } from '../../components/controls/change-password/change-password.component';
 import { SharedModule } from '../../app.shared.module';
+import { PapaParseModule } from 'ngx-papaparse';
 
 
 export const SETTINGS_ROUTES: Routes = [
@@ -41,6 +42,7 @@ export const SETTINGS_ROUTES: Routes = [
         SharedModule,
         FormsModule,
         ReactiveFormsModule,
+        PapaParseModule,
         RouterModule.forChild([
             {
                 path: '', component: SettingsComponent,

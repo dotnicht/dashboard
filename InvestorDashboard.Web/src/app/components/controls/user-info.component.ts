@@ -8,8 +8,10 @@ import { UserEdit } from '../../models/user-edit.model';
 import { Role } from '../../models/role.model';
 import { Permission } from '../../models/permission.model';
 import { ConfigurationService } from '../../services/configuration.service';
-import { CountryCode } from '../../models/countryCodes';
+import { CountryCode, Country } from '../../models/countryCodes';
 import { Observable } from 'rxjs/Observable';
+import { AppTranslationService } from '../../services/app-translation.service';
+import { PapaParseService } from 'ngx-papaparse';
 
 
 @Component({
@@ -32,6 +34,7 @@ export class UserInfoComponent implements OnInit {
     isViewOnly: boolean;
 
     private countryCodes: CountryCode[];
+    private countries: Country[] = [];
     private isEditMode = false;
     private isNewUser = false;
     private isSaving = false;
@@ -42,6 +45,12 @@ export class UserInfoComponent implements OnInit {
     private uniqueId: string = Utilities.uniqueId();
     private user: User = new User();
     private userEdit: UserEdit;
+    get selectedCountry() {
+        if (this.countries.length > 0 && this.user.countryCode != undefined) {
+            return this.countries.find(x => x.key == this.user.countryCode).value;
+        }
+        return undefined;
+    }
 
 
     @ViewChild('f')
@@ -70,7 +79,9 @@ export class UserInfoComponent implements OnInit {
 
 
     constructor(private accountService: AccountService,
-        private configurationService: ConfigurationService) {
+        private configurationService: ConfigurationService,
+        private translationService: AppTranslationService,
+        private papa: PapaParseService) {
 
     }
 
@@ -108,9 +119,23 @@ export class UserInfoComponent implements OnInit {
         this.mask = ['+', '(', /\d/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/];
         this.phonePattern = '\+?([0-9]{0,3})\(?([0-9]{3})\)?([ .-]?)([0-9]{3})-([0-9]{4})';
         this.loadCurrentUserData();
+
+        this.getCountryList(this.translationService.getCurrentLanguage).subscribe(data => {
+            for (let key in data) {
+                let country = new Country();
+                country.key = key;
+                country.value = data[key];
+                this.countries.push(country);
+            }
+        });
+
+
     }
     getCountryCode() {
         return Observable.of(require('../../assets/json/countryCodes.json'));
+    }
+    getCountryList(lang: string = 'en') {
+        return Observable.of(require(`../../assets/json/country-list/country_${lang}.json`));
     }
     resetForm(replace = false) {
         this.isChangePassword = false;
@@ -161,7 +186,7 @@ export class UserInfoComponent implements OnInit {
     }
 
     private loadCurrentUserData() {
-       // this.alertService.startLoadingMessage();
+        // this.alertService.startLoadingMessage();
         this.accountService.getUser().
             subscribe(user => this.onCurrentUserDataLoadSuccessful(user), error => this.onCurrentUserDataLoadFailed(error));
     }
@@ -213,7 +238,7 @@ export class UserInfoComponent implements OnInit {
         this.isSaving = true;
         //this.alertService.startLoadingMessage('Saving changes...');
 
-       this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
+        this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
     }
 
 

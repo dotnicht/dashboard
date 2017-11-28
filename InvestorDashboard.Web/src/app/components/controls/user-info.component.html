@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <mat-form-field *ngIf="isEditMode">
+    <!-- <mat-form-field *ngIf="isEditMode">
       <input matInput attr.id="countryCode-{{uniqueId}}" #countryCode="ngModel" name="countryCode" placeholder="Enter country code"
         [(ngModel)]="userEdit.countryCode" pattern="[A-Z]{3}"  minlength="3" maxLength="3" />
       <mat-icon *ngIf="f.submitted && countryCode.valid" matSuffix>done</mat-icon>
@@ -51,11 +51,20 @@
         <div *ngIf="countryCode.errors.pattern">{{'users.editor.CountryCodePattern' | translate}} </div>
 
       </mat-error>
+    </mat-form-field> -->
+
+    <mat-form-field *ngIf="isEditMode" class="phoneCode">
+      <mat-select placeholder="Choose country" name="countryCode" [(value)]="userEdit.countryCode">
+        <mat-option *ngFor="let country of countries" [value]="country.key">
+          {{ country.value }}
+        </mat-option>
+      </mat-select>
     </mat-form-field>
+
     <div class="form-group" *ngIf="!isEditMode">
       <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="countryCode-{{uniqueId}}">{{'users.editor.CountryCode' | translate}}</label>
       <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
-        <p class="form-control-static">{{user.countryCode}}</p>
+        <p class="form-control-static">{{selectedCountry}}</p>
       </div>
     </div>
 
@@ -68,7 +77,7 @@
         <hr [class.separator-hr]="!isEditMode" />
       </div>
     </div>
-
+<!-- 
     <mat-form-field *ngIf="isEditMode">
       <input matInput attr.id="city-{{uniqueId}}" #city="ngModel" name="city" placeholder="Enter city" [(ngModel)]="userEdit.city"
         case='uppercase' />
@@ -80,7 +89,7 @@
       <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
         <p class="form-control-static">{{user.city}}</p>
       </div>
-    </div>
+    </div> -->
 
     <div class="row" *ngIf="!isEditMode">
       <div class="col-mat-12">
@@ -113,7 +122,6 @@
         <input matInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number"
           [(ngModel)]="userEdit.phoneNumber" />
         <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
-          <!-- <div *ngIf="phoneNumber.errors.pattern">pattern </div> -->
           <div> {{phoneNumber.errors | json}}</div>
 
         </mat-error>
