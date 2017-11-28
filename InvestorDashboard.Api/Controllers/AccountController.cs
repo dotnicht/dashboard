@@ -155,13 +155,14 @@ namespace InvestorDashboard.Api.Controllers
             });
         }
 
-
         [HttpGet("reset_password"), Produces("application/json")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(string email, string code)
+        public IActionResult ResetPassword(string email, string code)
         {
-            var options = new CookieOptions();
-            options.Expires = DateTimeOffset.Now.AddDays(1);
+            var options = new CookieOptions
+            {
+                Expires = DateTimeOffset.Now.AddDays(1)
+            };
 
             Response.Cookies.Append("reset_token", code, options);
             Response.Cookies.Append("reset_email", email, options);

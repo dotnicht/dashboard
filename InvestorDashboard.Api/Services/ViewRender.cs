@@ -68,8 +68,11 @@ namespace InvestorDashboard.Api.Services
 
         private ActionContext GetActionContext()
         {
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = _serviceProvider;
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = _serviceProvider
+            };
+
             return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         }
     }

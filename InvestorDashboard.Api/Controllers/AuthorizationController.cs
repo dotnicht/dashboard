@@ -495,10 +495,10 @@ namespace InvestorDashboard.Api.Controllers
         [HttpGet("~/connect/confirm_email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
-            var options = new CookieOptions();
-            options.Expires = DateTimeOffset.Now.AddMinutes(30);
-
-           
+            var options = new CookieOptions
+            {
+                Expires = DateTimeOffset.Now.AddMinutes(30)
+            };
 
             if (userId == null || code == null)
             {

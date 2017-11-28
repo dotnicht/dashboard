@@ -72,7 +72,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 
-        protected override async Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
         {
             throw new NotImplementedException();
         }
