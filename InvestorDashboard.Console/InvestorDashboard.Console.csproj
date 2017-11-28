@@ -1,37 +1,49 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.0.1" />
-    <PackageReference Include="microsoft.entityframeworkcore" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
-    <PackageReference Include="microsoft.extensions.dependencyinjection.abstractions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-rc2" />
-    <PackageReference Include="NLog.Schema" Version="4.4.12" />
-    <PackageReference Include="Quartz" Version="3.0.0-beta1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.0.1" />
+        <PackageReference Include="microsoft.entityframeworkcore" Version="2.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Dependencyinjection.Abstractions" Version="2.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-rc2" />
+        <PackageReference Include="NLog.Schema" Version="4.4.12" />
+        <PackageReference Include="Quartz" Version="3.0.0-beta1" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\InvestorDashboard.Backend\InvestorDashboard.Backend.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\InvestorDashboard.Backend\InvestorDashboard.Backend.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="nlog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <Content Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="appsettings.Development.json">
+            <DependentUpon>appsettings.json</DependentUpon>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+        <Content Include="appsettings.Production.json">
+            <DependentUpon>appsettings.json</DependentUpon>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+        <Content Include="appsettings.Staging.json">
+            <DependentUpon>appsettings.json</DependentUpon>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+        <Content Update="nlog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
-  <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
-    <Copy SourceFiles="%(Content.Identity)" DestinationFiles="%(Content.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Condition="'%(Content.Link)' != ''" />
-  </Target>
-  
+    <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
+        <Copy SourceFiles="%(Content.Identity)" DestinationFiles="%(Content.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Condition="'%(Content.Link)' != ''" />
+    </Target>
+
 </Project>
