@@ -1,0 +1,233 @@
+﻿<!-- /.preloader -->
+<div id="preloader"></div>
+
+<div id="top"></div>
+
+<!-- /.parallax full screen background image -->
+<div class="fullscreen landing slideshow">
+
+  <div class="overlay">
+    <div class="container">
+      <div class="row">
+        <div class="info col-md-7">
+
+          <!-- /.logo -->
+          <div class="logo wow fadeInDown ">
+            <a href="https://data-trading.com" target="_blank">
+              <img src="/assets/img/presale/logo.svg" alt="logo">
+            </a>
+          </div>
+
+          <div class="registration">
+            <mat-card class="header-phone img-responsive wow fadeInRight animated" style="visibility: visible; animation-name: fadeInRight;">
+              <div class="form-header">
+                <span class="active">Access dashboard</span>
+                <span>
+                  <a href="/login">Login</a>
+                </span>
+              </div>
+              <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
+                <mat-form-field class="login">
+                  <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
+                    required email>
+
+                </mat-form-field>
+                <mat-form-field>
+                  <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password"
+                    [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
+
+                </mat-form-field>
+                <mat-form-field>
+                  <input matInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel"
+                    placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
+
+
+                </mat-form-field>
+                <div class="errors">
+                  <div *ngIf="email.invalid && (email.dirty || email.touched)">
+
+                    <p *ngIf="email.errors.required">Email is
+                      <strong>required</strong>
+                    </p>
+                    <p *ngIf="email.errors.email">Email is not
+                      <strong>valid</strong>
+                    </p>
+                  </div>
+                  <div *ngIf="password.invalid && (password.dirty || password.touched)">
+                    <p *ngIf="password.errors.minlength">Min length is 8</p>
+                    <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
+                      <br/> 1 LowerCase Alphabet, 1 Number</p>
+                  </div>
+
+                  <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
+                  <p *ngIf="errorMsg">{{errorMsg}}</p>
+                </div>
+                <div class="recaptcha">
+                  <re-captcha (captchaExpired)="handleCaptchaExpired()" (captchaResponse)="handleCorrectCaptcha($event)" site_key="6LdmAjkUAAAAAJdKqXjRbDK586VXRNchP1e7sQlb"></re-captcha>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <button type="submit" [disabled]="!f.form.valid || isLoading ||  !reCaptchaStatus" mat-raised-button color="primary">
+                    <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
+                    <span>Join us</span>
+                  </button>
+
+                </div>
+              </form>
+
+            </mat-card>
+          </div>
+
+          <!-- /.main title -->
+          <h1>
+            Most powerful platform for&nbsp;trade forecasting based&nbsp;on&nbsp;AI
+          </h1>
+
+          <div class="progress-holder" style="">
+            Pre-sale progress:
+            <strong class="progress_percent_text"></strong>
+            <div class="progress">
+              <div class="progress-bar progress_percent_value" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+              <span class="progress_min_needed_value" style="opacity:0"></span>
+            </div>
+            <div class="progress-details progress_amount_text"></div>
+          </div>
+
+          <!-- /.count down timer -->
+          <ul class="countdown">
+            <li>
+              <div class="numb wow fadeInUp">
+                <span class="days">03</span>
+                <p class="days_ref">days</p>
+              </div>
+            </li>
+            <li>
+              <div class="numb wow fadeInUp">
+                <span class="hours">10</span>
+                <p class="hours_ref">hours</p>
+              </div>
+            </li>
+            <li>
+              <div class="numb wow fadeInUp">
+                <span class="minutes">01</span>
+                <p class="minutes_ref">min</p>
+              </div>
+            </li>
+            <li>
+              <div class="numb wow fadeInUp">
+                <span class="seconds">59</span>
+                <p class="seconds_ref">sec</p>
+              </div>
+            </li>
+          </ul>
+
+          <!-- /.header paragraph -->
+          <div class="working">
+            <p>Join DataTrading token-sale,
+              <b>don't&nbsp;miss presale 30% bonus</b>
+            </p>
+          </div>
+
+          <!-- /.header menu -->
+          <div class="more wow fadeInLeft">
+            <a href="https://www.facebook.com/DataTrading" target="">
+              <img src="/assets/img/presale/facebook.svg" alt="facebook">
+            </a>
+            <a href="https://www.youtube.com/channel/UC6QWQbo8AFxG0ghmbihdBDA" target="">
+              <img src="/assets/img/presale/youtube.svg" alt="youtube">
+            </a>
+            <a href="https://twitter.com/datatrading_" target="">
+              <img src="/assets/img/presale/twitter.svg" alt="twitter">
+            </a>
+            <a href="https://t.me/datatradingENG" target="">
+              <img src="/assets/img/presale/telegram.svg" alt="telegram">
+            </a>
+            <a href="https://bitcointalk.org/index.php?topic=2306909.new#new" target="">
+              <img src="/assets/img/presale/bitcoin.svg" alt="bitcoin">
+            </a>
+          </div>
+
+        </div>
+
+        <!-- /.phone image -->
+        <div class="registration col-md-5">
+          <mat-card class="header-phone img-responsive wow fadeInRight">
+            <div class="form-header">
+              <span class="active">Access dashboard</span>
+              <span>
+                <a [routerLink]="['/login']">Login</a>
+              </span>
+            </div>
+            <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
+              <mat-form-field class="login">
+                <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
+                  required email>
+
+              </mat-form-field>
+              <mat-form-field>
+                <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password"
+                  [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
+
+              </mat-form-field>
+              <mat-form-field>
+                <input matInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel"
+                  placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
+
+
+              </mat-form-field>
+              <div class="errors">
+                <div *ngIf="email.invalid && (email.dirty || email.touched)">
+
+                  <p *ngIf="email.errors.required">Email is
+                    <strong>required</strong>
+                  </p>
+                  <p *ngIf="email.errors.email">Email is not
+                    <strong>valid</strong>
+                  </p>
+                </div>
+                <div *ngIf="password.invalid && (password.dirty || password.touched)">
+                  <p *ngIf="password.errors.minlength">Min length is 8</p>
+                  <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
+                    <br/> 1 LowerCase Alphabet, 1 Number</p>
+                </div>
+
+                <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
+                <p *ngIf="errorMsg">{{errorMsg}}</p>
+              </div>
+              <div class="recaptcha">
+                <re-captcha (captchaExpired)="handleCaptchaExpired()" (captchaResponse)="handleCorrectCaptcha($event)" site_key="6LdmAjkUAAAAAJdKqXjRbDK586VXRNchP1e7sQlb"></re-captcha>
+              </div>
+
+              <div style="margin-top: 20px;">
+                <button type="submit" [disabled]="!f.form.valid || isLoading ||  !reCaptchaStatus" mat-raised-button color="primary">
+                  <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
+                  <span>Join us</span>
+                </button>
+
+              </div>
+            </form>
+
+          </mat-card>
+        </div>
+        <div class="more wow fadeInLeft" style="padding:0 0 0 15px">
+
+          <a href="https://www.facebook.com/DataTrading" target="">
+            <img src="/assets/img/presale/facebook.png" alt="facebook">
+          </a>
+          <a href="https://www.youtube.com/channel/UC6QWQbo8AFxG0ghmbihdBDA" target="">
+            <img src="/assets/img/presale/youtube.png" alt="youtube">
+          </a>
+          <a href="https://twitter.com/datatrading_" target="">
+            <img src="/assets/img/presale/twitter.png" alt="twitter">
+          </a>
+          <a href="https://t.me/datatradingENG" target="">
+            <img src="/assets/img/presale/telegram.png" alt="telegram">
+          </a>
+          <a href="https://bitcointalk.org/index.php?topic=2306909.new#new" target="">
+            <img src="/assets/img/presale/bitcoin.png" alt="bitcoin">
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

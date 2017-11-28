@@ -38,19 +38,22 @@ register-rules-dialog {
     white-space: initial;
   }
 }
-a{
-  &.disabled{
+
+a {
+  &.disabled {
     pointer-events: none;
-    color: rgba(0,0,0,.38) !important;
+    color: rgba(0, 0, 0, .38) !important;
   }
 }
+
 .token_calculator {
   .mat-form-field-infix {
     width: auto;
   }
 }
 
-.mat-card-title, .mat-dialog-container {
+.mat-card-title,
+.mat-dialog-container {
   .mat-icon {
     top: 4px;
     position: relative;
@@ -95,6 +98,47 @@ body {
   }
   h1 {
     font-size: 20px;
+  }
+}
+
+app-register_presale {
+  form {
+    .mat-form-field {
+      label {
+        color: rgba(255, 255, 255, 0.42);
+      }
+      .mat-form-field-underline {
+        background-color: rgba(255, 255, 255, 0.42);
+      }
+    }
+    .mat-focused .mat-form-field-placeholder {
+      color: rgba(255, 255, 255, 0.42);
+    }
+    .mat-form-field-ripple {
+      background-color: rgba(255, 255, 255, 0.42);
+    }
+    .mat-raised-button {
+      width: 50%;
+    }
+    .mat-fab.mat-primary,
+    .mat-mini-fab.mat-primary,
+    .mat-raised-button.mat-primary {
+      background-color: #e2556c;
+    }
+    .mat-fab.mat-accent[disabled],
+    .mat-fab.mat-primary[disabled],
+    .mat-fab.mat-warn[disabled],
+    .mat-fab[disabled][disabled],
+    .mat-mini-fab.mat-accent[disabled],
+    .mat-mini-fab.mat-primary[disabled],
+    .mat-mini-fab.mat-warn[disabled],
+    .mat-mini-fab[disabled][disabled],
+    .mat-raised-button.mat-accent[disabled],
+    .mat-raised-button.mat-primary[disabled],
+    .mat-raised-button.mat-warn[disabled],
+    .mat-raised-button[disabled][disabled] {
+      background-color: #b89ba0;
+    }
   }
 }
 
@@ -219,11 +263,8 @@ body {
   }
   body {
     background: #f1f1f1;
-    line-height: 18px;
-    padding-top: 30px;
   }
   h1 {
-    border-bottom: 3px #4189C7 solid;
     font-size: 24px;
   }
   h2 {
@@ -243,7 +284,6 @@ body {
     padding-top: 0px;
   }
   h1 {
-    border-bottom: 5px #4189C7 solid;
     font-size: 36px;
   }
   h2 {
@@ -264,14 +304,3 @@ ul li {
   padding: 5px 0;
 }
 
-blockquote {
-  margin: 25px 10px;
-  padding: 10px 35px 10px 10px;
-  border-left: 10px #158a15 solid;
-  background: #edffed;
-}
-
-blockquote a,
-blockquote a:hover {
-  color: #068006;
-}

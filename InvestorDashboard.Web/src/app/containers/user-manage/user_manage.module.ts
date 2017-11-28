@@ -23,6 +23,7 @@ import {
 } from '../../components/controls/forgot-password/forgot.password.component';
 import { ResetPasswordComponent, ResetPasswordDialogComponent } from '../../components/controls/reset-password/reset-password.component';
 import { SharedModule } from '../../app.shared.module';
+import { RegisterPreSaleComponent } from '../register_presale/register_presale.component';
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { SharedModule } from '../../app.shared.module';
     ForgotPasswordComponent,
     ForgotPasswordDialogComponent,
     ResetPasswordComponent,
-    ResetPasswordDialogComponent
+    ResetPasswordDialogComponent,
+    RegisterPreSaleComponent
   ],
   imports: [
     CommonModule,

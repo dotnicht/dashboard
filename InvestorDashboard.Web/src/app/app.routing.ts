@@ -13,6 +13,7 @@ import { TfaComponent } from './components/controls/tfa/tfa.component';
 import { FaqComponent } from './containers/faq/faq.component';
 import { ForgotPasswordComponent } from './components/controls/forgot-password/forgot.password.component';
 import { ResetPasswordComponent } from './components/controls/reset-password/reset-password.component';
+import { RegisterPreSaleComponent } from './containers/register_presale/register_presale.component';
 
 export const routingComponents = [
     NotFoundComponent
@@ -32,6 +33,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'forgot_password', component: ForgotPasswordComponent },
     { path: 'email_confirmed', component: ConfirmedEmailComponent },
+    { path: 'presale', component: RegisterPreSaleComponent },
     { path: 'reset_password', component: ResetPasswordComponent, },
     {
         path: 'settings', canActivate: [AuthGuard],

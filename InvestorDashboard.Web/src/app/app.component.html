@@ -1,5 +1,5 @@
 
-<mat-drawer-container fullscreen>
+<mat-drawer-container fullscreen *ngIf="showMainContainer">
   <mat-drawer #start mode="push" class="example-container">
 
     <mat-nav-list>
@@ -126,3 +126,7 @@
     </div>
   </mat-toolbar>
 </mat-drawer-container>
+
+<div *ngIf="!showMainContainer">
+    <router-outlet></router-outlet>
+</div>

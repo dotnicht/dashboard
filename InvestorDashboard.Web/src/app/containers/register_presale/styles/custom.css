@@ -1,0 +1,851 @@
+/**
+* AfterWork
+* Free Coming Soon Template
+* Author: MoxDesign - http://www.moxdesign.com
+**/
+
+html, body {
+	width: 100%;
+	overflow-x: hidden;
+}
+body {
+	height:100%;
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 300;
+	padding:0;
+	margin:0;
+	font-size:14px;
+	/*line-height:1.6em; */
+	color: #777; 
+	background: #fff;
+	overflow-x:hidden;
+}
+
+h1 { font-size: 2em; line-height:1.1em; margin:0 0 .8em; }
+h2 { font-size: 1.8em; line-height:1.4em; margin:0 0 .8em;  }
+h3 { font-size: 1.4em; line-height:1.4em; }
+h4 { font-size: 1.25em; line-height:1.4em;}
+h5 { font-size: 1.1em; line-height:1.4em; }
+h6 { font-size: 1em; line-height:1.2em; }
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+	text-decoration: none
+}	 
+
+p { 
+	padding:0 0 1em;
+	margin:0;
+}
+
+a {
+	color: #68C39F;
+	outline: 0;
+	font-weight: bold;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+} 
+a:hover {
+	text-decoration: none;
+	color: #449BB5;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+} 
+#preloader { 
+	position: fixed; 
+	left: 0; 
+	top: 0; 
+	z-index: 999; 
+	width: 100%; 
+	height: 100%; 
+	overflow: visible; 
+	background: #fff url(../images/loading.gif) no-repeat center center;
+}
+
+.landing {
+    background-repeat:no-repeat;
+    background-position:50% 50%;
+    background-position:50% 50%\9 !important;
+}
+.fullscreen {
+    width:100%;
+    min-height:100%;
+}
+.overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: relative;
+    width: 100%;
+    height: 100%;
+	min-height:100vh;
+    display: block;
+}
+.logo {
+	margin: 100px 0 40px 0;
+}
+.logo img{
+	width: 150px; 
+	height: 50px
+}
+.landing h1{
+	font-size: 46px;
+	font-weight: 300;
+	color: #fff;
+	margin: 30px 0 30px 0;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+}
+.landing p {
+	color: #fff;
+	font-size: 13px;
+}
+.working {
+	margin-bottom: 50px;
+}
+.working p {
+	font-size: 22px !important; 
+}
+.numb {
+	display: block;
+	width: 120px;
+	height: 50px;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.3);
+	margin-right: 10px;
+	margin-bottom: 13px
+}
+.highlight {
+	color: #68C39F;
+}
+.countdown {
+	margin-bottom: 30px;
+}
+ul.countdown {
+    list-style: none;
+    margin: 40px auto 40px;
+    padding: 0;
+    display: block;
+}
+
+ul.countdown li {
+    display: inline-block;
+	vertical-align: top;
+}
+
+ul.countdown li span {
+	padding: 7px;
+    text-align: center;
+    font-size: 35px;
+    font-weight: 100;
+    line-height: 35px;
+	float: left;
+}
+
+ul.countdown li.seperator {
+    font-size: 25px;
+    line-height: 25px;
+    vertical-align: top;
+}
+
+ul.countdown li p {
+    padding-top: 17px;
+}
+
+.more {
+	margin-bottom: 100px;
+}
+
+.more a{
+	margin-right: 10px;
+}
+
+.more img {
+	width: 50px;
+}
+
+.working+.more{
+	display:block;
+}
+.registration+.more{
+		display:none;
+}
+
+.option {
+	text-transform: uppercase;
+	padding: 5px;
+	min-width: 120px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	-ms-border-radius: 2px;
+	-o-border-radius: 2px;
+	border-radius: 2px;
+	margin-right: 15px;
+	transition: all 0.4s;
+	font-size: 14px;
+	color: #fff;
+}
+.option .fa {
+	font-size: 16px;
+	margin-right: 10px;
+}
+.option:hover {
+	color: #68C39F;
+}
+.header-phone {
+	margin: 100px 0 100px;
+}
+#feature {
+	padding: 100px 0 120px;
+}
+#feature h1{
+	font-size: 56px;
+	font-weight: 300;
+	margin: 15px 0 15px 0;
+}
+#feature ul {
+	padding: 15px;
+}
+.about-pic {
+	margin-top: 60px;
+}
+.feature li {
+	overflow:hidden;
+	padding: 0;
+}
+.feature li i {
+	width: 70px;
+	height: 70px;
+	line-height: 70px;
+	font-size: 30px;
+	color: #68C39F;
+	border-radius: 50%;
+	border: solid 1px #68C39F;
+}
+
+#subscribe {
+	height: 100%;
+	background: #393f43;
+	color: #fff;
+}
+.letter {
+	margin-top: 100px;
+	width: 100px;
+	height: 100px;
+	line-height: 100px;
+	font-size: 40px;
+	color: #68C39F;
+	border-radius: 50%;
+	border: solid 1px #68C39F;
+}
+.subscribe-form h4 {
+	margin: 30px auto 50px;
+}
+.subscribe-form {
+	max-width: 600px;
+	margin: 60px auto 75px;
+	text-align: center;
+	overflow: hidden;
+}
+.subscribe-form form {
+	position: relative;
+}
+.subscribe-form input {
+	max-width: 85%;
+	position: relative;
+	padding: 5px 25px;
+}
+.subscribe-form .form-control {
+	border-radius: 0;
+	border: none;
+	background-color: rgba(255, 255, 255, 0.6);
+	color: #333;
+	font-size: 1.2em;
+	height: 55px;
+}
+.subscribe-form button {
+	background-color: #68C39F;
+	color: #ffffff;
+	font-size: 1em;
+	line-height: 52px;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	padding: 0 30px;
+	margin: 0;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+.subscribe-form .btn {
+	height: 55px;
+}
+.subscribe-form .btn:hover {
+	background-color: #4bb78c;
+	color: #fff;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+.subscribe-form .form-control::-webkit-input-placeholder {
+	color: #333;
+}
+.subscribe-form .form-control:-moz-placeholder { 
+	color: #333;  
+}
+.subscribe-form .form-control::-moz-placeholder { 
+	color: #333;  
+}
+.subscribe-form .form-control:-ms-input-placeholder {  
+	color: #333;  
+}
+.download {
+	font-size: 18px;
+	margin-bottom: 160px;
+	line-height: 18px;
+	padding: 15px 30px;
+	height: 55px;
+	background: #68C39F;
+	transition: all 0.4s;
+	color: #fff;
+}
+.download .fa {
+	margin-right: 10px;
+}
+.download:hover {
+	color: #fff;
+	background-color: #4bb78c;
+}
+#contact {
+	width: 100%;
+	min-height: 100%;
+}
+#googlemaps { 
+	height: 355px; 
+	width: 100%; 
+}
+.ul-address li {
+	padding-right: 20px; 
+	margin-bottom: 8px; 
+	list-style: none;
+}
+.ul-address i {
+	margin-left: 15px;
+	position: absolute; 
+	left: 0; 
+	color: #68C39F; 
+	font-size: 18px;
+ }
+.social { float: left;
+	margin-left: 0;
+ }
+.social li {
+  display: inline-block;
+  padding-right: .3em;
+}
+.social li:last-child { padding-right: 0; }
+.social li a {
+  display: block;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  color: #68C39F;
+  border-radius: 3px;
+  background: #fff;
+  border: solid 1px #68C39F;
+  -webkit-transition: all .8s ease;
+  transition: all .8s ease;
+}
+.social li a:hover {
+  color: #fff;
+  background: #68C39F;
+}
+.contact-row {
+	margin: 60px 0 50px;
+}
+#contact-form {
+	margin: 0 auto;
+}
+
+#contact-form input {
+	position: relative;
+	padding: 5px 25px;
+	width: 100%;
+}
+#contact-form textarea {
+	position: relative;
+	padding: 10px 25px;
+	width: 100%;
+	height: 120px !important;
+}
+#contact-form .form-control {
+	border-radius: 0;
+	border: solid 1px #dadada;
+	background-color: #fff;
+	color: #333;
+	font-size: 1.2em;
+	height: 55px;
+}
+#contact-form .btn {
+	height: 55px;
+	width: 100%;
+	background-color: #68C39F;
+	color: #ffffff;
+	font-size: 17px !important;
+	line-height: 18px;
+	padding: 0 33px;
+	border: none;
+	border-radius: 3px;
+	margin: 0;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+#contact-form .btn:hover {
+	background-color: #4bb78c;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+.last-tweet {
+	margin: 50px 0 70px;
+}
+.col-twit {
+	margin: 70px 0 80px;
+}
+.col-twit h1{
+	color: #fff;
+	font-size: 37px;
+}
+#tweets {
+}
+#tweets ul {
+	margin: 0;
+	padding:0;
+}
+#tweets li {
+	list-style:none;
+	width: 100%;
+}
+#tweets .user, .tweet, .timePosted {
+	float:none;
+}
+#tweets .user {
+	display:none;
+}
+#tweets .tweet {
+	font-size: 16px;
+	color: #fff;
+}
+#tweets .timePosted {
+	background: url(../images/twiter.png) center 0 no-repeat;
+	background-size: 20px 20px;
+	font-size: 12px;
+	color: #fff;
+	padding-top: 25px;
+}
+#tweets .user {
+	display: none;
+}
+#tweets a {
+	color: #68C39F;
+	font-weight: normal;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+#tweets a:hover {	
+	color: #449BB5;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}	
+#tweets .user span span {
+	display: none;
+}
+#tweets .user img, .user a > span {
+	display: none;
+}
+#tweets .interact {
+	display:none;
+}
+#footer {
+	background: #fff;
+	padding: 50px 0 50px;
+}
+.scroll-top {
+	margin: 0 auto 10px;
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
+	color: #68C39F;
+	border-radius: 50%;
+	background: #fff;
+	border: solid 1px #68C39F;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+.scroll-top:hover {
+	color: #fff;
+	background: #68C39F;
+	-webkit-transition: all .8s ease;
+	transition: all .8s ease;
+}
+.control-group .controls {
+	overflow-x: hidden;
+}
+
+/* ----- PROGRESS BAR ------ */
+
+progress {
+    display: inline-block;
+    vertical-align: baseline
+}
+
+@-webkit-keyframes progress-bar-stripes {
+    from {
+        background-position: 40px 0
+    }
+
+    to {
+        background-position: 0 0
+    }
+}
+
+@keyframes progress-bar-stripes {
+    from {
+        background-position: 40px 0
+    }
+
+    to {
+        background-position: 0 0
+    }
+}
+
+.progress-bar {
+    float: left;
+    width: 0;
+    height: 100%;
+    font-size: 12px;
+    line-height: 20px;
+    color: #fff;
+    text-align: center
+}
+
+.progress-bar-striped,.progress-striped .progress-bar {
+    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+    background-size: 40px 40px
+}
+
+.progress-bar.active,.progress.active .progress-bar {
+    -webkit-animation: progress-bar-stripes 2s linear infinite;
+    animation: progress-bar-stripes 2s linear infinite
+}
+
+.progress-bar-success {
+    background-color: #5cb85c
+}
+
+.progress-striped .progress-bar-success {
+    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)
+}
+
+.progress-bar-info {
+    background-color: #5bc0de
+}
+
+.progress-striped .progress-bar-info {
+    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)
+}
+
+.progress-bar-warning {
+    background-color: #f0ad4e
+}
+
+.progress-striped .progress-bar-warning {
+    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)
+}
+
+.progress-bar-danger {
+    background-color: #d9534f
+}
+
+.progress-striped .progress-bar-danger {
+    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)
+}
+
+.progress-holder {
+    max-width: 624px;
+    /* margin: 0 auto 0px; */
+    color: #fff;
+	font-size: 1.4em;
+    text-align: left
+}
+
+.head-with-progress .head-group {
+    margin-bottom: 36px
+}
+
+.head-with-progress .countdown-holder {
+    margin-bottom: 10px
+}
+
+.head-with-progress .countdown-holder .title-md {
+    font-size: 26px
+}
+
+.progress {
+    height: 10px;
+    background-color: rgba(102,116,94,1);
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 8px 0 3px;
+    position: relative;
+    overflow: visible;
+	max-width: 520px;
+}
+
+.progress span {
+    position: absolute;
+    top: 0;
+    width: 0;
+    height: 10px
+}
+
+.progress span:after,.progress span:before {
+    content: "";
+    width: 1px;
+    height: 5px;
+    background-color: #75df36;
+    position: absolute;
+    left: 10px
+}
+
+.progress span:before {
+    bottom: 100%;
+    margin-bottom: 2px
+}
+
+.progress span:after {
+    top: 100%;
+    margin-top: 2px
+}
+
+.progress-details {
+    font-size: 20px
+}
+
+.progress-details strong {
+    color: #a6fb60
+}
+
+.progress-bar {
+    background-color: #75df36;
+    border-radius: 5px;
+    box-shadow: none;
+    transition: width .8s ease
+}
+
+
+@media only screen 
+and (max-width : 768px) {
+	.working+.more{
+		display:none;
+	}
+	.registration+.more{
+		display:block;
+	}
+	
+	.header-phone {
+		margin: 20px 0 10px;
+	}
+	
+	.logo+.registration{
+		display:block;
+	}
+	.info+.registration{
+		display:none;
+	}
+}
+
+@media only screen 
+and (min-width : 768px) {
+	.logo+.registration{
+		display:none;
+	}
+	.info+.registration{
+		display:block;
+	}
+}
+
+/* iPads (portrait) ----------- */
+@media only screen 
+and (min-width : 768px) 
+and (max-width : 1024px) 
+and (orientation : portrait) {
+	.more {
+		margin-bottom: 50px;
+	}
+	#feature {
+		padding: 30px 0 50px;
+	}
+	#feature h1{
+		font-size: 45px;
+		font-weight: 150;
+		margin: 15px 0 15px 0;
+	}
+	#googlemaps { 
+		height: 300px; 
+	}
+}
+
+/* iPads (landscape) ----------- */
+@media only screen 
+and (min-width : 768px) 
+and (max-width : 1024px) 
+and (orientation : landscape) {
+	.logo {
+		margin: 100px 0 30px 0;
+	}
+	.landing h1{
+		margin: 60px 0 60px 0;
+	}	
+	.countdown {
+		margin-bottom: 90px;
+	}
+	ul.countdown li span {
+		font-size: 35px;
+		font-weight: 150;
+		line-height: 35px;
+	}
+	.working {
+		margin: 60px 0 40px 0;
+	}
+	.more {
+		margin-bottom: 180px;
+	}
+	.header-phone {
+	margin-top: 100px;
+	}
+	.about-pic {
+		margin-top: 100px;
+	}
+	#googlemaps { 
+		height: 280px; 
+	}
+}
+
+/* smart-phone ----------- */
+@media (max-width: 767px) {
+	.more {
+		margin-bottom: 40px;
+	}
+	#feature {
+		padding: 70px 0 70px;
+	}
+	#feature h1{
+		font-size: 45px;
+		font-weight: 200;
+	}
+	.about-pic {
+		margin-top: 20px;
+	}
+	#googlemaps { 
+		height: 300px; 
+	}
+	.contact-left {
+		margin-bottom: 100px
+	}
+	.last-tweet {
+		margin: 50px 0 50px;
+	}
+}
+/* iPhone 6Plus (landscape) ----------- */
+@media (max-width: 736px) {
+	.numb {
+		width: 87px;
+	}
+}
+
+@media (max-width: 375px) {
+	.numb {
+		width: 67px;
+	}
+}
+
+/* iPhone 6 (landscape) ----------- */
+@media (max-width: 667px) {
+	.logo {
+		margin: 15px 0 20px 0;
+	}
+	.landing h1{
+		font-size: 20px;
+		/* line-height:40px; */
+		font-weight: bold;
+		margin: 10px 0 25px 0;
+	}
+	.working {
+		margin-top: 30px;
+	}
+}
+
+/* iPhone 5 (landscape) ----------- */
+@media (max-width: 568px){
+	.logo {
+		margin: 15px 0 15px 0;
+	}
+	.landing h1{
+		margin: 25px 0 15px 0;
+	}
+	.working {
+		margin-top: 25px;
+	}
+	.subscribe-form input {
+		max-width: 83%;
+	}
+	.col-twit h1{
+		font-size: 27px;
+	}
+}
+
+/* Other */
+
+@media (max-width: 360px) {
+	.numb {
+		width: 65px;
+	}
+}
+
+@media and (min-width: 361px) and (max-width: 768px) {
+	.numb {
+		width: 87px !important;
+	}
+}
+
+/* iPhone 4 (landscape) ----------- */
+@media (max-width: 480px) {
+	.about-pic {
+		margin-top: 0px;
+	}
+	.numb {
+		margin-right: 5px;
+	}
+	ul.countdown li span {
+		font-size: 30px;
+		line-height: 30px;
+	}
+}
+
+/* iPhone 4/5 (portrait) ----------- */
+@media (max-width: 320px) {
+	.logo {
+		margin: 15px 0 20px 0;
+	}
+	.landing h1{
+		font-size: 24px;
+		/*line-height: 40px; */
+		font-weight: bold;
+		margin: 20px 0 15px 0;
+	}
+	.numb {
+		width: 120px;
+		margin-right: 10px;
+	}
+	ul.countdown li span {
+		font-size: 35px;
+		line-height: 35px;
+	}
+	.more {
+		text-align: center;
+	}
+}

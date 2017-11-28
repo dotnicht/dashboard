@@ -218,7 +218,7 @@ export class ConfirmEmailDialogComponent {
 
     close() {
         this.dialogRef.close();
-        this.router.navigate(['/login']);
+        document.location.href = '/login';
     }
 
 }

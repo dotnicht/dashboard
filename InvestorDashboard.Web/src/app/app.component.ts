@@ -9,6 +9,7 @@ import { AuthService } from './services/auth.service';
 import { LocalStoreManager } from './services/local-store-manager.service';
 import { isPlatformBrowser } from '@angular/common';
 import { AccountService } from './services/account.service';
+import { OtherService } from './services/other.service';
 
 @Component({
   selector: 'app-root',
@@ -19,11 +20,14 @@ export class AppComponent implements OnInit {
   isMobile: boolean;
   isTab: boolean;
 
+
   appTitle = 'Data Trading';
   isAppLoaded: boolean;
   isUserLoggedIn: boolean;
   public year: number;
-
+  get showMainContainer() {
+    return this.otherService.showMainComponent;
+  }
   get selectedLanguage(): string {
     return this.translationService.getTranslation('languages.' + this.translationService.getCurrentLanguage);
   }
@@ -37,24 +41,24 @@ export class AppComponent implements OnInit {
 
 
     }
-
+    this.otherService.showMainComponent = true;
     this.isUserLoggedIn = this.authService.isLoggedIn;
 
-    if (this.isUserLoggedIn) {
-      //this.refreshData();
-    }
+    // if (this.isUserLoggedIn) {
+    //   this.refreshData();
+    // }
     this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
       this.isUserLoggedIn = isLoggedIn;
     });
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationStart) {
-        let url = (<NavigationStart>event).url;
+    // this.router.events.subscribe(event => {
+    //   if (event instanceof NavigationStart) {
+    //     let url = (<NavigationStart>event).url;
 
-        if (url !== url.toLowerCase()) {
-          this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
-        }
-      }
-    });
+    //     if (url !== url.toLowerCase()) {
+    //       this.router.navigateByUrl((<NavigationStart>event).url.toLowerCase());
+    //     }
+    //   }
+    // });
   }
 
   constructor(
@@ -64,11 +68,13 @@ export class AppComponent implements OnInit {
     private accountService: AccountService,
     private configurations: ConfigurationService,
     private translationService: AppTranslationService,
+    private otherService: OtherService,
     // private clientInfoService: ClientInfoEndpointService,
     private resizeService: ResizeService,
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {
+    
     storageManager.initialiseStorageSyncListener();
 
     translationService.addLanguages(['en', 'ru']);
