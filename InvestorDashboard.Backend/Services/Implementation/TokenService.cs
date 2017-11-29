@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Models;
+using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Backend.Services.Implementation

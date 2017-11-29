@@ -1,4 +1,4 @@
-﻿using InvestorDashboard.Backend.Models;
+﻿using InvestorDashboard.Backend.Database.Models;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {

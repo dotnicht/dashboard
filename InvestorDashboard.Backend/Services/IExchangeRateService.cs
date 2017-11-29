@@ -1,4 +1,4 @@
-﻿using InvestorDashboard.Backend.Models;
+﻿using InvestorDashboard.Backend.Database.Models;
 using System;
 using System.Threading.Tasks;
 
