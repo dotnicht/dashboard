@@ -3,6 +3,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -38,6 +39,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var item = _mapper.Map<DashboardHistoryItem>(_options.Value);
 
+            item.TotalUsers = Context.Users.Count();
             item.TotalCoinsBought = transactions.Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice);
             item.TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate);
             item.TotalInvestors = transactions
@@ -48,6 +50,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var nonInternalTransactions = transactions
                 .Where(x => x.ExternalId == null && x.CryptoAddress.Currency != Currency.DTT && x.CryptoAddress.User.ExternalId == null);
 
+            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
             item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
             item.TotalNonInternalInvestors = nonInternalTransactions
                 .Select(x => x.CryptoAddress.UserId)
@@ -58,15 +61,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await Context.SaveChangesAsync();
         }
 
-        public async Task<DashboardHistoryItem> GetLatestHistoryItem()
+        public async Task<DashboardHistoryItem> GetLatestHistoryItem(bool includeCurrencies = false)
         {
             if (!Context.DashboardHistoryItems.Any())
             {
                 await RefreshHistory();
             }
 
-            return Context.DashboardHistoryItems.OrderByDescending(x => x.Created).FirstOrDefault()
-                ?? throw new InvalidOperationException($"Failed to populate dashboard history.");
+            var item = Context.DashboardHistoryItems.OrderByDescending(x => x.Created).First();
+
+            if (includeCurrencies)
+            {
+                item.Currencies = Context.CryptoTransactions
+                    .Include(x => x.CryptoAddress)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Inbound
+                        && x.CryptoAddress.Type == CryptoAddressType.Investment
+                        && x.ExternalId == null
+                        && x.CryptoAddress.Currency != Currency.DTT
+                        && x.CryptoAddress.User.ExternalId == null)
+                    .ToList()
+                    .GroupBy(x => x.CryptoAddress.Currency)
+                    .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))
+                    .ToList();
+            }
+
+            return item;
         }
     }
 }

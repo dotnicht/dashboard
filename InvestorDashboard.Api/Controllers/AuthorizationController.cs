@@ -38,7 +38,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IMapper _mapper;
-        private readonly IEmailService _emailService;
+        private readonly IMessageService _messageService;
 
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -48,7 +48,7 @@ namespace InvestorDashboard.Api.Controllers
           ILogger<AuthorizationController> loger,
           IEnumerable<ICryptoService> cryptoServices,
           IMapper mapper,
-          IEmailService emailService,
+          IMessageService messageService,
           ViewRender view)
         {
             _applicationManager = applicationManager;
@@ -58,7 +58,7 @@ namespace InvestorDashboard.Api.Controllers
             _logger = loger;
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _view = view;
         }
 
@@ -82,7 +82,7 @@ namespace InvestorDashboard.Api.Controllers
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);
                     var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
-                    await _emailService.SendEmailConfirmationAsync(appUser.Email, emailBody);
+                    await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
                     return Ok();
                 }
@@ -495,10 +495,10 @@ namespace InvestorDashboard.Api.Controllers
         [HttpGet("~/connect/confirm_email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
-            var options = new CookieOptions();
-            options.Expires = DateTimeOffset.Now.AddMinutes(30);
-
-           
+            var options = new CookieOptions
+            {
+                Expires = DateTimeOffset.Now.AddMinutes(30)
+            };
 
             if (userId == null || code == null)
             {

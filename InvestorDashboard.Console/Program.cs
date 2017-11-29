@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using NLog.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using InvestorDashboard.Backend.ConfigurationSections;
 
 namespace InvestorDashboard.Console
 {
@@ -37,6 +39,7 @@ namespace InvestorDashboard.Console
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", false, true)
+              .AddJsonFile($"appsettings.{ Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }.json", true, true)
               .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
@@ -95,18 +98,6 @@ namespace InvestorDashboard.Console
                 builder.SetMinimumLevel(LogLevel.Warning);
                 builder.AddNLog();
             });
-
-            /*
-            serviceCollection.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace));
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-
-            //configure NLog
-            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
-            loggerFactory.ConfigureNLog("nlog.config");
-            */
         }
 
         private static async Task SetupScheduling(IServiceCollection serviceCollection)
@@ -147,7 +138,7 @@ namespace InvestorDashboard.Console
 
             while (System.Console.ReadKey(true).Key != ConsoleKey.Escape)
             {
-                Task.Delay(TimeSpan.FromSeconds(3)).Wait();
+                await Task.Delay(TimeSpan.FromSeconds(3));
             }
 
             await scheduler.Shutdown().ConfigureAwait(false);

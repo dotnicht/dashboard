@@ -25,9 +25,10 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            // TODO: determine address for crypto assets transfer.
-            // _cryptoServices.ToList().ForEach(x => x.TransferAssets(null).Wait());
-            Logger.LogInformation($"Crypto assets transfer completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Settings.Value.Currency.ToString())) }");
+            foreach (var service in _cryptoServices)
+            {
+                await service.TransferAssets();
+            }
         }
 
         protected override void Dispose(bool disposing)

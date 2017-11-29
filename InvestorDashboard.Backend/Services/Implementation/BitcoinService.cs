@@ -10,6 +10,7 @@ using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using Info.Blockchain.API.BlockExplorer;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -35,7 +36,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task UpdateUserDetailsInternal(string userId)
+        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
             var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
                 ? Network.Main
@@ -44,48 +45,77 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(networkType).ToString();
 
-            await Context.CryptoAddresses.AddAsync(new CryptoAddress
+            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Settings.Value.Currency,
                 PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
-                Type = CryptoAddressType.Investment,
+                Type = addressType,
                 Address = address
             });
 
             Context.SaveChanges();
+
+            return result.Entity;
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
             try
             {
-                var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
-                var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
-                var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
-                var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
+                var be = new BlockExplorer();
+                var addr = await be.GetBase58AddressAsync(address);
+                var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
 
-                foreach (var tx in unmapped)
+                foreach (var tx in addr.Transactions)
                 {
-                    mapped.Single(x => x.Hash == tx.Txid).Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                    mapped.Single(x => x.Hash == tx.Hash).Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
                 }
 
                 return mapped;
             }
             catch (Exception ex)
             {
-                // TODO: handle fallback.
-                Logger.LogError(ex, "An error occurred while getting transactions from block explorer.");
-                var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
-                var result = await _restService.GetAsync<ChainResponse>(uri);
-                // TODO: handle invalid internal status code.
-                return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
+                Logger.LogError(ex, $"An error occurred while accessing blockchain.info. Address: { address }.");
+                try
+                {
+                    return await GetFromBlockExplorer(address);
+                }
+                catch (Exception inner)
+                {
+                    Logger.LogError(inner, $"An error occurred while accessing block explorer. Address: { address }.");
+                    return await GetFromChain(address);
+                }
             }
         }
 
-        protected override async Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
         {
+
+
             throw new NotImplementedException();
+        }
+
+        private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
+        {
+            var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
+            var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
+            var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
+            var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
+
+            foreach (var tx in unmapped)
+            {
+                mapped.Single(x => x.Hash == tx.Txid).Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+            }
+
+            return mapped;
+        }
+
+        private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
+        {
+            var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var result = await _restService.GetAsync<ChainResponse>(uri);
+            return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }
 
         internal class ChainResponse

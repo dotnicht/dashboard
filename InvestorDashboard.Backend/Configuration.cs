@@ -25,7 +25,8 @@ namespace InvestorDashboard.Backend
             services.Configure<BitcoinSettings>(configuration.GetSection("Bitcoin"));
             services.Configure<EthereumSettings>(configuration.GetSection("Ethereum"));
             services.Configure<ExchangeRateSettings>(configuration.GetSection("ExchangeRate"));
-            services.Configure<EmailSettings>(configuration.GetSection("Email"));
+            services.Configure<SendGridEmailSettings>(configuration.GetSection("SendGridEmail"));
+            services.Configure<AmazonEmailSettings>(configuration.GetSection("AmazonEmail"));
             services.Configure<TelegramSettings>(configuration.GetSection("Telegram"));
         }
     }

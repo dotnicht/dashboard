@@ -7,20 +7,15 @@ using SendGrid.Helpers.Mail;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class EmailService : IEmailService
+    internal class SendGridEmailService : IEmailService
     {
-        private readonly IOptions<EmailSettings> _emailSettings;
+        private readonly IOptions<SendGridEmailSettings> _emailSettings;
 
-        public EmailService(IOptions<EmailSettings> emailSettings)
+        public SendGridEmailService(IOptions<SendGridEmailSettings> emailSettings)
         {
             _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
         }
-
-        public async Task SendEmailConfirmationAsync(string email, string link)
-        {
-            await SendEmailAsync(email, "Confirm your email", link);
-        }
-
+  
         public async Task SendEmailAsync(string email, string subject, string message)
         {
             var msg = new SendGridMessage
