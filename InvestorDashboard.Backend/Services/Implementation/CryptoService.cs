@@ -93,7 +93,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
 
                         transaction.CryptoAddress = address;
-                        transaction.Direction = CryptoTransactionDirection.Inbound; // TODO: determine transaction type.
                         transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
                         transaction.TokenPrice = TokenSettings.Value.Price;
                         transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;

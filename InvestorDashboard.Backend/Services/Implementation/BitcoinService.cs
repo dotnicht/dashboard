@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Info.Blockchain.API.BlockExplorer;
+using Info.Blockchain.API.Wallet;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -70,11 +71,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var be = new BlockExplorer();
                 var addr = await be.GetBase58AddressAsync(address);
+
                 var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
 
                 foreach (var tx in addr.Transactions)
                 {
-                    mapped.Single(x => x.Hash == tx.Hash).Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                    var result = mapped.Single(x => x.Hash == tx.Hash);
+
+                    if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
+                    {
+                        // TODO: determine transaction amount.
+                        result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
+                        result.Direction = CryptoTransactionDirection.Internal;
+                    }
+                    else
+                    {
+                        result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                        result.Direction = CryptoTransactionDirection.Inbound;
+                    }
                 }
 
                 return mapped;

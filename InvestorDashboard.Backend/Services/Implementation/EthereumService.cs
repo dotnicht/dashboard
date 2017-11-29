@@ -72,7 +72,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={ address }&startblock=0&endblock=99999999&sort=asc&apikey={ _ethereumSettings.Value.ApiKey }");
             var result = await _restService.GetAsync<EtherscanResponse>(uri);
-            return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
+
+            var confirmed = result.Result
+                .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
+                .ToArray();
+
+            var mapped = Mapper.Map<List<CryptoTransaction>>(confirmed);
+
+            foreach (var tx in mapped)
+            {
+                // TODO: agjust direction to include outbound transactions.
+                var source = confirmed.Single(x => x.Hash == tx.Hash);
+                tx.Direction = source.To == address
+                    ? CryptoTransactionDirection.Inbound
+                    : CryptoTransactionDirection.Internal;
+            }
+
+            return mapped;
         }
 
         protected override Task TransferAssets(CryptoAddress sourceAddress, string destinationAddress)
