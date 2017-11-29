@@ -117,13 +117,7 @@
             width: calc(45% - 20px);
 
             .form-field {
-              &.result{
-                .input-field{
-                  &:after{
-                    right: 0px;
-                  }
-                }
-              }
+              
               border: 1px solid #eeeeee;
               display: inline-flex;
               padding: 5px;
@@ -135,7 +129,7 @@
                 &:after {
                   content: '';
                   position: absolute;
-                  right: 15px;
+                  right: 0px;
                   top: 0;
                   bottom: 23px;
                   height: 100%;

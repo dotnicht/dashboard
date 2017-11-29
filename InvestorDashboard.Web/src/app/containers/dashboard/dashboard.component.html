@@ -85,7 +85,7 @@
                 </div>
               </div>
 
-              <!-- <div *ngIf="dashboard.paymentInfoList">
+              <div *ngIf="dashboard.paymentInfoList">
                 <div class="token_calculator">
                   <table cellspacing="0" style="width: 100%">
                     <tbody>
@@ -94,7 +94,7 @@
                         <td>
                           <div class="form-field">
                             <div class="input-field">
-                              <input [(ngModel)]="calculateValue" type="number" min="1">
+                              <input [(ngModel)]="calculateValue" pattern="\d*" type="number" min="1">
                             </div>
                             <span>{{calculatorFromBtc?selectedPaymentType.currency:'USD'}}</span>
                           </div>
@@ -116,7 +116,7 @@
                     </tbody>
                   </table>
                 </div>
-              </div> -->
+              </div>
             </div>
             <div *ngIf="!selectedPaymentType">
               <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>
