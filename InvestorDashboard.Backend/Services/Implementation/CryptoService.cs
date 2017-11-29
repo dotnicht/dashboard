@@ -45,19 +45,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
-        public Task UpdateUserDetails(string userId)
+        public async Task CreateCryptoAddress(string userId)
         {
             if (userId == null)
             {
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (Settings.Value.IsDisabled)
+            if (!Settings.Value.IsDisabled)
             {
-                return Task.CompletedTask;
+                await CreateAddress(userId, CryptoAddressType.Investment);
             }
-
-            return CreateAddress(userId, CryptoAddressType.Investment);
         }
 
         public async Task RefreshInboundTransactions()

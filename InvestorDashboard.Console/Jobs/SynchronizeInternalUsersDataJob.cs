@@ -9,13 +9,13 @@ using Quartz;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class InternalUsersSyncJob : JobBase
+    public class SynchronizeInternalUsersDataJob : JobBase
     {
         private readonly IInternalUserService _internalUserService;
 
-        public override TimeSpan Period => Options.Value.InternalUsersSyncPeriod;
+        public override TimeSpan Period => Options.Value.SynchronizeInternalUsersDataPeriod;
 
-        public InternalUsersSyncJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInternalUserService internalUserService)
+        public SynchronizeInternalUsersDataJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInternalUserService internalUserService)
             : base(loggerFactory, context, options)
         {
             _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
@@ -23,7 +23,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _internalUserService.SyncInternalUsers();
+            await _internalUserService.SynchronizeInternalUsersData();
         }
 
         protected override void Dispose(bool disposing)

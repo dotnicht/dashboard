@@ -127,16 +127,11 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
-            var address = await ApplicationUser.CryptoAddresses
-                .ToAsyncEnumerable()
-                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Contract);
-
             var clientInfo = new ClientInfoModel
             {
                 Balance = ApplicationUser.Balance,
                 BonusBalance = ApplicationUser.BonusBalance,
-                IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled,
-                Address = address?.Address
+                IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled
             };
 
             return clientInfo;

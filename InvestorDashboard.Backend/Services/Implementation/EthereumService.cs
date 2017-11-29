@@ -56,14 +56,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var result = await Context.CryptoAddresses.AddAsync(address);
 
-            if (addressType == CryptoAddressType.Investment)
-            {
-                // duplicate the same address as the contract address.
-                var contractAddress = Mapper.Map<CryptoAddress>(result.Entity);
-                contractAddress.Type = CryptoAddressType.Contract;
-                await Context.CryptoAddresses.AddAsync(contractAddress);
-            }
-
+            // TODO: investigate async behaviour here.
             Context.SaveChanges();
 
             return result.Entity;

@@ -76,7 +76,7 @@ namespace InvestorDashboard.Api.Controllers
 
                 if (result.Succeeded)
                 {
-                    Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(appUser.Id));
+                    Parallel.ForEach(_cryptoServices, async x => await x.CreateCryptoAddress(appUser.Id));
 
                     appUser = await _userManager.FindByEmailAsync(appUser.Email);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
