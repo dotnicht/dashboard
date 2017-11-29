@@ -15,18 +15,18 @@ import { environment } from '../../environments/environment';
 import { Subscription } from 'rxjs/Subscription';
 
 @Injectable()
-export class ClientInfoEndpointService extends BaseService implements  OnInit {
+export class ClientInfoEndpointService extends BaseService implements OnInit {
 
     public clientInfo: ClientInfo = new ClientInfo();
 
-    
+
 
     private readonly _clientInfoUrl: string = environment.host + '/dashboard/client_info';
 
     constructor(http: Http, authService: AuthService) {
 
         super(authService, http);
-      
+
     }
     ngOnInit(): void {
 
@@ -40,6 +40,7 @@ export class ClientInfoEndpointService extends BaseService implements  OnInit {
             // model.isTokenSaleDisabled=true;
             model.balance = Math.round(model.balance * 100) / 100;
             model.bonusBalance = Math.round(model.bonusBalance * 100) / 100;
+            model.summary = Math.round((model.balance + model.bonusBalance) * 100) / 100;
             this.clientInfo = model;
 
         });
@@ -59,5 +60,5 @@ export class ClientInfoEndpointService extends BaseService implements  OnInit {
             });
         return res;
     }
-   
+
 }
