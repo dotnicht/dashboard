@@ -144,7 +144,8 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
-            return _mapper.Map<IcoInfoModel>(await _dashboardHistoryService.GetLatestHistoryItem());
+            var model = _mapper.Map<IcoInfoModel>(await _dashboardHistoryService.GetLatestHistoryItem());
+            return _mapper.Map(_tokenSettings.Value, model);
         }
 
         private async Task<List<PaymentInfoModel>> GetPaymentInfoModel()

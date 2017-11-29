@@ -2,6 +2,7 @@ using AutoMapper;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
 using InvestorDashboard.Api.Models.DashboardModels;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -29,6 +30,8 @@ namespace InvestorDashboard.Api
                 .ReverseMap();
 
             CreateMap<DashboardHistoryItem, IcoInfoModel>();
+            CreateMap<TokenSettings, IcoInfoModel>()
+                .ForMember(x => x.TokenPrice, x => x.MapFrom(y => y.Price));
         }
     }
 }
