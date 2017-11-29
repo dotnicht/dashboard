@@ -28,6 +28,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public calculateValue = 1;
     public qrLoaded = true;
     public isCopied = false;
+    public calculatorFromBtc = true;
 
     private subscription: any;
 
@@ -63,6 +64,13 @@ export class DashboardComponent implements OnDestroy, OnInit {
         document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
 
 
+    }
+    toogleCalculator() {
+        if (this.calculatorFromBtc) {
+            this.calculatorFromBtc = false;
+        } else {
+            this.calculatorFromBtc = true;
+        }
     }
     changePayment(payment: PaymentType) {
         if (!this.dashboard.clientInfoModel.isTokenSaleDisabled && !this.dashboard.icoInfoModel.isTokenSaleDisabled) {

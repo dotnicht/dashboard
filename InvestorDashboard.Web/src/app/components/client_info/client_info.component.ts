@@ -15,7 +15,7 @@ export class ClientInfoComponent implements OnDestroy, OnInit {
 
     @ViewChild('start') public sideNav: ElementRef;
 
-    public clientInfo: ClientInfo = new ClientInfo();
+
     private clientInfoSubscription: any;
     get isTab(): boolean {
         return this.resizeService.isTab;
@@ -25,7 +25,9 @@ export class ClientInfoComponent implements OnDestroy, OnInit {
         private authService: AuthService,
         private resizeService: ResizeService) {
     }
-
+    get clientInfo() {
+        return this.clientInfoService.clientInfo;
+    }
     ngOnInit(): void {
         this.refreshData();
         this.subscribeToClientInfoData();
@@ -33,9 +35,6 @@ export class ClientInfoComponent implements OnDestroy, OnInit {
     ngOnDestroy() {
         clearInterval(this.clientInfoSubscription);
     }
-    // get clientInfo() {
-    //     return this.clientInfoService.clientInfo;
-    // }
     logout() {
         this.authService.logout();
         this.authService.redirectLogoutUser();

@@ -85,32 +85,38 @@
                 </div>
               </div>
 
-              <!-- <div *ngIf="dashboard.paymentInfoList">
-                <h3>{{'dashboard.TokenCalc' | translate}}</h3>
+              <div *ngIf="dashboard.paymentInfoList">
                 <div class="token_calculator">
                   <table cellspacing="0" style="width: 100%">
                     <tbody>
+
                       <tr>
                         <td>
-                          <mat-form-field>
-                            <input matInput [(ngModel)]="calculateValue" type="number" min="1">
-                            <span matSuffix >{{selectedPaymentType.currency}}</span>
-                          </mat-form-field>
+                          <div class="form-field">
+                            <div class="input-field">
+                              <input [(ngModel)]="calculateValue" type="number" min="1">
+                            </div>
+                            <span>{{calculatorFromBtc?selectedPaymentType.currency:'USD'}}</span>
+                          </div>
                         </td>
                         <td style="text-align: center;">
-                          <mat-icon>forward</mat-icon>
+                          <button (click)="toogleCalculator()" mat-icon-button>
+                            <mat-icon>swap_horiz</mat-icon>
+                          </button>
                         </td>
                         <td>
-                          <mat-form-field>
-                            <input matInput disabled [value]="selectedPaymentType.rate*calculateValue" type="text">
-                            <span matSuffix >DTT</span>
-                          </mat-form-field>
+                          <div class="form-field result">
+                            <div class="input-field">
+                              <input disabled [(ngModel)]="calculatorFromBtc?selectedPaymentType.rate*calculateValue:calculateValue/selectedPaymentType.rate">
+                            </div>
+                            <span>{{!calculatorFromBtc?selectedPaymentType.currency:'USD'}}</span>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-              </div> -->
+              </div>
             </div>
             <div *ngIf="!selectedPaymentType">
               <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>
