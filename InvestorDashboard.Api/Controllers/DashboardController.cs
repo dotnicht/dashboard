@@ -118,7 +118,6 @@ namespace InvestorDashboard.Api.Controllers
                     PaymentInfoList = await GetPaymentInfoModel(),
                     IcoInfoModel = await GetIcoStatusModel()
                 };
-                dashboard.IcoInfoModel.IsTokenSaleDisabled = true;
                 return Ok(dashboard);
             }
 
