@@ -17,6 +17,7 @@ export class DashboardEndpoint extends BaseService {
     private readonly _icoInfoUrl: string = environment.host + `/dashboard/ico_status`;
     private readonly _paymentTypesUrl: string = environment.host + `/dashboard/payment_status`;
     private readonly _dashboard: string = environment.host + `/dashboard/full_info`;
+    private readonly _addQuestion: string = environment.host + `/dashboard/add_question`;
 
     private subscription: any;
 
@@ -62,6 +63,20 @@ export class DashboardEndpoint extends BaseService {
             .catch(error => {
 
                 return this.handleError(error, () => this.getPaymentTypes());
+
+            });
+        return res;
+    }
+
+    public addQuestion(text: string): Observable<Response> {
+
+        let res = this.http.post(this._addQuestion, { Message: text }, this.authService.getAuthHeader())
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+
+                return this.handleError(error, () => this.addQuestion(text));
 
             });
         return res;

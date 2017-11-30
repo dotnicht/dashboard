@@ -203,13 +203,22 @@ app-register_presale {
     }
   }
 }
+
 input[type='number'] {
-  -moz-appearance:textfield;
+  -moz-appearance: textfield;
 }
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+}
+
+input,
+textarea {
+  &:focus {
+    outline-offset: initial;
+    outline: none;
+  }
 }
 
 .qrCode {
@@ -311,4 +320,3 @@ ul {
 ul li {
   padding: 5px 0;
 }
-

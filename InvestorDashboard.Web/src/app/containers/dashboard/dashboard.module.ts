@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { DashboardComponent } from './dashboard.component';
+import { DashboardComponent, AddedQuestionDialogComponent } from './dashboard.component';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
@@ -12,7 +12,8 @@ import { FormsModule } from '@angular/forms';
 
 @NgModule({
     declarations: [
-      DashboardComponent
+        DashboardComponent,
+        AddedQuestionDialogComponent
     ],
     imports: [
         CommonModule,
@@ -32,6 +33,9 @@ import { FormsModule } from '@angular/forms';
         AppTranslationService,
         ClientInfoEndpointService,
         DashboardEndpoint
+    ],
+    entryComponents: [
+        AddedQuestionDialogComponent
     ]
 })
 export class DashboardModule { }

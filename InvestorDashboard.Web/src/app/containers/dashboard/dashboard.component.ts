@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { ClientInfoEndpointService } from '../../services/client-info.service';
 import { isPlatformBrowser } from '@angular/common';
@@ -10,6 +10,8 @@ import { AnonymousSubscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/timer';
 import { AuthService } from '../../services/auth.service';
 import { ClientInfo } from '../../models/client-info.model';
+import { MatDialogRef, MatDialog } from '@angular/material';
+import { DOCUMENT } from '@angular/platform-browser';
 
 declare var QRCode: any;
 
@@ -25,6 +27,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public dashboard: Dashboard = new Dashboard();
 
     public selectedPaymentType: PaymentType;
+    public Question: string;
     public calculateValue = 1;
     public qrLoaded = true;
     public isCopied = false;
@@ -32,6 +35,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
     private subscription: any;
 
+    addedQuestionDialogRef: MatDialogRef<AddedQuestionDialogComponent> | null;
 
 
     /** dashboard ctor */
@@ -39,9 +43,18 @@ export class DashboardComponent implements OnDestroy, OnInit {
         private translationService: AppTranslationService,
         private dashboardService: DashboardEndpoint,
         private clientInfoService: ClientInfoEndpointService,
-        private authService: AuthService) {
+        private authService: AuthService,
+        private dialog: MatDialog,
+        @Inject(DOCUMENT) doc: any) {
 
-
+        dialog.afterOpen.subscribe(() => {
+            if (!doc.body.classList.contains('no-scroll')) {
+                doc.body.classList.add('no-scroll');
+            }
+        });
+        dialog.afterAllClosed.subscribe(() => {
+            doc.body.classList.remove('no-scroll');
+        });
     }
     ngOnInit(): void {
         this.loadData();
@@ -52,6 +65,16 @@ export class DashboardComponent implements OnDestroy, OnInit {
         if (this.subscription) {
             clearInterval(this.subscription);
         }
+    }
+    openAddedQuestionDialog() {
+        let config = {
+            disableClose: true,
+            hasBackdrop: false
+        };
+        this.addedQuestionDialogRef = this.dialog.open(AddedQuestionDialogComponent, config);
+        this.addedQuestionDialogRef.afterClosed().subscribe(() => {
+            this.Question = undefined;
+        });
     }
     qrInitialize(data: string) {
         document.getElementById('qrCode').innerHTML = '';
@@ -87,7 +110,12 @@ export class DashboardComponent implements OnDestroy, OnInit {
             }, 100);
         }
     }
-
+    addQuestion() {
+        console.log(this.Question);
+        this.dashboardService.addQuestion(this.Question).subscribe(resp => {
+            this.openAddedQuestionDialog();
+        });
+    }
     loadData() {
         if (this.authService.isLoggedIn) {
             this.dashboardService.getDashboard().subscribe(model => {
@@ -120,5 +148,26 @@ export class DashboardComponent implements OnDestroy, OnInit {
         this.subscription = setInterval(() => { this.loadData(); }, 30000);
     }
 
+
+}
+@Component({
+    selector: 'app-added-question-dialog',
+    template: `
+
+    <h2 mat-dialog-title><mat-icon>check_circle</mat-icon>Question added successfully</h2>
+        <button style="float: right" (click)="close()" mat-raised-button tabindex="1">
+            <span>{{'buttons.Close' | translate}}</span>
+        </button>
+    `
+})
+export class AddedQuestionDialogComponent {
+
+    email: string;
+    constructor(public dialogRef: MatDialogRef<AddedQuestionDialogComponent>) {
+
+    }
+    close() {
+        this.dialogRef.close();
+    }
 
 }

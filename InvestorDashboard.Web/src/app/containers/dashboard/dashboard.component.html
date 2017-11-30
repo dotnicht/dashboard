@@ -17,12 +17,12 @@
   </mat-card>
   <mat-card class="second">
     <mat-card-content>
-      <div class="right">
+      <!-- <div class="right">
         <div style="margin-top: 0;margin-bottom: 85px;font-weight: bold; font-size: 18px;"> PRE-SALE
           <br/> IS IN PROGRESS </div>
         <p style="font-size: 20px;">Bonus 30% </p>
 
-      </div>
+      </div> -->
       <div class="left">
         <div class="item">
           <!-- <div class="color-block"></div> -->
@@ -181,7 +181,7 @@
           <a href="https://twitter.com/datatrading" target="_blank">
             <img src="assets/img/round_a/twitter.svg">
           </a>
-          <a href="" target="_blank">
+          <a href="https://www.youtube.com/channel/UC6QWQbo8AFxG0ghmbihdBDA" target="_blank">
             <img src="assets/img/round_a/youtube.svg">
           </a>
         </div>
@@ -194,13 +194,13 @@
   <mat-card class="eighth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
       <div class="content">
-        <form>
-          <mat-form-field class="msg">
+        <form style="display: flex;" #f="ngForm" novalidate (ngSubmit)="addQuestion()">
+          <!-- <mat-form-field class="msg">
             <textarea matInput matAutosizeMaxRows="1" id="question" type="text" name="question" placeholder="Enter your question" [(ngModel)]="Question" #question="ngModel"
               required></textarea>
-          </mat-form-field>
-
-          <button mat-raised-button>{{'buttons.Send' | translate}}</button>
+          </mat-form-field> -->
+          <textarea rows="1"  name="question" placeholder="Enter your question" [(ngModel)]="Question" #question="ngModel" required ></textarea>
+          <button type="submit" [disabled]="!f.form.valid" mat-raised-button color='primary'>{{'buttons.Send' | translate}}</button>
         </form>
       </div>
     </mat-card-content>
