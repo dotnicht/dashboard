@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace InvestorDashboard.Backend.Database.Models
 {
@@ -24,5 +25,10 @@ namespace InvestorDashboard.Backend.Database.Models
         public decimal TotalNonInternalUsdInvested { get; set; }
         [NotMapped]
         public IEnumerable<(Currency Currency, decimal Amount)> Currencies { get; set; }
+
+        public override string ToString()
+        {
+            return $"Status on { Created } UTC | Total investors: { TotalNonInternalInvestors } | Total USD: { TotalNonInternalUsdInvested } | Total users: { TotalNonInternalUsers }{ string.Join(string.Empty, Currencies?.Select(x => $" | Total { x.Currency }: { x.Amount }")) }";
+        }
     }
 }

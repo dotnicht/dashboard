@@ -30,7 +30,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshHistory()
         {
-            var currencies = _cryptoServices.Select(x => x.Settings.Value.Currency).ToArray();
+            var item = GetLatestDashboardHistoryItem();
+            await Context.DashboardHistoryItems.AddAsync(item);
+            await Context.SaveChangesAsync();
+        }
+
+        public async Task<DashboardHistoryItem> GetLatestHistoryItem(bool includeCurrencies = false)
+        {
+            if (!Context.DashboardHistoryItems.Any())
+            {
+                await RefreshHistory();
+            }
+
+            if (includeCurrencies)
+            {
+                return GetLatestDashboardHistoryItem(true);
+            }
+
+            return Context.DashboardHistoryItems.OrderByDescending(x => x.Created).First();
+        }
+
+        private DashboardHistoryItem GetLatestDashboardHistoryItem(bool includeCurrencies = false)
+        {
+            var currencies = _cryptoServices
+                .Select(x => x.Settings.Value.Currency)
+                .ToArray();
 
             var transactions = Context.CryptoTransactions.Where(
                 x => x.Direction == CryptoTransactionDirection.Inbound
@@ -47,8 +71,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Distinct()
                 .Count();
 
-            var nonInternalTransactions = transactions
-                .Where(x => x.ExternalId == null && x.CryptoAddress.Currency != Currency.DTT && x.CryptoAddress.User.ExternalId == null);
+            var nonInternalTransactions = transactions.Where(
+                x => x.ExternalId == null 
+                && x.CryptoAddress.Currency != Currency.DTT 
+                && x.CryptoAddress.User.ExternalId == null);
 
             item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
             item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
@@ -57,24 +83,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Distinct()
                 .Count();
 
-            await Context.DashboardHistoryItems.AddAsync(item);
-            await Context.SaveChangesAsync();
-        }
-
-        public async Task<DashboardHistoryItem> GetLatestHistoryItem(bool includeCurrencies = false)
-        {
-            if (!Context.DashboardHistoryItems.Any())
-            {
-                await RefreshHistory();
-            }
-
-            var item = Context.DashboardHistoryItems.OrderByDescending(x => x.Created).First();
-
             if (includeCurrencies)
             {
                 item.Currencies = Context.CryptoTransactions
                     .Include(x => x.CryptoAddress)
-                    .Where(x => x.Direction == CryptoTransactionDirection.Inbound
+                    .Where(
+                        x => x.Direction == CryptoTransactionDirection.Inbound
                         && x.CryptoAddress.Type == CryptoAddressType.Investment
                         && x.ExternalId == null
                         && x.CryptoAddress.Currency != Currency.DTT
