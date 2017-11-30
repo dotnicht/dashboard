@@ -19,7 +19,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public async Task SendMessage(string message)
+        public async Task SendMessage(string message, int chatId)
         {
             if (message == null)
             {
@@ -27,10 +27,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var client = new TelegramBotClient(_options.Value.Token);
-            var chatId = new ChatId(_options.Value.ChatId);
+            var chat = new ChatId(chatId);
 
             await client.SetWebhookAsync(_options.Value.WebhookUri);
-            await client.SendTextMessageAsync(chatId, message);
+            await client.SendTextMessageAsync(chat, message);
         }
     }
 }

@@ -1,21 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
+using InvestorDashboard.Api.Models;
+using InvestorDashboard.Api.Models.DashboardModels;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services;
-using InvestorDashboard.Api.Models.DashboardModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using InvestorDashboard.Api.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -44,7 +44,7 @@ namespace InvestorDashboard.Api.Controllers
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IEnumerable<ICryptoService> cryptoServices,
-            IMapper mapper, 
+            IMapper mapper,
             ILogger<DashboardController> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -58,7 +58,6 @@ namespace InvestorDashboard.Api.Controllers
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-
         [HttpGet("ico_status"), ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
@@ -67,14 +66,17 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [HttpPost("webhook")]
-        public async Task<IActionResult> PostTelegramBotData([FromBody]TelegramBotWebhookViewModel telegramBotWebhookViewModel)
+        public async Task<IActionResult> PostTelegramBotData([FromBody]TelegramWebhookViewModel telegramWebhookViewModel)
         {
-            if (telegramBotWebhookViewModel != null && telegramBotWebhookViewModel.Message != null)
+            if (telegramWebhookViewModel != null 
+                && telegramWebhookViewModel.Message != null 
+                && telegramWebhookViewModel.Message.Chat != null 
+                && telegramWebhookViewModel.Message.From != null)
             {
-                _logger.LogInformation($"Incoming webhook message. ID: { telegramBotWebhookViewModel.Update_id }.");
-                await _messageService.HandleIncomingMessage(telegramBotWebhookViewModel.Message.From?.Username, telegramBotWebhookViewModel.Message.Text);
+                _logger.LogInformation($"Incoming webhook message. ID: { telegramWebhookViewModel.Update_id }.");
+                await _messageService.HandleIncomingMessage(telegramWebhookViewModel.Message.From.Username, telegramWebhookViewModel.Message.Text, telegramWebhookViewModel.Message.Chat.Id);
             }
-            else 
+            else
             {
                 _logger.LogError($"Invalid incoming webhook message.");
             }
@@ -95,13 +97,11 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpGet("client_info"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
-        public async Task<IActionResult> GetClientInfo()
+        public IActionResult GetClientInfo()
         {
             if (ApplicationUser != null)
             {
-                var clientInfo = await GetClientInfoModel();
-
-                return Ok(clientInfo);
+                return Ok(_mapper.Map<ClientInfoModel>(ApplicationUser));
             }
 
             return Unauthorized();
@@ -114,7 +114,7 @@ namespace InvestorDashboard.Api.Controllers
             {
                 var dashboard = new Dashboard
                 {
-                    ClientInfoModel = await GetClientInfoModel(),
+                    ClientInfoModel = _mapper.Map<ClientInfoModel>(ApplicationUser),
                     PaymentInfoList = await GetPaymentInfoModel(),
                     IcoInfoModel = await GetIcoStatusModel()
                 };
@@ -125,21 +125,10 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
-        private async Task<ClientInfoModel> GetClientInfoModel()
-        {
-            var clientInfo = new ClientInfoModel
-            {
-                Balance = ApplicationUser.Balance,
-                BonusBalance = ApplicationUser.BonusBalance,
-                IsTokenSaleDisabled = ApplicationUser.IsTokenSaleDisabled
-            };
-
-            return clientInfo;
-        }
-
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
-            var model = _mapper.Map<IcoInfoModel>(await _dashboardHistoryService.GetLatestHistoryItem());
+            var item = await _dashboardHistoryService.GetLatestHistoryItem();
+            var model = _mapper.Map<IcoInfoModel>(item);
             return _mapper.Map(_tokenSettings.Value, model);
         }
 

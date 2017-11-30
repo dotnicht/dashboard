@@ -1,6 +1,6 @@
 ﻿namespace InvestorDashboard.Api.Models
 {
-    public class TelegramBotWebhookViewModel
+    public class TelegramWebhookViewModel
     { 
         public int Update_id { get; set; }
         public InnerMessage Message { get; set; }
