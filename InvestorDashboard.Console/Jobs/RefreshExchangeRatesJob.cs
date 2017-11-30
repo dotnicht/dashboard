@@ -28,10 +28,15 @@ namespace InvestorDashboard.Console.Jobs
             var currencies = new[] { Currency.BTC, Currency.ETH };
             foreach (var currency in currencies)
             {
-                await _exchangeRateService.RefreshExchangeRate(currency);
+                try
+                {
+                    await _exchangeRateService.RefreshExchangeRate(currency);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"An error occurred while refreshing { currency } exchange rate.");
+                }
             }
-
-            Logger.LogInformation($"Exchange rates update completed for currencies: { string.Join(", ", currencies.Select(x => x.ToString())) }");
         }
 
         protected override void Dispose(bool disposing)

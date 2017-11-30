@@ -27,10 +27,15 @@ namespace InvestorDashboard.Console.Jobs
         {
             foreach (var service in _cryptoServices)
             {
-                await service.RefreshInboundTransactions();
+                try
+                {
+                    await service.RefreshInboundTransactions();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"An error occurred while refreshing inbound { service.Settings.Value.Currency } transactions.");
+                }
             }
-
-            Logger.LogInformation($"Transaction refresh completed for currencies: { string.Join(", ", _cryptoServices.Select(x => x.Settings.Value.Currency.ToString())) }");
         }
 
         protected override void Dispose(bool disposing)

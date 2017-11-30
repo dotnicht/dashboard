@@ -27,7 +27,14 @@ namespace InvestorDashboard.Console.Jobs
         {
             foreach (var service in _cryptoServices)
             {
-                await service.TransferAssets();
+                try
+                {
+                    await service.TransferAssets();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"An error occurred while transfering { service.Settings.Value.Currency } assets.");
+                }
             }
         }
 
