@@ -77,11 +77,12 @@ export class DashboardComponent implements OnDestroy, OnInit {
             this.selectedPaymentType = payment;
             this.qrLoaded = false;
             this.isCopied = false;
-            //this.alertService.startLoadingMessage();
             setTimeout(() => {
                 this.qrLoaded = true;
-                this.qrInitialize(payment.address);
-                //this.alertService.stopLoadingMessage();
+                if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
+                    this.qrInitialize(payment.address);
+                }
+
 
             }, 100);
         }

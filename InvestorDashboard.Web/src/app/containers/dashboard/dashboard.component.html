@@ -57,7 +57,7 @@
     </mat-card-content>
 
   </mat-card>
-  <mat-card class="third">
+  <mat-card class="third" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
       <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
@@ -123,7 +123,7 @@
             </div>
 
           </div>
-          <div *ngIf="dashboard.clientInfoModel.isTokenSaleDisabled || dashboard.icoInfoModel.isTokenSaleDisabled">
+          <div *ngIf="dashboard.clientInfoModel.isTokenSaleDisabled">
             <p>Sorry, payment is not available at this time.
             </p>
             If you have any questions you can contact with us at
@@ -134,8 +134,7 @@
       </div>
     </mat-card-content>
   </mat-card>
-  <mat-card class="fourth">
-
+  <mat-card class="fourth" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
       <div class="info" style="display: inline-table;">
         <div class="info-container" *ngIf="selectedPaymentType">
@@ -146,9 +145,68 @@
           <div [innerHTML]="selectedPaymentType.faq"></div>
         </div>
       </div>
+    </mat-card-content>
+  </mat-card>
 
+  <mat-card class="fifth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <iframe width="100%" height="280" src="https://www.youtube.com/embed/PhXtedgJXXo?rel=0" frameborder="0" allowfullscreen></iframe>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="sixth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <div class="content">
+        <p style="font-size: 26px;">TOKEN SALE</p>
+        <p style="font-size: 26px;">Round A</p>
+        <p style="font-size: 18px;margin-top: 40px;">18 December 2017</p>
+        <img style="width: 60px;margin-top: 20px;" src="assets/img/round_a/placeholder.svg">
+        <div class="line"></div>
+        <!-- <img width="100%" height="100%" src="assets/img/round_a/round_a.svg"> -->
+      </div>
 
     </mat-card-content>
+  </mat-card>
+  <mat-card class="seventh" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <div class="content">
+        <span>Find more at</span>
+        <div class="social">
+          <a href="" target="_blank">
+            <img src="assets/img/round_a/facebook.svg">
+          </a>
+          <a href="" target="_blank">
+            <img src="assets/img/round_a/bitcoin.svg">
+          </a>
+          <a href="" target="_blank">
+            <img src="assets/img/round_a/telegram.svg">
+          </a>
+          <a href="" target="_blank">
+            <img src="assets/img/round_a/twitter.svg">
+          </a>
+          <a href="" target="_blank">
+            <img src="assets/img/round_a/youtube.svg">
+          </a>
+        </div>
+
+      </div>
+
+    </mat-card-content>
+
+  </mat-card>
+  <mat-card class="eighth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <div class="content">
+        <form>
+          <mat-form-field class="msg">
+            <textarea matInput matAutosizeMaxRows="1" id="question" type="text" name="question" placeholder="Enter your question" [(ngModel)]="Question" #question="ngModel"
+              required></textarea>
+          </mat-form-field>
+
+          <button mat-raised-button>{{'buttons.Send' | translate}}</button>
+        </form>
+      </div>
+    </mat-card-content>
+
   </mat-card>
 </div>
 <div>

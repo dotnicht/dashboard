@@ -115,15 +115,13 @@
           margin-top: 15px;
           td {
             width: calc(45% - 20px);
-
             .form-field {
-              
               border: 1px solid #eeeeee;
               display: inline-flex;
               padding: 5px;
-              .input-field{
+              .input-field {
                 position: relative;
-                input{
+                input {
                   width: 100%;
                 }
                 &:after {
@@ -137,7 +135,6 @@
                   z-index: 1;
                   background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white);
                 }
-
               }
               input {
                 border: none;
@@ -150,7 +147,6 @@
                 &[disabled] {
                   background-color: white;
                 }
-               
               }
               span {
                 position: relative;
@@ -198,6 +194,78 @@
     }
   }
 
+  .fifth,
+  .sixth,
+  .seventh,
+  .eighth {
+    width: calc(50% - 7.5px);
+  }
+
+  .fifth {
+    margin-right: 5px;
+    padding: 0;
+    overflow: hidden;
+    iframe {
+      display: block;
+    }
+  }
+
+  .sixth {
+    overflow: hidden;
+    margin-left: 5px;
+    height: 280px;
+    padding: 0;
+    background: linear-gradient(to bottom, #a1e276, #30b9ad);
+    .content {
+      position: absolute;
+      color: white;
+      text-align: center;
+      width: 100%;
+      margin-top: 30px;
+      .line {
+        background-color: white;
+        height: 5px;
+      }
+    }
+  }
+
+  .seventh {
+    margin-right: 5px;
+    padding: 10px;
+    height: 90px;
+    a {
+      text-decoration: none;
+    }
+    img {
+      width: 40px;
+      margin-right: 5px;
+    }
+    .content {
+      width: calc(100% - 15px);
+      position: absolute;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+    }
+  }
+
+  .eighth {
+    margin-left: 5px;
+    height: 90px;
+    padding: 10px;
+    .content {
+      position: absolute;
+      width: 100%;
+      .mat-form-field {
+        width: 70%;
+      }
+      button{
+        width: calc(30% - 20px);
+      }
+    }
+  }
+
   @media (min-width: 1024px) {
     .third {
       .block {
@@ -232,7 +300,11 @@
       width: 100%;
     }
     .first,
-    .second {
+    .second,
+    .fifth,
+    .sixth,
+    .seventh,
+    .eighth {
       margin-left: 0;
       margin-right: 0;
     }
@@ -251,6 +323,19 @@
         }
         .right {
           padding-top: 10px;
+        }
+      }
+    }
+    .sixth{
+      height: 380px;
+    }
+    .seventh {
+      height: auto;
+      .content {
+        position: initial;
+        margin-top: 0px;
+        img {
+          width: 30px;
         }
       }
     }
