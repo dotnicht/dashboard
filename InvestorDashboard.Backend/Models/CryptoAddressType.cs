@@ -4,7 +4,6 @@
     {
         Investment = 0,
         Refund = 1,
-        Contract = 2,
-        Internal = 3
+        Internal = 2
     }
 }

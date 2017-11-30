@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
-    internal class InvestorService : ContextService, IInvestorService
+    internal class ExternalInvestorService : ContextService, IExternalInvestorService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IExchangeRateService _exchangeRateService;
         private readonly ICsvService _csvService;
 
-        public InvestorService(
+        public ExternalInvestorService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
             UserManager<ApplicationUser> userManager,
@@ -41,7 +41,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var count = 0;
 
-            foreach (var record in _csvService.GetRecords<InvestorRecord>("InvestorsData.csv"))
+            foreach (var record in _csvService.GetRecords<InvestorRecord>("ExternalInvestorData.csv"))
             {
                 if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
@@ -56,7 +56,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     await _userManager.CreateAsync(user, "Us3g5!LrBFZ)E,G$");
 
-                    Parallel.ForEach(_cryptoServices, async x => await x.UpdateUserDetails(user.Id));
+                    Parallel.ForEach(_cryptoServices, async x => await x.CreateCryptoAddress(user.Id));
 
                     count++;
                 }
@@ -65,7 +65,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return count;
         }
 
-        public async Task<int> ActivateInvestors()
+        public async Task SynchronizeInvestorsData()
         {
             var users = Context.Users
                 .Where(x => x.ExternalId != null && !x.EmailConfirmed)
@@ -75,8 +75,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToArray();
 
             Logger.LogDebug($"Total { users.Length } users to be activated.");
-
-            var count = 0;
 
             foreach (var user in users)
             {
@@ -121,34 +119,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     await Context.CryptoTransactions.AddAsync(transaction);
                     await Context.SaveChangesAsync();
 
-                    count++;
                 }
             }
-
-            return count;
-        }
-
-        public async Task<int> ClearInvestors()
-        {
-            var count = 0;
-
-            var ids = Context.Users
-                .Where(x => x.ExternalId != null)
-                .Select(x => x.Id)
-                .ToArray();
-
-            foreach (var id in ids)
-            {
-                var user = await _userManager.FindByIdAsync(id);
-                var result = await _userManager.DeleteAsync(user);
-
-                if (result.Succeeded)
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
 
         private class InvestorRecord

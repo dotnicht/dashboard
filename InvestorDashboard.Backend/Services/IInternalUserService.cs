@@ -5,7 +5,7 @@ namespace InvestorDashboard.Backend.Services
 {
     public interface IInternalUserService : IDisposable
     {
-        Task SyncInternalUsers();
+        Task SynchronizeInternalUsersData();
         Task<decimal> GetInternalUserBalance(string userId);
     }
 }

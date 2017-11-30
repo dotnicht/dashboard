@@ -9,12 +9,9 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public TimeSpan RefreshTransactionsPeriod { get; set; }
         public TimeSpan RefreshDashboardHistoryPeriod { get; set; }
         public TimeSpan TransferCryptoAssetsPeriod { get; set; }
-        public TimeSpan InvestorsActivationPeriod { get; set; }
-        public TimeSpan InvestorsLoadPeriod { get; set; }
-        public TimeSpan InvestorsClearPeriod { get; set; }
-        public TimeSpan InternalUsersSyncPeriod { get; set; }
+        public TimeSpan SynchronizeExternalInvestorsDataPeriod { get; set; }
+        public TimeSpan SynchronizeInternalUsersDataPeriod { get; set; }
         public TimeSpan NotifyAffilicatesTransactionsPeriod { get; set; }
         public TimeSpan NotifyDashboardHistoryPeriod { get; set; }
-        public TimeSpan UpdateUserDetailsPeriod { get; set; }
     }
 }

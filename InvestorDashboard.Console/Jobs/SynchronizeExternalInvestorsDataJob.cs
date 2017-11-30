@@ -9,13 +9,13 @@ using Quartz;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class InvestorsLoadJob : JobBase
+    public class SynchronizeExternalInvestorsDataJob : JobBase
     {
-        private readonly IInvestorService _investorsService;
+        private readonly IExternalInvestorService _investorsService;
 
-        public override TimeSpan Period => Options.Value.InvestorsLoadPeriod;
+        public override TimeSpan Period => Options.Value.SynchronizeExternalInvestorsDataPeriod;
 
-        public InvestorsLoadJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInvestorService investorsService)
+        public SynchronizeExternalInvestorsDataJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IExternalInvestorService investorsService)
             : base(loggerFactory, context, options)
         {
             _investorsService = investorsService ?? throw new ArgumentNullException(nameof(investorsService));
@@ -23,7 +23,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            Logger.LogInformation($"Total { await _investorsService.LoadInvestorsData() } users loaded.");
+            await _investorsService.SynchronizeInvestorsData();
         }
 
         protected override void Dispose(bool disposing)

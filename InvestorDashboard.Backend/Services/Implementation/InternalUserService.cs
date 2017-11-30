@@ -30,9 +30,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        public async Task SyncInternalUsers()
+        public async Task SynchronizeInternalUsersData()
         {
-            foreach (var record in _csvService.GetRecords<AffiliatesRecord>("AffiliatesData.csv"))
+            foreach (var record in _csvService.GetRecords<AffiliatesRecord>("InternalUserData.csv"))
             {
                 if (!Context.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
                 {

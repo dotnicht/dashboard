@@ -8,7 +8,7 @@ namespace InvestorDashboard.Backend.Services
     public interface ICryptoService : IDisposable
     {
         IOptions<CryptoSettings> Settings { get; }
-        Task UpdateUserDetails(string userId);
+        Task CreateCryptoAddress(string userId);
         Task RefreshInboundTransactions();
         Task TransferAssets();
     }
