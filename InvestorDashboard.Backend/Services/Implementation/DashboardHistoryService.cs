@@ -63,6 +63,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var item = _mapper.Map<DashboardHistoryItem>(_options.Value);
 
+            item.Created = DateTime.UtcNow;
+
             item.TotalUsers = Context.Users.Count();
             item.TotalCoinsBought = transactions.Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice);
             item.TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate);

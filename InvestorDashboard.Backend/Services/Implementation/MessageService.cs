@@ -45,7 +45,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 { "/ping", () => _telegramService.SendMessage("pong", chatId) },
                 { "/pong", () => _telegramService.SendMessage("ping", chatId) },
-                { "/status", () => SendDashboardHistoryMessage(chatId) }
+                { "/status", () => SendDashboardHistoryMessageInternal(chatId) }
             };
 
             foreach (var item in commands)
@@ -76,13 +76,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public Task SendDashboardHistoryMessage()
         {
-            return SendDashboardHistoryMessage();
+            return SendDashboardHistoryMessageInternal();
         }
 
-        private async Task SendDashboardHistoryMessage(int? chatId = null)
+        private async Task SendDashboardHistoryMessageInternal(int? chatId = null)
         {
             var item = await _dashboardHistoryService.GetLatestHistoryItem(true);
-            await _telegramService.SendMessage(item.ToString(), chatId ?? _options.Value.BusinessNotificationChatId);
+            await _telegramService.SendMessage(item.ToString() + $" | Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }", chatId ?? _options.Value.BusinessNotificationChatId);
         }
     }
 }
