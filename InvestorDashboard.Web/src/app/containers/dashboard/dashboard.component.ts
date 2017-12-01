@@ -11,7 +11,7 @@ import 'rxjs/add/observable/timer';
 import { AuthService } from '../../services/auth.service';
 import { ClientInfo } from '../../models/client-info.model';
 import { MatDialogRef, MatDialog } from '@angular/material';
-import { DOCUMENT } from '@angular/platform-browser';
+import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 
 declare var QRCode: any;
 
@@ -32,6 +32,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public qrLoaded = true;
     public isCopied = false;
     public calculatorFromBtc = true;
+    public selectedVideo: any;
 
     private subscription: any;
 
@@ -43,6 +44,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         private translationService: AppTranslationService,
         private dashboardService: DashboardEndpoint,
         private clientInfoService: ClientInfoEndpointService,
+        private sanitizer: DomSanitizer,
         private authService: AuthService,
         private dialog: MatDialog,
         @Inject(DOCUMENT) doc: any) {
@@ -58,6 +60,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     }
     ngOnInit(): void {
         this.loadData();
+        this.chooseVideo();
+
         this.subscribeToData();
     }
 
@@ -88,6 +92,20 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
 
     }
+
+    chooseVideo() {
+
+        const list = ['https://www.youtube.com/embed/PhXtedgJXXo',
+            'https://www.youtube.com/embed/kKaYKnAYuDQ',
+            'https://www.youtube.com/embed/doLiQVxuWyQ',
+            'https://www.youtube.com/embed/52_bo2SExow',
+            'https://www.youtube.com/embed/_byRbCEBLCM'];
+        const index = Math.floor((Math.random() * list.length));
+
+        this.selectedVideo = this.sanitizer.bypassSecurityTrustResourceUrl(list[index]);
+
+    }
+
     toogleCalculator() {
         if (this.calculatorFromBtc) {
             this.calculatorFromBtc = false;
@@ -103,7 +121,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
             setTimeout(() => {
                 this.qrLoaded = true;
                 //if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
-                    this.qrInitialize(payment.address);
+                this.qrInitialize(payment.address);
                 //}
 
 
@@ -147,6 +165,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     private subscribeToData(): void {
         this.subscription = setInterval(() => { this.loadData(); }, 30000);
     }
+
 
 
 }

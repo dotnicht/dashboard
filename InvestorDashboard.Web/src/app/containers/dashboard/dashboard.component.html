@@ -36,22 +36,22 @@
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
-        <!-- <div class="item">
+        <div class="item">
           <img class="color-block" src="assets/img/coin.svg">
           <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
-        </div> -->
+        </div>
         <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div> -->
-        <div style="margin-top: 20px;">
+        <!-- <div style="margin-top: 20px;">
           <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p>
-          <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT -->
-        </div>
-        <div>
+          {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT
+        </div> -->
+        <!-- <div>
           <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
           </mat-progress-bar>
-        </div>
+        </div> -->
       </div>
     </mat-card-content>
   </mat-card>
@@ -59,7 +59,7 @@
 
   <mat-card class="fifth" >
     <mat-card-content>
-      <iframe width="100%" height="280" src="https://www.youtube.com/embed/PhXtedgJXXo?rel=0" frameborder="0" allowfullscreen></iframe>
+      <iframe id="video" width="100%" height="280" [src]="selectedVideo" frameborder="0" allowfullscreen></iframe>
     </mat-card-content>
   </mat-card>
   <mat-card class="sixth">
@@ -89,7 +89,7 @@
           <a href="https://t.me/datatradingENG" target="_blank">
             <img src="assets/img/round_a/telegram.svg">
           </a>
-          <a href="https://twitter.com/datatrading" target="_blank">
+          <a href="https://twitter.com/datatrading_" target="_blank">
             <img src="assets/img/round_a/twitter.svg">
           </a>
           <a href="https://www.youtube.com/channel/UC6QWQbo8AFxG0ghmbihdBDA" target="_blank">
