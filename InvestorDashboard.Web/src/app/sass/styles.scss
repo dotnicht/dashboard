@@ -166,7 +166,7 @@ app-register_presale {
 }
 
 .footer {
-  position: fixed;
+  //position: fixed;
   bottom: 0;
   z-index: 2;
   &.mat-toolbar {
@@ -227,6 +227,12 @@ textarea {
   }
   canvas {
     display: initial !important;
+  }
+}
+
+.mat-drawer-content {
+  >.main-content {
+    min-height: 900px;
   }
 }
 
