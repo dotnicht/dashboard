@@ -41,7 +41,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var count = 0;
 
-            foreach (var record in _csvService.GetRecords<InvestorRecord>("ExternalInvestorData.csv"))
+            foreach (var record in _csvService.GetRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv"))
             {
                 if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
@@ -70,7 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var users = Context.Users
                 .Where(x => x.ExternalId != null && !x.EmailConfirmed)
                 .ToArray()
-                .Join(_csvService.GetRecords<InvestorRecord>("InvestorsData.csv"), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
+                .Join(_csvService.GetRecords<ExternalInvestorDataRecord>("InvestorsData.csv"), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
                 .Where(x => x.Record.Day <= DateTime.UtcNow)
                 .ToArray();
 
@@ -123,7 +123,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        private class InvestorRecord
+        private class ExternalInvestorDataRecord
         {
             public Guid Id { get; set; }
             public DateTime Day { get; set; }

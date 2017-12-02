@@ -15,13 +15,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
+        private readonly ICsvService _csvService;
+        private readonly IMessageService _messageService;
         private readonly IAffiliateService _affiliatesService;
 
         public IOptions<CryptoSettings> Settings { get; }
         protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
-        protected IEmailService EmailService { get; }
         protected IMapper Mapper { get; }
 
         protected CryptoService(
@@ -29,7 +30,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
-            IEmailService emailService,
+            ICsvService csvService,
+            IMessageService messageService,
             IAffiliateService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
@@ -38,10 +40,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             KeyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
-            EmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             Mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
+            _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
@@ -71,7 +74,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.ExternalId == null && (!x.IsDisabled || Settings.Value.ImportDisabledAdressesTransactions))
+                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.ExternalId == null && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
                 .ToArray();
 
             const string addressKey = "address";
@@ -83,7 +86,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             foreach (var address in addresses)
             {
                 var data = new Dictionary<string, object> { { addressKey, address } };
-                foreach (var transaction in await policy.Execute(() =>  GetTransactionsFromBlockchain(address.Address), data))
+                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), data))
                 {
                     Logger.LogInformation($"Received { Settings.Value.Currency } transaction list for address { address }.");
 
@@ -100,8 +103,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
 
-                        // TODO: send transaction confirmed email.
-                        // TODO: send transaction received bot message.
+                        // TODO: send transaction received message.
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
@@ -117,7 +119,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var destination = Context.CryptoAddresses
-                    .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled)
+                    .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Settings.Value.Currency)
                     .OrderBy(x => Guid.NewGuid())
                     .FirstOrDefault()
                 ?? await CreateAddress("d8033986-1220-47a8-a43e-98b9842d5c5e", CryptoAddressType.Internal);
@@ -131,5 +133,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected abstract Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task TransferAssets(CryptoAddress address, string destinationAddress);
+
+        private class InternalCryptoAddressDataRecord
+        {
+            public Currency Currency { get; set; }
+            public string Address { get; set; }
+        }
     }
 }

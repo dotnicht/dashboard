@@ -32,7 +32,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task SynchronizeInternalUsersData()
         {
-            foreach (var record in _csvService.GetRecords<AffiliatesRecord>("InternalUserData.csv"))
+            foreach (var record in _csvService.GetRecords<InternalUserDataRecord>("InternalUserData.csv"))
             {
                 if (!Context.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
                 {
@@ -91,7 +91,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 ?? 0;
         }
 
-        private class AffiliatesRecord
+        private class InternalUserDataRecord
         {
             public Guid Guid { get; set; }
             public string Email { get; set; }
