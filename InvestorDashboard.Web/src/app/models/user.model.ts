@@ -57,6 +57,7 @@ export class UserRegister {
     password: string;
     confirmPassword: string;
     clickId: string;
+    reCaptchaToken: String;
 
 
     constructor(email?: string, password?: string, confirmPassword?: string) {

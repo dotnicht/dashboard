@@ -27,6 +27,7 @@ export class RegisterComponent implements OnInit {
     registerRulesDialogRef: MatDialogRef<RegisterRulesDialogComponent> | null;
     emailConfirmDialogRef: MatDialogRef<ConfirmEmailDialogComponent> | null;
 
+
     registerRules: RegisterRules[] = [
         { name: this.translationService.getTranslation('users.register.rules.first'), checked: false },
         { name: this.translationService.getTranslation('users.register.rules.second'), checked: false },
@@ -114,7 +115,7 @@ export class RegisterComponent implements OnInit {
                 if (this.cookieService.get('clickid') != '') {
                     this.registerForm.clickId = this.cookieService.get('clickid');
                 }
-
+                this.registerForm.reCaptchaToken = this.captcha.getResponse();
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {

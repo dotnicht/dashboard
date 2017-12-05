@@ -24,6 +24,7 @@ using OpenIddict.Core;
 using OpenIddict.Models;
 using InvestorDashboard.Api.Services;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -68,27 +69,43 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
-                user.UserName = user.Email;
+                var response = user.ReCaptchaToken;
+                string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
+                var client = new System.Net.WebClient();
+                var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
+                var obj = JObject.Parse(recaptchaResult);
+                var status = (bool)obj.SelectToken("success");
 
-                ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
 
-                var result = await _userManager.CreateAsync(appUser, user.Password);
-
-                if (result.Succeeded)
+                if (status)
                 {
-                    Parallel.ForEach(_cryptoServices, async x => await x.CreateCryptoAddress(appUser.Id));
 
-                    appUser = await _userManager.FindByEmailAsync(appUser.Email);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                    code = System.Web.HttpUtility.UrlEncode(code);
-                    var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
-                    await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
+                    user.UserName = user.Email;
 
-                    return Ok();
+                    ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
+
+                    var result = await _userManager.CreateAsync(appUser, user.Password);
+
+                    if (result.Succeeded)
+                    {
+                        Parallel.ForEach(_cryptoServices, async x => await x.CreateCryptoAddress(appUser.Id));
+
+                        appUser = await _userManager.FindByEmailAsync(appUser.Email);
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+                        code = System.Web.HttpUtility.UrlEncode(code);
+                        var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
+                        await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
+
+                        return Ok();
+                    }
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = "user_exist"
+                    });
                 }
                 return BadRequest(new OpenIdConnectResponse
                 {
-                    Error = "user_exist"
+                    Error = "recaptcha validation false"
                 });
             }
             catch (Exception ex)
