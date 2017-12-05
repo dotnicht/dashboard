@@ -21,7 +21,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (userId == null)
             {
-                foreach (var id in Context.Users.Where(x => x.ExternalId == null).Select(x => x.Id))
+                foreach (var id in Context.Users.Select(x => x.Id))
                 {
                     await RefreshTokenBalanceInternal(id);
                 }
@@ -38,7 +38,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (user == null)
             {
-                throw new InvalidOperationException($"User not found with ID {userId}.");
+                throw new InvalidOperationException($"User not found with ID { userId }.");
             }
 
             var transactions = Context.CryptoAddresses
@@ -47,8 +47,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => x.Direction == CryptoTransactionDirection.Inbound)
                 .ToArray();
 
-            var affiliateBalance = await _internalUserService.GetInternalUserBalance(userId);
-            user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice) + affiliateBalance;
+            var internalUserBalance = await _internalUserService.GetInternalUserBalance(userId);
+            user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice) + internalUserBalance;
             user.BonusBalance = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
 
             await Context.SaveChangesAsync();

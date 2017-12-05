@@ -38,29 +38,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        protected override (string Address, string PrivateKey) GenerateKeys()
         {
             var policy = Policy
                 .Handle<ArgumentException>()
-                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. User { userId }. Retry attempt: {i}."));
+                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. Retry attempt: {i}."));
 
-            var keys = policy.Execute(GenerateEthereumKeys);
-
-            var address = new CryptoAddress
+            return policy.Execute(() =>
             {
-                UserId = userId,
-                Currency = Settings.Value.Currency,
-                PrivateKey = keys.PrivateKey,
-                Type = addressType,
-                Address = keys.Address
-            };
-
-            var result = await Context.CryptoAddresses.AddAsync(address);
-
-            // TODO: investigate async behaviour here.
-            Context.SaveChanges();
-
-            return result.Entity;
+                var ecKey = EthECKey.GenerateKey();
+                var address = ecKey.GetPublicAddress();
+                var bytes = ecKey.GetPrivateKeyAsBytes();
+                var service = new KeyStorePbkdf2Service();
+                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
+                return (Address: address, PrivateKey: privateKey);
+            });
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
@@ -73,16 +65,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
         {
             throw new NotImplementedException();
-        }
-
-        private (string Address, string PrivateKey) GenerateEthereumKeys()
-        {
-            var ecKey = EthECKey.GenerateKey();
-            var address = ecKey.GetPublicAddress();
-            var bytes = ecKey.GetPrivateKeyAsBytes();
-            var service = new KeyStorePbkdf2Service();
-            var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
-            return (Address: address, PrivateKey: privateKey);
         }
 
         internal class EtherscanResponse

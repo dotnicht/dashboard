@@ -37,7 +37,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        protected override (string Address, string PrivateKey) GenerateKeys()
         {
             var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
                 ? Network.Main
@@ -45,19 +45,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(networkType).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString();
 
-            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
-            {
-                UserId = userId,
-                Currency = Settings.Value.Currency,
-                PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
-                Type = addressType,
-                Address = address
-            });
-
-            Context.SaveChanges();
-
-            return result.Entity;
+            return (Address: address, PrivateKey: encrypted);
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)

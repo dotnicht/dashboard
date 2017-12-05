@@ -122,7 +122,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Settings.Value.Currency)
                     .OrderBy(x => Guid.NewGuid())
                     .FirstOrDefault()
-                ?? await CreateAddress("d8033986-1220-47a8-a43e-98b9842d5c5e", CryptoAddressType.Internal);
+                ?? await CreateAddress(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal);
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
             {
@@ -130,9 +130,32 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected abstract Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType);
+        protected abstract (string Address, string PrivateKey) GenerateKeys();
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task TransferAssets(CryptoAddress address, string destinationAddress);
+
+        private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        {
+            var keys = addressType == CryptoAddressType.Internal
+                ? (Address: $"InternalAddress_{ Guid.NewGuid() }", PrivateKey: $"InternalPrivateKey_{ Guid.NewGuid() }")
+                : GenerateKeys();
+
+            var address = new CryptoAddress
+            {
+                UserId = userId,
+                Currency = Settings.Value.Currency,
+                PrivateKey = keys.PrivateKey,
+                Type = addressType,
+                Address = keys.Address
+            };
+
+            var result = await Context.CryptoAddresses.AddAsync(address);
+
+            // TODO: investigate async behaviour here.
+            Context.SaveChanges();
+
+            return result.Entity;
+        }
 
         private class InternalCryptoAddressDataRecord
         {
