@@ -10,6 +10,7 @@ using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -136,24 +137,44 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
-            var keys = addressType == CryptoAddressType.Internal
-                ? (Address: $"InternalAddress_{ Guid.NewGuid() }", PrivateKey: $"InternalPrivateKey_{ Guid.NewGuid() }")
-                : GenerateKeys();
+            // TODO: refactor this.
 
-            var address = new CryptoAddress
+            if (addressType == CryptoAddressType.Internal)
+            {
+                var records = _csvService.GetRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv");
+                var addresses = records
+                    .Where(x => x.Currency == Settings.Value.Currency)
+                    .Select(x => x.Address)
+                    .ToArray();
+
+                EntityEntry<CryptoAddress> crypto = null;
+
+                foreach (var address in addresses)
+                {
+                    crypto = await Context.CryptoAddresses.AddAsync(new CryptoAddress
+                    {
+                        UserId = userId,
+                        Currency = Settings.Value.Currency,
+                        Type = addressType,
+                        Address = address
+                    });
+                }
+
+                Context.SaveChanges();
+                return crypto.Entity;
+            }
+
+            var keys = GenerateKeys();
+            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Settings.Value.Currency,
-                PrivateKey = keys.PrivateKey,
                 Type = addressType,
-                Address = keys.Address
-            };
+                Address = keys.Address,
+                PrivateKey = keys.PrivateKey
+            });
 
-            var result = await Context.CryptoAddresses.AddAsync(address);
-
-            // TODO: investigate async behaviour here.
             Context.SaveChanges();
-
             return result.Entity;
         }
 
