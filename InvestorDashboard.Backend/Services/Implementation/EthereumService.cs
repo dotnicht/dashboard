@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
-using Polly;
-using Nethereum.Web3.Accounts;
 using Nethereum.Web3;
-using Nethereum.Hex.HexTypes;
+using Nethereum.Web3.Accounts;
+using Polly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -65,18 +64,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 
-        protected override async Task<string> TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override async Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (destinationAddress == null)
-            {
-                throw new ArgumentNullException(nameof(destinationAddress));
-            }
-
             // TODO: custom amount.
 
             var account = Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword);
@@ -86,8 +75,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (balance.Value > fee)
             {
-                var amount = new HexBigInteger(balance - fee);
-                return await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, amount);
+                var txAmount = new HexBigInteger(balance - fee);
+                return await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, txAmount);
             }
 
             return null;

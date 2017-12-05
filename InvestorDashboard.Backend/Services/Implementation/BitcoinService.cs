@@ -75,7 +75,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected override Task<string> TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
             throw new NotImplementedException();
         }

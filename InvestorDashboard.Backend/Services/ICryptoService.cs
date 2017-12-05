@@ -1,4 +1,5 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
@@ -11,5 +12,6 @@ namespace InvestorDashboard.Backend.Services
         Task CreateCryptoAddress(string userId);
         Task RefreshInboundTransactions();
         Task TransferAssets();
+        Task<string> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
     }
 }

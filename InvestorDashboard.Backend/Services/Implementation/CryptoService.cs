@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -10,7 +6,10 @@ using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -127,13 +126,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
             {
-                await TransferAssets(address, destination.Address);
+                await PublishTransactionInternal(address, destination.Address);
             }
+        }
+
+        public Task<string> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
+        {
+            if (sourceAddress == null)
+            {
+                throw new ArgumentNullException(nameof(sourceAddress));
+            }
+
+            if (destinationAddress == null)
+            {
+                throw new ArgumentNullException(nameof(destinationAddress));
+            }
+
+            return PublishTransactionInternal(sourceAddress, destinationAddress, amount);
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys();
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task<string> TransferAssets(CryptoAddress address, string destinationAddress);
+        protected abstract Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null);
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
