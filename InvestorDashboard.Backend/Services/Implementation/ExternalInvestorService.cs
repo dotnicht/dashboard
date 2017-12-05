@@ -13,6 +13,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class ExternalInvestorService : ContextService, IExternalInvestorService
     {
+        private const string ExternalInvestorsDataFilename = "ExternalInvestorData.csv";
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IOptions<TokenSettings> _tokenSettings;
@@ -40,7 +42,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var count = 0;
 
-            foreach (var record in _csvService.GetRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv"))
+            foreach (var record in _csvService.GetRecords<ExternalInvestorDataRecord>(ExternalInvestorsDataFilename))
             {
                 if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
@@ -69,7 +71,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var users = Context.Users
                 .Where(x => x.ExternalId != null && !x.EmailConfirmed)
                 .ToArray()
-                .Join(_csvService.GetRecords<ExternalInvestorDataRecord>("InvestorsData.csv"), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
+                .Join(_csvService.GetRecords<ExternalInvestorDataRecord>(ExternalInvestorsDataFilename), x => x.ExternalId, x => x.Id, (x, y) => new { User = x, Record = y })
                 .Where(x => x.Record.Day <= DateTime.UtcNow)
                 .ToArray();
 
