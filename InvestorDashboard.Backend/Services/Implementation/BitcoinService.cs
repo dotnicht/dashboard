@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using Info.Blockchain.API.BlockExplorer;
+using Info.Blockchain.API.Wallet;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using Info.Blockchain.API.BlockExplorer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -18,6 +18,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
+
+        private Network Network
+        {
+            get
+            {
+                return _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                    ? Network.Main
+                    : Network.TestNet;
+            }
+        }
 
         public BitcoinService(
             ApplicationDbContext context,
@@ -51,11 +61,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var be = new BlockExplorer();
                 var addr = await be.GetBase58AddressAsync(address);
+
                 var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
 
                 foreach (var tx in addr.Transactions)
                 {
-                    mapped.Single(x => x.Hash == tx.Hash).Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                    var result = mapped.Single(x => x.Hash == tx.Hash);
+
+                    if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
+                    {
+                        // TODO: determine transaction amount.
+                        result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
+                        result.Direction = CryptoTransactionDirection.Internal;
+                    }
+                    else
+                    {
+                        result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                        result.Direction = CryptoTransactionDirection.Inbound;
+                    }
                 }
 
                 return mapped;
@@ -77,7 +100,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            throw new NotImplementedException();
+            var tb = new TransactionBuilder();
+            var tx = tb
+                .SetChange(secret.GetAddress())
+                .BuildTransaction(true);
+
+            var verified = tb.Verify(tx);
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
@@ -234,6 +262,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 public double ValueIn { get; set; }
                 public double Fees { get; set; }
             }
+        }
+
+        private class EarnResponse
+        {
+            public int FastestFee { get; set; }
+            public int HalfHourFee { get; set; }
+            public int HourFee { get; set; }
         }
     }
 }
