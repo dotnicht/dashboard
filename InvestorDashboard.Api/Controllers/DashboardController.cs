@@ -123,6 +123,12 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
+        [Authorize, HttpPost("add_question"), Produces("application/json")]
+        public async Task<IActionResult> AddQuestion([FromBody]Question question){
+
+            return Ok();
+        }
+
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
             var item = await _dashboardHistoryService.GetLatestHistoryItem();

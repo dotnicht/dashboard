@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { ClientInfoEndpointService } from '../../services/client-info.service';
 import { isPlatformBrowser } from '@angular/common';
@@ -10,6 +10,8 @@ import { AnonymousSubscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/timer';
 import { AuthService } from '../../services/auth.service';
 import { ClientInfo } from '../../models/client-info.model';
+import { MatDialogRef, MatDialog } from '@angular/material';
+import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 
 declare var QRCode: any;
 
@@ -25,13 +27,16 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public dashboard: Dashboard = new Dashboard();
 
     public selectedPaymentType: PaymentType;
+    public Question: string;
     public calculateValue = 1;
     public qrLoaded = true;
     public isCopied = false;
     public calculatorFromBtc = true;
+    public selectedVideo: any;
 
     private subscription: any;
 
+    addedQuestionDialogRef: MatDialogRef<AddedQuestionDialogComponent> | null;
 
 
     /** dashboard ctor */
@@ -39,12 +44,24 @@ export class DashboardComponent implements OnDestroy, OnInit {
         private translationService: AppTranslationService,
         private dashboardService: DashboardEndpoint,
         private clientInfoService: ClientInfoEndpointService,
-        private authService: AuthService) {
+        private sanitizer: DomSanitizer,
+        private authService: AuthService,
+        private dialog: MatDialog,
+        @Inject(DOCUMENT) doc: any) {
 
-
+        dialog.afterOpen.subscribe(() => {
+            if (!doc.body.classList.contains('no-scroll')) {
+                doc.body.classList.add('no-scroll');
+            }
+        });
+        dialog.afterAllClosed.subscribe(() => {
+            doc.body.classList.remove('no-scroll');
+        });
     }
     ngOnInit(): void {
         this.loadData();
+        this.chooseVideo();
+
         this.subscribeToData();
     }
 
@@ -52,6 +69,16 @@ export class DashboardComponent implements OnDestroy, OnInit {
         if (this.subscription) {
             clearInterval(this.subscription);
         }
+    }
+    openAddedQuestionDialog() {
+        let config = {
+            disableClose: true,
+            hasBackdrop: false
+        };
+        this.addedQuestionDialogRef = this.dialog.open(AddedQuestionDialogComponent, config);
+        this.addedQuestionDialogRef.afterClosed().subscribe(() => {
+            this.Question = undefined;
+        });
     }
     qrInitialize(data: string) {
         document.getElementById('qrCode').innerHTML = '';
@@ -65,6 +92,20 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
 
     }
+
+    chooseVideo() {
+
+        const list = ['https://www.youtube.com/embed/PhXtedgJXXo',
+            'https://www.youtube.com/embed/kKaYKnAYuDQ',
+            'https://www.youtube.com/embed/doLiQVxuWyQ',
+            'https://www.youtube.com/embed/52_bo2SExow',
+            'https://www.youtube.com/embed/_byRbCEBLCM'];
+        const index = Math.floor((Math.random() * list.length));
+
+        this.selectedVideo = this.sanitizer.bypassSecurityTrustResourceUrl(list[index]);
+
+    }
+
     toogleCalculator() {
         if (this.calculatorFromBtc) {
             this.calculatorFromBtc = false;
@@ -73,21 +114,26 @@ export class DashboardComponent implements OnDestroy, OnInit {
         }
     }
     changePayment(payment: PaymentType) {
-        if (!this.dashboard.clientInfoModel.isTokenSaleDisabled && !this.dashboard.icoInfoModel.isTokenSaleDisabled) {
+        if (!this.dashboard.clientInfoModel.isTokenSaleDisabled) {
             this.selectedPaymentType = payment;
             this.qrLoaded = false;
             this.isCopied = false;
             setTimeout(() => {
                 this.qrLoaded = true;
-                if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
-                    this.qrInitialize(payment.address);
-                }
+                //if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
+                this.qrInitialize(payment.address);
+                //}
 
 
             }, 100);
         }
     }
-
+    addQuestion() {
+        console.log(this.Question);
+        this.dashboardService.addQuestion(this.Question).subscribe(resp => {
+            this.openAddedQuestionDialog();
+        });
+    }
     loadData() {
         if (this.authService.isLoggedIn) {
             this.dashboardService.getDashboard().subscribe(model => {
@@ -120,5 +166,27 @@ export class DashboardComponent implements OnDestroy, OnInit {
         this.subscription = setInterval(() => { this.loadData(); }, 30000);
     }
 
+
+
+}
+@Component({
+    selector: 'app-added-question-dialog',
+    template: `
+
+    <h2 mat-dialog-title><mat-icon>check_circle</mat-icon>Question added successfully</h2>
+        <button style="float: right" (click)="close()" mat-raised-button tabindex="1">
+            <span>{{'buttons.Close' | translate}}</span>
+        </button>
+    `
+})
+export class AddedQuestionDialogComponent {
+
+    email: string;
+    constructor(public dialogRef: MatDialogRef<AddedQuestionDialogComponent>) {
+
+    }
+    close() {
+        this.dialogRef.close();
+    }
 
 }

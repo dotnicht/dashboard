@@ -16,10 +16,11 @@
   }
 
   .first {
-    width: calc(50% - 7.5px);
+    width: calc(60% - 7.5px);
     margin-right: 5px;
     background: linear-gradient(to bottom, #a1e276, #30b9ad);
     color: white;
+    margin-bottom: 20px;
     .ether-addres {
       word-wrap: break-word;
       position: relative;
@@ -28,12 +29,15 @@
   }
 
   .second {
-    width: calc(50% - 7.5px);
+    width: calc(40% - 7.5px);
     margin-left: 5px;
-    .left,
-    .right {
-      width: calc(50% - 2.5px);
+    margin-bottom: 20px;
+    .left{
+      width: 100%;
     }
+    // .right {
+    //   width: calc(50% - 2.5px);
+    // }
     .mat-card-content {
       display: inline-flex;
     }
@@ -231,8 +235,9 @@
 
   .seventh {
     margin-right: 5px;
+    margin-bottom: 20px;
     padding: 10px;
-    height: 90px;
+    height: 60px;
     a {
       text-decoration: none;
     }
@@ -246,19 +251,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 25px;
     }
   }
 
   .eighth {
     margin-left: 5px;
-    height: 90px;
+    height: 60px;
     padding: 10px;
+    margin-bottom: 20px;
     .content {
       position: absolute;
       width: 100%;
-      .mat-form-field {
+      input,
+      textarea {
         width: 70%;
+        height: 36px;
+        border: none;
+        resize: inherit;
       }
       button{
         width: calc(30% - 20px);

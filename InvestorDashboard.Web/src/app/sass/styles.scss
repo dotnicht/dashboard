@@ -166,7 +166,7 @@ app-register_presale {
 }
 
 .footer {
-  position: fixed;
+  //position: fixed;
   bottom: 0;
   z-index: 2;
   &.mat-toolbar {
@@ -203,13 +203,22 @@ app-register_presale {
     }
   }
 }
+
 input[type='number'] {
-  -moz-appearance:textfield;
+  -moz-appearance: textfield;
 }
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+}
+
+input,
+textarea {
+  &:focus {
+    outline-offset: initial;
+    outline: none;
+  }
 }
 
 .qrCode {
@@ -218,6 +227,12 @@ input::-webkit-inner-spin-button {
   }
   canvas {
     display: initial !important;
+  }
+}
+
+.mat-drawer-content {
+  >.main-content {
+    min-height: 900px;
   }
 }
 
@@ -311,4 +326,3 @@ ul {
 ul li {
   padding: 5px 0;
 }
-
