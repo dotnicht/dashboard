@@ -39,14 +39,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override (string Address, string PrivateKey) GenerateKeys()
         {
-            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                ? Network.Main
-                : Network.TestNet;
-
             var privateKey = new Key();
-            var address = privateKey.PubKey.GetAddress(networkType).ToString();
-            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString();
-
+            var address = privateKey.PubKey.GetAddress(_bitcoinSettings.Value.NetworkType).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, _bitcoinSettings.Value.NetworkType).ToString();
             return (Address: address, PrivateKey: encrypted);
         }
 
@@ -87,7 +82,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
         {
-            var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
+            var uri = new Uri($"https://blockexplorer.com/api/txs/?address={ address }");
             var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
             var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
@@ -102,7 +97,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
-            var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var uri = new Uri($"https://chain.so/api/v2/address/{_bitcoinSettings.Value.NetworkType}/{address}");
             var result = await _restService.GetAsync<ChainResponse>(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }

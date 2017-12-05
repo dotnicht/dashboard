@@ -1,9 +1,9 @@
-﻿namespace InvestorDashboard.Backend.ConfigurationSections
+﻿using NBitcoin;
+
+namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class BitcoinSettings : CryptoSettings
     {
-        public string ApiBaseUrl { get; set; }
-        public string NetworkType { get; set; }
-        public string ApiUri { get; set; }
+        public Network NetworkType { get; set; }
     }
 }

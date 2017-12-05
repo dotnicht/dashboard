@@ -137,43 +137,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
-            // TODO: refactor this.
-
             if (addressType == CryptoAddressType.Internal)
             {
-                var records = _csvService.GetRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv");
-                var addresses = records
+                return await _csvService.GetRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
                     .Where(x => x.Currency == Settings.Value.Currency)
-                    .Select(x => x.Address)
-                    .ToArray();
-
-                EntityEntry<CryptoAddress> crypto = null;
-
-                foreach (var address in addresses)
-                {
-                    crypto = await Context.CryptoAddresses.AddAsync(new CryptoAddress
-                    {
-                        UserId = userId,
-                        Currency = Settings.Value.Currency,
-                        Type = addressType,
-                        Address = address
-                    });
-                }
-
-                Context.SaveChanges();
-                return crypto.Entity;
+                    .Select(async x => await CreateAddressInternal(userId, addressType, x.Address))
+                    .FirstOrDefault();
             }
 
             var keys = GenerateKeys();
+            return await CreateAddressInternal(userId, addressType, keys.Address, keys.PrivateKey);
+        }
+
+        private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)
+        {
             var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
             {
                 UserId = userId,
                 Currency = Settings.Value.Currency,
                 Type = addressType,
-                Address = keys.Address,
-                PrivateKey = keys.PrivateKey
+                Address = address,
+                PrivateKey = privateKey
             });
 
+            // TODO: investigate async behaviour here.
             Context.SaveChanges();
             return result.Entity;
         }
