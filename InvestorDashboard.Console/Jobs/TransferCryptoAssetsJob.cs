@@ -13,7 +13,7 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class TransferCryptoAssetsJob : JobBase
     {
-        public override TimeSpan Period => Options.Value.TransferCryptoAssetsPeriod;
+        public override TimeSpan Period => Options.Value.TransferAvailableAssetsPeriod;
 
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
@@ -29,7 +29,7 @@ namespace InvestorDashboard.Console.Jobs
             {
                 try
                 {
-                    await service.TransferAssets();
+                    await service.TransferAvailableAssets();
                 }
                 catch (Exception ex)
                 {

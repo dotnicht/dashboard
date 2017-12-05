@@ -109,7 +109,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task TransferAssets()
+        public async Task TransferAvailableAssets()
         {
             if (Settings.Value.IsDisabled)
             {
