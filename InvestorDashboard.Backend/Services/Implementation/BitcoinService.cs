@@ -80,10 +80,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override Task<string> TransferAssets(CryptoAddress address, string destinationAddress)
         {
-
-
             throw new NotImplementedException();
         }
 

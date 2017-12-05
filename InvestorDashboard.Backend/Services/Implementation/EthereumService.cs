@@ -14,6 +14,7 @@ using Nethereum.Signer;
 using Polly;
 using Nethereum.Web3.Accounts;
 using Nethereum.Web3;
+using Nethereum.Hex.HexTypes;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -64,7 +65,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
         }
 
-        protected override async Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override async Task<string> TransferAssets(CryptoAddress address, string destinationAddress)
         {
             if (address == null)
             {
@@ -81,9 +82,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var account = Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword);
             var web3 = new Web3(account, Settings.Value.NodeAddress.ToString());
             var balance = await web3.Eth.GetBalance.SendRequestAsync(address.Address);
-            var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, balance);
+            var fee = account.TransactionManager.DefaultGas * account.TransactionManager.DefaultGasPrice;
 
-            Logger.LogInformation($"Transaction created. Hash: { hash }.");
+            if (balance.Value > fee)
+            {
+                var amount = new HexBigInteger(balance - fee);
+                return await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, amount);
+            }
+
+            return null;
         }
 
         internal class EtherscanResponse

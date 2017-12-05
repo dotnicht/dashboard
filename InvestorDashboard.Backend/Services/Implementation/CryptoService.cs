@@ -133,7 +133,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected abstract (string Address, string PrivateKey) GenerateKeys();
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task TransferAssets(CryptoAddress address, string destinationAddress);
+        protected abstract Task<string> TransferAssets(CryptoAddress address, string destinationAddress);
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
