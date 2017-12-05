@@ -19,16 +19,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
-        private Network Network
-        {
-            get
-            {
-                return _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                    ? Network.Main
-                    : Network.TestNet;
-            }
-        }
-
         public BitcoinService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
@@ -70,7 +60,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
                     {
-                        // TODO: determine transaction amount.
                         result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
                         result.Direction = CryptoTransactionDirection.Internal;
                     }
@@ -100,12 +89,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            var tb = new TransactionBuilder();
-            var tx = tb
-                .SetChange(secret.GetAddress())
-                .BuildTransaction(true);
-
-            var verified = tb.Verify(tx);
+            throw new NotImplementedException();
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
