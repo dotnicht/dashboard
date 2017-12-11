@@ -31,6 +31,7 @@
     "angular2-recaptcha": "^0.6.0",
     "bootstrap-sass": "^3.3.7",
     "core-js": "^2.4.1",
+    "ethereum-address": "0.0.4",
     "ngx-clipboard": "^8.1.1",
     "ngx-cookie-service": "^1.0.9",
     "ngx-papaparse": "^1.2.5",

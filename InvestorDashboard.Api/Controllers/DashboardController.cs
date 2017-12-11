@@ -1,3 +1,4 @@
+using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.DashboardModels;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,6 +130,26 @@ namespace InvestorDashboard.Api.Controllers
         public async Task<IActionResult> AddQuestion([FromBody]Question question){
 
             return Ok();
+        }
+        [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
+        public async Task<IActionResult> AddTokenTransfer([FromBody]TokenTransferModel transfer)
+        {
+
+            var response = transfer.ReCaptchaToken;
+            string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
+            var client = new System.Net.WebClient();
+            var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
+            var obj = JObject.Parse(recaptchaResult);
+            var status = (bool)obj.SelectToken("success");
+            if (status)
+            {
+                return Ok();
+            }
+
+            return BadRequest(new OpenIdConnectResponse
+            {
+                Error = "recaptcha validation false"
+            });
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()

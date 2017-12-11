@@ -9,17 +9,21 @@ import { CommonModule } from '@angular/common';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 import { ClipboardModule } from 'ngx-clipboard';
 import { FormsModule } from '@angular/forms';
+import { TransferComponent } from '../../components/transfer/transfer.component';
+import { ReCaptchaModule } from 'angular2-recaptcha';
 
 @NgModule({
     declarations: [
         DashboardComponent,
-        AddedQuestionDialogComponent
+        AddedQuestionDialogComponent,
+        TransferComponent
     ],
     imports: [
         CommonModule,
         ClipboardModule,
         MaterialModule,
         RouterModule,
+        ReCaptchaModule,
         FormsModule,
 
         TranslateModule.forRoot({

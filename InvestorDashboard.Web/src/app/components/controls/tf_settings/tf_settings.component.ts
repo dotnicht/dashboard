@@ -1,12 +1,12 @@
 ﻿import { Component, OnInit } from '@angular/core';
 
 @Component({
-    selector: 'app-tfa',
-    templateUrl: './tfa.component.html',
-    styleUrls: ['./tfa.component.scss']
+    selector: 'app-tf-settings',
+    templateUrl: './tf_settings.component.html',
+    styleUrls: ['./tf_settings.component.scss']
 })
 /** tfa component*/
-export class TfaComponent implements OnInit
+export class TfSettingsComponent implements OnInit
 {
     /** tfa ctor */
     constructor() { }

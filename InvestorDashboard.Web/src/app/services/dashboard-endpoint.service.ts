@@ -9,6 +9,7 @@ import { Utilities } from './utilities';
 import { AuthService } from './auth.service';
 import { BaseService } from './base.service';
 import { environment } from '../../environments/environment';
+import { TokenTransfer } from '../models/tokenTransfer.model';
 
 
 @Injectable()
@@ -18,6 +19,7 @@ export class DashboardEndpoint extends BaseService {
     private readonly _paymentTypesUrl: string = environment.host + `/dashboard/payment_status`;
     private readonly _dashboard: string = environment.host + `/dashboard/full_info`;
     private readonly _addQuestion: string = environment.host + `/dashboard/add_question`;
+    private readonly _addTokenTransfer: string = environment.host + `/dashboard/add_token_transfer`;
 
     private subscription: any;
 
@@ -81,5 +83,17 @@ export class DashboardEndpoint extends BaseService {
             });
         return res;
     }
+    public addtokenTransfer(model: TokenTransfer): Observable<Response> {
 
+        let res = this.http.post(this._addTokenTransfer, model, this.authService.getAuthHeader())
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+
+                return this.handleError(error, () => this.addtokenTransfer(model));
+
+            });
+        return res;
+    }
 }

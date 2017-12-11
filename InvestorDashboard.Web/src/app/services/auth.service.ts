@@ -252,7 +252,7 @@ export class AuthService {
   }
 
 
-  private processLoginResponse(response: Response, rememberMe: boolean) {
+  private processLoginResponse(response: Response, rememberMe: boolean, tfValidate: boolean = false) {
 
     const response_token = response.json();
     const accessToken = response_token.access_token;
@@ -285,11 +285,11 @@ export class AuthService {
       decodedIdToken.sub,
       decodedIdToken.name,
       decodedIdToken.email,
-      decodedIdToken.twoFactorEnabled);
+      decodedIdToken.twofactorenabled);
 
     user.isEnabled = true;
 
-    // console.log(decodedIdToken);
+    console.log(decodedIdToken);
     this.saveUserDetails(user, permissions, accessToken, idToken, refreshToken, accessTokenExpiry, rememberMe);
 
     this.reevaluateLoginStatus(user);
@@ -394,8 +394,16 @@ export class AuthService {
 
     //   });
     // });
-
-    return this.currentUser != null;
+    if (this.currentUser != null) {
+      if (this.currentUser.twoFactorEnabled) {
+        if (this.currentUser.twoFactorValidated) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }
+    return false;
     // return this.isAuth && (this.currentUser != null);
   }
 

@@ -9,11 +9,12 @@ import { AuthGuard } from './services/auth-guard.service';
 import { DashboardComponent } from './containers/dashboard/dashboard.component';
 import { SettingsComponent } from './containers/settings/settings.component';
 import { UserInfoComponent } from './components/controls/user-info.component';
-import { TfaComponent } from './components/controls/tfa/tfa.component';
 import { FaqComponent } from './containers/faq/faq.component';
 import { ForgotPasswordComponent } from './components/controls/forgot-password/forgot.password.component';
 import { ResetPasswordComponent } from './components/controls/reset-password/reset-password.component';
 import { RegisterPreSaleComponent } from './containers/register_presale/register_presale.component';
+import { TfaComponent } from './components/tfa/tfa.component';
+import { TransferComponent } from './components/transfer/transfer.component';
 
 export const routingComponents = [
     NotFoundComponent
@@ -29,12 +30,16 @@ const routes: Routes = [
 
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+    { path: 'transfer', component: TransferComponent, canActivate: [AuthGuard] },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'forgot_password', component: ForgotPasswordComponent },
     { path: 'email_confirmed', component: ConfirmedEmailComponent },
-    { path: 'presale', component: RegisterPreSaleComponent },
+    {
+        path: 'presale',         redirectTo: '/register'
+    },
     { path: 'reset_password', component: ResetPasswordComponent, },
+    { path: 'tfa', component: TfaComponent, },
     {
         path: 'settings', canActivate: [AuthGuard],
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'

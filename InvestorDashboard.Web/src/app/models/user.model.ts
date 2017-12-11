@@ -28,19 +28,21 @@ export class User {
     public phoneCode: string;
     public phoneNumber: string;
     public twoFactorEnabled: boolean;
+    public twoFactorValidated: boolean;
     public isEnabled: boolean;
     public isLockedOut: boolean;
+    
 
     // Note: Using only optional constructor properties without backing store disables typescript's type checking for the type
     constructor(
         id?: string,
         userName?: string,
         email?: string,
-        twofactorenabled?: boolean
+        twofactorenabled?: string
     ) {
         this.id = id;
         this.userName = userName;
-        this.twoFactorEnabled = twofactorenabled;
+        this.twoFactorEnabled = twofactorenabled.toLowerCase() == 'true';
         this.email = email;
     }
 

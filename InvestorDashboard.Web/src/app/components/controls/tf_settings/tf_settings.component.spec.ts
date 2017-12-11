@@ -1,23 +1,24 @@
 ﻿/// <reference path="../../../../../node_modules/@types/jasmine/index.d.ts" />
 import { TestBed, async, ComponentFixture, ComponentFixtureAutoDetect } from '@angular/core/testing';
 import { BrowserModule, By } from "@angular/platform-browser";
-import { TfaComponent } from './tfa.component';
+import { TfSettingsComponent } from './tf_settings.component';
 
-let component: TfaComponent;
-let fixture: ComponentFixture<TfaComponent>;
+
+let component: TfSettingsComponent;
+let fixture: ComponentFixture<TfSettingsComponent>;
 
 describe('tfa component', () =>
 {
     beforeEach(async(() =>
     {
         TestBed.configureTestingModule({
-            declarations: [TfaComponent],
+            declarations: [TfSettingsComponent],
             imports: [ BrowserModule ],
             providers: [
                 { provide: ComponentFixtureAutoDetect, useValue: true }
             ]
         });
-        fixture = TestBed.createComponent(TfaComponent);
+        fixture = TestBed.createComponent(TfSettingsComponent);
         component = fixture.componentInstance;
     }));
 

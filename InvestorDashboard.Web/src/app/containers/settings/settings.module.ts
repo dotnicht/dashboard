@@ -13,25 +13,25 @@ import { UserInfoComponent } from '../../components/controls/user-info.component
 import { AccountService } from '../../services/account.service';
 import { AccountEndpoint } from '../../services/account-endpoint.service';
 import { CaseFormatterDirective } from '../../directives/case-formater.directive';
-import { TfaComponent } from '../../components/controls/tfa/tfa.component';
 
 import { EqualValidator } from '../../directives/equal-validator.directive';
 import { ChangePasswordComponent, ChangePasswordDialogComponent } from '../../components/controls/change-password/change-password.component';
 import { SharedModule } from '../../app.shared.module';
 import { PapaParseModule } from 'ngx-papaparse';
+import { TfSettingsComponent } from '../../components/controls/tf_settings/tf_settings.component';
 
 
 export const SETTINGS_ROUTES: Routes = [
     { path: '', redirectTo: 'profile', pathMatch: 'full' },
     { path: 'profile', component: UserInfoComponent },
-    { path: '2fa', component: TfaComponent },
+    { path: '2fa', component: TfSettingsComponent },
     { path: 'change_password', component: ChangePasswordComponent }
 ];
 @NgModule({
     declarations: [
         SettingsComponent,
         UserInfoComponent,
-        TfaComponent,
+        TfSettingsComponent,
         CaseFormatterDirective,
         ChangePasswordComponent,
         ChangePasswordDialogComponent
