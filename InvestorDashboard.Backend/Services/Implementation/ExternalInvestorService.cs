@@ -48,7 +48,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     var user = new ApplicationUser
                     {
                         Email = $"{ record.Id }@data-trading.com",
-                        UserName = record.Id.ToString()
+                        UserName = record.Id.ToString(),
+                        ExternalId = record.Id
                     };
 
                     var result = await _userManager.CreateAsync(user);

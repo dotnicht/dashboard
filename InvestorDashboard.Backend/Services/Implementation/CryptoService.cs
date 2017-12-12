@@ -72,7 +72,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.EmailConfirmed && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
+                .Where(x => x.Currency == Settings.Value.Currency 
+                    && x.Type == CryptoAddressType.Investment 
+                    && x.User.EmailConfirmed 
+                    && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
                 .ToArray();
 
             const string addressKey = "address";
