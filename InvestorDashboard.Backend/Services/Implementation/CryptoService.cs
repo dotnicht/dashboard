@@ -47,17 +47,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
-        public async Task CreateCryptoAddress(string userId)
+        public Task<CryptoAddress> CreateCryptoAddress(string userId)
         {
             if (userId == null)
             {
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (!Settings.Value.IsDisabled)
-            {
-                await CreateAddress(userId, CryptoAddressType.Investment);
-            }
+            return Settings.Value.IsDisabled 
+                ? null 
+                : CreateAddress(userId, CryptoAddressType.Investment);
         }
 
         public async Task RefreshInboundTransactions()
@@ -73,7 +72,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.ExternalId == null && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
+                .Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.User.EmailConfirmed && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
                 .ToArray();
 
             const string addressKey = "address";
@@ -91,16 +90,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (!hashes.Contains(transaction.Hash))
                     {
-                        Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
-
-                        transaction.CryptoAddress = address;
-                        transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
-                        transaction.TokenPrice = TokenSettings.Value.Price;
-                        transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
-
-                        await Context.CryptoTransactions.AddAsync(transaction);
-                        await Context.SaveChangesAsync();
-
+                        await FillAndSaveTransaction(transaction, address, CryptoTransactionDirection.Inbound);
                         // TODO: send transaction received message.
                     }
 
@@ -124,11 +114,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
             {
-                await PublishTransactionInternal(address, destination.Address);
+                await PublishTransaction(address, destination.Address);
             }
         }
 
-        public Task<string> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
+        public async Task<(string Hash, decimal AdjustedAmount)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
         {
             if (sourceAddress == null)
             {
@@ -140,12 +130,37 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            return PublishTransactionInternal(sourceAddress, destinationAddress, amount);
+            var result = await PublishTransactionInternal(sourceAddress, destinationAddress, amount);
+
+            var transaction = new CryptoTransaction
+            {
+                Hash = result.Hash,
+                Amount = result.AdjustedAmount,
+                TimeStamp = DateTime.UtcNow
+            };
+
+            await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+
+            return result;
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys();
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null);
+        protected abstract Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null);
+
+        private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection direction)
+        {
+            Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
+
+            transaction.Direction = direction;
+            transaction.CryptoAddressId = address.Id;
+            transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
+            transaction.TokenPrice = TokenSettings.Value.Price;
+            transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
+
+            await Context.CryptoTransactions.AddAsync(transaction);
+            await Context.SaveChangesAsync();
+        }
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
         {
@@ -157,8 +172,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .FirstOrDefault();
             }
 
-            var keys = GenerateKeys();
-            return await CreateAddressInternal(userId, addressType, keys.Address, keys.PrivateKey);
+            var (Address, PrivateKey) = GenerateKeys();
+            return await CreateAddressInternal(userId, addressType, Address, PrivateKey);
         }
 
         private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)

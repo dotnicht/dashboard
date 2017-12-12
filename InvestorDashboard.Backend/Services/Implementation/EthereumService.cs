@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
+using Nethereum.Util;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Polly;
@@ -66,36 +67,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
                 .ToArray();
 
-            var mapped = Mapper.Map<List<CryptoTransaction>>(confirmed);
-
-            foreach (var tx in mapped)
-            {
-                // TODO: agjust direction to include outbound transactions.
-                var source = confirmed.Single(x => x.Hash == tx.Hash);
-                tx.Direction = source.To == address
-                    ? CryptoTransactionDirection.Inbound
-                    : CryptoTransactionDirection.Internal;
-            }
-
-            return mapped;
+            return Mapper.Map<List<CryptoTransaction>>(confirmed);
         }
 
-        protected override async Task<string> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override async Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            // TODO: custom amount.
+            var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
 
-            var account = Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword);
-            var web3 = new Web3(account, Settings.Value.NodeAddress.ToString());
-            var balance = await web3.Eth.GetBalance.SendRequestAsync(address.Address);
-            var fee = account.TransactionManager.DefaultGas * account.TransactionManager.DefaultGasPrice;
+            var value = amount == null
+                ? await web3.Eth.GetBalance.SendRequestAsync(address.Address)
+                : new HexBigInteger(UnitConversion.Convert.ToWei(amount.Value));
 
-            if (balance.Value > fee)
-            {
-                var txAmount = new HexBigInteger(balance - fee);
-                return await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, txAmount);
-            }
+            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
-            return null;
+            var adjustedAmount = value - web3.TransactionManager.DefaultGas * web3.TransactionManager.DefaultGasPrice;
+            var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, new HexBigInteger(adjustedAmount));
+
+            return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount));
         }
 
         internal class EtherscanResponse

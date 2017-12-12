@@ -66,10 +66,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var nonInternalTransactions = transactions.Where(
                 x => x.ExternalId == null 
+                && x.Hash != null
                 && x.CryptoAddress.Currency != Currency.DTT 
-                && x.CryptoAddress.User.ExternalId == null);
+                && x.CryptoAddress.User.EmailConfirmed);
 
-            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
+            item.TotalNonInternalUsers = Context.Users.Count(x => x.EmailConfirmed);
             item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
             item.TotalNonInternalInvestors = nonInternalTransactions
                 .Select(x => x.CryptoAddress.UserId)
@@ -85,7 +86,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         && x.CryptoAddress.Type == CryptoAddressType.Investment
                         && x.ExternalId == null
                         && x.CryptoAddress.Currency != Currency.DTT
-                        && x.CryptoAddress.User.ExternalId == null)
+                        && x.CryptoAddress.User.EmailConfirmed)
                     .ToList()
                     .GroupBy(x => x.CryptoAddress.Currency)
                     .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))

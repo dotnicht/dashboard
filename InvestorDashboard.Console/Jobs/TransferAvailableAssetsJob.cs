@@ -26,13 +26,14 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            /*
+
             var eth = _cryptoServices.Single(x => x.Settings.Value.Currency == Backend.Database.Models.Currency.ETH);
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Email == "dotnicht@live.com");
             var address = user.CryptoAddresses.Single(x => x.Currency == Backend.Database.Models.Currency.ETH);
             var hash = await eth.PublishTransaction(address, "0xe8141d6cfA2052E853C47E030f64dB649d47DF1f");
 
             return;
+
             foreach (var service in _cryptoServices)
             {
                 try
@@ -44,7 +45,6 @@ namespace InvestorDashboard.Console.Jobs
                     Logger.LogError(ex, $"An error occurred while transfering { service.Settings.Value.Currency } assets.");
                 }
             }
-            */
         }
 
         protected override void Dispose(bool disposing)
