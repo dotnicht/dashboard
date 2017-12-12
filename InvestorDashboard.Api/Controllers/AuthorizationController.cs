@@ -121,24 +121,24 @@ namespace InvestorDashboard.Api.Controllers
         #region Authorization code, implicit and implicit flows
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
-        [HttpGet]
-        public async Task<IActionResult> LoginWith2fa()
-        {
-            // Ensure the user has gone through the username & password screen first
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+        //[HttpGet]
+        //public async Task<IActionResult> LoginWith2fa()
+        //{
+        //    // Ensure the user has gone through the username & password screen first
+        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 
-            if (user == null)
-            {
-                // throw new ApplicationException($"Unable to load two-factor authentication user.");
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                    ErrorDescription = "The username/password couple is invalid."
-                });
-            }
+        //    if (user == null)
+        //    {
+        //        // throw new ApplicationException($"Unable to load two-factor authentication user.");
+        //        return BadRequest(new OpenIdConnectResponse
+        //        {
+        //            Error = OpenIdConnectConstants.Errors.InvalidGrant,
+        //            ErrorDescription = "The username/password couple is invalid."
+        //        });
+        //    }
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         [HttpPost]
         public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel model, bool rememberMe, string returnUrl = null)
@@ -169,7 +169,7 @@ namespace InvestorDashboard.Api.Controllers
             var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
             var result =
-              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
+              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, false);
 
             if (result.Succeeded)
             {

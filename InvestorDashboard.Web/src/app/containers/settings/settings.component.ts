@@ -10,7 +10,7 @@ import { AppTranslationService } from '../../services/app-translation.service';
 export class SettingsComponent implements OnInit {
     tabLinks = [
         { label: 'Profile', link: 'profile' },
-        //{ label: 'Two-factor authentication', link: '2fa' },
+        // { label: 'Two-factor authentication', link: '2fa' },
         { label: 'Password', link: 'change_password' }
     ];
     tabNavBackground: any = undefined;
