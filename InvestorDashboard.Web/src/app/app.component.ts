@@ -33,6 +33,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (window.location.pathname == "/presale") {
+      window.location.href = 'https://data-trading.com';
+    }
     if (isPlatformBrowser) {
       this.year = new Date().getFullYear();
       this.resizeService.width = window.innerWidth;

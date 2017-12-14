@@ -21,6 +21,7 @@ export class AuthService {
 
   private readonly _logoutUrl: string = '/connect/logout';
   private readonly _registerUrl: string = '/connect/register';
+  private readonly _loginTfa: string = environment.host + '/connect/login2fa';
 
   private isRefreshingLogin: boolean;
 
@@ -169,6 +170,21 @@ export class AuthService {
 
     return this.getLoginEndpoint(user)
       .map((response: Response) => this.processLoginResponse(response, user.rememberMe))
+      .catch((error: any) => {
+        return Observable.throw(error);
+      });
+  }
+  loginWithTfa(code: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+
+    return this.http.post(this._loginTfa, JSON.stringify({ TwoFactorCode: code }), this.getAuthHeader(true))
+      .map((response: Response) => {
+        let user = this.currentUser;
+        user.twoFactorValidated = true;
+        this.localStorage.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
+        return response;
+      })
       .catch((error: any) => {
         return Observable.throw(error);
       });

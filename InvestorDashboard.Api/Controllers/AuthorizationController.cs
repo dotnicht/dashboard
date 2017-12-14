@@ -140,8 +140,8 @@ namespace InvestorDashboard.Api.Controllers
         //    return Ok();
         //}
 
-        [HttpPost]
-        public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel model, bool rememberMe, string returnUrl = null)
+        [HttpPost("~/connect/login2fa"), Produces("application/json")]
+        public async Task<IActionResult> LoginWith2fa([FromBody] LoginWith2faViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -150,10 +150,10 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     foreach (var error in values.Errors)
                     {
-                        errorrs += $"{error};";
+                        errorrs += $"{error.ErrorMessage};";
                     }
                 }
-                return Ok(new OpenIdConnectResponse
+                return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
                     ErrorDescription = errorrs
@@ -163,13 +163,17 @@ namespace InvestorDashboard.Api.Controllers
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
-                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
             }
 
             var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
             var result =
-              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, false);
+              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
 
             if (result.Succeeded)
             {
@@ -179,7 +183,7 @@ namespace InvestorDashboard.Api.Controllers
             else if (result.IsLockedOut)
             {
                 _logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
-                return Ok(new OpenIdConnectResponse
+                return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
                     ErrorDescription = "User with ID {UserId} account locked out."
@@ -188,7 +192,7 @@ namespace InvestorDashboard.Api.Controllers
             else
             {
                 _logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
-                return Ok(new OpenIdConnectResponse
+                return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
                     ErrorDescription = "Invalid authenticator code."
