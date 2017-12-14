@@ -33,7 +33,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'forgot_password', component: ForgotPasswordComponent },
     { path: 'email_confirmed', component: ConfirmedEmailComponent },
-    { path: 'presale', component: RegisterPreSaleComponent },
+    // { path: 'presale', component: RegisterPreSaleComponent },
     { path: 'reset_password', component: ResetPasswordComponent, },
     {
         path: 'settings', canActivate: [AuthGuard],
