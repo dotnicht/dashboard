@@ -56,7 +56,7 @@
   "settings": {
     "tab": {
       "Profile": "Profile",
-      "2fa": "Two-factor authentication",
+      "2fa": "2FA",
       "Password": "Password",
       "Roles": "Roles"
     },
@@ -66,6 +66,13 @@
       "UserDepartments": "User Departments",
       "UsersManagements": "Users Managements",
       "RolesManagement": "Roles Management"
+    },
+    "tf": {
+      "Configure": "Configure authenticator app",
+      "ResetCodes": "Reset recovery codes",
+      "ResetKey": "Reset authenticator key",
+      "Disable": "Disable 2FA",
+      "AddApp": "Add authenticator app"
     }
   },
   "preferences": {
@@ -183,7 +190,9 @@
     "Submit": "Submit",
     "Reset": "Reset",
     "Save": "Save",
-    "Send": "Send"
+    "Send": "Send",
+    "Verify": "Verify",
+    "Disable": "Disable"
   },
   "other": {
     "Or": "or"

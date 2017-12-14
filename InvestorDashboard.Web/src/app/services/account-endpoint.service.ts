@@ -19,6 +19,8 @@ export class AccountEndpoint extends BaseService {
     private readonly _forgotPasswordUrl: string = environment.host + '/account/forgot_password';
     private readonly _changePasswordUrl: string = environment.host + '/account/change_password';
     private readonly _resetPasswordUrl: string = environment.host + '/account/reset_password';
+    private readonly _tfaEnableUrl: string = environment.host + '/account/tfa_enable';
+    private readonly _tfaUrl: string = environment.host + '/account/tfa';
 
 
     get usersUrl() { return this._usersUrl; }
@@ -139,6 +141,39 @@ export class AccountEndpoint extends BaseService {
             .catch(error => {
                 return this.handleError(error, () => this.getUpdateUserPreferencesEndpoint(configuration));
             });
+    }
+
+
+    TfGetActivationDataEndpoint(): Observable<Response> {
+        const res = this.http.get(this._tfaEnableUrl, this.authService.getAuthHeader(true))
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.TfGetActivationDataEndpoint());
+
+            });
+        return res;
+    }
+    TfPostActivationDataEndpoint(code: string): Observable<Response> {
+        const res = this.http.post(this._tfaEnableUrl, JSON.stringify({ code: code }), this.authService.getAuthHeader(true))
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.TfPostActivationDataEndpoint(code));
+            });
+        return res;
+    }
+    TfaDataEndpoint(): Observable<Response> {
+        const res = this.http.get(this._tfaUrl, this.authService.getAuthHeader(true))
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.TfaDataEndpoint());
+            });
+        return res;
     }
 
 }

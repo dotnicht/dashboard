@@ -4,7 +4,7 @@ $navbar-default-color: $light-orange;
 
 /* Import Bootstrap & Fonts */
 
-$icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
+$icon-font-path: '../../../node_modules/bootstrap-sass/assets/fonts/bootstrap/';
 // @import "~bootstrap-sass/assets/stylesheets/bootstrap";
 // @import '~@angular/material/prebuilt-themes/indigo-pink.css';
 
@@ -17,6 +17,13 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
 @import "~bootstrap-sass/assets/stylesheets/bootstrap";
 @import '~@angular/material/prebuilt-themes/indigo-pink.css';
 @import 'green.theme.scss';
+app-tf-settings {
+  .mat-tab-body-content {
+    overflow: hidden !important;
+    padding: 15px;
+  }
+}
+
 .mat-raised-button {
   &.btn-danger {
     color: #fff;

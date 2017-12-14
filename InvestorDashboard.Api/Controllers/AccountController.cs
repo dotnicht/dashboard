@@ -14,7 +14,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
 using System.Net;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api.Controllers
@@ -34,6 +37,10 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
 
+        private readonly UrlEncoder _urlEncoder;
+
+        private const string AuthenicatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+
         public AccountController(
           ApplicationDbContext context,
           UserManager<ApplicationUser> userManager,
@@ -42,7 +49,8 @@ namespace InvestorDashboard.Api.Controllers
           ILogger<AccountController> logger,
           IOptions<IdentityOptions> identityOptions,
           IEmailService emailService,
-          IMapper mapper)
+          IMapper mapper,
+          UrlEncoder urlEncoder)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -52,6 +60,7 @@ namespace InvestorDashboard.Api.Controllers
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _urlEncoder = urlEncoder;
         }
 
         [TempData]
@@ -263,5 +272,171 @@ namespace InvestorDashboard.Api.Controllers
                 Error = OpenIdConnectConstants.Errors.ServerError
             });
         }
+        [HttpGet("tfa"), Produces("application/json")]
+        public async Task<IActionResult> TwoFactorAuthentication()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
+            }
+
+            var model = new TwoFactorAuthenticationViewModel
+            {
+                HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
+                Is2faEnabled = user.TwoFactorEnabled,
+                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
+            };
+
+            return Ok(model);
+        }
+
+        [HttpGet("tfa_enable"), Produces("application/json")]
+        public async Task<IActionResult> EnableAuthenticator()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = OpenIdConnectConstants.Errors.ServerError
+                    });
+                }
+
+                var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+                if (string.IsNullOrEmpty(unformattedKey))
+                {
+                    await _userManager.ResetAuthenticatorKeyAsync(user);
+                    unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+                }
+
+                var model = new EnableAuthenticatorViewModel
+                {
+                    SharedKey = FormatKey(unformattedKey),
+                    AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey)
+                };
+
+                return Ok(model);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    ErrorDescription = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("tfa_enable"), Produces("application/json")]
+        public async Task<IActionResult> EnableAuthenticator([FromBody] EnableAuthenticatorViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = string.Empty;
+                foreach (var i in ModelState.Values)
+                {
+                    foreach (var e in i.Errors)
+                    {
+                        errors += $"{e.ErrorMessage}";
+                    }
+                }
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = errors
+                });
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
+                
+            }
+
+            // Strip spaces and hypens
+            var verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+
+            var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+
+            if (!is2faTokenValid)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Verification code is invalid."
+                });
+            }
+
+            await _userManager.SetTwoFactorEnabledAsync(user, true);
+            return Ok();
+        }
+
+        [HttpGet("get_recovery_codes"), Produces("application/json")]
+        public async Task<IActionResult> GenerateRecoveryCodes()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
+            }
+
+            if (!user.TwoFactorEnabled)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled."
+                });
+            }
+
+            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            var model = new GenerateRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
+
+
+            return Ok(model);
+        }
+        private string FormatKey(string unformattedKey)
+        {
+            var result = new StringBuilder();
+            int currentPosition = 0;
+            while (currentPosition + 4 < unformattedKey.Length)
+            {
+                result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
+                currentPosition += 4;
+            }
+            if (currentPosition < unformattedKey.Length)
+            {
+                result.Append(unformattedKey.Substring(currentPosition));
+            }
+
+            return result.ToString().ToLowerInvariant();
+        }
+
+        private string GenerateQrCodeUri(string email, string unformattedKey)
+        {
+            return string.Format(
+                AuthenicatorUriFormat,
+                _urlEncoder.Encode("DataTradingTokenSaleDashboard"),
+                _urlEncoder.Encode(email),
+                unformattedKey);
+        }
+
+
     }
 }

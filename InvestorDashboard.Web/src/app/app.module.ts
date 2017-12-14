@@ -29,6 +29,9 @@ import { AccountEndpoint } from './services/account-endpoint.service';
 import { EqualValidator } from './directives/equal-validator.directive';
 import { OtherService } from './services/other.service';
 
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
+
 
 @NgModule({
   declarations: [
@@ -49,8 +52,8 @@ import { OtherService } from './services/other.service';
     AppRoutingModule,
     MaterialModule,
     UserManageModule,
-    SettingsModule,
     DashboardModule,
+    //environment.production ? ServiceWorkerModule.register('/ngsw-worker.js') : [],
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

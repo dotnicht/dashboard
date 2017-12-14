@@ -18,20 +18,19 @@ import { EqualValidator } from '../../directives/equal-validator.directive';
 import { ChangePasswordComponent, ChangePasswordDialogComponent } from '../../components/controls/change-password/change-password.component';
 import { SharedModule } from '../../app.shared.module';
 import { PapaParseModule } from 'ngx-papaparse';
-import { TfSettingsComponent } from '../../components/controls/tf_settings/tf_settings.component';
+import { TfSettingsModule } from './tf_settings/tf_settings.module';
 
 
 export const SETTINGS_ROUTES: Routes = [
     { path: '', redirectTo: 'profile', pathMatch: 'full' },
     { path: 'profile', component: UserInfoComponent },
-    { path: '2fa', component: TfSettingsComponent },
+    { path: '2fa', loadChildren: 'app/containers/settings/tf_settings/tf_settings.module#TfSettingsModule' },
     { path: 'change_password', component: ChangePasswordComponent }
 ];
 @NgModule({
     declarations: [
         SettingsComponent,
         UserInfoComponent,
-        TfSettingsComponent,
         CaseFormatterDirective,
         ChangePasswordComponent,
         ChangePasswordDialogComponent
