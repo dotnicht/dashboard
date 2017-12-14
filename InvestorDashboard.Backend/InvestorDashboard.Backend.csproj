@@ -5,8 +5,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Services\Implementation\Data\InternalUserData.csv" />
-    <EmbeddedResource Include="Services\Implementation\Data\ExternalInvestorData.csv" />
+    <None Remove="Services\Implementation\Data\InternalCryptoAddressData.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Services\Implementation\Data\InternalCryptoAddressData.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Services\Implementation\Data\InternalUserData.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Services\Implementation\Data\ExternalInvestorData.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

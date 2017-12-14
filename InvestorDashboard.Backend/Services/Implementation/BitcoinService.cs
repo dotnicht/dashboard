@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using Info.Blockchain.API.BlockExplorer;
+using Info.Blockchain.API.Wallet;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using Info.Blockchain.API.BlockExplorer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -24,39 +24,25 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
-            IEmailService emailService,
+            ICsvService csvService,
+            IMessageService messageService,
             IAffiliateService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, affiliatesService, mapper, tokenSettings, bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, affiliatesService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        protected override (string Address, string PrivateKey) GenerateKeys()
         {
-            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                ? Network.Main
-                : Network.TestNet;
-
             var privateKey = new Key();
-            var address = privateKey.PubKey.GetAddress(networkType).ToString();
-
-            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
-            {
-                UserId = userId,
-                Currency = Settings.Value.Currency,
-                PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
-                Type = addressType,
-                Address = address
-            });
-
-            Context.SaveChanges();
-
-            return result.Entity;
+            var address = privateKey.PubKey.GetAddress(_bitcoinSettings.Value.NetworkType).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, _bitcoinSettings.Value.NetworkType).ToString();
+            return (Address: address, PrivateKey: encrypted);
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
@@ -65,11 +51,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var be = new BlockExplorer();
                 var addr = await be.GetBase58AddressAsync(address);
+
                 var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
 
                 foreach (var tx in addr.Transactions)
                 {
-                    mapped.Single(x => x.Hash == tx.Hash).Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                    var result = mapped.Single(x => x.Hash == tx.Hash);
+
+                    if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
+                    {
+                        result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
+                        result.Direction = CryptoTransactionDirection.Internal;
+                    }
+                    else
+                    {
+                        result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                        result.Direction = CryptoTransactionDirection.Inbound;
+                    }
                 }
 
                 return mapped;
@@ -89,16 +87,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-
-
             throw new NotImplementedException();
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
         {
-            var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
+            var uri = new Uri($"https://blockexplorer.com/api/txs/?address={ address }");
             var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
             var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
@@ -113,7 +109,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
-            var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var uri = new Uri($"https://chain.so/api/v2/address/{_bitcoinSettings.Value.NetworkType}/{address}");
             var result = await _restService.GetAsync<ChainResponse>(uri);
             return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
         }
@@ -250,6 +246,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 public double ValueIn { get; set; }
                 public double Fees { get; set; }
             }
+        }
+
+        private class EarnResponse
+        {
+            public int FastestFee { get; set; }
+            public int HalfHourFee { get; set; }
+            public int HourFee { get; set; }
         }
     }
 }

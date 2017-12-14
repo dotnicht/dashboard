@@ -4,7 +4,6 @@ using InvestorDashboard.Api.Models.DashboardModels;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -118,16 +117,11 @@ namespace InvestorDashboard.Api.Controllers
                     PaymentInfoList = await GetPaymentInfoModel(),
                     IcoInfoModel = await GetIcoStatusModel()
                 };
+
                 return Ok(dashboard);
             }
 
             return Unauthorized();
-        }
-
-        [Authorize, HttpPost("add_question"), Produces("application/json")]
-        public async Task<IActionResult> AddQuestion([FromBody]Question question){
-
-            return Ok();
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
@@ -145,7 +139,7 @@ namespace InvestorDashboard.Api.Controllers
                 .ToArray();
 
             var paymentInfo = addresses
-                .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, Settings = y.Settings })
+                .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, y.Settings })
                 .Select(async x => new PaymentInfoModel
                 {
                     Currency = x.Address.Currency.ToString(),

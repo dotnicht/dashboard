@@ -82,7 +82,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task SendDashboardHistoryMessageInternal(int? chatId = null)
         {
             var item = await _dashboardHistoryService.GetLatestHistoryItem(true);
-            var msg = item.ToString() + $" | Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }";
+            var msg = item + $" | Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }";
             await _telegramService.SendMessage(msg, chatId ?? _options.Value.BusinessNotificationChatId);
         }
     }

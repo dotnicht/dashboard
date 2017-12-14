@@ -1,17 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
+using Nethereum.Util;
+using Nethereum.Web3;
+using Nethereum.Web3.Accounts;
 using Polly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -25,63 +28,62 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
-            IEmailService emailService,
+            ICsvService csvService,
+            IMessageService messageService,
             IAffiliateService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, affiliatesService, mapper, tokenSettings, ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, affiliatesService, mapper, tokenSettings, ethereumSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        protected override (string Address, string PrivateKey) GenerateKeys()
         {
             var policy = Policy
                 .Handle<ArgumentException>()
-                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. User { userId }. Retry attempt: {i}."));
+                .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. Retry attempt: {i}."));
 
-            var keys = policy.Execute(GenerateEthereumKeys);
-
-            var address = new CryptoAddress
+            return policy.Execute(() =>
             {
-                UserId = userId,
-                Currency = Settings.Value.Currency,
-                PrivateKey = keys.PrivateKey,
-                Type = addressType,
-                Address = keys.Address
-            };
-
-            var result = await Context.CryptoAddresses.AddAsync(address);
-
-            // TODO: investigate async behaviour here.
-            Context.SaveChanges();
-
-            return result.Entity;
+                var ecKey = EthECKey.GenerateKey();
+                var address = ecKey.GetPublicAddress();
+                var bytes = ecKey.GetPrivateKeyAsBytes();
+                var service = new KeyStorePbkdf2Service();
+                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
+                return (Address: address, PrivateKey: privateKey);
+            });
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = new Uri($"{_ethereumSettings.Value.ApiUri}module=account&action=txlist&address={ address }&startblock=0&endblock=99999999&sort=asc&apikey={ _ethereumSettings.Value.ApiKey }");
+            var uri = new Uri($"http://api.etherscan.io/api?module=account&action=txlist&address={ address }&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
             var result = await _restService.GetAsync<EtherscanResponse>(uri);
-            return Mapper.Map<List<CryptoTransaction>>(result.Result.Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations));
+
+            var confirmed = result.Result
+                .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
+                .ToArray();
+
+            return Mapper.Map<List<CryptoTransaction>>(confirmed);
         }
 
-        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override async Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            throw new NotImplementedException();
-        }
+            var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
 
-        private (string Address, string PrivateKey) GenerateEthereumKeys()
-        {
-            var ecKey = EthECKey.GenerateKey();
-            var address = ecKey.GetPublicAddress();
-            var bytes = ecKey.GetPrivateKeyAsBytes();
-            var service = new KeyStorePbkdf2Service();
-            var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
-            return (Address: address, PrivateKey: privateKey);
+            var value = amount == null
+                ? await web3.Eth.GetBalance.SendRequestAsync(address.Address)
+                : new HexBigInteger(UnitConversion.Convert.ToWei(amount.Value));
+
+            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
+
+            var adjustedAmount = value - web3.TransactionManager.DefaultGas * web3.TransactionManager.DefaultGasPrice;
+            var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, new HexBigInteger(adjustedAmount));
+
+            return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount));
         }
 
         internal class EtherscanResponse

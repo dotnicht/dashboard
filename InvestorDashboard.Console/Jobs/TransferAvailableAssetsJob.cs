@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using InvestorDashboard.Backend.ConfigurationSections;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class TransferCryptoAssetsJob : JobBase
+    public class TransferAvailableAssetsJob : JobBase
     {
-        public override TimeSpan Period => Options.Value.TransferCryptoAssetsPeriod;
+        public override TimeSpan Period => Options.Value.TransferAvailableAssetsPeriod;
 
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public TransferCryptoAssetsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
+        public TransferAvailableAssetsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
             : base(loggerFactory, context, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
@@ -29,7 +29,7 @@ namespace InvestorDashboard.Console.Jobs
             {
                 try
                 {
-                    await service.TransferAssets();
+                    await service.TransferAvailableAssets();
                 }
                 catch (Exception ex)
                 {
