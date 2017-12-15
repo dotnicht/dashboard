@@ -41,14 +41,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"User not found with ID { userId }.");
             }
 
-            var transactions = Context.CryptoAddresses
-                .Where(x => x.UserId == userId && x.Type == CryptoAddressType.Investment)
-                .SelectMany(x => x.CryptoTransactions)
-                .Where(x => x.Direction == CryptoTransactionDirection.Inbound)
+            var transactions = Context.CryptoTransactions
+                .Where(x => x.CryptoAddress.UserId == userId
+                    && (x.Direction == CryptoTransactionDirection.Inbound || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Currency == Currency.DTT)))
                 .ToArray();
 
-            var internalUserBalance = await _internalUserService.GetInternalUserBalance(userId);
-            user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice) + internalUserBalance;
+            user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice);
             user.BonusBalance = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
 
             await Context.SaveChangesAsync();

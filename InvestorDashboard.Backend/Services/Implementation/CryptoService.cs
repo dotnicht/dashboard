@@ -72,9 +72,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency 
+                .Where(
+                    x => x.Currency == Settings.Value.Currency 
                     && x.Type == CryptoAddressType.Investment 
-                    && x.User.EmailConfirmed 
+                    && x.User.ExternalId == null
                     && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
                 .ToArray();
 
@@ -115,13 +116,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .FirstOrDefault()
                 ?? await CreateAddress(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal);
 
-            foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
+            var sourceAddresses = Context.CryptoAddresses
+                .Where(x => x.Currency == Settings.Value.Currency
+                    && x.Type == CryptoAddressType.Investment 
+                    && x.CryptoTransactions.Any()
+                    && x.User.ExternalId == null)
+                .ToArray();
+
+            foreach (var address in sourceAddresses)
             {
                 await PublishTransaction(address, destination.Address);
             }
         }
 
-        public async Task<(string Hash, decimal AdjustedAmount)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
+        public async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
         {
             if (sourceAddress == null)
             {
@@ -135,21 +143,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var result = await PublishTransactionInternal(sourceAddress, destinationAddress, amount);
 
-            var transaction = new CryptoTransaction
+            if (result.Success)
             {
-                Hash = result.Hash,
-                Amount = result.AdjustedAmount,
-                TimeStamp = DateTime.UtcNow
-            };
+                var transaction = new CryptoTransaction
+                {
+                    Hash = result.Hash,
+                    Amount = result.AdjustedAmount,
+                    TimeStamp = DateTime.UtcNow
+                };
 
-            await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+                await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+            }
 
             return result;
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys();
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null);
+        protected abstract Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
 
         private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection direction)
         {

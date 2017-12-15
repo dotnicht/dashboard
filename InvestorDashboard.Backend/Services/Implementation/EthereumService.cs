@@ -67,10 +67,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
                 .ToArray();
 
-            return Mapper.Map<List<CryptoTransaction>>(confirmed);
+            var mapped = Mapper.Map<List<CryptoTransaction>>(confirmed);
+
+            foreach (var tx in mapped)
+            {
+                // TODO: agjust direction to include outbound transactions.
+                var source = confirmed.Single(x => x.Hash == tx.Hash);
+                tx.Direction = source.To == address
+                    ? CryptoTransactionDirection.Inbound
+                    : CryptoTransactionDirection.Internal;
+            }
+
+            return mapped;
         }
 
-        protected override async Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
             var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
 
@@ -80,10 +91,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
-            var adjustedAmount = value - web3.TransactionManager.DefaultGas * web3.TransactionManager.DefaultGasPrice;
-            var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, new HexBigInteger(adjustedAmount));
+            var fee = web3.TransactionManager.DefaultGas * web3.TransactionManager.DefaultGasPrice;
 
-            return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount));
+            if (value > fee)
+            {
+                var adjustedAmount = value - fee;
+                var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, new HexBigInteger(adjustedAmount));
+
+                return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount), Success: true);
+            }
+
+            Logger.LogError($"Transaction publish failed. Address: { address.Address }. Value: { value.Value }. Fee: { fee }.");
+
+            return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
         internal class EtherscanResponse

@@ -49,7 +49,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private DashboardHistoryItem GetLatestDashboardHistoryItem(bool includeCurrencies = false)
         {
             var transactions = Context.CryptoTransactions.Where(
-                x => x.Direction == CryptoTransactionDirection.Inbound
+                x => x.Direction == CryptoTransactionDirection.Inbound 
                 && x.CryptoAddress.Type == CryptoAddressType.Investment);
 
             var item = _mapper.Map<DashboardHistoryItem>(_options.Value);
@@ -65,12 +65,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Count();
 
             var nonInternalTransactions = transactions.Where(
-                x => x.ExternalId == null 
+                x => x.ExternalId == null
                 && x.Hash != null
-                && x.CryptoAddress.Currency != Currency.DTT 
-                && x.CryptoAddress.User.EmailConfirmed);
+                && x.CryptoAddress.Currency != Currency.DTT
+                && x.CryptoAddress.User.ExternalId == null);
 
-            item.TotalNonInternalUsers = Context.Users.Count(x => x.EmailConfirmed);
+            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
             item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
             item.TotalNonInternalInvestors = nonInternalTransactions
                 .Select(x => x.CryptoAddress.UserId)
@@ -86,7 +86,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         && x.CryptoAddress.Type == CryptoAddressType.Investment
                         && x.ExternalId == null
                         && x.CryptoAddress.Currency != Currency.DTT
-                        && x.CryptoAddress.User.EmailConfirmed)
+                        && x.CryptoAddress.User.ExternalId == null)
                     .ToList()
                     .GroupBy(x => x.CryptoAddress.Currency)
                     .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))

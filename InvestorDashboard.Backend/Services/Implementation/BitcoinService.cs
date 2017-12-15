@@ -87,7 +87,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected override Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
             throw new NotImplementedException();
         }

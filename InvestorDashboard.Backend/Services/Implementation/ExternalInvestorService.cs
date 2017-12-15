@@ -43,7 +43,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var record in records)
             {
-                if (!Context.Users.Any(x => x.UserName == record.Id.ToString()))
+                if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
                     var user = new ApplicationUser
                     {
