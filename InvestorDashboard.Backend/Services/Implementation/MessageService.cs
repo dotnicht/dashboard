@@ -74,6 +74,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await _emailService.SendEmailAsync(user.Email, "Confirm your email", message);
         }
 
+        public async Task SendPasswordResetMessage(string email, string message)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            var user = Context.Users.Single(x => x.Id == email);
+            await _emailService.SendEmailAsync(user.Email, "Reset Password", message);
+        }
+
         public Task SendDashboardHistoryMessage()
         {
             return SendDashboardHistoryMessageInternal();

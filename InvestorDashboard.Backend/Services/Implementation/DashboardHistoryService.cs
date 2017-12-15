@@ -49,7 +49,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private DashboardHistoryItem GetLatestDashboardHistoryItem(bool includeCurrencies = false)
         {
             var transactions = Context.CryptoTransactions.Where(
-                x => x.Direction == CryptoTransactionDirection.Inbound 
+                x => x.Direction == CryptoTransactionDirection.Inbound
                 && x.CryptoAddress.Type == CryptoAddressType.Investment);
 
             var item = _mapper.Map<DashboardHistoryItem>(_options.Value);

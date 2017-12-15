@@ -71,7 +71,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var tx in mapped)
             {
-                // TODO: agjust direction to include outbound transactions.
+                // TODO: adjust direction to include outbound transactions.
                 var source = confirmed.Single(x => x.Hash == tx.Hash);
                 tx.Direction = source.To == address
                     ? CryptoTransactionDirection.Inbound
