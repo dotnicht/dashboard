@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Info.Blockchain.API.BlockExplorer;
-using Info.Blockchain.API.Wallet;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -18,6 +17,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
+
+        protected Network Network
+        {
+            get
+            {
+                return _bitcoinSettings.Value.IsTestNet 
+                    ? Network.TestNet 
+                    : Network.Main;
+            }
+        }
 
         public BitcoinService(
             ApplicationDbContext context,
@@ -40,8 +49,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override (string Address, string PrivateKey) GenerateKeys()
         {
             var privateKey = new Key();
-            var address = privateKey.PubKey.GetAddress(_bitcoinSettings.Value.NetworkType).ToString();
-            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, _bitcoinSettings.Value.NetworkType).ToString();
+            var address = privateKey.PubKey.GetAddress(Network).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, Network).ToString();
             return (Address: address, PrivateKey: encrypted);
         }
 
@@ -49,8 +58,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var sources = new Dictionary<string, Func<string, Task<IEnumerable<CryptoTransaction>>>>
             {
-                { "blockchain.info", GetFromBlockchain },
-                { "blockexplorer.com", GetFromBlockExplorer },
+                //{ "blockchain.info", GetFromBlockchain },
+                //{ "blockexplorer.com", GetFromBlockExplorer },
                 { "chain.so", GetFromChain }
             };
 
@@ -128,7 +137,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
-            var uri = new Uri($"https://chain.so/api/v2/address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var uri = new Uri($"https://chain.so/api/v2/address/{ (_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC") }/{address}");
             var result = await _restService.GetAsync<ChainResponse>(uri);
             var unmapped = result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);

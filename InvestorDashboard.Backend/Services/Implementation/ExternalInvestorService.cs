@@ -58,6 +58,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         var address = await _ethereumService.CreateCryptoAddress(user.Id);
 
+                        // TODO: extract transaction props from history.
                         var transaction = new CryptoTransaction
                         {
                             Amount = record.ETH,

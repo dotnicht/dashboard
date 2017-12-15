@@ -1,9 +1,7 @@
-﻿using NBitcoin;
-
-namespace InvestorDashboard.Backend.ConfigurationSections
+﻿namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class BitcoinSettings : CryptoSettings
     {
-        public Network NetworkType { get; set; }
+        public bool IsTestNet { get; set; }
     }
 }
