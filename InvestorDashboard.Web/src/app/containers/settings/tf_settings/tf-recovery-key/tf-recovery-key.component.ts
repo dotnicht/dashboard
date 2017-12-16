@@ -1,4 +1,5 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, Output, EventEmitter } from '@angular/core';
+import { AccountEndpoint } from '../../../../services/account-endpoint.service';
 
 @Component({
     selector: 'app-tf-recovery-key',
@@ -7,8 +8,13 @@
 })
 /** TfRecoveryKey component*/
 export class TfRecoveryKeyComponent {
-    /** TfRecoveryKey ctor */
-    constructor() {
+    @Output() onUpdateTabs = new EventEmitter<number>();
+    constructor(private accountEndpoint: AccountEndpoint) {
 
+    }
+    reset() {
+        this.accountEndpoint.TfResetEndpoint().subscribe(data => {
+            this.onUpdateTabs.emit(0);
+        });
     }
 }

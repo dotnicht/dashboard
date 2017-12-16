@@ -9,36 +9,34 @@ class TwoFactorAuthenticationModel {
     recoveryCodesLeft: number;
     is2faEnabled: boolean;
 }
-
+class SelectedIndex {
+    value = '0';
+}
 @Component({
     selector: 'app-tf-settings',
     templateUrl: './tf_settings.component.html',
     styleUrls: ['./tf_settings.component.scss']
 })
-/** tfa component*/
 export class TfSettingsComponent implements OnInit {
     tfa: TwoFactorAuthenticationModel = new TwoFactorAuthenticationModel();
     tabIndex = 0;
-    get selectedIndex() {
-        return this.tabIndex.toString();
-    }
+    // get selectedIndex() {
+    //     return this.tabIndex.toString();
+    // }
+    selectedIndex: SelectedIndex = new SelectedIndex;
     constructor(
         private appTranslationService: AppTranslationService,
         private accountEndpoint: AccountEndpoint) {
     }
 
-    /** Called by Angular after tfa component initialized */
     ngOnInit(): void {
-        //this.getCurrentUser();
-        // this.user.twoFactorEnabled = true;
-        this.accountEndpoint.TfaDataEndpoint().subscribe(data => {
-            this.tfa = data.json() as TwoFactorAuthenticationModel;
-        });
+        this.updateTabs(0);
     }
 
 
     switchTab(index: number) {
-        this.tabIndex = index;
+        console.log(index);
+        this.selectedIndex.value = index.toString();
     }
 
     swiperight() {
@@ -46,5 +44,15 @@ export class TfSettingsComponent implements OnInit {
     }
     swipeleft() {
 
+    }
+    updateTabs(index?: number) {
+        this.accountEndpoint.TfaDataEndpoint().subscribe(data => {
+            this.tfa = data.json() as TwoFactorAuthenticationModel;
+
+            this.switchTab(index);
+        });
+    }
+    selectedTabChange(index: number) {
+        this.switchTab(index);
     }
 }

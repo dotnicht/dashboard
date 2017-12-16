@@ -160,7 +160,9 @@ namespace InvestorDashboard.Api.Controllers
                 });
             }
 
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            var user = await _userManager.GetUserAsync(User);
+          
+
             if (user == null)
             {
                 return BadRequest(new OpenIdConnectResponse
@@ -172,22 +174,13 @@ namespace InvestorDashboard.Api.Controllers
 
             var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-            var result =
-              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
+           // var result =              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
+           var result= await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, authenticatorCode);
 
-            if (result.Succeeded)
+            if (result)
             {
                 _logger.LogInformation("User with ID {UserId} logged in with 2fa.", user.Id);
                 return Ok();
-            }
-            else if (result.IsLockedOut)
-            {
-                _logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                    ErrorDescription = "User with ID {UserId} account locked out."
-                });
             }
             else
             {
@@ -337,6 +330,7 @@ namespace InvestorDashboard.Api.Controllers
                     }
                     // Validate the username/password parameters and ensure the account is not locked out.
                     var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+                   // var result = await _signInManager.PasswordSignInAsync(request.Username, request.Password, false, lockoutOnFailure: true);
                     if (!result.Succeeded)
                     {
                         return BadRequest(new OpenIdConnectResponse
@@ -504,6 +498,14 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             identity.AddClaim(CustomClaimTypes.TwoFactorEnabled, user.TwoFactorEnabled.ToString().ToLower(), OpenIdConnectConstants.Destinations.IdentityToken);
+            if (user.TwoFactorEnabled)
+            {
+                var b = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+                var tokenProvider = await _userManager.GetValidTwoFactorProvidersAsync(user);
+                var s = await _userManager.GetTwoFactorEnabledAsync(user);
+                var code = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+                var a = code;
+            }
             return ticket;
         }
 

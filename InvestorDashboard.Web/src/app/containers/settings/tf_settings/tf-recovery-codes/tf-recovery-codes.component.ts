@@ -1,4 +1,9 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
+import { AccountEndpoint } from '../../../../services/account-endpoint.service';
+
+class RecoveryCodes {
+    recoveryCodes: string[];
+}
 
 @Component({
     selector: 'app-tf-recovery-codes',
@@ -6,9 +11,16 @@
     styleUrls: ['./tf-recovery-codes.component.scss']
 })
 /** TfRecoveryCodes component*/
-export class TfRecoveryCodesComponent {
-    /** TfRecoveryCodes ctor */
-    constructor() {
+export class TfRecoveryCodesComponent implements OnInit {
 
+    /** TfRecoveryCodes ctor */
+    codes: RecoveryCodes = new RecoveryCodes;
+    constructor(private accountEndpoint: AccountEndpoint) {
+
+    }
+    ngOnInit(): void {
+        this.accountEndpoint.TfGetRecoveryCodesEndpoint().subscribe(data => {
+            this.codes = data.json() as RecoveryCodes;
+        });
     }
 }

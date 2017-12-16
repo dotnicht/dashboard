@@ -21,6 +21,9 @@ export class AccountEndpoint extends BaseService {
     private readonly _resetPasswordUrl: string = environment.host + '/account/reset_password';
     private readonly _tfaEnableUrl: string = environment.host + '/account/tfa_enable';
     private readonly _tfaUrl: string = environment.host + '/account/tfa';
+    private readonly _tfaGetRecoveryCodes: string = environment.host + '/account/get_tf_recovery_codes';
+    private readonly _tfaDisable: string = environment.host + '/account/tfa_disable';
+    private readonly _tfaReset: string = environment.host + '/account/tfa_reset';
 
 
     get usersUrl() { return this._usersUrl; }
@@ -175,5 +178,34 @@ export class AccountEndpoint extends BaseService {
             });
         return res;
     }
-
+    TfGetRecoveryCodesEndpoint(): Observable<Response> {
+        const res = this.http.get(this._tfaGetRecoveryCodes, this.authService.getAuthHeader(true))
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.TfGetRecoveryCodesEndpoint());
+            });
+        return res;
+    }
+    TfDisableEndpoint(): Observable<Response> {
+        const res = this.http.post(this._tfaDisable, null, this.authService.getAuthHeader(true))
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.TfDisableEndpoint());
+            });
+        return res;
+    }
+    TfResetEndpoint(): Observable<Response> {
+        const res = this.http.post(this._tfaReset, null, this.authService.getAuthHeader(true))
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.TfResetEndpoint());
+            });
+        return res;
+    }
 }

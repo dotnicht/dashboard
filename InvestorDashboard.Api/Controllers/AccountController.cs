@@ -294,7 +294,51 @@ namespace InvestorDashboard.Api.Controllers
 
             return Ok(model);
         }
+        [HttpPost("tfa_reset"), Produces("application/json")]
+        public async Task<IActionResult> ResetAuthenticator()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
+            }
 
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            _logger.LogInformation("User with id '{UserId}' has reset their authentication app key.", user.Id);
+
+            return Ok();
+        }
+        [HttpPost("tfa_disable"), Produces("application/json")]
+        public async Task<IActionResult> Disable2fa()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
+            }
+
+            var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
+            if (!disable2faResult.Succeeded)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = $"Unexpected error occured disabling 2FA for user with ID '{user.Id}'."
+                });
+            }
+
+            _logger.LogInformation("User with ID {UserId} has disabled 2fa.", user.Id);
+            return Ok();
+        }
         [HttpGet("tfa_enable"), Produces("application/json")]
         public async Task<IActionResult> EnableAuthenticator()
         {
@@ -383,7 +427,7 @@ namespace InvestorDashboard.Api.Controllers
             return Ok();
         }
 
-        [HttpGet("get_recovery_codes"), Produces("application/json")]
+        [HttpGet("get_tf_recovery_codes"), Produces("application/json")]
         public async Task<IActionResult> GenerateRecoveryCodes()
         {
             var user = await _userManager.GetUserAsync(User);

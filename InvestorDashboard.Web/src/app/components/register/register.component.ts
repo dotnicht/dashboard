@@ -143,13 +143,9 @@ export class RegisterComponent implements OnInit {
                             if (errorType == 'user_exist') {
                                 // this.alertService.showStickyMessage('Unable to register', 'User already exists!', MessageSeverity.error, error);
                                 this.errorMsg = 'User already exists!';
-                            }
-                            else if (errorMessage) {
-                                // this.alertService.showStickyMessage('Unable to register', errorMessage, MessageSeverity.error, error);
+                            } else {
                                 this.errorMsg = errorMessage;
                             }
-                            else
-                                this.errorMsg = 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
                             //this.alertService.showStickyMessage('Unable to register', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
                         }
 

@@ -1,5 +1,7 @@
 ﻿import { Component, ViewChild, EventEmitter, Output } from '@angular/core';
 import { TfSettingsComponent } from '../tf_settings.component';
+import { AccountEndpoint } from '../../../../services/account-endpoint.service';
+import { Utilities } from '../../../../services/utilities';
 
 @Component({
     selector: 'app-tf-disable',
@@ -10,17 +12,24 @@ import { TfSettingsComponent } from '../tf_settings.component';
 export class TfDisableComponent {
 
     @Output() onSwitchTab = new EventEmitter<number>();
+    @Output() onUpdateTabs = new EventEmitter();
+    errors = '';
+
 
     isLoading = false;
-
-
-    constructor() {
-
-    }
     switchTab() {
-        this.onSwitchTab.emit(0);
+        this.onSwitchTab.emit(1);
     }
-    disable() {
 
+    constructor(private accountEndpoint: AccountEndpoint) {
+
+    }
+
+    disable() {
+        this.accountEndpoint.TfDisableEndpoint().subscribe(data => {
+            this.onUpdateTabs.emit(0);
+        }, errors => {
+            this.errors = Utilities.findHttpResponseMessage('error_description', errors);
+        });
     }
 }
