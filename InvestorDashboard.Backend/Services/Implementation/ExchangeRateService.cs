@@ -1,7 +1,6 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;

@@ -16,7 +16,7 @@
   }
 
   .first {
-    width: calc(60% - 7.5px);
+    width: calc(50% - 7.5px);
     margin-right: 5px;
     background: linear-gradient(to bottom, #a1e276, #30b9ad);
     color: white;
@@ -29,15 +29,15 @@
   }
 
   .second {
-    width: calc(40% - 7.5px);
+    width: calc(50% - 7.5px);
     margin-left: 5px;
     margin-bottom: 20px;
     .left{
-      width: 100%;
+      width: 50%;
     }
-    // .right {
-    //   width: calc(50% - 2.5px);
-    // }
+    .right {
+      width: calc(50% - 2.5px);
+    }
     .mat-card-content {
       display: inline-flex;
     }
@@ -45,7 +45,7 @@
       color: rgba(0, 0, 0, .54);
     }
     .item {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       .color-block {
         width: 32px;
         height: 32px;

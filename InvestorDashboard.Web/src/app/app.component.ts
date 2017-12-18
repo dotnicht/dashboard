@@ -77,7 +77,7 @@ export class AppComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {
-    
+
     storageManager.initialiseStorageSyncListener();
 
     translationService.addLanguages(['en', 'ru']);

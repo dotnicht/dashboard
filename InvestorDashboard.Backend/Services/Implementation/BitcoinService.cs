@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
+using Info.Blockchain.API.BlockExplorer;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using Info.Blockchain.API.BlockExplorer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -19,93 +18,118 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
+        protected Network Network
+        {
+            get
+            {
+                return _bitcoinSettings.Value.IsTestNet 
+                    ? Network.TestNet 
+                    : Network.Main;
+            }
+        }
+
         public BitcoinService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
-            IEmailService emailService,
+            ICsvService csvService,
+            IMessageService messageService,
             IAffiliateService affiliatesService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, emailService, affiliatesService, mapper, tokenSettings, bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, affiliatesService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        protected override (string Address, string PrivateKey) GenerateKeys()
         {
-            var networkType = _bitcoinSettings.Value.NetworkType.Equals(Settings.Value.Currency.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                ? Network.Main
-                : Network.TestNet;
-
             var privateKey = new Key();
-            var address = privateKey.PubKey.GetAddress(networkType).ToString();
-
-            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
-            {
-                UserId = userId,
-                Currency = Settings.Value.Currency,
-                PrivateKey = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, networkType).ToString(),
-                Type = addressType,
-                Address = address
-            });
-
-            Context.SaveChanges();
-
-            return result.Entity;
+            var address = privateKey.PubKey.GetAddress(Network).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, Network).ToString();
+            return (Address: address, PrivateKey: encrypted);
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            try
+            var sources = new Dictionary<string, Func<string, Task<IEnumerable<CryptoTransaction>>>>
             {
-                var be = new BlockExplorer();
-                var addr = await be.GetBase58AddressAsync(address);
-                var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
+                //{ "blockchain.info", GetFromBlockchain },
+                //{ "blockexplorer.com", GetFromBlockExplorer },
+                { "chain.so", GetFromChain }
+            };
 
-                foreach (var tx in addr.Transactions)
-                {
-                    mapped.Single(x => x.Hash == tx.Hash).Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
-                }
-
-                return mapped;
-            }
-            catch (Exception ex)
+            foreach (var source in sources)
             {
-                Logger.LogError(ex, $"An error occurred while accessing blockchain.info. Address: { address }.");
                 try
                 {
-                    return await GetFromBlockExplorer(address);
+                    return await source.Value(address);
                 }
-                catch (Exception inner)
+                catch (Exception ex)
                 {
-                    Logger.LogError(inner, $"An error occurred while accessing block explorer. Address: { address }.");
-                    return await GetFromChain(address);
+                    Logger.LogError(ex, $"An error occurred while getting transaction info from { source.Key }.");
                 }
             }
+
+            throw new InvalidOperationException($"All sources failed to retrieve transaction info.");
         }
 
-        protected override Task TransferAssets(CryptoAddress address, string destinationAddress)
+        protected override Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-
-
             throw new NotImplementedException();
+        }
+
+        private async Task<IEnumerable<CryptoTransaction>> GetFromBlockchain(string address)
+        {
+            var be = new BlockExplorer();
+            var addr = await be.GetBase58AddressAsync(address);
+
+            var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
+
+            foreach (var tx in addr.Transactions)
+            {
+                var result = mapped.Single(x => x.Hash == tx.Hash);
+
+                if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
+                {
+                    result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
+                    result.Direction = CryptoTransactionDirection.Internal;
+                }
+                else
+                {
+                    result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                    result.Direction = CryptoTransactionDirection.Inbound;
+                }
+            }
+
+            return mapped;
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
         {
-            var uri = new Uri(_bitcoinSettings.Value.ApiUri + address);
+            var uri = new Uri($"https://blockexplorer.com/api/txs/?address={ address }");
             var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
             var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
 
             foreach (var tx in unmapped)
             {
-                mapped.Single(x => x.Hash == tx.Txid).Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                var transaction = mapped.Single(x => x.Hash == tx.Txid);
+
+                if (tx.Vout.Any(x => x.ScriptPubKey.Addresses.Any(y => y == address)))
+                {
+                    transaction.Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Inbound;
+                }
+                else
+                {
+                    transaction.Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y != address)).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Internal;
+                }
             }
 
             return mapped;
@@ -113,9 +137,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
-            var uri = new Uri($"{_bitcoinSettings.Value.ApiBaseUrl}address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var uri = new Uri($"https://chain.so/api/v2/address/{ (_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC") }/{address}");
             var result = await _restService.GetAsync<ChainResponse>(uri);
-            return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
+            var unmapped = result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
+            var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
+
+            foreach (var tx in unmapped)
+            {
+                var transaction = mapped.Single(x => x.Hash == tx.Txid);
+
+                if (tx.Outgoing.Outputs.Any(x => x.Address == address))
+                {
+                    transaction.Amount = tx.Outgoing.Outputs.Where(x => x.Address == address).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Inbound;
+                }
+                else
+                {
+                    transaction.Amount = tx.Outgoing.Outputs.Where(x => x.Address != address).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Internal;
+                }
+            }
+
+            return mapped;
         }
 
         internal class ChainResponse
@@ -250,6 +293,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 public double ValueIn { get; set; }
                 public double Fees { get; set; }
             }
+        }
+
+        private class EarnResponse
+        {
+            public int FastestFee { get; set; }
+            public int HalfHourFee { get; set; }
+            public int HourFee { get; set; }
         }
     }
 }

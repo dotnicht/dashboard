@@ -1,6 +1,5 @@
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
-using InvestorDashboard.Api.Extensions;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
 using InvestorDashboard.Api.Models.ManageViewModels;
@@ -26,16 +25,17 @@ namespace InvestorDashboard.Api.Controllers
     [Route("[controller]")]
     public class AccountController : Controller
     {
+        private const string GetUserByIdActionName = "GetUserById";
+        private const string GetRoleByIdActionName = "GetRoleById";
+
         private readonly IAuthorizationService _authorizationService;
         private readonly IOptions<IdentityOptions> _identityOptions;
+        private readonly IMessageService _messageService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
-        private const string GetUserByIdActionName = "GetUserById";
-        private const string GetRoleByIdActionName = "GetRoleById";
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        private readonly IEmailService _emailService;
 
         private readonly UrlEncoder _urlEncoder;
 
@@ -57,8 +57,8 @@ namespace InvestorDashboard.Api.Controllers
             _logger = logger;
             _identityOptions = identityOptions;
             _authorizationService = authorizationService;
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlEncoder = urlEncoder;
         }
@@ -109,12 +109,12 @@ namespace InvestorDashboard.Api.Controllers
 
                 if (appUser == null)
                     return NotFound(appUser.Id);
-                    _mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
+                _mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
 
-                    var result = await _userManager.UpdateAsync(appUser);
+                var result = await _userManager.UpdateAsync(appUser);
 
                 return Ok();
-                
+
             }
 
             return BadRequest(ModelState);
@@ -147,11 +147,10 @@ namespace InvestorDashboard.Api.Controllers
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 code = System.Web.HttpUtility.UrlEncode(code);
+
                 var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/account/reset_password?email={System.Web.HttpUtility.UrlEncode(user.Email)}&code={code}";
 
-
-                await _emailService.SendEmailAsync(model.Email, "Reset Password",
-                  $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                await _messageService.SendPasswordResetMessage(model.Email, $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
                 return Ok();
                 //return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }

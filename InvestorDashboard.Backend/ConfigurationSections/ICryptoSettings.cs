@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {
@@ -8,5 +6,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
     {
         int Confirmations { get; set; }
         bool IsDisabled { get; set; }
+        bool ImportDisabledAddressesTransactions { get; set; }
+        Uri NodeAddress { get; set; }
     }
 }

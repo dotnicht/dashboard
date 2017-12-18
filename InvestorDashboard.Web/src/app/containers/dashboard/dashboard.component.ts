@@ -27,6 +27,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public dashboard: Dashboard = new Dashboard();
 
     public selectedPaymentType: PaymentType;
+    public etherAddress: string;
     public Question: string;
     public calculateValue = 1;
     public qrLoaded = true;
@@ -156,6 +157,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     }
 
                 }
+                this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
                 db.clientInfoModel = this.clientInfoService.clientInfo;
                 this.dashboard = db;
             });

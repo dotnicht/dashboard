@@ -11,18 +11,18 @@
       </div>
       <div class="ether-addres">
         <div>{{'clientInfo.MyEtherAddress' | translate}}:</div>
-        0xca30e63200a0fe3182dc61fc5605efc41456f32
+        {{etherAddress}}
       </div>
     </mat-card-content>
   </mat-card>
   <mat-card class="second">
     <mat-card-content>
-      <!-- <div class="right">
-        <div style="margin-top: 0;margin-bottom: 85px;font-weight: bold; font-size: 18px;"> PRE-SALE
-          <br/> IS IN PROGRESS </div>
-        <p style="font-size: 20px;">Bonus 30% </p>
+      <div class="right">
+        <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale<div style="margin: 3px 0;"> Round A</div>
+         is in progress </div>
+        <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p>
 
-      </div> -->
+      </div>
       <div class="left">
         <div class="item">
           <!-- <div class="color-block"></div> -->
@@ -36,7 +36,7 @@
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
         </div>
-        <div class="item">
+        <div class="item" *ngIf="false">
           <img class="color-block" src="assets/img/coin.svg">
           <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
@@ -44,25 +44,25 @@
         <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div> -->
-        <!-- <div style="margin-top: 20px;">
-          <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p>
+        <div style="margin-top: 20px;">
+          <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
           {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT
-        </div> -->
-        <!-- <div>
+        </div>
+        <div>
           <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
           </mat-progress-bar>
-        </div> -->
+        </div>
       </div>
     </mat-card-content>
   </mat-card>
 
 
-  <mat-card class="fifth">
+  <mat-card class="fifth" *ngIf="false">
     <mat-card-content>
       <iframe id="video" width="100%" height="280" [src]="selectedVideo" frameborder="0" allowfullscreen></iframe>
     </mat-card-content>
   </mat-card>
-  <mat-card class="sixth">
+  <mat-card class="sixth" *ngIf="false">
     <mat-card-content>
       <div class="content">
         <p style="font-size: 26px;">TOKEN SALE</p>

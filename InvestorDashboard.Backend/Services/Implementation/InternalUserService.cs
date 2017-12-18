@@ -1,7 +1,6 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,7 +31,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task SynchronizeInternalUsersData()
         {
-            foreach (var record in _csvService.GetRecords<AffiliatesRecord>("InternalUserData.csv"))
+            foreach (var record in _csvService.GetRecords<InternalUserDataRecord>("InternalUserData.csv"))
             {
                 if (!Context.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
                 {
@@ -55,8 +54,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             Amount = record.DTT,
                             ExternalId = record.Guid,
                             CryptoAddress = address,
-                            TokenPrice = _options.Value.Price,
-                            Direction = CryptoTransactionDirection.Internal
+                            TokenPrice = 1,
+                            ExchangeRate = 1,
+                            Direction = CryptoTransactionDirection.Internal,
+                            TimeStamp = DateTime.UtcNow
                         });
 
                         await Context.SaveChangesAsync();
@@ -69,29 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<decimal> GetInternalUserBalance(string userId)
-        {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
-            var address = await Context.Users
-                .Include(x => x.CryptoAddresses)
-                .ThenInclude(x => x.CryptoTransactions)
-                .SingleOrDefault(x => x.Id == userId)
-                ?.CryptoAddresses
-                .ToAsyncEnumerable()
-                .SingleOrDefault(x => !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT);
-
-            return address
-                    ?.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.ExternalId != null)
-                    .Sum(x => x.Amount)
-                ?? 0;
-        }
-
-        private class AffiliatesRecord
+        private class InternalUserDataRecord
         {
             public Guid Guid { get; set; }
             public string Email { get; set; }

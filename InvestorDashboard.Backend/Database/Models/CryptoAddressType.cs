@@ -1,4 +1,4 @@
-﻿namespace InvestorDashboard.Backend.Models
+﻿namespace InvestorDashboard.Backend.Database.Models
 {
     public enum CryptoAddressType
     {

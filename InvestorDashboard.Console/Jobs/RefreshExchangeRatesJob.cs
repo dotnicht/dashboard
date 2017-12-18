@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Models;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

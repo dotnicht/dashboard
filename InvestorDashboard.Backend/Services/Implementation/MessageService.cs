@@ -74,6 +74,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await _emailService.SendEmailAsync(user.Email, "Confirm your email", message);
         }
 
+        public async Task SendPasswordResetMessage(string email, string message)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            var user = Context.Users.Single(x => x.Id == email);
+            await _emailService.SendEmailAsync(user.Email, "Reset Password", message);
+        }
+
         public Task SendDashboardHistoryMessage()
         {
             return SendDashboardHistoryMessageInternal();
@@ -82,7 +98,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task SendDashboardHistoryMessageInternal(int? chatId = null)
         {
             var item = await _dashboardHistoryService.GetLatestHistoryItem(true);
-            var msg = item.ToString() + $" | Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }";
+            var msg = item + $" | Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }";
             await _telegramService.SendMessage(msg, chatId ?? _options.Value.BusinessNotificationChatId);
         }
     }

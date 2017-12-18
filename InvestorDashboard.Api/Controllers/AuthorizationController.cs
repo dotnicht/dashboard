@@ -1,30 +1,30 @@
+using AspNet.Security.OpenIdConnect.Extensions;
+using AspNet.Security.OpenIdConnect.Primitives;
+using AspNet.Security.OpenIdConnect.Server;
+using AutoMapper;
+using InvestorDashboard.Api.Helpers;
+using InvestorDashboard.Api.Models;
+using InvestorDashboard.Api.Models.AccountViewModels;
+using InvestorDashboard.Api.Models.AuthorizationViewModels;
+using InvestorDashboard.Api.Services;
+using InvestorDashboard.Backend.Database.Models;
+using InvestorDashboard.Backend.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
+using OpenIddict.Core;
+using OpenIddict.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Extensions;
-using AspNet.Security.OpenIdConnect.Primitives;
-using AspNet.Security.OpenIdConnect.Server;
-using AutoMapper;
-using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Services;
-using InvestorDashboard.Api.Models;
-using InvestorDashboard.Api.Models.AccountViewModels;
-using InvestorDashboard.Api.Helpers;
-using InvestorDashboard.Api.Models.AuthorizationViewModels;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OpenIddict.Core;
-using OpenIddict.Models;
-using InvestorDashboard.Api.Services;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -38,6 +38,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly ILogger<AuthorizationController> logger;
         private readonly IMapper _mapper;
         private readonly IMessageService _messageService;
 
@@ -88,7 +89,19 @@ namespace InvestorDashboard.Api.Controllers
 
                     if (result.Succeeded)
                     {
-                        Parallel.ForEach(_cryptoServices, async x => await x.CreateCryptoAddress(appUser.Id));
+                        try
+                        {
+                            foreach (var service in _cryptoServices)
+                            {
+                                await service.CreateCryptoAddress(appUser.Id);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"An error occurred while generating crypto address keys.");
+                            await _userManager.DeleteAsync(appUser);
+                            return BadRequest("User creation failed.");
+                        }
 
                         appUser = await _userManager.FindByEmailAsync(appUser.Email);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
