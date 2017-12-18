@@ -54,8 +54,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            return Settings.Value.IsDisabled 
-                ? null 
+            return Settings.Value.IsDisabled
+                ? null
                 : CreateAddress(userId, CryptoAddressType.Investment);
         }
 
@@ -72,9 +72,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToHashSet();
 
             var addresses = Context.CryptoAddresses
-                .Where(x => x.Currency == Settings.Value.Currency 
-                    && x.Type == CryptoAddressType.Investment 
-                    && x.User.EmailConfirmed 
+                .Where(
+                    x => x.Currency == Settings.Value.Currency
+                    && x.Type == CryptoAddressType.Investment
+                    && x.User.ExternalId == null
                     && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
                 .ToArray();
 
@@ -93,12 +94,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (!hashes.Contains(transaction.Hash))
                     {
-                        await FillAndSaveTransaction(transaction, address, CryptoTransactionDirection.Inbound);
+                        await FillAndSaveTransaction(transaction, address);
                         // TODO: send transaction received message.
                     }
-
-                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
             }
         }
 
@@ -115,13 +116,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .FirstOrDefault()
                 ?? await CreateAddress(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal);
 
-            foreach (var address in Context.CryptoAddresses.Where(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
+            var sourceAddresses = Context.CryptoAddresses
+                .Where(
+                    x => x.Currency == Settings.Value.Currency
+                    && x.Type == CryptoAddressType.Investment
+                    && x.CryptoTransactions.Any()
+                    && x.User.ExternalId == null)
+                .ToArray();
+
+            foreach (var address in sourceAddresses)
             {
                 await PublishTransaction(address, destination.Address);
             }
         }
 
-        public async Task<(string Hash, decimal AdjustedAmount)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
+        public async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
         {
             if (sourceAddress == null)
             {
@@ -135,31 +144,47 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var result = await PublishTransactionInternal(sourceAddress, destinationAddress, amount);
 
-            var transaction = new CryptoTransaction
+            if (result.Success)
             {
-                Hash = result.Hash,
-                Amount = result.AdjustedAmount,
-                TimeStamp = DateTime.UtcNow
-            };
+                var transaction = new CryptoTransaction
+                {
+                    Hash = result.Hash,
+                    Amount = result.AdjustedAmount,
+                    TimeStamp = DateTime.UtcNow
+                };
 
-            await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+                await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+            }
 
             return result;
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys();
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null);
+        protected abstract Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
 
-        private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection direction)
+        private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection? direction = null)
         {
             Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
 
-            transaction.Direction = direction;
+            if (direction != null)
+            {
+                transaction.Direction = direction.Value;
+            }
+
+            var item = Context.DashboardHistoryItems
+                    .Where(x => x.Created <= transaction.TimeStamp)
+                    .OrderByDescending(x => x.Created)
+                    .FirstOrDefault() 
+                ?? Context.DashboardHistoryItems
+                    .Where(x => x.Created > transaction.TimeStamp)
+                    .OrderBy(x => x.Created)
+                    .FirstOrDefault();
+
             transaction.CryptoAddressId = address.Id;
             transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
-            transaction.TokenPrice = TokenSettings.Value.Price;
-            transaction.BonusPercentage = TokenSettings.Value.BonusPercentage;
+            transaction.TokenPrice = item?.TokenPrice ?? TokenSettings.Value.Price;
+            transaction.BonusPercentage = item?.BonusPercentage ?? TokenSettings.Value.BonusPercentage;
 
             await Context.CryptoTransactions.AddAsync(transaction);
             await Context.SaveChangesAsync();

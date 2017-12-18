@@ -1,20 +1,18 @@
-﻿using System;
+﻿using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Database.Models;
-using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class TokenService : ContextService, ITokenService
     {
-        private readonly IInternalUserService _internalUserService;
-
-        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory, IInternalUserService internalUserService)
+        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory)
             : base(context, loggerFactory)
         {
-            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
         }
 
         public async Task RefreshTokenBalance(string userId = null)
@@ -34,21 +32,27 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task RefreshTokenBalanceInternal(string userId)
         {
-            var user = Context.Users.SingleOrDefault(x => x.Id == userId);
+            var user = Context.Users
+                .Include(x => x.CryptoAddresses)
+                .ThenInclude(x => x.CryptoTransactions)
+                .SingleOrDefault(x => x.Id == userId);
 
             if (user == null)
             {
                 throw new InvalidOperationException($"User not found with ID { userId }.");
             }
 
-            var transactions = Context.CryptoAddresses
-                .Where(x => x.UserId == userId && x.Type == CryptoAddressType.Investment)
+            var transactions = user.CryptoAddresses
+                .Where(
+                    x => (x.Type == CryptoAddressType.Investment && x.Currency != Currency.DTT) 
+                    || (x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT))
                 .SelectMany(x => x.CryptoTransactions)
-                .Where(x => x.Direction == CryptoTransactionDirection.Inbound)
+                .Where(
+                    x => (x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment) 
+                    || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null))
                 .ToArray();
 
-            var internalUserBalance = await _internalUserService.GetInternalUserBalance(userId);
-            user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice) + internalUserBalance;
+            user.Balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice);
             user.BonusBalance = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
 
             await Context.SaveChangesAsync();

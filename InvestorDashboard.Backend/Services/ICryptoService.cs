@@ -12,6 +12,6 @@ namespace InvestorDashboard.Backend.Services
         Task<CryptoAddress> CreateCryptoAddress(string userId);
         Task RefreshInboundTransactions();
         Task TransferAvailableAssets();
-        Task<(string Hash, decimal AdjustedAmount)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
+        Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
     }
 }

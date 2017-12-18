@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Info.Blockchain.API.BlockExplorer;
-using Info.Blockchain.API.Wallet;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -18,6 +17,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
+
+        protected Network Network
+        {
+            get
+            {
+                return _bitcoinSettings.Value.IsTestNet 
+                    ? Network.TestNet 
+                    : Network.Main;
+            }
+        }
 
         public BitcoinService(
             ApplicationDbContext context,
@@ -40,56 +49,64 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override (string Address, string PrivateKey) GenerateKeys()
         {
             var privateKey = new Key();
-            var address = privateKey.PubKey.GetAddress(_bitcoinSettings.Value.NetworkType).ToString();
-            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, _bitcoinSettings.Value.NetworkType).ToString();
+            var address = privateKey.PubKey.GetAddress(Network).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, Network).ToString();
             return (Address: address, PrivateKey: encrypted);
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            try
+            var sources = new Dictionary<string, Func<string, Task<IEnumerable<CryptoTransaction>>>>
             {
-                var be = new BlockExplorer();
-                var addr = await be.GetBase58AddressAsync(address);
+                //{ "blockchain.info", GetFromBlockchain },
+                //{ "blockexplorer.com", GetFromBlockExplorer },
+                { "chain.so", GetFromChain }
+            };
 
-                var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
-
-                foreach (var tx in addr.Transactions)
-                {
-                    var result = mapped.Single(x => x.Hash == tx.Hash);
-
-                    if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
-                    {
-                        result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
-                        result.Direction = CryptoTransactionDirection.Internal;
-                    }
-                    else
-                    {
-                        result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
-                        result.Direction = CryptoTransactionDirection.Inbound;
-                    }
-                }
-
-                return mapped;
-            }
-            catch (Exception ex)
+            foreach (var source in sources)
             {
-                Logger.LogError(ex, $"An error occurred while accessing blockchain.info. Address: { address }.");
                 try
                 {
-                    return await GetFromBlockExplorer(address);
+                    return await source.Value(address);
                 }
-                catch (Exception inner)
+                catch (Exception ex)
                 {
-                    Logger.LogError(inner, $"An error occurred while accessing block explorer. Address: { address }.");
-                    return await GetFromChain(address);
+                    Logger.LogError(ex, $"An error occurred while getting transaction info from { source.Key }.");
                 }
             }
+
+            throw new InvalidOperationException($"All sources failed to retrieve transaction info.");
         }
 
-        protected override Task<(string Hash, decimal AdjustedAmount)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
             throw new NotImplementedException();
+        }
+
+        private async Task<IEnumerable<CryptoTransaction>> GetFromBlockchain(string address)
+        {
+            var be = new BlockExplorer();
+            var addr = await be.GetBase58AddressAsync(address);
+
+            var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
+
+            foreach (var tx in addr.Transactions)
+            {
+                var result = mapped.Single(x => x.Hash == tx.Hash);
+
+                if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
+                {
+                    result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.GetBtc());
+                    result.Direction = CryptoTransactionDirection.Internal;
+                }
+                else
+                {
+                    result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.GetBtc());
+                    result.Direction = CryptoTransactionDirection.Inbound;
+                }
+            }
+
+            return mapped;
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
@@ -101,7 +118,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var tx in unmapped)
             {
-                mapped.Single(x => x.Hash == tx.Txid).Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                var transaction = mapped.Single(x => x.Hash == tx.Txid);
+
+                if (tx.Vout.Any(x => x.ScriptPubKey.Addresses.Any(y => y == address)))
+                {
+                    transaction.Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y == address)).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Inbound;
+                }
+                else
+                {
+                    transaction.Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y != address)).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Internal;
+                }
             }
 
             return mapped;
@@ -109,9 +137,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
-            var uri = new Uri($"https://chain.so/api/v2/address/{_bitcoinSettings.Value.NetworkType}/{address}");
+            var uri = new Uri($"https://chain.so/api/v2/address/{ (_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC") }/{address}");
             var result = await _restService.GetAsync<ChainResponse>(uri);
-            return Mapper.Map<List<CryptoTransaction>>(result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations));
+            var unmapped = result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
+            var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
+
+            foreach (var tx in unmapped)
+            {
+                var transaction = mapped.Single(x => x.Hash == tx.Txid);
+
+                if (tx.Outgoing.Outputs.Any(x => x.Address == address))
+                {
+                    transaction.Amount = tx.Outgoing.Outputs.Where(x => x.Address == address).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Inbound;
+                }
+                else
+                {
+                    transaction.Amount = tx.Outgoing.Outputs.Where(x => x.Address != address).Sum(x => decimal.Parse(x.Value));
+                    transaction.Direction = CryptoTransactionDirection.Internal;
+                }
+            }
+
+            return mapped;
         }
 
         internal class ChainResponse

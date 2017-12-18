@@ -43,7 +43,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var record in records)
             {
-                if (!Context.Users.Any(x => x.UserName == record.Id.ToString()))
+                if (!Context.Users.Any(x => x.ExternalId == record.Id))
                 {
                     var user = new ApplicationUser
                     {
@@ -58,6 +58,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         var address = await _ethereumService.CreateCryptoAddress(user.Id);
 
+                        // TODO: extract transaction props from history.
                         var transaction = new CryptoTransaction
                         {
                             Amount = record.ETH,
