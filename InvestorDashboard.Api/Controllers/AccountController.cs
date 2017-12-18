@@ -49,6 +49,7 @@ namespace InvestorDashboard.Api.Controllers
           ILogger<AccountController> logger,
           IOptions<IdentityOptions> identityOptions,
           IEmailService emailService,
+          IMessageService messageService,
           IMapper mapper,
           UrlEncoder urlEncoder)
         {
