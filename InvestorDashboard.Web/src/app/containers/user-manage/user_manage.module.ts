@@ -25,6 +25,7 @@ import { ResetPasswordComponent, ResetPasswordDialogComponent } from '../../comp
 import { SharedModule } from '../../app.shared.module';
 import { RegisterPreSaleComponent } from '../register_presale/register_presale.component';
 import { TfaComponent } from '../../components/tfa/tfa.component';
+import { LoginWithRecoveryCodeComponent } from '../../components/tfa/login-with-recovery-code/login-with-recovery-code.component';
 
 
 @NgModule({
@@ -39,7 +40,8 @@ import { TfaComponent } from '../../components/tfa/tfa.component';
     ResetPasswordComponent,
     ResetPasswordDialogComponent,
     RegisterPreSaleComponent,
-    TfaComponent
+    TfaComponent,
+    LoginWithRecoveryCodeComponent
   ],
   imports: [
     CommonModule,

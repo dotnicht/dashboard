@@ -15,6 +15,7 @@ import { ResetPasswordComponent } from './components/controls/reset-password/res
 import { RegisterPreSaleComponent } from './containers/register_presale/register_presale.component';
 import { TfaComponent } from './components/tfa/tfa.component';
 import { TransferComponent } from './components/transfer/transfer.component';
+import { LoginWithRecoveryCodeComponent } from './components/tfa/login-with-recovery-code/login-with-recovery-code.component';
 
 export const routingComponents = [
     NotFoundComponent
@@ -38,6 +39,7 @@ const routes: Routes = [
     // { path: 'presale', component: RegisterPreSaleComponent },
     { path: 'reset_password', component: ResetPasswordComponent, },
     { path: 'tfa', component: TfaComponent, },
+    { path: 'login_with_recovery_code', component: LoginWithRecoveryCodeComponent, },
     {
         path: 'settings', canActivate: [AuthGuard],
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'
