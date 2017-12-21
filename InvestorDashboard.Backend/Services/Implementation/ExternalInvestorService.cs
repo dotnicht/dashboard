@@ -82,7 +82,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             public Guid Id { get; set; }
             public DateTime Day { get; set; }
-            public decimal BTC { get; set; }
             public decimal ETH { get; set; }
         }
     }
