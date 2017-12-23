@@ -58,8 +58,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var sources = new Dictionary<string, Func<string, Task<IEnumerable<CryptoTransaction>>>>
             {
-                //{ "blockchain.info", GetFromBlockchain },
-                //{ "blockexplorer.com", GetFromBlockExplorer },
+                { "blockchain.info", GetFromBlockchain },
+                { "blockexplorer.com", GetFromBlockExplorer },
                 { "chain.so", GetFromChain }
             };
 

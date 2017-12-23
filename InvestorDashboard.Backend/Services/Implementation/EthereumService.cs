@@ -72,10 +72,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             foreach (var tx in mapped)
             {
                 // TODO: adjust direction to include outbound transactions.
-                var source = confirmed.Single(x => x.Hash == tx.Hash);
-                tx.Direction = source.To == address
+                var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
+                tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
                     ? CryptoTransactionDirection.Inbound
-                    : CryptoTransactionDirection.Internal;
+                    : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
+                        ? CryptoTransactionDirection.Internal 
+                        : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: { tx.Hash }.");
             }
 
             return mapped;
@@ -101,7 +103,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount), Success: true);
             }
 
-            Logger.LogError($"Transaction publish failed. Address: { address.Address }. Value: { value.Value }. Fee: { fee }.");
+            if (value.Value > 0)
+            {
+                Logger.LogError($"Transaction publish failed. Address: { address.Address }. Value: { value.Value }. Fee: { fee }.");
+            }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
