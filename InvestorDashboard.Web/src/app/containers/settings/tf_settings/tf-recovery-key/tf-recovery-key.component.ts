@@ -9,6 +9,8 @@ import { AccountEndpoint } from '../../../../services/account-endpoint.service';
 /** TfRecoveryKey component*/
 export class TfRecoveryKeyComponent {
     @Output() onUpdateTabs = new EventEmitter<number>();
+
+    isLoading = false;
     constructor(private accountEndpoint: AccountEndpoint) {
 
     }

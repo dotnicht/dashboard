@@ -7,7 +7,7 @@
   <form #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
     <div class="form-group">
       <mat-form-field>
-        <input matInput type="password" id="recoveryCode" name="recoveryCode" placeholder="Enter recovery code" [(ngModel)]="recoveryCode.value"
+        <input matInput id="recoveryCode" name="recoveryCode" placeholder="Enter recovery code" [(ngModel)]="recoveryCode.value"
           #code="ngModel" required />
       </mat-form-field>
     </div>

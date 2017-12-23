@@ -22,6 +22,7 @@ export class AuthService {
   private readonly _logoutUrl: string = '/connect/logout';
   private readonly _registerUrl: string = '/connect/register';
   private readonly _loginTfa: string = environment.host + '/connect/login2fa';
+  private readonly _loginWithRecoveryCode: string = environment.host + '/connect/login_with_recovery_code';
 
   private isRefreshingLogin: boolean;
 
@@ -189,7 +190,21 @@ export class AuthService {
         return Observable.throw(error);
       });
   }
+  loginWithRecoveryCode(code: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
 
+    return this.http.post(this._loginWithRecoveryCode, JSON.stringify({ RecoveryCode: code }), this.getAuthHeader(true))
+      .map((response: Response) => {
+        let user = this.currentUser;
+        user.twoFactorValidated = true;
+        this.localStorage.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
+        return response;
+      })
+      .catch((error: any) => {
+        return Observable.throw(error);
+      });
+  }
 
   logout(): void {
     this.logoutEndPoint();

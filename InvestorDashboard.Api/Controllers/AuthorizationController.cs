@@ -70,12 +70,23 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
+
                 var response = user.ReCaptchaToken;
                 string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
                 var client = new System.Net.WebClient();
                 var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
                 var obj = JObject.Parse(recaptchaResult);
                 var status = (bool)obj.SelectToken("success");
+
+                if (!status)
+                {
+
+                    recaptchaResult =
+                        client.DownloadString(
+                            $"https://dp-captcha.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
+                    obj = JObject.Parse(recaptchaResult);
+                    status = (bool) obj.SelectToken("IsApproved");
+                }
 
 
                 if (status)
@@ -118,7 +129,7 @@ namespace InvestorDashboard.Api.Controllers
                 }
                 return BadRequest(new OpenIdConnectResponse
                 {
-                    Error = "recaptcha validation false"
+                    ErrorDescription = "Invalid captcha"
                 });
             }
             catch (Exception ex)
@@ -204,6 +215,54 @@ namespace InvestorDashboard.Api.Controllers
                     ErrorDescription = "Invalid authenticator code."
                 });
 
+            }
+        }
+        [HttpPost("~/connect/login_with_recovery_code"), Produces("application/json")]
+        public async Task<IActionResult> LoginWithRecoveryCode([FromBody]LoginWithRecoveryCodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errorrs = string.Empty;
+                foreach (var values in ModelState.Values)
+                {
+                    foreach (var error in values.Errors)
+                    {
+                        errorrs += $"{error.ErrorMessage};";
+                    }
+                }
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = errorrs
+                });
+            }
+
+            var user = _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = "Unable to load two-factor authentication user."
+                });
+            }
+
+            var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
+            var recoveryCodeLe = await _userManager.CountRecoveryCodesAsync(await user);
+
+            var result = await _userManager.RedeemTwoFactorRecoveryCodeAsync(await user, recoveryCode);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = "Invalid recovery code"
+                });
             }
         }
 

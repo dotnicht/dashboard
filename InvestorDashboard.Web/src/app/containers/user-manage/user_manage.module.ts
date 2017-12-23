@@ -26,6 +26,8 @@ import { SharedModule } from '../../app.shared.module';
 import { RegisterPreSaleComponent } from '../register_presale/register_presale.component';
 import { TfaComponent } from '../../components/tfa/tfa.component';
 import { LoginWithRecoveryCodeComponent } from '../../components/tfa/login-with-recovery-code/login-with-recovery-code.component';
+import { CaptchaEndpoint } from '../../services/captcha.service';
+import { CurrentLocationService } from '../../services/location.service';
 
 
 @NgModule({
@@ -63,7 +65,9 @@ import { LoginWithRecoveryCodeComponent } from '../../components/tfa/login-with-
     AuthService,
     ConfigurationService,
     LocalStoreManager,
-    AppTranslationService
+    AppTranslationService,
+    CaptchaEndpoint,
+    CurrentLocationService
   ],
   entryComponents: [
     RegisterRulesDialogComponent,

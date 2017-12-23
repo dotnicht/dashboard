@@ -41,8 +41,6 @@ export class AppComponent implements OnInit {
       this.resizeService.width = window.innerWidth;
       this.isMobile = this.resizeService.isMobile;
       this.isTab = this.resizeService.isTab;
-
-
     }
     this.otherService.showMainComponent = true;
     this.isUserLoggedIn = this.authService.isLoggedIn;
