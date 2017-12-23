@@ -1,0 +1,96 @@
+﻿<mat-card>
+
+  <div *ngIf="tfa.is2faEnabled">
+    <div *ngIf="tfa.RecoveryCodesLeft==0">
+      <div class="alert alert-danger">
+        <strong>You have no recovery codes left.</strong>
+        <p>You must
+          <a asp-action="GenerateRecoveryCodes">generate a new set of recovery codes</a> before you can log in with a recovery code.</p>
+      </div>
+    </div>
+    <div *ngIf="tfa.RecoveryCodesLeft==1">
+      <div class="alert alert-danger">
+        <strong>You have 1 recovery code left.</strong>
+        <p>You can
+          <a asp-action="GenerateRecoveryCodes">generate a new set of recovery codes</a>.</p>
+      </div>
+    </div>
+    <div *ngIf="tfa.RecoveryCodesLeft<=3">
+      <div class="alert alert-warning">
+        <strong>You have @Model.RecoveryCodesLeft recovery codes left.</strong>
+        <p>You should
+          <a asp-action="GenerateRecoveryCodes">generate a new set of recovery codes</a>.</p>
+      </div>
+    </div>
+  </div>
+  <mat-tab-group (selectedIndexChange)="selectedTabChange($event)" [selectedIndex]="selectedIndex.value" (swipeleft)="swipeleft()" (swiperight)="swiperight()">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>{{tfa.hasAuthenticator?'settings':'add'}}</mat-icon>{{tfa.hasAuthenticator?('settings.tf.Configure' | translate):'settings.tf.AddApp'
+        | translate}}
+      </ng-template>
+      <app-tf-enable (onUpdateTabs)="updateTabs($event)" (onSwitchTab)="switchTab($event)"></app-tf-enable>
+    </mat-tab>
+    <mat-tab *ngIf="tfa.hasAuthenticator">
+      <ng-template mat-tab-label>
+        {{'settings.tf.ResetKey' | translate}}
+      </ng-template>
+      <app-tf-recovery-key (onUpdateTabs)="updateTabs($event)" (onSwitchTab)="switchTab($event)"></app-tf-recovery-key>
+    </mat-tab>
+
+    <mat-tab *ngIf="tfa.is2faEnabled">
+      <ng-template mat-tab-label>
+        {{'settings.tf.Disable' | translate}}
+      </ng-template>
+      <app-tf-disable (onUpdateTabs)="updateTabs($event)" (onSwitchTab)="switchTab($event)"></app-tf-disable>
+    </mat-tab>
+    <mat-tab *ngIf="tfa.is2faEnabled">
+      <ng-template mat-tab-label>
+        {{'settings.tf.ResetCodes' | translate}}
+      </ng-template>
+      <app-tf-recovery-codes (onUpdateTabs)="updateTabs($event)" (onSwitchTab)="switchTab($event)"></app-tf-recovery-codes>
+    </mat-tab>
+
+  </mat-tab-group>
+
+  <!-- <div *ngIf="!user.twoFactorEnabled">
+    <h2>Two-factor authentication</h2>
+    <mat-expansion-panel [expanded]="1">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{'settings.tf.Disable' | translate}}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <app-tf-disable></app-tf-disable>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="1">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{'settings.tf.ResetCodes' | translate}}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <app-tf-enable></app-tf-enable>
+    </mat-expansion-panel>
+  </div>
+
+  <h2>Authenticator app</h2>
+  <mat-expansion-panel [expanded]="1">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        {{'settings.tf.Configure' | translate}}
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <app-tf-enable></app-tf-enable>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel [expanded]="1">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        {{'settings.tf.ResetKey' | translate}}
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <app-tf-enable></app-tf-enable>
+  </mat-expansion-panel> -->
+
+  <!-- <router-outlet></router-outlet> -->
+</mat-card>

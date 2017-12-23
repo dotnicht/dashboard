@@ -60,6 +60,10 @@
             <mat-icon>dashboard</mat-icon>
             <span>{{'mainMenu.Dashboard' | translate}}</span>
           </button>
+          <!-- <button *ngIf="isUserLoggedIn" [routerLink]="['/transfer']"  mat-button [disabled]="routerLinkActiveInstance.isActive" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+            <mat-icon>swap_horiz</mat-icon>
+            <span>{{'mainMenu.Transfer' | translate}}</span>
+          </button> -->
           <button mat-button [routerLink]="['/faq']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive">
             <mat-icon>help</mat-icon>
             <span>{{'mainMenu.Faq' | translate}}</span>

@@ -107,7 +107,8 @@ export class RegisterPreSaleComponent implements OnInit {
                 if (this.cookieService.get('clickid') != '') {
                     this.registerForm.clickId = this.cookieService.get('clickid');
                 }
-
+                this.registerForm.reCaptchaToken = this.captcha.getResponse();
+                console.log(this.registerForm);
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {

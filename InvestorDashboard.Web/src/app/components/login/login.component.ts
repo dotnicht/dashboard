@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { UserLogin } from '../../models/user.model';
+import { UserLogin, User } from '../../models/user.model';
 import { AuthService } from '../../services/auth.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { Utilities } from '../../services/utilities';
@@ -59,11 +59,16 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.authService.login(this.userLogin)
             .subscribe(
             user => {
+                const _user = user as User;
+
                 setTimeout(() => {
                     //this.alertService.stopLoadingMessage();
                     this.isLoading = false;
                     this.reset();
-
+                    console.log(_user);
+                    if (_user.twoFactorEnabled) {
+                        this.router.navigate(['/tfa']);
+                    }
                     //this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
                 }, 500);
             },

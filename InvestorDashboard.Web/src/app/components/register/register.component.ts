@@ -5,12 +5,15 @@ import { Http } from '@angular/http';
 import { AuthService } from '../../services/auth.service';
 import { Utilities } from '../../services/utilities';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material';
-import { DOCUMENT } from '@angular/platform-browser';
+import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { Router, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie-service';
 import { ReCaptchaComponent } from 'angular2-recaptcha';
+import { CaptchaEndpoint } from '../../services/captcha.service';
+import { CurrentLocationService } from '../../services/location.service';
+import { Location } from '@angular/common';
 
 const defaultDialogConfig = new MatDialogConfig();
 
@@ -39,7 +42,10 @@ export class RegisterComponent implements OnInit {
     errorMsg: string;
     registerForm = new UserRegister();
     reCaptchaStatus = false;
+    country: string;
 
+    guid: string;
+    captchaUrl: any;
 
     config = {
         disableClose: true,
@@ -48,11 +54,20 @@ export class RegisterComponent implements OnInit {
         data: this.registerRules
     };
 
+    get allowGoogleCaptcha() {
+        if (this.country == 'CN') {
+            return false;
+        }
+        return true;
+    }
     constructor(private router: Router,
         private translationService: AppTranslationService,
         private authService: AuthService,
         private cookieService: CookieService,
         private dialog: MatDialog,
+        private captchaService: CaptchaEndpoint,
+        private sanitizer: DomSanitizer,
+        private currentLocationService: CurrentLocationService,
         @Inject(DOCUMENT) doc: any) {
 
         dialog.afterOpen.subscribe(() => {
@@ -69,9 +84,25 @@ export class RegisterComponent implements OnInit {
 
     /** Called by Angular after register component initialized */
     ngOnInit(): void {
+
         if (this.authService.isLoggedIn) {
             this.router.navigate(['/login']);
         }
+        this.currentLocationService.getCurrentIpLocation().subscribe(data => {
+            this.country = data.country;
+            console.log(data.country);
+        });
+
+
+
+        this.captchaService.generateGuidEndpoint().subscribe(data => {
+            const value = data.json() as { Guid: string };
+            this.guid = value.Guid;
+            this.captchaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://dp-captcha.azurewebsites.net/captcha?lang=en-EN&captchaId=${this.guid}`);
+        },
+            error => {
+                console.log(error);
+            });
         //this.registerForm.email = 'denis.skvortsow@gmail.com';
         //this.registerForm.password = '123456_Kol';
         //this.registerForm.confirmPassword = '123456_Kol';
@@ -115,7 +146,12 @@ export class RegisterComponent implements OnInit {
                 if (this.cookieService.get('clickid') != '') {
                     this.registerForm.clickId = this.cookieService.get('clickid');
                 }
-                this.registerForm.reCaptchaToken = this.captcha.getResponse();
+                if (this.captcha) {
+                    this.registerForm.reCaptchaToken = this.captcha.getResponse();
+                } else {
+                    this.registerForm.reCaptchaToken = this.guid;
+                }
+
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
@@ -143,13 +179,9 @@ export class RegisterComponent implements OnInit {
                             if (errorType == 'user_exist') {
                                 // this.alertService.showStickyMessage('Unable to register', 'User already exists!', MessageSeverity.error, error);
                                 this.errorMsg = 'User already exists!';
-                            }
-                            else if (errorMessage) {
-                                // this.alertService.showStickyMessage('Unable to register', errorMessage, MessageSeverity.error, error);
+                            } else {
                                 this.errorMsg = errorMessage;
                             }
-                            else
-                                this.errorMsg = 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
                             //this.alertService.showStickyMessage('Unable to register', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
                         }
 
@@ -172,7 +204,9 @@ export class RegisterComponent implements OnInit {
 
     reset() {
         this.formResetToggle = false;
-        this.captcha.reset();
+        if (this.captcha) {
+            this.captcha.reset();
+        }
         this.reCaptchaStatus = false;
         this.registerForm = new UserRegister();
         this.isLoading = false;

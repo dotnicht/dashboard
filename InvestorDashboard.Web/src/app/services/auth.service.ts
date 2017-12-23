@@ -21,6 +21,8 @@ export class AuthService {
 
   private readonly _logoutUrl: string = '/connect/logout';
   private readonly _registerUrl: string = '/connect/register';
+  private readonly _loginTfa: string = environment.host + '/connect/login2fa';
+  private readonly _loginWithRecoveryCode: string = environment.host + '/connect/login_with_recovery_code';
 
   private isRefreshingLogin: boolean;
 
@@ -173,7 +175,36 @@ export class AuthService {
         return Observable.throw(error);
       });
   }
+  loginWithTfa(code: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
 
+    return this.http.post(this._loginTfa, JSON.stringify({ TwoFactorCode: code }), this.getAuthHeader(true))
+      .map((response: Response) => {
+        let user = this.currentUser;
+        user.twoFactorValidated = true;
+        this.localStorage.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
+        return response;
+      })
+      .catch((error: any) => {
+        return Observable.throw(error);
+      });
+  }
+  loginWithRecoveryCode(code: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+
+    return this.http.post(this._loginWithRecoveryCode, JSON.stringify({ RecoveryCode: code }), this.getAuthHeader(true))
+      .map((response: Response) => {
+        let user = this.currentUser;
+        user.twoFactorValidated = true;
+        this.localStorage.saveSyncedSessionData(user, DBkeys.CURRENT_USER);
+        return response;
+      })
+      .catch((error: any) => {
+        return Observable.throw(error);
+      });
+  }
 
   logout(): void {
     this.logoutEndPoint();
@@ -252,7 +283,7 @@ export class AuthService {
   }
 
 
-  private processLoginResponse(response: Response, rememberMe: boolean) {
+  private processLoginResponse(response: Response, rememberMe: boolean, tfValidate: boolean = false) {
 
     const response_token = response.json();
     const accessToken = response_token.access_token;
@@ -285,11 +316,11 @@ export class AuthService {
       decodedIdToken.sub,
       decodedIdToken.name,
       decodedIdToken.email,
-      decodedIdToken.twoFactorEnabled);
+      decodedIdToken.twofactorenabled);
 
     user.isEnabled = true;
 
-    // console.log(decodedIdToken);
+    console.log(decodedIdToken);
     this.saveUserDetails(user, permissions, accessToken, idToken, refreshToken, accessTokenExpiry, rememberMe);
 
     this.reevaluateLoginStatus(user);
@@ -394,8 +425,16 @@ export class AuthService {
 
     //   });
     // });
-
-    return this.currentUser != null;
+    if (this.currentUser != null) {
+      if (this.currentUser.twoFactorEnabled) {
+        if (this.currentUser.twoFactorValidated) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }
+    return false;
     // return this.isAuth && (this.currentUser != null);
   }
 

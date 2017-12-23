@@ -70,12 +70,23 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
+
                 var response = user.ReCaptchaToken;
                 string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
                 var client = new System.Net.WebClient();
                 var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
                 var obj = JObject.Parse(recaptchaResult);
                 var status = (bool)obj.SelectToken("success");
+
+                if (!status)
+                {
+
+                    recaptchaResult =
+                        client.DownloadString(
+                            $"https://dp-captcha.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
+                    obj = JObject.Parse(recaptchaResult);
+                    status = (bool) obj.SelectToken("IsApproved");
+                }
 
 
                 if (status)
@@ -118,7 +129,7 @@ namespace InvestorDashboard.Api.Controllers
                 }
                 return BadRequest(new OpenIdConnectResponse
                 {
-                    Error = "recaptcha validation false"
+                    ErrorDescription = "Invalid captcha"
                 });
             }
             catch (Exception ex)
@@ -134,27 +145,27 @@ namespace InvestorDashboard.Api.Controllers
         #region Authorization code, implicit and implicit flows
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
-        [HttpGet]
-        public async Task<IActionResult> LoginWith2fa()
-        {
-            // Ensure the user has gone through the username & password screen first
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+        //[HttpGet]
+        //public async Task<IActionResult> LoginWith2fa()
+        //{
+        //    // Ensure the user has gone through the username & password screen first
+        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 
-            if (user == null)
-            {
-                // throw new ApplicationException($"Unable to load two-factor authentication user.");
-                return BadRequest(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                    ErrorDescription = "The username/password couple is invalid."
-                });
-            }
+        //    if (user == null)
+        //    {
+        //        // throw new ApplicationException($"Unable to load two-factor authentication user.");
+        //        return BadRequest(new OpenIdConnectResponse
+        //        {
+        //            Error = OpenIdConnectConstants.Errors.InvalidGrant,
+        //            ErrorDescription = "The username/password couple is invalid."
+        //        });
+        //    }
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        [HttpPost]
-        public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel model, bool rememberMe, string returnUrl = null)
+        [HttpPost("~/connect/login2fa"), Produces("application/json")]
+        public async Task<IActionResult> LoginWith2fa([FromBody] LoginWith2faViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -163,50 +174,95 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     foreach (var error in values.Errors)
                     {
-                        errorrs += $"{error};";
+                        errorrs += $"{error.ErrorMessage};";
                     }
                 }
-                return Ok(new OpenIdConnectResponse
+                return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
                     ErrorDescription = errorrs
                 });
             }
 
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            var user = await _userManager.GetUserAsync(User);
+          
+
             if (user == null)
             {
-                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
+                });
             }
 
             var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-            var result =
-              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
+           // var result =              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
+           var result= await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, authenticatorCode);
 
-            if (result.Succeeded)
+            if (result)
             {
                 _logger.LogInformation("User with ID {UserId} logged in with 2fa.", user.Id);
                 return Ok();
             }
-            else if (result.IsLockedOut)
-            {
-                _logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
-                return Ok(new OpenIdConnectResponse
-                {
-                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
-                    ErrorDescription = "User with ID {UserId} account locked out."
-                });
-            }
             else
             {
                 _logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
-                return Ok(new OpenIdConnectResponse
+                return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
                     ErrorDescription = "Invalid authenticator code."
                 });
 
+            }
+        }
+        [HttpPost("~/connect/login_with_recovery_code"), Produces("application/json")]
+        public async Task<IActionResult> LoginWithRecoveryCode([FromBody]LoginWithRecoveryCodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errorrs = string.Empty;
+                foreach (var values in ModelState.Values)
+                {
+                    foreach (var error in values.Errors)
+                    {
+                        errorrs += $"{error.ErrorMessage};";
+                    }
+                }
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = errorrs
+                });
+            }
+
+            var user = _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = "Unable to load two-factor authentication user."
+                });
+            }
+
+            var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
+            var recoveryCodeLe = await _userManager.CountRecoveryCodesAsync(await user);
+
+            var result = await _userManager.RedeemTwoFactorRecoveryCodeAsync(await user, recoveryCode);
+
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = "Invalid recovery code"
+                });
             }
         }
 
@@ -346,6 +402,7 @@ namespace InvestorDashboard.Api.Controllers
                     }
                     // Validate the username/password parameters and ensure the account is not locked out.
                     var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+                   // var result = await _signInManager.PasswordSignInAsync(request.Username, request.Password, false, lockoutOnFailure: true);
                     if (!result.Succeeded)
                     {
                         return BadRequest(new OpenIdConnectResponse
@@ -513,6 +570,14 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             identity.AddClaim(CustomClaimTypes.TwoFactorEnabled, user.TwoFactorEnabled.ToString().ToLower(), OpenIdConnectConstants.Destinations.IdentityToken);
+            if (user.TwoFactorEnabled)
+            {
+                var b = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+                var tokenProvider = await _userManager.GetValidTwoFactorProvidersAsync(user);
+                var s = await _userManager.GetTwoFactorEnabledAsync(user);
+                var code = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+                var a = code;
+            }
             return ticket;
         }
 

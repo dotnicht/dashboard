@@ -1,0 +1,30 @@
+﻿.address {
+  width: 100%;
+}
+
+.center-block {
+  width: 450px;
+}
+
+.recaptcha {
+  margin-bottom: 10px;
+  text-align: center;
+  re-captcha {
+    display: inline-block;
+  }
+}
+
+@media (max-width: 767px) {
+  .mat-form-field {
+    width: 100%
+  }
+}
+
+@media (max-width: 500px) {
+  .mat-form-field {
+    width: 100%;
+  }
+  .center-block {
+    width: 100%;
+  }
+}
