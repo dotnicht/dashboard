@@ -69,13 +69,17 @@ namespace InvestorDashboard.Api.Controllers
         [HttpPost("webhook")]
         public async Task<IActionResult> PostTelegramBotData([FromBody]TelegramWebhookViewModel telegramWebhookViewModel)
         {
-            if (telegramWebhookViewModel != null 
-                && telegramWebhookViewModel.Message != null 
-                && telegramWebhookViewModel.Message.Chat != null 
+            if (telegramWebhookViewModel != null
+                && telegramWebhookViewModel.Message != null
+                && telegramWebhookViewModel.Message.Chat != null
                 && telegramWebhookViewModel.Message.From != null)
             {
                 _logger.LogInformation($"Incoming webhook message. ID: { telegramWebhookViewModel.Update_id }.");
-                await _messageService.HandleIncomingMessage(telegramWebhookViewModel.Message.From.Username, telegramWebhookViewModel.Message.Text, telegramWebhookViewModel.Message.Chat.Id);
+
+                await _messageService.HandleIncomingMessage(
+                    telegramWebhookViewModel.Message.From.Username,
+                    telegramWebhookViewModel.Message.Text,
+                    telegramWebhookViewModel.Message.Chat.Id);
             }
             else
             {
@@ -127,20 +131,21 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("add_question"), Produces("application/json")]
-        public async Task<IActionResult> AddQuestion([FromBody]Question question){
-
+        public IActionResult AddQuestion([FromBody]Question question)
+        {
             return Ok();
         }
-        [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
-        public async Task<IActionResult> AddTokenTransfer([FromBody]TokenTransferModel transfer)
-        {
 
+        [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
+        public IActionResult AddTokenTransfer([FromBody]TokenTransferModel transfer)
+        {
             var response = transfer.ReCaptchaToken;
             string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
             var client = new System.Net.WebClient();
-            var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
+            var recaptchaResult = client.DownloadString($"https://www.google.com/recaptcha/api/siteverify?secret={ secretKey }&response={ response }");
             var obj = JObject.Parse(recaptchaResult);
             var status = (bool)obj.SelectToken("success");
+
             if (status)
             {
                 return Ok();

@@ -38,7 +38,6 @@ namespace InvestorDashboard.Api.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
-        private readonly ILogger<AuthorizationController> logger;
         private readonly IMapper _mapper;
         private readonly IMessageService _messageService;
 
