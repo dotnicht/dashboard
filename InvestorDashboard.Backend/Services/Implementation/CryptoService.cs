@@ -47,7 +47,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
-        public Task<CryptoAddress> CreateCryptoAddress(string userId)
+        public async Task<CryptoAddress> CreateCryptoAddress(string userId)
         {
             if (userId == null)
             {
@@ -56,7 +56,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             return Settings.Value.IsDisabled
                 ? null
-                : CreateAddress(userId, CryptoAddressType.Investment);
+                : await CreateAddress(userId, CryptoAddressType.Investment);
         }
 
         public async Task RefreshInboundTransactions()
@@ -65,11 +65,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 return;
             }
-
-            var hashes = Context.CryptoTransactions
-                .Where(x => x.Hash != null)
-                .Select(x => x.Hash)
-                .ToHashSet();
 
             var addresses = Context.CryptoAddresses
                 .Where(
@@ -92,7 +87,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     Logger.LogInformation($"Received { Settings.Value.Currency } transaction list for address { address }.");
 
-                    if (!hashes.Contains(transaction.Hash))
+                    if (!Context.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                     {
                         await FillAndSaveTransaction(transaction, address);
                         // TODO: send transaction received message.
@@ -103,7 +98,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task TransferAvailableAssets()
+        public virtual async Task TransferAvailableAssets()
         {
             if (Settings.Value.IsDisabled)
             {
@@ -175,7 +170,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var item = Context.DashboardHistoryItems
                     .Where(x => x.Created <= transaction.TimeStamp)
                     .OrderByDescending(x => x.Created)
-                    .FirstOrDefault() 
+                    .FirstOrDefault()
                 ?? Context.DashboardHistoryItems
                     .Where(x => x.Created > transaction.TimeStamp)
                     .OrderBy(x => x.Created)
@@ -197,6 +192,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return await _csvService.GetRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
                     .Where(x => x.Currency == Settings.Value.Currency)
                     .Select(async x => await CreateAddressInternal(userId, addressType, x.Address))
+                    .ToArray()
                     .FirstOrDefault();
             }
 
