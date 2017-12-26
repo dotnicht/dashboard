@@ -30,12 +30,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IKeyVaultService keyVaultService,
             ICsvService csvService,
             IMessageService messageService,
-            IAffiliateService affiliatesService,
+            IDashboardHistoryService dashboardHistoryService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, affiliatesService, mapper, tokenSettings, ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, dashboardHistoryService, mapper, tokenSettings, ethereumSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));

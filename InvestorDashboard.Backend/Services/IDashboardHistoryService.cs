@@ -8,5 +8,6 @@ namespace InvestorDashboard.Backend.Services
     {
         Task RefreshHistory();
         Task<DashboardHistoryItem> GetLatestHistoryItem(bool includeCurrencies = false);
+        Task<DashboardHistoryItem> GetClosestHistoryItem(DateTime dateTime);
     }
 }

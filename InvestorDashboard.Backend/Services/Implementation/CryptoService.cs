@@ -16,9 +16,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly ICsvService _csvService;
         private readonly IMessageService _messageService;
-        private readonly IAffiliateService _affiliatesService;
+        private readonly IDashboardHistoryService _dashboardHistoryService;
 
         public IOptions<CryptoSettings> Settings { get; }
+
         protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
@@ -31,7 +32,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IKeyVaultService keyVaultService,
             ICsvService csvService,
             IMessageService messageService,
-            IAffiliateService affiliatesService,
+            IDashboardHistoryService dashboardHistoryService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)
@@ -44,7 +45,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
             _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
+            _dashboardHistoryService = dashboardHistoryService;
         }
 
         public async Task<CryptoAddress> CreateCryptoAddress(string userId)
@@ -167,14 +168,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 transaction.Direction = direction.Value;
             }
 
-            var item = Context.DashboardHistoryItems
-                    .Where(x => x.Created <= transaction.TimeStamp)
-                    .OrderByDescending(x => x.Created)
-                    .FirstOrDefault()
-                ?? Context.DashboardHistoryItems
-                    .Where(x => x.Created > transaction.TimeStamp)
-                    .OrderBy(x => x.Created)
-                    .FirstOrDefault();
+            var item = await _dashboardHistoryService.GetClosestHistoryItem(transaction.TimeStamp);
 
             transaction.CryptoAddressId = address.Id;
             transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
@@ -196,8 +190,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .FirstOrDefault();
             }
 
-            var (Address, PrivateKey) = GenerateKeys();
-            return await CreateAddressInternal(userId, addressType, Address, PrivateKey);
+            var (address, privateKey) = GenerateKeys();
+            return await CreateAddressInternal(userId, addressType, address, privateKey);
         }
 
         private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)

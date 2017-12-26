@@ -46,6 +46,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Context.DashboardHistoryItems.OrderByDescending(x => x.Created).First();
         }
 
+        public async Task<DashboardHistoryItem> GetClosestHistoryItem(DateTime dateTime)
+        {
+            var items = Context.DashboardHistoryItems.ToAsyncEnumerable();
+
+            return await items
+                    .Where(x => x.Created <= dateTime)
+                    .OrderByDescending(x => x.Created)
+                    .FirstOrDefault()
+                ?? await items
+                    .Where(x => x.Created > dateTime)
+                    .OrderBy(x => x.Created)
+                    .FirstOrDefault();
+        }
+
         private DashboardHistoryItem GetLatestDashboardHistoryItem(bool includeCurrencies = false)
         {
             var transactions = Context.CryptoTransactions.Where(
