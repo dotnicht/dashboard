@@ -159,7 +159,7 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
-            var item = await _dashboardHistoryService.GetLatestHistoryItem();
+            var item = await _dashboardHistoryService.GetHistoryItems();
             var model = _mapper.Map<IcoInfoModel>(item);
             return _mapper.Map(_tokenSettings.Value, model);
         }

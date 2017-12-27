@@ -16,14 +16,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var resource = GetType().Namespace + ".Data." + name;
-
-            using (var stream = assembly.GetManifestResourceStream(resource))
-            using (var reader = new StreamReader(stream))
+            try
             {
-                var csv = new CsvReader(reader);
-                return csv.GetRecords<TRecord>().ToArray();
+                var assembly = Assembly.GetExecutingAssembly();
+                var resource = GetType().Namespace + ".Data." + name;
+
+                using (var stream = assembly.GetManifestResourceStream(resource))
+                using (var reader = new StreamReader(stream))
+                {
+                    var csv = new CsvReader(reader);
+                    return csv.GetRecords<TRecord>().ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"An error occurred while parsing CSV file.", ex);
             }
         }
     }

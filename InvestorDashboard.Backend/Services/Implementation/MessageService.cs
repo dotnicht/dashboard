@@ -97,8 +97,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task SendDashboardHistoryMessageInternal(int? chatId = null)
         {
-            var item = await _dashboardHistoryService.GetLatestHistoryItem(true);
-            var msg = item + $" | Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }";
+            var items = await _dashboardHistoryService.GetHistoryItems();
+            var item = items.First().Value;
+
+            var msg = $@"Status on { item.Created }
+Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }
+Total users: { item.TotalNonInternalUsers }
+Total investors { item.TotalNonInternalInvestors }
+{ string.Join(Environment.NewLine, items.Select(x => $"Total { x.Key }: { x.Value.TotalNonInternalInvested }")) }";
             await _telegramService.SendMessage(msg, chatId ?? _options.Value.BusinessNotificationChatId);
         }
     }

@@ -37,13 +37,17 @@ namespace InvestorDashboard.Backend.Database
                 .HasIndex(x => x.ExternalId)
                 .IsUnique();
 
+            builder.Entity<CryptoAddress>()
+                .HasIndex(x => x.Address)
+                .IsUnique();
+
             builder.Entity<DashboardHistoryItem>()
-                .HasIndex(x => x.Created)
+                .HasIndex(x => new { x.Created, x.Currency })
                 .IsUnique();
 
             builder.Entity<ExchangeRate>()
                 .HasIndex(x => x.Created)
-                .IsUnique();
+                .IsUnique(false);
 
             foreach (var property in GetProperties(builder, p => p.ClrType == typeof(decimal)))
             {

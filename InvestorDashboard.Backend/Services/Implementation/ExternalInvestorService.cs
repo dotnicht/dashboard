@@ -72,7 +72,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 .Single(x => x.Settings.Value.Currency == value.Currency)
                                 .CreateCryptoAddress(user.Id);
 
-                            var item = await _dashboardHistoryService.GetClosestHistoryItem(record.DateTime);
+                            var item = (await _dashboardHistoryService.GetHistoryItems(record.DateTime)).FirstOrDefault().Value;
 
                             var transaction = new CryptoTransaction
                             {

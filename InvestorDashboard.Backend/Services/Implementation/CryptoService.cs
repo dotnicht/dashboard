@@ -168,7 +168,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 transaction.Direction = direction.Value;
             }
 
-            var item = await _dashboardHistoryService.GetClosestHistoryItem(transaction.TimeStamp);
+            var item = (await _dashboardHistoryService.GetHistoryItems(transaction.TimeStamp)).FirstOrDefault().Value;
 
             transaction.CryptoAddressId = address.Id;
             transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
