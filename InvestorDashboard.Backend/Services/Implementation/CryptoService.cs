@@ -79,14 +79,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var policy = Policy
                 .Handle<Exception>()
-                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: { Settings.Value.Currency }. Address: { c[addressKey] }. Retry attempt: {i}."));
+                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: {Settings.Value.Currency}. Address: {c[addressKey]}. Retry attempt: {i}."));
 
             foreach (var address in addresses)
             {
-                var data = new Dictionary<string, object> { { addressKey, address } };
-                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), data))
+                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
                 {
-                    Logger.LogInformation($"Received { Settings.Value.Currency } transaction list for address { address }.");
+                    Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
 
                     if (!Context.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                     {
@@ -161,7 +160,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection? direction = null)
         {
-            Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
+            Logger.LogInformation($"Adding {Settings.Value.Currency }transaction. Hash: {transaction.Hash}.");
 
             if (direction != null)
             {

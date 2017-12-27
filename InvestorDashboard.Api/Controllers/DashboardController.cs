@@ -117,7 +117,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null)
             {
-                var dashboard = new Dashboard
+                var dashboard = new DashboardModel
                 {
                     ClientInfoModel = _mapper.Map<ClientInfoModel>(ApplicationUser),
                     PaymentInfoList = await GetPaymentInfoModel(),
@@ -131,7 +131,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("add_question"), Produces("application/json")]
-        public IActionResult AddQuestion([FromBody]Question question)
+        public IActionResult AddQuestion([FromBody]QuestionModel question)
         {
             return Ok();
         }
@@ -159,9 +159,14 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
-            var item = await _dashboardHistoryService.GetHistoryItems();
-            var model = _mapper.Map<IcoInfoModel>(item);
-            return _mapper.Map(_tokenSettings.Value, model);
+            var items = await _dashboardHistoryService.GetHistoryItems();
+            var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
+            result.TotalBtcInvested = items[Currency.BTC].TotalInvested;
+            result.TotalEthInvested = items[Currency.ETH].TotalInvested;
+            result.TotalInvestors = items.Sum(x => x.Value.TotalInvestors);
+            result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
+            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
+            return result;
         }
 
         private async Task<List<PaymentInfoModel>> GetPaymentInfoModel()

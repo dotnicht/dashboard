@@ -1,6 +1,6 @@
 ﻿namespace InvestorDashboard.Api.Models.DashboardModels
 {
-    public class Question
+    public class QuestionModel
     {
         public string Message { get; set; }
     }

@@ -38,7 +38,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(message));
             }
 
-            Logger.LogInformation($"Handle incoming message from user { user }. Text: { message }");
+            Logger.LogInformation($"Handle incoming message from user {user}. Text: {message}");
 
             var msg = message.Trim();
             var commands = new Dictionary<string, Func<Task>>
@@ -98,13 +98,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task SendDashboardHistoryMessageInternal(int? chatId = null)
         {
             var items = await _dashboardHistoryService.GetHistoryItems();
-            var item = items.First().Value;
 
-            var msg = $@"Status on { item.Created }
-Environment: { Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }
-Total users: { item.TotalNonInternalUsers }
-Total investors { item.TotalNonInternalInvestors }
-{ string.Join(Environment.NewLine, items.Select(x => $"Total { x.Key }: { x.Value.TotalNonInternalInvested }")) }";
+            var msg = $@"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}
+Total users: {items.First().Value.TotalNonInternalUsers}
+Total investors: {items.Sum(x => x.Value.TotalNonInternalInvestors)}
+{string.Join(Environment.NewLine, items.Select(x => $"Total {x.Key}: {x.Value.TotalNonInternalInvested}"))}";
+
             await _telegramService.SendMessage(msg, chatId ?? _options.Value.BusinessNotificationChatId);
         }
     }

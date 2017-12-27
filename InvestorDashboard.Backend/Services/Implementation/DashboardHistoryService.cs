@@ -31,10 +31,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await RefreshHistory();
             }
 
-            return Context.DashboardHistoryItems
-                .Where(x => x.Currency != Currency.USD)
-                .GroupBy(x => x.Currency)
-                .ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created < dateTime.Value).FirstOrDefault());
+            var items = Context.DashboardHistoryItems
+                .ToArray()
+                .GroupBy(x => x.Currency);
+
+            var result = items.ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created <= dateTime.Value).FirstOrDefault())
+                ?? items.ToDictionary(x => x.Key, x => x.OrderBy(y => y.Created).Where(y => dateTime == null || y.Created > dateTime.Value).FirstOrDefault());
+
+            result.Remove(Currency.USD);
+
+            return result;
         }
 
         public async Task RefreshHistory()
@@ -46,15 +52,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private IDictionary<Currency, DashboardHistoryItem> CreateLatestDashboardHistoryItems()
         {
-            var transactions = Context.CryptoTransactions
-                .Include(x => x.CryptoAddress)
-                .ThenInclude(x => x.User)
-                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment);
-
             bool nonInternalPredicate(CryptoTransaction tx) => tx.CryptoAddress.User.ExternalId == null;
 
             // TODO: optimize the query.
-            var result = transactions
+            return Context.CryptoTransactions
+                .Include(x => x.CryptoAddress)
+                .ThenInclude(x => x.User)
+                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
                 .ToArray()
                 .GroupBy(x => x.CryptoAddress.Currency)
                 .ToDictionary(
@@ -67,18 +71,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         TotalCoins = _options.Value.TotalCoins,
                         Currency = x.Key,
                         TotalUsers = Context.Users.Count(),
-                        TotalInvestors = transactions.Select(y => y.CryptoAddress.UserId).Distinct().Count(),
+                        TotalInvestors = x.Select(y => y.CryptoAddress.UserId).Distinct().Count(),
                         TotalInvested = x.Sum(y => y.Amount),
                         TotalUsdInvested = x.Sum(y => y.Amount * y.ExchangeRate),
                         TotalCoinsBought = x.Sum(y => y.Amount * y.ExchangeRate / y.TokenPrice),
                         TotalNonInternalUsers = Context.Users.Count(y => y.ExternalId == null),
-                        TotalNonInternalInvestors = transactions.Where(nonInternalPredicate).Select(y => y.CryptoAddress.UserId).Distinct().Count(),
+                        TotalNonInternalInvestors = x.Where(nonInternalPredicate).Select(y => y.CryptoAddress.UserId).Distinct().Count(),
                         TotalNonInternalInvested = x.Where(nonInternalPredicate).Sum(y => y.Amount),
                         TotalNonInternalUsdInvested = x.Where(nonInternalPredicate).Sum(y => y.Amount * y.ExchangeRate),
                         TotalNonInternalCoinsBought = x.Where(nonInternalPredicate).Sum(y => y.Amount * y.ExchangeRate / y.TokenPrice),
                     });
-
-            return result;
         }
     }
 }
