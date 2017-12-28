@@ -6,6 +6,7 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NBitcoin.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,12 +36,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IKeyVaultService keyVaultService,
             ICsvService csvService,
             IMessageService messageService,
-            IAffiliateService affiliatesService,
+            IDashboardHistoryService dashboardHistoryService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, affiliatesService, mapper, tokenSettings, bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, dashboardHistoryService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
@@ -78,9 +79,64 @@ namespace InvestorDashboard.Backend.Services.Implementation
             throw new InvalidOperationException($"All sources failed to retrieve transaction info.");
         }
 
-        protected override Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            throw new NotImplementedException();
+            // TODO: implement custom amount transfer.
+
+            var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.KeyStoreEncryptionPassword);
+            var response = _restService.Get<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
+
+            var balance = 0m;
+            var transaction = new Transaction();
+
+            foreach (var tx in (await new BlockExplorer().GetBase58AddressAsync(address.Address)).Transactions)
+            {
+                for (var i = 0; i < tx.Outputs.Count; i++)
+                {
+                    if (tx.Outputs[i].Address == address.Address && !tx.Outputs[i].Spent)
+                    {
+                        balance += tx.Outputs[i].Value.GetBtc();
+                        transaction.AddInput(new TxIn
+                        {
+                            PrevOut = new OutPoint(new uint256(tx.Hash), i),
+                            ScriptSig = secret.GetAddress().ScriptPubKey
+                        });
+                    }
+                }
+            }
+
+            transaction.AddOutput(new TxOut
+            {
+                ScriptPubKey = BitcoinAddress.Create(destinationAddress).ScriptPubKey
+            });
+
+            var fee = Money.Satoshis(response.FastestFee * transaction.GetVirtualSize());
+            var value = Money.Coins(balance);
+
+            if (value > fee)
+            {
+                var adjustedAmount = value - fee;
+                transaction.Outputs.Single().Value = adjustedAmount;
+                transaction.Sign(secret, false);
+
+                Logger.LogDebug($"Publishing transaction { transaction.ToHex() }");
+
+                var node = Node.Connect(Network, _bitcoinSettings.Value.NodeAddress.ToString());
+                node.VersionHandshake();
+                node.SendMessage(new InvPayload(transaction));
+                node.SendMessage(new TxPayload(transaction));
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                node.Disconnect();
+
+                return (Hash: transaction.GetHash().ToString(), AdjustedAmount: adjustedAmount.ToDecimal(MoneyUnit.BTC), Success: true);
+            }
+
+            if (value > 0)
+            {
+                Logger.LogError($"Transaction publish failed. Address: { address.Address }. Value: { value }. Fee: { fee }.");
+            }
+
+            return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockchain(string address)

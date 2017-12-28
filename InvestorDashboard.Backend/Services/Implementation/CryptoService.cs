@@ -16,9 +16,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly ICsvService _csvService;
         private readonly IMessageService _messageService;
-        private readonly IAffiliateService _affiliatesService;
+        private readonly IDashboardHistoryService _dashboardHistoryService;
 
         public IOptions<CryptoSettings> Settings { get; }
+
         protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
@@ -31,7 +32,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IKeyVaultService keyVaultService,
             ICsvService csvService,
             IMessageService messageService,
-            IAffiliateService affiliatesService,
+            IDashboardHistoryService dashboardHistoryService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)
@@ -44,10 +45,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
             _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
+            _dashboardHistoryService = dashboardHistoryService;
         }
 
-        public Task<CryptoAddress> CreateCryptoAddress(string userId)
+        public async Task<CryptoAddress> CreateCryptoAddress(string userId)
         {
             if (userId == null)
             {
@@ -56,7 +57,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             return Settings.Value.IsDisabled
                 ? null
-                : CreateAddress(userId, CryptoAddressType.Investment);
+                : await CreateAddress(userId, CryptoAddressType.Investment);
         }
 
         public async Task RefreshInboundTransactions()
@@ -65,11 +66,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 return;
             }
-
-            var hashes = Context.CryptoTransactions
-                .Where(x => x.Hash != null)
-                .Select(x => x.Hash)
-                .ToHashSet();
 
             var addresses = Context.CryptoAddresses
                 .Where(
@@ -83,16 +79,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var policy = Policy
                 .Handle<Exception>()
-                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: { Settings.Value.Currency }. Address: { c[addressKey] }. Retry attempt: {i}."));
+                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: {Settings.Value.Currency}. Address: {c[addressKey]}. Retry attempt: {i}."));
 
             foreach (var address in addresses)
             {
-                var data = new Dictionary<string, object> { { addressKey, address } };
-                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), data))
+                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
                 {
-                    Logger.LogInformation($"Received { Settings.Value.Currency } transaction list for address { address }.");
+                    Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
 
-                    if (!hashes.Contains(transaction.Hash))
+                    if (!Context.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                     {
                         await FillAndSaveTransaction(transaction, address);
                         // TODO: send transaction received message.
@@ -103,7 +98,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task TransferAvailableAssets()
+        public virtual async Task TransferAvailableAssets()
         {
             if (Settings.Value.IsDisabled)
             {
@@ -165,21 +160,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection? direction = null)
         {
-            Logger.LogInformation($"Adding { Settings.Value.Currency } transaction. Hash: { transaction.Hash }.");
+            Logger.LogInformation($"Adding {Settings.Value.Currency }transaction. Hash: {transaction.Hash}.");
 
             if (direction != null)
             {
                 transaction.Direction = direction.Value;
             }
 
-            var item = Context.DashboardHistoryItems
-                    .Where(x => x.Created <= transaction.TimeStamp)
-                    .OrderByDescending(x => x.Created)
-                    .FirstOrDefault() 
-                ?? Context.DashboardHistoryItems
-                    .Where(x => x.Created > transaction.TimeStamp)
-                    .OrderBy(x => x.Created)
-                    .FirstOrDefault();
+            var item = (await _dashboardHistoryService.GetHistoryItems(transaction.TimeStamp)).FirstOrDefault().Value;
 
             transaction.CryptoAddressId = address.Id;
             transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
@@ -197,11 +185,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return await _csvService.GetRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
                     .Where(x => x.Currency == Settings.Value.Currency)
                     .Select(async x => await CreateAddressInternal(userId, addressType, x.Address))
+                    .ToArray()
                     .FirstOrDefault();
             }
 
-            var (Address, PrivateKey) = GenerateKeys();
-            return await CreateAddressInternal(userId, addressType, Address, PrivateKey);
+            var (address, privateKey) = GenerateKeys();
+            return await CreateAddressInternal(userId, addressType, address, privateKey);
         }
 
         private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)

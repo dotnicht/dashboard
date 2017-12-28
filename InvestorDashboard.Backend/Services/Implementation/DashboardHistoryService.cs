@@ -24,76 +24,63 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task RefreshHistory()
-        {
-            var item = GetLatestDashboardHistoryItem();
-            await Context.DashboardHistoryItems.AddAsync(item);
-            await Context.SaveChangesAsync();
-        }
-
-        public async Task<DashboardHistoryItem> GetLatestHistoryItem(bool includeCurrencies = false)
+        public async Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null)
         {
             if (!Context.DashboardHistoryItems.Any())
             {
                 await RefreshHistory();
             }
 
-            if (includeCurrencies)
-            {
-                return GetLatestDashboardHistoryItem(true);
-            }
+            var items = Context.DashboardHistoryItems
+                .ToArray()
+                .GroupBy(x => x.Currency);
 
-            return Context.DashboardHistoryItems.OrderByDescending(x => x.Created).First();
+            var result = items.ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created <= dateTime.Value).FirstOrDefault())
+                ?? items.ToDictionary(x => x.Key, x => x.OrderBy(y => y.Created).Where(y => dateTime == null || y.Created > dateTime.Value).FirstOrDefault());
+
+            result.Remove(Currency.USD);
+
+            return result;
         }
 
-        private DashboardHistoryItem GetLatestDashboardHistoryItem(bool includeCurrencies = false)
+        public async Task RefreshHistory()
         {
-            var transactions = Context.CryptoTransactions.Where(
-                x => x.Direction == CryptoTransactionDirection.Inbound
-                && x.CryptoAddress.Type == CryptoAddressType.Investment);
+            var items = CreateLatestDashboardHistoryItems();
+            await Context.DashboardHistoryItems.AddRangeAsync(items.Values);
+            await Context.SaveChangesAsync();
+        }
 
-            var item = _mapper.Map<DashboardHistoryItem>(_options.Value);
+        private IDictionary<Currency, DashboardHistoryItem> CreateLatestDashboardHistoryItems()
+        {
+            bool nonInternalPredicate(CryptoTransaction tx) => tx.CryptoAddress.User.ExternalId == null;
 
-            item.Created = DateTime.UtcNow;
-
-            item.TotalUsers = Context.Users.Count();
-            item.TotalCoinsBought = transactions.Sum(x => x.Amount * x.ExchangeRate / x.TokenPrice);
-            item.TotalUsdInvested = transactions.Sum(x => x.Amount * x.ExchangeRate);
-            item.TotalInvestors = transactions
-                .Select(x => x.CryptoAddress.UserId)
-                .Distinct()
-                .Count();
-
-            var nonInternalTransactions = transactions.Where(
-                x => x.ExternalId == null
-                && x.Hash != null
-                && x.CryptoAddress.Currency != Currency.DTT
-                && x.CryptoAddress.User.ExternalId == null);
-
-            item.TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null);
-            item.TotalNonInternalUsdInvested = nonInternalTransactions.Sum(x => x.Amount * x.ExchangeRate);
-            item.TotalNonInternalInvestors = nonInternalTransactions
-                .Select(x => x.CryptoAddress.UserId)
-                .Distinct()
-                .Count();
-
-            if (includeCurrencies)
-            {
-                item.Currencies = Context.CryptoTransactions
-                    .Include(x => x.CryptoAddress)
-                    .Where(
-                        x => x.Direction == CryptoTransactionDirection.Inbound
-                        && x.CryptoAddress.Type == CryptoAddressType.Investment
-                        && x.ExternalId == null
-                        && x.CryptoAddress.Currency != Currency.DTT
-                        && x.CryptoAddress.User.ExternalId == null)
-                    .ToList()
-                    .GroupBy(x => x.CryptoAddress.Currency)
-                    .Select(x => (Currency: x.Key, Amount: x.Sum(y => y.Amount)))
-                    .ToList();
-            }
-
-            return item;
+            // TODO: optimize the query.
+            return Context.CryptoTransactions
+                .Include(x => x.CryptoAddress)
+                .ThenInclude(x => x.User)
+                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
+                .ToArray()
+                .GroupBy(x => x.CryptoAddress.Currency)
+                .ToDictionary(
+                    x => x.Key,
+                    x => new DashboardHistoryItem
+                    {
+                        IsTokenSaleDisabled = _options.Value.IsTokenSaleDisabled,
+                        BonusPercentage = _options.Value.BonusPercentage,
+                        TokenPrice = _options.Value.Price,
+                        TotalCoins = _options.Value.TotalCoins,
+                        Currency = x.Key,
+                        TotalUsers = Context.Users.Count(),
+                        TotalInvestors = x.Select(y => y.CryptoAddress.UserId).Distinct().Count(),
+                        TotalInvested = x.Sum(y => y.Amount),
+                        TotalUsdInvested = x.Sum(y => y.Amount * y.ExchangeRate),
+                        TotalCoinsBought = x.Sum(y => y.Amount * y.ExchangeRate / y.TokenPrice),
+                        TotalNonInternalUsers = Context.Users.Count(y => y.ExternalId == null),
+                        TotalNonInternalInvestors = x.Where(nonInternalPredicate).Select(y => y.CryptoAddress.UserId).Distinct().Count(),
+                        TotalNonInternalInvested = x.Where(nonInternalPredicate).Sum(y => y.Amount),
+                        TotalNonInternalUsdInvested = x.Where(nonInternalPredicate).Sum(y => y.Amount * y.ExchangeRate),
+                        TotalNonInternalCoinsBought = x.Where(nonInternalPredicate).Sum(y => y.Amount * y.ExchangeRate / y.TokenPrice),
+                    });
         }
     }
 }

@@ -69,13 +69,17 @@ namespace InvestorDashboard.Api.Controllers
         [HttpPost("webhook")]
         public async Task<IActionResult> PostTelegramBotData([FromBody]TelegramWebhookViewModel telegramWebhookViewModel)
         {
-            if (telegramWebhookViewModel != null 
-                && telegramWebhookViewModel.Message != null 
-                && telegramWebhookViewModel.Message.Chat != null 
+            if (telegramWebhookViewModel != null
+                && telegramWebhookViewModel.Message != null
+                && telegramWebhookViewModel.Message.Chat != null
                 && telegramWebhookViewModel.Message.From != null)
             {
                 _logger.LogInformation($"Incoming webhook message. ID: { telegramWebhookViewModel.Update_id }.");
-                await _messageService.HandleIncomingMessage(telegramWebhookViewModel.Message.From.Username, telegramWebhookViewModel.Message.Text, telegramWebhookViewModel.Message.Chat.Id);
+
+                await _messageService.HandleIncomingMessage(
+                    telegramWebhookViewModel.Message.From.Username,
+                    telegramWebhookViewModel.Message.Text,
+                    telegramWebhookViewModel.Message.Chat.Id);
             }
             else
             {
@@ -90,8 +94,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
             {
-                var paymentInfo = await GetPaymentInfoModel();
-                return Ok(paymentInfo);
+                return Ok(await GetPaymentInfoModel());
             }
 
             return Unauthorized();
@@ -113,7 +116,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null)
             {
-                var dashboard = new Dashboard
+                var dashboard = new DashboardModel
                 {
                     ClientInfoModel = _mapper.Map<ClientInfoModel>(ApplicationUser),
                     PaymentInfoList = await GetPaymentInfoModel(),
@@ -127,8 +130,8 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("add_question"), Produces("application/json")]
-        public async Task<IActionResult> AddQuestion([FromBody]Question question){
-
+        public IActionResult AddQuestion([FromBody]QuestionModel question)
+        {
             return Ok();
         }
 
@@ -143,9 +146,15 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
-            var item = await _dashboardHistoryService.GetLatestHistoryItem();
-            var model = _mapper.Map<IcoInfoModel>(item);
-            return _mapper.Map(_tokenSettings.Value, model);
+            var items = await _dashboardHistoryService.GetHistoryItems();
+            var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
+            result.TotalBtcInvested = items[Currency.BTC].TotalInvested;
+            result.TotalEthInvested = items[Currency.ETH].TotalInvested;
+            result.TotalInvestors = items.Sum(x => x.Value.TotalInvestors);
+            result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
+            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
+            result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToArray();
+            return result;
         }
 
         private async Task<List<PaymentInfoModel>> GetPaymentInfoModel()

@@ -166,6 +166,7 @@ namespace InvestorDashboard.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
