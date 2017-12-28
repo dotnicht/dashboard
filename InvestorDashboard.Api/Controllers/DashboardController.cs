@@ -165,7 +165,7 @@ namespace InvestorDashboard.Api.Controllers
             result.TotalInvestors = items.Sum(x => x.Value.TotalInvestors);
             result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
             result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
-            result.Currencies = items.ToDictionary(x => x.Key.ToString(), x => x.Value.TotalInvested);
+            result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToArray();
             return result;
         }
 
