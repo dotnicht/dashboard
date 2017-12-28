@@ -94,8 +94,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null && !ApplicationUser.IsTokenSaleDisabled && !_tokenSettings.Value.IsTokenSaleDisabled)
             {
-                var paymentInfo = await GetPaymentInfoModel();
-                return Ok(paymentInfo);
+                return Ok(await GetPaymentInfoModel());
             }
 
             return Unauthorized();
@@ -166,6 +165,7 @@ namespace InvestorDashboard.Api.Controllers
             result.TotalInvestors = items.Sum(x => x.Value.TotalInvestors);
             result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
             result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
+            result.Currencies = items.ToDictionary(x => x.Key.ToString(), x => x.Value.TotalInvested);
             return result;
         }
 
