@@ -106,6 +106,14 @@ body {
   h1 {
     font-size: 20px;
   }
+  button {
+    &.disabled {
+      background-color: rgba(0, 0, 0, .12) !important; 
+      color: rgba(0,0,0,.38) !important;
+      box-shadow: none !important;
+      cursor: default !important;
+    }
+  }
 }
 
 app-register_presale {

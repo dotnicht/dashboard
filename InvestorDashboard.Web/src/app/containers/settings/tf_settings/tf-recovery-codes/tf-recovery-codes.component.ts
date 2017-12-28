@@ -19,8 +19,8 @@ export class TfRecoveryCodesComponent implements OnInit {
 
     }
     ngOnInit(): void {
-        this.accountEndpoint.TfGetRecoveryCodesEndpoint().subscribe(data => {
-            this.codes = data.json() as RecoveryCodes;
-        });
+        // this.accountEndpoint.TfGetRecoveryCodesEndpoint().subscribe(data => {
+        //     this.codes = data.json() as RecoveryCodes;
+        // });
     }
 }

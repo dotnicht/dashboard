@@ -131,25 +131,14 @@ namespace InvestorDashboard.Api.Controllers
 
             return Ok();
         }
+
         [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
-        public async Task<IActionResult> AddTokenTransfer([FromBody]TokenTransferModel transfer)
+        public async Task<IActionResult> AddTokenTransfer([FromBody] TokenTransferModel transfer)
         {
 
-            var response = transfer.ReCaptchaToken;
-            string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
-            var client = new System.Net.WebClient();
-            var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
-            var obj = JObject.Parse(recaptchaResult);
-            var status = (bool)obj.SelectToken("success");
-            if (status)
-            {
-                return Ok();
-            }
 
-            return BadRequest(new OpenIdConnectResponse
-            {
-                Error = "recaptcha validation false"
-            });
+            return Ok();
+
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()

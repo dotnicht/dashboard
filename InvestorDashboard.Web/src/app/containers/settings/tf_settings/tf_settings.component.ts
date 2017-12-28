@@ -35,7 +35,6 @@ export class TfSettingsComponent implements OnInit {
 
 
     switchTab(index: number) {
-        console.log(index);
         this.selectedIndex.value = index.toString();
     }
 
@@ -48,7 +47,7 @@ export class TfSettingsComponent implements OnInit {
     updateTabs(index?: number) {
         this.accountEndpoint.TfaDataEndpoint().subscribe(data => {
             this.tfa = data.json() as TwoFactorAuthenticationModel;
-
+            this.tfa.recoveryCodesLeft=0;
             this.switchTab(index);
         });
     }

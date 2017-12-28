@@ -83,7 +83,7 @@ namespace InvestorDashboard.Api.Controllers
 
                     recaptchaResult =
                         client.DownloadString(
-                            $"https://dp-captcha.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
+                            $"https://dp-captcha2.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
                     obj = JObject.Parse(recaptchaResult);
                     status = (bool) obj.SelectToken("IsApproved");
                 }

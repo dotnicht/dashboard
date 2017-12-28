@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Inject, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
@@ -60,6 +60,13 @@ export class RegisterComponent implements OnInit {
         }
         return true;
     }
+    @HostListener('window:message', ['$event'])
+    onMessage(e) {
+        if (e.data.type == 'captcha') {
+            console.log(e.data.success)
+            this.reCaptchaStatus = true;
+        }
+    }
     constructor(private router: Router,
         private translationService: AppTranslationService,
         private authService: AuthService,
@@ -90,6 +97,7 @@ export class RegisterComponent implements OnInit {
         }
         this.currentLocationService.getCurrentIpLocation().subscribe(data => {
             this.country = data.country;
+            // this.country = 'CN';
             console.log(data.country);
         });
 
@@ -98,7 +106,13 @@ export class RegisterComponent implements OnInit {
         this.captchaService.generateGuidEndpoint().subscribe(data => {
             const value = data.json() as { Guid: string };
             this.guid = value.Guid;
-            this.captchaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://dp-captcha.azurewebsites.net/captcha?lang=en-EN&captchaId=${this.guid}`);
+            this.captchaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://dp-captcha2.azurewebsites.net/captcha?lang=en-EN&captchaId=${this.guid}`);
+            // setTimeout(() => {
+            //     const frame = document.getElementById('captcha');
+            //     const content = (<HTMLIFrameElement>frame);
+            //     content.contentWindow.postMessage('test', '*');
+            // }, 1000);
+
         },
             error => {
                 console.log(error);
@@ -110,8 +124,11 @@ export class RegisterComponent implements OnInit {
 
 
     }
+    ngAfterViewInit() {
+
+    }
     openEmailConfirmDialog(): void {
-        let config = {
+        const config = {
             disableClose: true,
             hasBackdrop: false,
             panelClass: 'email-confirm-dialog',
@@ -234,7 +251,7 @@ export class RegisterRulesDialogComponent {
     }
 
     get acceptAllRules() {
-        return this._acceptRules.every((element, index, array) => { return element.checked; });
+        return this._acceptRules.every((element, index, array) => element.checked);
     }
 }
 @Component({
