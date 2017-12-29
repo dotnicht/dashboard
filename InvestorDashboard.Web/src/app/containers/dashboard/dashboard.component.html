@@ -31,7 +31,7 @@
           <div class="value">{{dashboard.icoInfoModel.totalInvestors}}</div>
           <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
         </div>
-        <div class="item">
+        <!-- <div class="item">
           <img class="color-block" src="assets/img/wallet.svg">
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
@@ -40,18 +40,25 @@
           <img class="color-block" src="assets/img/coin.svg">
           <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} DTT</div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
-        </div>
+        </div> -->
         <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div> -->
-        <div style="margin-top: 20px;">
+        <div style="margin-top: 20px;" >
           <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
-          {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT
+          <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT -->
         </div>
-        <div>
+        <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
+            <div class="item">
+                <img class="color-block" [src]="currency.img">
+                <div class="value">{{'clientInfo.Total' | translate}} {{currency.currency}}</div>
+                <div class="title">{{currency.value}}</div>
+              </div>
+        </div>
+        <!-- <div>
           <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
           </mat-progress-bar>
-        </div>
+        </div> -->
       </div>
     </mat-card-content>
   </mat-card>

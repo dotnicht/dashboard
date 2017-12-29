@@ -18,7 +18,6 @@ export class TfaComponent {
     isLoading = false;
     constructor(private router: Router,
         private authService: AuthService) {
-
     }
     verify() {
         console.log(this.tfc);

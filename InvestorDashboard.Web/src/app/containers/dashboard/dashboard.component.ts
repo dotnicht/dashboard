@@ -149,6 +149,10 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
                 });
 
+                db.icoInfoModel.currencies.forEach(element => {
+                    element.img = `assets/img/${element.currency}.svg`;
+                });
+
                 if (db.paymentInfoList.length > 0) {
                     if (this.selectedPaymentType == undefined) {
                         this.changePayment(db.paymentInfoList[0]);

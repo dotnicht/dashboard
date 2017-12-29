@@ -116,14 +116,25 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null)
             {
-                var dashboard = new DashboardModel
+                try
                 {
-                    ClientInfoModel = _mapper.Map<ClientInfoModel>(ApplicationUser),
-                    PaymentInfoList = await GetPaymentInfoModel(),
-                    IcoInfoModel = await GetIcoStatusModel()
-                };
+                    var dashboard = new DashboardModel
+                    {
+                        ClientInfoModel = _mapper.Map<ClientInfoModel>(ApplicationUser),
+                        PaymentInfoList = await GetPaymentInfoModel(),
+                        IcoInfoModel = await GetIcoStatusModel()
+                    };
 
-                return Ok(dashboard);
+                    return Ok(dashboard);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new OpenIdConnectResponse
+                    {
+                        Error = OpenIdConnectConstants.Errors.ServerError,
+                        ErrorDescription = ex.Message
+                    });
+                }
             }
 
             return Unauthorized();
@@ -153,7 +164,7 @@ namespace InvestorDashboard.Api.Controllers
             result.TotalInvestors = items.Sum(x => x.Value.TotalInvestors);
             result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
             result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
-            result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToArray();
+            result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToList();
             return result;
         }
 

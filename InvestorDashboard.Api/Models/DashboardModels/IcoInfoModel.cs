@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace InvestorDashboard.Api.Models.DashboardModels
 {
     public class IcoInfoModel
@@ -11,7 +13,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
         public decimal TokenPrice { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public decimal BonusPercentage { get; set; }
-        public CurrencyValue[] Currencies { get; set; }
+        public List<CurrencyValue> Currencies { get; set; }
 
         public class CurrencyValue
         {
