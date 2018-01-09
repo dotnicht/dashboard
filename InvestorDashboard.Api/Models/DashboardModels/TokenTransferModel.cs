@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace InvestorDashboard.Api.Models.DashboardModels
+﻿namespace InvestorDashboard.Api.Models.DashboardModels
 {
     public class TokenTransferModel
     {
+        public decimal Amount { get; set; }
         public string Address { get; set; }
-        public string Amount { get; set; }
-        public string ReCaptchaToken{ get; set; }
+        public string ReCaptchaToken { get; set; }
     }
 }

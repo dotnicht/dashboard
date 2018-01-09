@@ -20,6 +20,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : CryptoService, IEthereumService
     {
+        private const string KeyStore = "{'address':'1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7','crypto':{'cipher':'aes-128-ctr','ciphertext':'71afffa003539ce20647840e02b49d7407b64b3034604a74f2675a29fc2f139b','cipherparams':{'iv':'3878ff037373f4627dc2f453056330b4'},'kdf':'scrypt','kdfparams':{'dklen':32,'n':262144,'p':1,'r':8,'salt':'8d0cdeb5ca538b09058da179509931cfec8da099ff4f1288c6ceeb35ca71d250'},'mac':'1c7b2a8f256cceedfc5a9bcbb124a1456b4bfa36fa1a5786e214e77b6c31ae09'},'id':'c87069c4-adaf-491a-9158-399a04505af1','version':3}";
+        private const string Abi = "[{'constant':true,'inputs':[],'name':'name','outputs':[{'name':'','type':'string'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_spender','type':'address'},{'name':'_value','type':'uint256'}],'name':'approve','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'totalSupply','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_from','type':'address'},{'name':'_to','type':'address'},{'name':'_value','type':'uint256'}],'name':'transferFrom','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'decimals','outputs':[{'name':'','type':'uint8'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[{'name':'_owner','type':'address'}],'name':'balanceOf','outputs':[{'name':'balance','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'owner','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_target','type':'address'},{'name':'_mintedAmount','type':'uint256'},{'name':'_spender','type':'address'}],'name':'mintTokensWithApproval','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'symbol','outputs':[{'name':'','type':'string'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_to','type':'address'},{'name':'_value','type':'uint256'}],'name':'transfer','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'_burnedAmount','type':'uint256'}],'name':'burnUnmintedTokens','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[{'name':'_owner','type':'address'},{'name':'_spender','type':'address'}],'name':'allowance','outputs':[{'name':'remaining','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_target','type':'address'},{'name':'_mintedAmount','type':'uint256'}],'name':'mintTokens','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'newOwner','type':'address'}],'name':'transferOwnership','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'anonymous':false,'inputs':[{'indexed':true,'name':'owner','type':'address'},{'indexed':true,'name':'spender','type':'address'},{'indexed':false,'name':'value','type':'uint256'}],'name':'Approval','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'from','type':'address'},{'indexed':true,'name':'to','type':'address'},{'indexed':false,'name':'value','type':'uint256'}],'name':'Transfer','type':'event'}]";
+
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IRestService _restService;
 
@@ -41,6 +44,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
+        public async Task<bool> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
+        {
+            if (sourceAddress == null)
+            {
+                throw new ArgumentNullException(nameof(sourceAddress));
+            }
+
+            if (destinationAddress == null)
+            {
+                throw new ArgumentNullException(nameof(destinationAddress));
+            }
+
+            //var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
+            //    ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master);
+
+            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, "dm2N74Ld41Kdh9Nd"), Settings.Value.NodeAddress.ToString());
+            var contract = web3.Eth.GetContract(Abi, "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7");
+            var function = contract.GetFunction("transferFrom");
+            var receipt = await function.SendTransactionAsync(contract.Address, sourceAddress.Address, destinationAddress, amount);
+            return true;
+        }
+
         protected override (string Address, string PrivateKey) GenerateKeys()
         {
             var policy = Policy
@@ -60,7 +85,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = new Uri($"http://api.etherscan.io/api?module=account&action=txlist&address={ address }&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
+            var uri = new Uri($"http://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
             var result = await _restService.GetAsync<EtherscanResponse>(uri);
 
             var confirmed = result.Result
@@ -76,7 +101,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
                     ? CryptoTransactionDirection.Inbound
                     : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
-                        ? CryptoTransactionDirection.Internal 
+                        ? CryptoTransactionDirection.Internal
                         : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: { tx.Hash }.");
             }
 

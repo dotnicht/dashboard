@@ -13,5 +13,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public TimeSpan SynchronizeInternalUsersDataPeriod { get; set; }
         public TimeSpan NotifyAffilicatesTransactionsPeriod { get; set; }
         public TimeSpan NotifyDashboardHistoryPeriod { get; set; }
+        public TimeSpan CreateMissingAddressesPeriod { get; set; }
     }
 }
