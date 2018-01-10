@@ -17,7 +17,7 @@
   </mat-card>
   <mat-card class="second">
     <mat-card-content>
-      <div class="right">
+      <div class="right" *ngIf="false">
         <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale<div style="margin: 3px 0;"> Round A</div>
          is in progress </div>
         <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p>
@@ -64,17 +64,17 @@
   </mat-card>
 
 
-  <mat-card class="fifth" *ngIf="false">
+  <mat-card class="fifth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
       <iframe id="video" width="100%" height="280" [src]="selectedVideo" frameborder="0" allowfullscreen></iframe>
     </mat-card-content>
   </mat-card>
-  <mat-card class="sixth" *ngIf="false">
+  <mat-card class="sixth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
       <div class="content">
         <p style="font-size: 26px;">TOKEN SALE</p>
-        <p style="font-size: 26px;">Round A</p>
-        <p style="font-size: 18px;margin-top: 40px;">18 December 2017</p>
+        <p style="font-size: 26px;">Round B</p>
+        <p style="font-size: 18px;margin-top: 40px;">1st of February 2018</p>
         <img style="width: 60px;margin-top: 20px;" src="assets/img/round_a/placeholder.svg">
         <div class="line"></div>
         <!-- <img width="100%" height="100%" src="assets/img/round_a/round_a.svg"> -->
@@ -125,7 +125,7 @@
 
   </mat-card>
 
-  <mat-card class="third" >
+  <mat-card class="third" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
       <mat-card-content>
         <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
         <div class="block">
@@ -202,7 +202,7 @@
         </div>
       </mat-card-content>
     </mat-card>
-    <mat-card class="fourth" >
+    <mat-card class="fourth" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
       <mat-card-content>
         <div class="info" style="display: inline-table;">
           <div class="info-container" *ngIf="selectedPaymentType">

@@ -24,6 +24,10 @@ app-tf-settings {
   }
 }
 
+.errors {
+  color: #d9534f;
+}
+
 .mat-raised-button {
   &.btn-danger {
     color: #fff;
@@ -108,8 +112,8 @@ body {
   }
   button {
     &.disabled {
-      background-color: rgba(0, 0, 0, .12) !important; 
-      color: rgba(0,0,0,.38) !important;
+      background-color: rgba(0, 0, 0, .12) !important;
+      color: rgba(0, 0, 0, .38) !important;
       box-shadow: none !important;
       cursor: default !important;
     }

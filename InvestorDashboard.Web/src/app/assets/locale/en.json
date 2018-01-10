@@ -116,7 +116,8 @@
   "transfer": {
     "Header": "Token Transfer",
     "Address": "Address",
-    "Amount": "Amount"
+    "Amount": "Amount",
+    "SendEntire":"Send Entire Balance"
   },
   "users": {
     "management": {

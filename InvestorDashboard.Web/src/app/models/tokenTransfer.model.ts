@@ -1,5 +1,5 @@
 export class TokenTransfer {
-    amount = 1;
+    amount = 0;
     address: string;
     reCaptchaToken: String;
     commision: number;

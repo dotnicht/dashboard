@@ -3,6 +3,10 @@ import { AppTranslationService } from '../../services/app-translation.service';
 import { ReCaptchaComponent } from 'angular2-recaptcha';
 import { TokenTransfer } from '../../models/tokenTransfer.model';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
+import { AuthService } from '../../services/auth.service';
+import { Dashboard } from '../../models/dashboard.models';
+import { MatCheckboxChange } from '@angular/material';
+import { error } from 'selenium-webdriver';
 const ethereum_address = require('ethereum-address');
 
 @Component({
@@ -13,10 +17,13 @@ const ethereum_address = require('ethereum-address');
 /** transfer component*/
 export class TransferComponent implements OnInit {
 
-    @ViewChild(ReCaptchaComponent) captcha: ReCaptchaComponent;
+
+    dashboard: Dashboard;
     transfer: TokenTransfer;
     isLoading = false;
-    reCaptchaStatus = false;
+    sendEntire = false;
+    errors: string;
+
 
     constructor(private translationService: AppTranslationService,
         private dashboardService: DashboardEndpoint) {
@@ -34,13 +41,10 @@ export class TransferComponent implements OnInit {
     }
     OnSubmit() {
 
-        this.transfer.reCaptchaToken = this.captcha.getResponse();
         console.log(this.transfer);
 
         this.dashboardService.addtokenTransfer(this.transfer).subscribe(resp => {
-            this.transfer.amount = 1;
-            this.captcha.reset();
-            this.reCaptchaStatus = false;
+            this.transfer.amount = 0;
         },
             error => {
                 console.log(error);
@@ -48,11 +52,38 @@ export class TransferComponent implements OnInit {
     }
     ngOnInit() {
         this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
+        this.dashboardService.getDashboard().subscribe(model => {
+            const db = model.json() as Dashboard;
+            // db.clientInfoModel.balance = 4;
+            // db.clientInfoModel.bonusBalance = 50;
+            this.dashboard = db;
+        });
+        console.log(this.dashboard);
     }
-    handleCorrectCaptcha(event) {
-        this.reCaptchaStatus = true;
+
+    checkSendEntire(check: MatCheckboxChange) {
+        if (check.checked) {
+            this.sendEntire = true;
+            this.transfer.amount = this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance;
+        } else {
+            this.sendEntire = false;
+            this.transfer.amount = 0;
+        }
     }
-    handleCaptchaExpired() {
-        this.reCaptchaStatus = false;
+    validateValue() {
+        if (this.transfer.amount > (this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance)) {
+            this.errors = 'Not enough tokens';
+        } else {
+            this.errors = undefined;
+        }
+        console.log(this.transfer.amount);
     }
+    get validAmount() {
+        // if(this.transfer.amount > 0){
+
+        // }
+        const valid = this.transfer.amount > 0 && (this.transfer.amount <= (this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance));
+        return valid;
+    }
+
 }
