@@ -58,27 +58,35 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             const string password = "dm2N74Ld41Kdh9Nd";
 
-            var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
-                ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master, password);
+            try
+            {
+                var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
+                    ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master, password);
 
-            address.Address = "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7";
-            address.PrivateKey = KeyStore;
+                address.Address = "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7";
+                address.PrivateKey = KeyStore;
 
-            await Context.SaveChangesAsync();
+                await Context.SaveChangesAsync();
 
-            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, password), Settings.Value.NodeAddress.ToString());
+                var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, password), Settings.Value.NodeAddress.ToString());
 
-            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
+                web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
-            var contract = web3.Eth.GetContract(Abi, address.Address);
+                var contract = web3.Eth.GetContract(Abi, address.Address);
 
-            var balanceFunction = contract.GetFunction("balanceOf");
-            var balance = await balanceFunction.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address);
+                var balanceFunction = contract.GetFunction("balanceOf");
+                var balance = await balanceFunction.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address);
 
-            var transfer = contract.GetFunction("transferFrom");
-            var receipt = await transfer.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
+                var transfer = contract.GetFunction("transferFrom");
+                var receipt = await transfer.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
 
-            return (Hash: receipt.BlockHash, Success: true);
+                return (Hash: receipt.BlockHash, Success: true);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"An error occurred while performing transfer call. Source address id {sourceAddress.Id}. Destination address {destinationAddress}. Amount {amount}");
+                return (Hash: null, Success: false);
+            }
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
