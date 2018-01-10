@@ -1,12 +1,13 @@
-﻿import { Component, ViewChild, OnInit } from '@angular/core';
+﻿import { Component, ViewChild, OnInit, Inject } from '@angular/core';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { ReCaptchaComponent } from 'angular2-recaptcha';
 import { TokenTransfer } from '../../models/tokenTransfer.model';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 import { AuthService } from '../../services/auth.service';
 import { Dashboard } from '../../models/dashboard.models';
-import { MatCheckboxChange } from '@angular/material';
+import { MatCheckboxChange, MatDialogRef, MatDialog } from '@angular/material';
 import { error } from 'selenium-webdriver';
+import { DOCUMENT } from '@angular/platform-browser';
 const ethereum_address = require('ethereum-address');
 
 @Component({
@@ -17,6 +18,8 @@ const ethereum_address = require('ethereum-address');
 /** transfer component*/
 export class TransferComponent implements OnInit {
 
+    succsessTransferDialogRef: MatDialogRef<SuccsessTransferDialogComponent> | null;
+    failedTransferDialogRef: MatDialogRef<FailedTransferDialogComponent> | null;
 
     dashboard: Dashboard;
     transfer: TokenTransfer;
@@ -26,8 +29,17 @@ export class TransferComponent implements OnInit {
 
 
     constructor(private translationService: AppTranslationService,
-        private dashboardService: DashboardEndpoint) {
-
+        private dashboardService: DashboardEndpoint,
+        private dialog: MatDialog,
+        @Inject(DOCUMENT) doc: any) {
+        dialog.afterOpen.subscribe(() => {
+            if (!doc.body.classList.contains('no-scroll')) {
+                doc.body.classList.add('no-scroll');
+            }
+        });
+        dialog.afterAllClosed.subscribe(() => {
+            doc.body.classList.remove('no-scroll');
+        });
         this.transfer = new TokenTransfer(1);
 
     }
@@ -59,6 +71,8 @@ export class TransferComponent implements OnInit {
             this.dashboard = db;
         });
         console.log(this.dashboard);
+
+        this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
     }
 
     checkSendEntire(check: MatCheckboxChange) {
@@ -84,6 +98,37 @@ export class TransferComponent implements OnInit {
         // }
         const valid = this.transfer.amount > 0 && (this.transfer.amount <= (this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance));
         return valid;
+    }
+
+}
+@Component({
+    selector: 'succsess-transfer-dialog',
+    template: ``
+})
+export class SuccsessTransferDialogComponent {
+
+
+    constructor(
+        public dialogRef: MatDialogRef<SuccsessTransferDialogComponent>) {
+
+    }
+
+}
+
+@Component({
+    selector: 'failed-transfer-dialog',
+    template: `<h2>Failed transfer!</h2>
+
+    <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
+        <span>{{'buttons.Close' | translate}}</span>
+    </button>`
+})
+export class FailedTransferDialogComponent {
+
+
+    constructor(
+        public dialogRef: MatDialogRef<FailedTransferDialogComponent>) {
+
     }
 
 }

@@ -9,14 +9,16 @@ import { CommonModule } from '@angular/common';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 import { ClipboardModule } from 'ngx-clipboard';
 import { FormsModule } from '@angular/forms';
-import { TransferComponent } from '../../components/transfer/transfer.component';
+import { TransferComponent, SuccsessTransferDialogComponent, FailedTransferDialogComponent } from '../../components/transfer/transfer.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
 
 @NgModule({
     declarations: [
         DashboardComponent,
         AddedQuestionDialogComponent,
-        TransferComponent
+        TransferComponent,
+        SuccsessTransferDialogComponent,
+        FailedTransferDialogComponent
     ],
     imports: [
         CommonModule,
@@ -39,7 +41,9 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
         DashboardEndpoint
     ],
     entryComponents: [
-        AddedQuestionDialogComponent
+        AddedQuestionDialogComponent,
+        SuccsessTransferDialogComponent,
+        FailedTransferDialogComponent
     ]
 })
 export class DashboardModule { }
