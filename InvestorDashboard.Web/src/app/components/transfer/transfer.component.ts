@@ -57,9 +57,11 @@ export class TransferComponent implements OnInit {
 
         this.dashboardService.addtokenTransfer(this.transfer).subscribe(resp => {
             this.transfer.amount = 0;
+            this.succsessTransferDialogRef = this.dialog.open(SuccsessTransferDialogComponent);
         },
             error => {
                 console.log(error);
+                this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
             });
     }
     ngOnInit() {
@@ -69,10 +71,10 @@ export class TransferComponent implements OnInit {
             // db.clientInfoModel.balance = 4;
             // db.clientInfoModel.bonusBalance = 50;
             this.dashboard = db;
-        });
-        console.log(this.dashboard);
+            // console.log(this.dashboard);
 
-        this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
+        });
+       
     }
 
     checkSendEntire(check: MatCheckboxChange) {
@@ -103,7 +105,11 @@ export class TransferComponent implements OnInit {
 }
 @Component({
     selector: 'succsess-transfer-dialog',
-    template: ``
+    template: `<h4>Token transfer was made. You should see your DTT tokens in your ERC20 wallet within an hour!</h4>
+
+    <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
+        <span>{{'buttons.Close' | translate}}</span>
+    </button>`
 })
 export class SuccsessTransferDialogComponent {
 
@@ -117,7 +123,8 @@ export class SuccsessTransferDialogComponent {
 
 @Component({
     selector: 'failed-transfer-dialog',
-    template: `<h2>Failed transfer!</h2>
+    template: `<h4>Sorry, there were problems with tokens transfer.
+    You may try again latter or contact support@data-trading.com for further help</h4>
 
     <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
         <span>{{'buttons.Close' | translate}}</span>

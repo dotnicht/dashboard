@@ -5,7 +5,7 @@
       <mat-progress-bar color="primary" mode="indeterminate"> </mat-progress-bar>
     </mat-card-content>
     <mat-card-content *ngIf="dashboard">
-      <form #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
+      <form #f="ngForm" novalidate (ngSubmit)="OnSubmit()" *ngIf="dashboard.clientInfoModel.isEligibleForTransfer">
         <mat-form-field class="address">
           <input (blur)="validateAddress(transfer.address)" required matInput placeholder="{{'transfer.Address' | translate}}" type="text"
             [(ngModel)]="transfer.address" name="address" #address="ngModel">
@@ -30,6 +30,11 @@
         </div>
       <p>You have the opportunity to make 3 token transfers without inner fee. </p>
       </form>
+      <div *ngIf="!dashboard.clientInfoModel.isEligibleForTransfer">
+          Sorry, you are not allowed to make token transfers through the dashboard. 
+          Maybe you have exceeded the number of transactions without inner fee. 
+          Please contact support@data-trading.com for help
+      </div>
     </mat-card-content>
   </mat-card>
   <!-- <br>

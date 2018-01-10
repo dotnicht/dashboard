@@ -4,6 +4,7 @@ export class ClientInfo {
     summary: number;
     address: string;
     isTokenSaleDisabled: boolean;
+    isEligibleForTransfer: boolean;
 
     constructor() {
         this.balance = 0;

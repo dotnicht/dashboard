@@ -19,6 +19,11 @@
         <mat-icon mat-list-icon>info</mat-icon>
         <span mat-line>Sale terms</span>
       </a>
+      <a *ngIf="isUserLoggedIn"  mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        [routerLink]="['/transfer']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')" (click)="start.close()">
+        <mat-icon mat-list-icon>swap_horiz</mat-icon>
+        <span mat-line>{{'mainMenu.Transfer' | translate}}</span>
+      </a>
       <a *ngIf="isUserLoggedIn"mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         [routerLink]="['/dashboard']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')" (click)="start.close()">
         <mat-icon mat-list-icon>dashboard</mat-icon>
@@ -60,10 +65,10 @@
             <mat-icon>dashboard</mat-icon>
             <span>{{'mainMenu.Dashboard' | translate}}</span>
           </button>
-          <!-- <button *ngIf="isUserLoggedIn" [routerLink]="['/transfer']"  mat-button [disabled]="routerLinkActiveInstance.isActive" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <button *ngIf="isUserLoggedIn" [routerLink]="['/transfer']"  mat-button [disabled]="routerLinkActiveInstance.isActive" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
             <mat-icon>swap_horiz</mat-icon>
             <span>{{'mainMenu.Transfer' | translate}}</span>
-          </button> -->
+          </button>
           <button mat-button [routerLink]="['/faq']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive">
             <mat-icon>help</mat-icon>
             <span>{{'mainMenu.Faq' | translate}}</span>
