@@ -159,7 +159,10 @@ namespace InvestorDashboard.Api.Controllers
                 }
             }
 
-            return Unauthorized();
+            return BadRequest(new OpenIdConnectResponse
+            {
+                Error = OpenIdConnectConstants.Errors.ServerError
+            });
         }
 
         private async Task<ClientInfoModel> GetClientInfoModel()
