@@ -4,6 +4,8 @@
     {
         Investment = 0,
         Refund = 1,
-        Internal = 2
+        Internal = 2,
+        Transfer = 3,
+        Master = 4
     }
 }

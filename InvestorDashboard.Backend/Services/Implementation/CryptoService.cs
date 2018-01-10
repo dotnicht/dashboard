@@ -48,16 +48,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _dashboardHistoryService = dashboardHistoryService;
         }
 
-        public async Task<CryptoAddress> CreateCryptoAddress(string userId)
+        public async Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment)
         {
             if (userId == null)
             {
                 throw new ArgumentNullException(nameof(userId));
             }
 
+            if (cryptoAddressType != CryptoAddressType.Investment && !(cryptoAddressType == CryptoAddressType.Master && Settings.Value.Currency == Currency.ETH))
+            {
+                throw new NotSupportedException();
+            }
+
             return Settings.Value.IsDisabled
                 ? null
-                : await CreateAddress(userId, CryptoAddressType.Investment);
+                : await CreateAddress(userId, cryptoAddressType);
         }
 
         public async Task RefreshInboundTransactions()

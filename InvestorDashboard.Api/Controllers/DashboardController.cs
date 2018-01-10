@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +26,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IExchangeRateService _exchangeRateService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
         private readonly IMessageService _messageService;
+        private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IMapper _mapper;
@@ -42,6 +42,7 @@ namespace InvestorDashboard.Api.Controllers
             IExchangeRateService exchangeRateService,
             IDashboardHistoryService dashboardHistoryService,
             IMessageService messageService,
+            ITokenService tokenService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IEnumerable<ICryptoService> cryptoServices,
@@ -52,6 +53,7 @@ namespace InvestorDashboard.Api.Controllers
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -147,12 +149,17 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
-        public async Task<IActionResult> AddTokenTransfer([FromBody] TokenTransferModel transfer)
+        public async Task<IActionResult> AddTokenTransfer([FromBody]TokenTransferModel transfer)
         {
+            if (await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id))
+            {
+                if (await _tokenService.Transfer(ApplicationUser.Id, transfer.Address, transfer.Amount))
+                {
+                    return Ok();
+                }
+            }
 
-
-            return Ok();
-
+            return Unauthorized();
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
