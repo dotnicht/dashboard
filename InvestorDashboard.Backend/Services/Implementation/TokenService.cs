@@ -55,6 +55,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
+            if (_options.Value.IsTokenTransferDisabled)
+            {
+                Logger.LogWarning($"Token transfer globally disabled. User id {userId}.");
+                return false;
+            }
+
             if (!await IsUserEligibleForTransfer(userId))
             {
                 Logger.LogWarning($"An attempt to perform an outbound transaction for non eligible user {userId}. Destination address {destinationAddress}. Amount {amount}.");
@@ -112,12 +118,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null))
                 .ToArray();
 
-            var outbound = user.CryptoAddresses
-                .Single(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
-                .CryptoTransactions
-                .Sum(x => x.Amount);
             var balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice);
             var bonus = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
+
+            var outbound = user.CryptoAddresses
+                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
+                    ?.CryptoTransactions
+                    ?.Sum(x => x.Amount)
+                ?? 0; 
 
             if (balance < outbound)
             {
