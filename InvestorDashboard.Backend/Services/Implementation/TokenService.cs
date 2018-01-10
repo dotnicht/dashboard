@@ -55,6 +55,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
+            if (_options.Value.IsTokenTransferDisabled)
+            {
+                Logger.LogWarning($"Token transfer globally disabled. User id {userId}.");
+                return false;
+            }
+
             if (!await IsUserEligibleForTransfer(userId))
             {
                 Logger.LogWarning($"An attempt to perform an outbound transaction for non eligible user {userId}. Destination address {destinationAddress}. Amount {amount}.");
