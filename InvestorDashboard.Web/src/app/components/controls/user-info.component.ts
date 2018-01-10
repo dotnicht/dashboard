@@ -94,15 +94,6 @@ export class UserInfoComponent implements OnInit {
                 if (item.dial_code == null) {
                     return false;
                 }
-
-                // for (let element of country) {
-                //     if (element.dial_code == item.dial_code) {
-                //         equal = false;
-                //     }
-                // }
-                // if (!equal) {
-                //     return false;
-                // }
                 return true;
             }).sort((a, b) => {
                 if (a.dial_code > b.dial_code) {

@@ -99,7 +99,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         const list = ['https://www.youtube.com/embed/PhXtedgJXXo',
             'https://www.youtube.com/embed/kKaYKnAYuDQ',
             'https://www.youtube.com/embed/doLiQVxuWyQ',
-            'https://www.youtube.com/embed/52_bo2SExow',
+            'https://www.youtube.com/embed/wBS-zMiolok',
             'https://www.youtube.com/embed/_byRbCEBLCM'];
         const index = Math.floor((Math.random() * list.length));
 
@@ -115,18 +115,20 @@ export class DashboardComponent implements OnDestroy, OnInit {
         }
     }
     changePayment(payment: PaymentType) {
-        if (!this.dashboard.clientInfoModel.isTokenSaleDisabled) {
-            this.selectedPaymentType = payment;
-            this.qrLoaded = false;
-            this.isCopied = false;
-            setTimeout(() => {
-                this.qrLoaded = true;
-                //if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
-                this.qrInitialize(payment.address);
-                //}
+        if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
+            if (!this.dashboard.clientInfoModel.isTokenSaleDisabled) {
+                this.selectedPaymentType = payment;
+                this.qrLoaded = false;
+                this.isCopied = false;
+                setTimeout(() => {
+                    this.qrLoaded = true;
+                    //if (!this.dashboard.icoInfoModel.isTokenSaleDisabled) {
+                    this.qrInitialize(payment.address);
+                    //}
 
 
-            }, 100);
+                }, 100);
+            }
         }
     }
     addQuestion() {
