@@ -44,7 +44,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        public async Task<bool> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
         {
             if (sourceAddress == null)
             {
@@ -56,15 +56,27 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            //var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
-            //    ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master);
+            var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
+                ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master);
+
+            address.Address = "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7";
+            address.PrivateKey = KeyStore;
+
+            await Context.SaveChangesAsync();
 
             var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, "dm2N74Ld41Kdh9Nd"), Settings.Value.NodeAddress.ToString());
+
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
-            var contract = web3.Eth.GetContract(Abi, "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7");
-            var function = contract.GetFunction("transferFrom");
-            var receipt = await function.SendTransactionAsync(contract.Address, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
-            return true;
+
+            var contract = web3.Eth.GetContract(Abi, address.Address);
+
+            var balanceFunction = contract.GetFunction("balanceOf");
+            var balance = await balanceFunction.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address);
+
+            var transfer = contract.GetFunction("transferFrom");
+            var receipt = await transfer.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
+
+            return (Hash: receipt.BlockHash, Success: true);
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys()

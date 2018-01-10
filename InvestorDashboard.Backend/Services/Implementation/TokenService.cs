@@ -69,17 +69,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
 
+            var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
+            var dttAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+
+            if (ethAddress == null || dttAddress == null)
+            {
+                Logger.LogError($"User {userId} has missing requirted addresses.");
+                return false;
+            }
+
             if (user.Balance + user.BonusBalance < amount)
             {
                 throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
             }
 
-            var ethAddress = user.CryptoAddresses.Single(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-            var dttAddress = user.CryptoAddresses.Single(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
-
-            if (await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount))
+            if ((await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount)).Success)
             {
-                Context.CryptoTransactions.Add(new CryptoTransaction
+                await Context.CryptoTransactions.AddAsync(new CryptoTransaction
                 {
                     CryptoAddressId = dttAddress.Id,
                     Amount = amount,
