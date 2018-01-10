@@ -9,7 +9,7 @@ namespace InvestorDashboard.Backend.Services
     public interface ICryptoService : IDisposable
     {
         IOptions<CryptoSettings> Settings { get; }
-        Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment);
+        Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment, string password = null);
         Task RefreshInboundTransactions();
         Task TransferAvailableAssets();
         Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);

@@ -56,15 +56,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
+            const string password = "dm2N74Ld41Kdh9Nd";
+
             var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
-                ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master);
+                ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master, password);
 
             address.Address = "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7";
             address.PrivateKey = KeyStore;
 
             await Context.SaveChangesAsync();
 
-            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, "dm2N74Ld41Kdh9Nd"), Settings.Value.NodeAddress.ToString());
+            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, password), Settings.Value.NodeAddress.ToString());
 
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
@@ -79,7 +81,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: receipt.BlockHash, Success: true);
         }
 
-        protected override (string Address, string PrivateKey) GenerateKeys()
+        protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
         {
             var policy = Policy
                 .Handle<ArgumentException>()
@@ -91,7 +93,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var address = ecKey.GetPublicAddress();
                 var bytes = ecKey.GetPrivateKeyAsBytes();
                 var service = new KeyStorePbkdf2Service();
-                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
+                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
         }
