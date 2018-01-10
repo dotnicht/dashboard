@@ -103,11 +103,11 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpGet("client_info"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
-        public IActionResult GetClientInfo()
+        public async Task<IActionResult> GetClientInfo()
         {
             if (ApplicationUser != null)
             {
-                return Ok(_mapper.Map<ClientInfoModel>(ApplicationUser));
+                return Ok(await GetClientInfoModel());
             }
 
             return Unauthorized();
@@ -122,7 +122,7 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     var dashboard = new DashboardModel
                     {
-                        ClientInfoModel = _mapper.Map<ClientInfoModel>(ApplicationUser),
+                        ClientInfoModel = await GetClientInfoModel(),
                         PaymentInfoList = await GetPaymentInfoModel(),
                         IcoInfoModel = await GetIcoStatusModel()
                     };
@@ -163,6 +163,13 @@ namespace InvestorDashboard.Api.Controllers
             {
                 Error = OpenIdConnectConstants.Errors.ServerError
             });
+        }
+
+        private async Task<ClientInfoModel> GetClientInfoModel()
+        {
+            var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
+            user.IsEligibleForTransfer = await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
+            return user;
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
