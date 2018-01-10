@@ -102,7 +102,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     ? CryptoTransactionDirection.Inbound
                     : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
                         ? CryptoTransactionDirection.Internal
-                        : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: { tx.Hash }.");
+                        : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
             }
 
             return mapped;
@@ -130,7 +130,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (value.Value > 0)
             {
-                Logger.LogError($"Transaction publish failed. Address: { address.Address }. Value: { value.Value }. Fee: { fee }.");
+                Logger.LogWarning($"Transaction publish failed. Address: {address.Address}. Value: {value.Value}. Fee: {fee}.");
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);

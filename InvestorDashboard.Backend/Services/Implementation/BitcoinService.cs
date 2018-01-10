@@ -72,11 +72,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, $"An error occurred while getting transaction info from { source.Key }.");
+                    Logger.LogError(ex, $"An error occurred while getting transaction info from {source.Key}.");
                 }
             }
 
-            throw new InvalidOperationException($"All sources failed to retrieve transaction info.");
+            throw new InvalidOperationException("All sources failed to retrieve transaction info.");
         }
 
         protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
@@ -119,7 +119,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 transaction.Outputs.Single().Value = adjustedAmount;
                 transaction.Sign(secret, false);
 
-                Logger.LogDebug($"Publishing transaction { transaction.ToHex() }");
+                Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 
                 var node = Node.Connect(Network, _bitcoinSettings.Value.NodeAddress.ToString());
                 node.VersionHandshake();
@@ -133,7 +133,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (value > 0)
             {
-                Logger.LogError($"Transaction publish failed. Address: { address.Address }. Value: { value }. Fee: { fee }.");
+                Logger.LogWarning($"Transaction publish failed. Address: {address.Address}. Value: {value}. Fee: {fee}.");
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
@@ -167,7 +167,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
         {
-            var uri = new Uri($"https://blockexplorer.com/api/txs/?address={ address }");
+            var uri = new Uri($"https://blockexplorer.com/api/txs/?address={address}");
             var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
             var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
@@ -193,7 +193,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
-            var uri = new Uri($"https://chain.so/api/v2/address/{ (_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC") }/{address}");
+            var uri = new Uri($"https://chain.so/api/v2/address/{(_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC")}/{address}");
             var result = await _restService.GetAsync<ChainResponse>(uri);
             var unmapped = result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);

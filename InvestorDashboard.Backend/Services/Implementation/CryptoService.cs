@@ -55,7 +55,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (cryptoAddressType != CryptoAddressType.Investment || !(cryptoAddressType == CryptoAddressType.Master && Settings.Value.Currency == Currency.ETH))
+            if (cryptoAddressType != CryptoAddressType.Investment && !(cryptoAddressType == CryptoAddressType.Master && Settings.Value.Currency == Currency.ETH))
             {
                 throw new NotSupportedException();
             }

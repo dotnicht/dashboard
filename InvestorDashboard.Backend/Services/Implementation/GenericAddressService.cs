@@ -36,7 +36,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 foreach (var service in _cryptoServices)
                 {
-                    if (user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
+                    if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
                     {
                         await service.CreateCryptoAddress(user.Id);
                     }
