@@ -63,7 +63,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
             var contract = web3.Eth.GetContract(Abi, "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7");
             var function = contract.GetFunction("transferFrom");
-            var receipt = await function.SendTransactionAsync(contract.Address, sourceAddress.Address, destinationAddress, amount);
+            var receipt = await function.SendTransactionAsync(contract.Address, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
             return true;
         }
 
