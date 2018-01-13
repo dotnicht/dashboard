@@ -131,12 +131,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
                     ?.Sum(x => x.Amount)
-                ?? 0; 
+                ?? 0;
 
             if (balance < outbound)
             {
+                bonus -= outbound - balance;
                 balance = 0;
-                bonus = outbound - balance;
 
                 if (bonus < 0)
                 {

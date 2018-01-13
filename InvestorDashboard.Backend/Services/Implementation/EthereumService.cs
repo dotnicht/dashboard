@@ -14,6 +14,7 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -70,23 +71,27 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, password), Settings.Value.NodeAddress.ToString());
 
+                web3.TransactionManager.DefaultGas = 150000;
                 web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
-                var contract = web3.Eth.GetContract(Abi, address.Address);
+                var converted = Convert.ToDouble(amount) * Math.Pow(10, 18);
 
-                var balanceFunction = contract.GetFunction("balanceOf");
-                var balance = await balanceFunction.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address);
+                if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, password, 120))
+                {
+                    var contract = web3.Eth.GetContract(Abi, address.Address);
 
-                var transfer = contract.GetFunction("transferFrom");
-                var receipt = await transfer.SendTransactionAndWaitForReceiptAsync(contract.Address, null, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
+                    var transfer = contract.GetFunction("transferFrom");
+                    var receipt = await transfer.SendTransactionAsync(contract.Address, sourceAddress.Address, destinationAddress, converted.ToString());
 
-                return (Hash: receipt.BlockHash, Success: true);
+                    return (Hash: receipt, Success: true);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, $"An error occurred while performing transfer call. Source address id {sourceAddress.Id}. Destination address {destinationAddress}. Amount {amount}");
-                return (Hash: null, Success: false);
             }
+
+            return (Hash: null, Success: false);
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
