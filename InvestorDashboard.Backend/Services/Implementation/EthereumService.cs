@@ -65,13 +65,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             web3.TransactionManager.DefaultGas = 150000;
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
-            var contract = web3.Eth.GetContract(Abi, "0x049A5bf874f241d94232137eF728a9c7DD0D7550");
-
-            var converted = Convert.ToDouble(amount) * Math.Pow(10, 18);
+            var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
 
             if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
             {
                 var transfer = contract.GetFunction("transferFrom");
+                var converted = Convert.ToDouble(amount) * Math.Pow(10, 18);
                 var receipt = await transfer.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, new BigInteger(converted));
 
                 return (Hash: receipt, Success: true);
@@ -158,6 +157,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
+        }
+
+        private async Task<TResult> ExecuteSmartContractFunction<TResult>(string function, params object[] parameters)
+        {
+            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
+
+            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
+
+            web3.TransactionManager.DefaultGas = 150000;
+            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
+
+            var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
+
+            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+            {
+                var fn = contract.GetFunction(function);
+                return await fn.CallAsync<TResult>(address.Address, parameters);
+            }
+
+            throw new InvalidOperationException($"Failed to unlock account {address.Address}");
         }
 
         internal class EtherscanResponse
