@@ -1,5 +1,4 @@
-﻿using InvestorDashboard.Backend.Database.Models;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -22,5 +21,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public decimal BonusPercentage { get; set; }
         public Guid? ExternalId { get; set; }
         public bool IsNotified { get; set; }
+        public bool Failed { get; set; }
     }
 }

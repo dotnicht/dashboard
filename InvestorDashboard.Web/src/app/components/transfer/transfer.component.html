@@ -1,7 +1,7 @@
 ﻿<div class="center-block">
   <h2>{{'transfer.Header' | translate}}</h2>
-  <p>DataTrading smart contract address
-    0x049a5bf874f241d94232137ef728a9c7dd0d7550</p>
+  <!-- <p>DataTrading smart contract address
+    0x049a5bf874f241d94232137ef728a9c7dd0d7550</p> -->
   <mat-card>
     <mat-card-content *ngIf="!dashboard">
       <mat-progress-bar color="primary" mode="indeterminate"> </mat-progress-bar>
@@ -15,7 +15,7 @@
         <br>
         <mat-form-field>
           <input matInput [disabled]="sendEntire" (keyup)="validateValue($event)" placeholder="{{'transfer.Amount' | translate}}" [(ngModel)]="transfer.amount"
-            min="1" pattern="\d*" type="number" name="amount" #amount="ngModel">
+            type="number" name="amount" #amount="ngModel">
 
         </mat-form-field>
         <br>

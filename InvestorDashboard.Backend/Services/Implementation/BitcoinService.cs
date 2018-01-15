@@ -47,11 +47,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        protected override (string Address, string PrivateKey) GenerateKeys()
+        protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
         {
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(Network).ToString();
-            var encrypted = privateKey.GetEncryptedBitcoinSecret(KeyVaultService.KeyStoreEncryptionPassword, Network).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(password ?? KeyVaultService.KeyStoreEncryptionPassword, Network).ToString();
             return (Address: address, PrivateKey: encrypted);
         }
 

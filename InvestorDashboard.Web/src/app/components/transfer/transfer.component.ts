@@ -8,6 +8,7 @@ import { Dashboard } from '../../models/dashboard.models';
 import { MatCheckboxChange, MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 import { error } from 'selenium-webdriver';
 import { DOCUMENT } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 const ethereum_address = require('ethereum-address');
 
 @Component({
@@ -25,7 +26,7 @@ export class TransferComponent implements OnInit {
     transfer: TokenTransfer;
     isLoading = false;
     sendEntire = false;
-    errors: string;
+    errors: string = '';
     sended = true;
 
     constructor(private translationService: AppTranslationService,
@@ -44,11 +45,8 @@ export class TransferComponent implements OnInit {
 
     }
     validateAddress(value: string) {
-        if (ethereum_address.isAddress(value)) {
-            console.log('Valid ethereum address.');
-        }
-        else {
-            console.log('Invalid Ethereum address.');
+        if (!ethereum_address.isAddress(value.toLowerCase())) {
+            this.errors = 'Invalid Ethereum address.';
         }
     }
     OnSubmit() {
@@ -63,25 +61,29 @@ export class TransferComponent implements OnInit {
                 hasBackdrop: false,
                 data: resp.json()
             };
-            this.succsessTransferDialogRef = this.dialog.open(SuccsessTransferDialogComponent, config);
             this.sended = true;
+            this.succsessTransferDialogRef = this.dialog.open(SuccsessTransferDialogComponent, config);
+
         },
             error => {
                 console.log(error);
-                this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
                 this.sended = true;
+                this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
+
             });
     }
     ngOnInit() {
-        // this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
+
         this.dashboardService.getDashboard().subscribe(model => {
             const db = model.json() as Dashboard;
-            // db.clientInfoModel.balance = 4;
-            // db.clientInfoModel.bonusBalance = 50;
-            // db.clientInfoModel.isEligibleForTransfer = true;
-            this.dashboard = db;
-            // console.log(this.dashboard);
+            if (!environment.production) {
+                // this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
+                // db.clientInfoModel.balance = 5.82;
+                // db.clientInfoModel.bonusBalance = 1.746;
+                // db.clientInfoModel.isEligibleForTransfer = true;
+            }
 
+            this.dashboard = db;
         });
 
     }
@@ -89,14 +91,15 @@ export class TransferComponent implements OnInit {
     checkSendEntire(check: MatCheckboxChange) {
         if (check.checked) {
             this.sendEntire = true;
-            this.transfer.amount = this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance;
+            this.transfer.amount = +(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(10);
+
         } else {
             this.sendEntire = false;
             this.transfer.amount = 0;
         }
     }
     validateValue() {
-        if (this.transfer.amount > (this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance)) {
+        if (this.transfer.amount > (+(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(10))) {
             this.errors = 'Not enough tokens';
         } else {
             this.errors = undefined;
@@ -107,7 +110,7 @@ export class TransferComponent implements OnInit {
         // if(this.transfer.amount > 0){
 
         // }
-        const valid = this.transfer.amount > 0 && (this.transfer.amount <= (this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance));
+        const valid = this.transfer.amount > 0 && (this.transfer.amount <= (+(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(10)));
         return valid;
     }
 
@@ -115,7 +118,7 @@ export class TransferComponent implements OnInit {
 @Component({
     selector: 'succsess-transfer-dialog',
     template: `<h4>Token transfer was made. You should see your DTT tokens in your ERC20 wallet within an hour!</h4>
-    <p>Transaction hash {{hash}}</p>
+    <p>Transaction hash <b>{{hash}}</b></p>
     <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
         <span>{{'buttons.Close' | translate}}</span>
     </button>`

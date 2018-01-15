@@ -28,7 +28,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 foreach (var id in Context.Users.Select(x => x.Id))
                 {
-                    await RefreshTokenBalanceInternal(id);
+                    try
+                    {
+                        await RefreshTokenBalanceInternal(id);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                    }
                 }
             }
             else
@@ -48,7 +55,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .CountAsync() < _options.Value.OutboundTransactionsLimit;
         }
 
-        public async Task<bool> Transfer(string userId, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, decimal amount)
         {
             if (destinationAddress == null)
             {
@@ -58,42 +65,60 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (_options.Value.IsTokenTransferDisabled)
             {
                 Logger.LogWarning($"Token transfer globally disabled. User id {userId}.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             if (!await IsUserEligibleForTransfer(userId))
             {
                 Logger.LogWarning($"An attempt to perform an outbound transaction for non eligible user {userId}. Destination address {destinationAddress}. Amount {amount}.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
+
+            var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
+            var dttAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+
+            if (ethAddress == null || dttAddress == null)
+            {
+                Logger.LogError($"User {userId} has missing required addresses.");
+                return (Hash: null, Success: false);
+            }
 
             if (user.Balance + user.BonusBalance < amount)
             {
                 throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
             }
 
-            var ethAddress = user.CryptoAddresses.Single(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-            var dttAddress = user.CryptoAddresses.Single(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+            var balance = await _ethereumService.CallSmartContractBalanceOfFunction(ethAddress.Address);
 
-            if (await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount))
+            if (balance < amount)
             {
-                Context.CryptoTransactions.Add(new CryptoTransaction
+                throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
+            }
+
+            var result = await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
+
+            if (result.Success)
+            {
+                await Context.CryptoTransactions.AddAsync(new CryptoTransaction
                 {
                     CryptoAddressId = dttAddress.Id,
                     Amount = amount,
                     TimeStamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Outbound
+                    Direction = CryptoTransactionDirection.Outbound,
+                    Hash = result.Hash,
+                    TokenPrice = 1,
+                    ExchangeRate = 1
                 });
 
                 await Context.SaveChangesAsync();
                 await RefreshTokenBalanceInternal(userId);
 
-                return true;
+                return result;
             }
 
-            return false;
+            return (Hash: null, Success: false);
         }
 
         private async Task RefreshTokenBalanceInternal(string userId)
@@ -115,8 +140,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .SelectMany(x => x.CryptoTransactions)
                 .Where(
                     x => (x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
-                    || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null))
-                .ToArray();
+                    || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null));
 
             var balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice);
             var bonus = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
@@ -124,37 +148,49 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var outbound = user.CryptoAddresses
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
+                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && !x.Failed)
                     ?.Sum(x => x.Amount)
-                ?? 0; 
+                ?? 0;
+
+            var tempBalance = balance;
+            var tempBonus = bonus;
 
             if (balance < outbound)
             {
+                bonus -= outbound - balance;
                 balance = 0;
-                bonus = outbound - balance;
 
                 if (bonus < 0)
                 {
-                    throw new InvalidOperationException($"Inconsistent balance detected for user {userId}.");
+                    bonus = 0;
+                    //TODO: remove hack and sync balance precisely.
+                    //throw new InvalidOperationException($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
+                    Logger.LogError($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
                 }
             }
             else
             {
-                balance = balance - outbound;
+                balance -= outbound;
             }
 
-            if (user.Balance != balance)
+            if (user.Balance != balance || user.BonusBalance != bonus)
             {
                 user.Balance = balance;
-            }
-
-            if (user.BonusBalance != bonus)
-            {
                 user.BonusBalance = bonus;
+
+                // TODO: balance and bonus balance change notification.
+
+                await Context.SaveChangesAsync();
             }
 
-            // TODO: balance and bonus balance change notification.
+            var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+            var updated = user.Balance + user.BonusBalance;
+            var external = await _ethereumService.CallSmartContractBalanceOfFunction(address.Address);
 
-            await Context.SaveChangesAsync();
+            if (updated != external)
+            {
+                Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {updated}. Database balance: {external}.");
+            }
         }
     }
 }

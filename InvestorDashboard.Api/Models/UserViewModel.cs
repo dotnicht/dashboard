@@ -27,10 +27,6 @@ namespace InvestorDashboard.Api.Models
         public string CountryCode { get; set; }
 
         public string Address { get; set; }
-        public bool IsEligibleForTokenSale { get; set; }
-        public int Balance { get; set; }
-
-        public bool IsEnabled { get; set; }
 
         public string[] Roles { get; set; }
 
