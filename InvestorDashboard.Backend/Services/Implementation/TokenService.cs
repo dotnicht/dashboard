@@ -48,7 +48,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .CountAsync() < _options.Value.OutboundTransactionsLimit;
         }
 
-        public async Task<bool> Transfer(string userId, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, decimal amount)
         {
             if (destinationAddress == null)
             {
@@ -58,13 +58,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (_options.Value.IsTokenTransferDisabled)
             {
                 Logger.LogWarning($"Token transfer globally disabled. User id {userId}.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             if (!await IsUserEligibleForTransfer(userId))
             {
                 Logger.LogWarning($"An attempt to perform an outbound transaction for non eligible user {userId}. Destination address {destinationAddress}. Amount {amount}.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
@@ -75,7 +75,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (ethAddress == null || dttAddress == null)
             {
                 Logger.LogError($"User {userId} has missing requirted addresses.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             if (user.Balance + user.BonusBalance < amount)
@@ -83,23 +83,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
             }
 
-            if ((await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount)).Success)
+            var result = await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
+
+            if (result.Success)
             {
                 await Context.CryptoTransactions.AddAsync(new CryptoTransaction
                 {
                     CryptoAddressId = dttAddress.Id,
                     Amount = amount,
                     TimeStamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Outbound
+                    Direction = CryptoTransactionDirection.Outbound,
+                    Hash = result.Hash
                 });
 
                 await Context.SaveChangesAsync();
                 await RefreshTokenBalanceInternal(userId);
 
-                return true;
+                return result;
             }
 
-            return false;
+            return (Hash: null, Success: false);
         }
 
         private async Task RefreshTokenBalanceInternal(string userId)
