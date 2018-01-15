@@ -5,7 +5,7 @@ import { TokenTransfer } from '../../models/tokenTransfer.model';
 import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
 import { AuthService } from '../../services/auth.service';
 import { Dashboard } from '../../models/dashboard.models';
-import { MatCheckboxChange, MatDialogRef, MatDialog } from '@angular/material';
+import { MatCheckboxChange, MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 import { error } from 'selenium-webdriver';
 import { DOCUMENT } from '@angular/platform-browser';
 const ethereum_address = require('ethereum-address');
@@ -26,7 +26,7 @@ export class TransferComponent implements OnInit {
     isLoading = false;
     sendEntire = false;
     errors: string;
-
+    sended = true;
 
     constructor(private translationService: AppTranslationService,
         private dashboardService: DashboardEndpoint,
@@ -54,27 +54,36 @@ export class TransferComponent implements OnInit {
     OnSubmit() {
 
         console.log(this.transfer);
-
+        this.sended = false;
         this.dashboardService.addtokenTransfer(this.transfer).subscribe(resp => {
+
             this.transfer.amount = 0;
-            this.succsessTransferDialogRef = this.dialog.open(SuccsessTransferDialogComponent);
+            const config = {
+                disableClose: true,
+                hasBackdrop: false,
+                data: resp.json()
+            };
+            this.succsessTransferDialogRef = this.dialog.open(SuccsessTransferDialogComponent, config);
+            this.sended = true;
         },
             error => {
                 console.log(error);
                 this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
+                this.sended = true;
             });
     }
     ngOnInit() {
-        this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
+        // this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
         this.dashboardService.getDashboard().subscribe(model => {
             const db = model.json() as Dashboard;
             // db.clientInfoModel.balance = 4;
             // db.clientInfoModel.bonusBalance = 50;
+            // db.clientInfoModel.isEligibleForTransfer = true;
             this.dashboard = db;
             // console.log(this.dashboard);
 
         });
-       
+
     }
 
     checkSendEntire(check: MatCheckboxChange) {
@@ -106,17 +115,18 @@ export class TransferComponent implements OnInit {
 @Component({
     selector: 'succsess-transfer-dialog',
     template: `<h4>Token transfer was made. You should see your DTT tokens in your ERC20 wallet within an hour!</h4>
-
+    <p>Transaction hash {{hash}}</p>
     <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
         <span>{{'buttons.Close' | translate}}</span>
     </button>`
 })
 export class SuccsessTransferDialogComponent {
-
+    hash: string;
 
     constructor(
-        public dialogRef: MatDialogRef<SuccsessTransferDialogComponent>) {
-
+        public dialogRef: MatDialogRef<SuccsessTransferDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.hash = data;
     }
 
 }
