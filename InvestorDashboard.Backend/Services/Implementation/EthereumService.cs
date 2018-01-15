@@ -14,6 +14,7 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -22,6 +23,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private const string KeyStore = "{'address':'1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7','crypto':{'cipher':'aes-128-ctr','ciphertext':'71afffa003539ce20647840e02b49d7407b64b3034604a74f2675a29fc2f139b','cipherparams':{'iv':'3878ff037373f4627dc2f453056330b4'},'kdf':'scrypt','kdfparams':{'dklen':32,'n':262144,'p':1,'r':8,'salt':'8d0cdeb5ca538b09058da179509931cfec8da099ff4f1288c6ceeb35ca71d250'},'mac':'1c7b2a8f256cceedfc5a9bcbb124a1456b4bfa36fa1a5786e214e77b6c31ae09'},'id':'c87069c4-adaf-491a-9158-399a04505af1','version':3}";
         private const string Abi = "[{'constant':true,'inputs':[],'name':'name','outputs':[{'name':'','type':'string'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_spender','type':'address'},{'name':'_value','type':'uint256'}],'name':'approve','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'totalSupply','outputs':[{'name':'','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_from','type':'address'},{'name':'_to','type':'address'},{'name':'_value','type':'uint256'}],'name':'transferFrom','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'decimals','outputs':[{'name':'','type':'uint8'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[{'name':'_owner','type':'address'}],'name':'balanceOf','outputs':[{'name':'balance','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':true,'inputs':[],'name':'owner','outputs':[{'name':'','type':'address'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_target','type':'address'},{'name':'_mintedAmount','type':'uint256'},{'name':'_spender','type':'address'}],'name':'mintTokensWithApproval','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[],'name':'symbol','outputs':[{'name':'','type':'string'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_to','type':'address'},{'name':'_value','type':'uint256'}],'name':'transfer','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'_burnedAmount','type':'uint256'}],'name':'burnUnmintedTokens','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':true,'inputs':[{'name':'_owner','type':'address'},{'name':'_spender','type':'address'}],'name':'allowance','outputs':[{'name':'remaining','type':'uint256'}],'payable':false,'stateMutability':'view','type':'function'},{'constant':false,'inputs':[{'name':'_target','type':'address'},{'name':'_mintedAmount','type':'uint256'}],'name':'mintTokens','outputs':[{'name':'success','type':'bool'}],'payable':false,'stateMutability':'nonpayable','type':'function'},{'constant':false,'inputs':[{'name':'newOwner','type':'address'}],'name':'transferOwnership','outputs':[],'payable':false,'stateMutability':'nonpayable','type':'function'},{'anonymous':false,'inputs':[{'indexed':true,'name':'owner','type':'address'},{'indexed':true,'name':'spender','type':'address'},{'indexed':false,'name':'value','type':'uint256'}],'name':'Approval','type':'event'},{'anonymous':false,'inputs':[{'indexed':true,'name':'from','type':'address'},{'indexed':true,'name':'to','type':'address'},{'indexed':false,'name':'value','type':'uint256'}],'name':'Transfer','type':'event'}]";
+        private const string MasterPassword = "dm2N74Ld41Kdh9Nd";
 
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IRestService _restService;
@@ -44,7 +46,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        public async Task<bool> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
         {
             if (sourceAddress == null)
             {
@@ -56,18 +58,38 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            //var address = Context.CryptoAddresses.SingleOrDefault(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master)
-            //    ?? await CreateCryptoAddress(_ethereumSettings.Value.MasterAccountUserId, CryptoAddressType.Master);
+            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
 
-            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, "dm2N74Ld41Kdh9Nd"), Settings.Value.NodeAddress.ToString());
+            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
+
+            web3.TransactionManager.DefaultGas = 150000;
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
-            var contract = web3.Eth.GetContract(Abi, "0x1d0a8d94bd6170e59b1ffa1f33e6c121f69234f7");
-            var function = contract.GetFunction("transferFrom");
-            var receipt = await function.SendTransactionAsync(contract.Address, sourceAddress.Address, destinationAddress, Convert.ToDouble(amount) * Math.Pow(10, 18));
-            return true;
+
+            var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
+
+            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+            {
+                var transfer = contract.GetFunction("transferFrom");
+                var converted = Convert.ToDouble(amount) * Math.Pow(10, 18);
+                var receipt = await transfer.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, new BigInteger(converted));
+
+                return (Hash: receipt, Success: true);
+            }
+
+            return (Hash: null, Success: false);
         }
 
-        protected override (string Address, string PrivateKey) GenerateKeys()
+        public Task<decimal> CallSmartContractBalanceOfFunction(string address)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            throw new NotImplementedException();
+        }
+
+        protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
         {
             var policy = Policy
                 .Handle<ArgumentException>()
@@ -79,7 +101,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var address = ecKey.GetPublicAddress();
                 var bytes = ecKey.GetPrivateKeyAsBytes();
                 var service = new KeyStorePbkdf2Service();
-                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
+                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
         }
@@ -135,6 +157,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
+        }
+
+        private async Task<TResult> ExecuteSmartContractFunction<TResult>(string function, params object[] parameters)
+        {
+            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
+
+            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
+
+            web3.TransactionManager.DefaultGas = 150000;
+            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
+
+            var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
+
+            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+            {
+                var fn = contract.GetFunction(function);
+                return await fn.CallAsync<TResult>(address.Address, parameters);
+            }
+
+            throw new InvalidOperationException($"Failed to unlock account {address.Address}");
         }
 
         internal class EtherscanResponse

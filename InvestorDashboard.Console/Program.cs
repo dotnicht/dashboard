@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using AspNet.Security.OpenIdConnect.Primitives;
+﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
@@ -16,11 +10,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
-using NLog.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using InvestorDashboard.Backend.ConfigurationSections;
+using System;
+using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console
 {

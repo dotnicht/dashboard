@@ -153,9 +153,11 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id))
             {
-                if (await _tokenService.Transfer(ApplicationUser.Id, transfer.Address, transfer.Amount))
+                var (hash, success) = await _tokenService.Transfer(ApplicationUser.Id, transfer.Address, transfer.Amount);
+
+                if (success)
                 {
-                    return Ok();
+                    return Ok(hash);
                 }
             }
 

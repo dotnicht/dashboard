@@ -48,7 +48,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .CountAsync() < _options.Value.OutboundTransactionsLimit;
         }
 
-        public async Task<bool> Transfer(string userId, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, decimal amount)
         {
             if (destinationAddress == null)
             {
@@ -58,42 +58,51 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (_options.Value.IsTokenTransferDisabled)
             {
                 Logger.LogWarning($"Token transfer globally disabled. User id {userId}.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             if (!await IsUserEligibleForTransfer(userId))
             {
                 Logger.LogWarning($"An attempt to perform an outbound transaction for non eligible user {userId}. Destination address {destinationAddress}. Amount {amount}.");
-                return false;
+                return (Hash: null, Success: false);
             }
 
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
+
+            var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
+            var dttAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+
+            if (ethAddress == null || dttAddress == null)
+            {
+                Logger.LogError($"User {userId} has missing requirted addresses.");
+                return (Hash: null, Success: false);
+            }
 
             if (user.Balance + user.BonusBalance < amount)
             {
                 throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
             }
 
-            var ethAddress = user.CryptoAddresses.Single(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-            var dttAddress = user.CryptoAddresses.Single(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+            var result = await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
 
-            if (await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount))
+            if (result.Success)
             {
-                Context.CryptoTransactions.Add(new CryptoTransaction
+                await Context.CryptoTransactions.AddAsync(new CryptoTransaction
                 {
                     CryptoAddressId = dttAddress.Id,
                     Amount = amount,
                     TimeStamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Outbound
+                    Direction = CryptoTransactionDirection.Outbound,
+                    Hash = result.Hash
                 });
 
                 await Context.SaveChangesAsync();
                 await RefreshTokenBalanceInternal(userId);
 
-                return true;
+                return result;
             }
 
-            return false;
+            return (Hash: null, Success: false);
         }
 
         private async Task RefreshTokenBalanceInternal(string userId)
@@ -125,12 +134,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
                     ?.Sum(x => x.Amount)
-                ?? 0; 
+                ?? 0;
 
             if (balance < outbound)
             {
+                bonus -= outbound - balance;
                 balance = 0;
-                bonus = outbound - balance;
 
                 if (bonus < 0)
                 {

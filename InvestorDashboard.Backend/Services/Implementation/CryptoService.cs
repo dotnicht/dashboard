@@ -48,7 +48,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _dashboardHistoryService = dashboardHistoryService;
         }
 
-        public async Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment)
+        public async Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment, string password = null)
         {
             if (userId == null)
             {
@@ -62,7 +62,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             return Settings.Value.IsDisabled
                 ? null
-                : await CreateAddress(userId, cryptoAddressType);
+                : await CreateAddress(userId, cryptoAddressType, password);
         }
 
         public async Task RefreshInboundTransactions()
@@ -159,13 +159,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return result;
         }
 
-        protected abstract (string Address, string PrivateKey) GenerateKeys();
+        protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
 
         private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection? direction = null)
         {
-            Logger.LogInformation($"Adding {Settings.Value.Currency }transaction. Hash: {transaction.Hash}.");
+            Logger.LogInformation($"Adding {Settings.Value.Currency} transaction. Hash: {transaction.Hash}.");
 
             if (direction != null)
             {
@@ -183,7 +183,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await Context.SaveChangesAsync();
         }
 
-        private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType)
+        private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType, string password = null)
         {
             if (addressType == CryptoAddressType.Internal)
             {
@@ -194,7 +194,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .FirstOrDefault();
             }
 
-            var (address, privateKey) = GenerateKeys();
+            var (address, privateKey) = GenerateKeys(password);
             return await CreateAddressInternal(userId, addressType, address, privateKey);
         }
 
