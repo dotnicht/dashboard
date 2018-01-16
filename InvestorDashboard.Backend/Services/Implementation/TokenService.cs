@@ -28,7 +28,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 foreach (var id in Context.Users.Select(x => x.Id))
                 {
-                    await RefreshTokenBalanceInternal(id);
+                    try
+                    {
+                        await RefreshTokenBalanceInternal(id);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                    }
                 }
             }
             else
@@ -133,8 +140,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var outbound = user.CryptoAddresses
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
+                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound)
                     ?.Sum(x => x.Amount)
                 ?? 0;
+
+            var tempBalance = balance;
+            var templBonues = bonus;
 
             if (balance < outbound)
             {
@@ -143,7 +154,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (bonus < 0)
                 {
-                    throw new InvalidOperationException($"Inconsistent balance detected for user {userId}.");
+                    throw new InvalidOperationException($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {templBonues}. Outbound: {outbound}.");
                 }
             }
             else
