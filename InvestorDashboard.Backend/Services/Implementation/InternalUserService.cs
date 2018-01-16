@@ -46,7 +46,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             throw new InvalidOperationException($"User not found with email { record.Email }.");
                         }
 
-                        var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.DTT)
+                        var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.DTT && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
                             ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.DTT, Type = CryptoAddressType.Internal }).Entity;
 
                         Context.CryptoTransactions.Add(new CryptoTransaction

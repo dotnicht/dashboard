@@ -70,7 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
             {
                 var transfer = contract.GetFunction("transferFrom");
-                var converted = Convert.ToDouble(amount) * Math.Pow(10, 18);
+                var converted = amount * (decimal)Math.Pow(10, 18);
                 var receipt = await transfer.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, new BigInteger(converted));
 
                 return (Hash: receipt, Success: true);

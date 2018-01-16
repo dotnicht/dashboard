@@ -140,7 +140,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var outbound = user.CryptoAddresses
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null)
                     ?.Sum(x => x.Amount)
                 ?? 0;
 
@@ -159,7 +159,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
             else
             {
-                balance = balance - outbound;
+                balance -= outbound;
             }
 
             if (user.Balance != balance)
