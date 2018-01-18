@@ -4,6 +4,7 @@ using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
@@ -58,35 +59,35 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
-
-            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
-
-            web3.TransactionManager.DefaultGas = 150000;
-            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
-
-            var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
-
-            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+            try
             {
-                var transfer = contract.GetFunction("transferFrom");
-                var converted = amount * (decimal)Math.Pow(10, 18);
-                var receipt = await transfer.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, new BigInteger(converted));
+                var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
 
-                return (Hash: receipt, Success: true);
+                var transfer = await GetSmartContractFunction("transferFrom");
+
+                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+                {
+                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress.Trim(), UnitConversion.Convert.ToWei(amount));
+                    return (Hash: receipt, Success: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "An error occurred while transfering tokens.");
             }
 
             return (Hash: null, Success: false);
         }
 
-        public Task<decimal> CallSmartContractBalanceOfFunction(string address)
+        public async Task<decimal> CallSmartContractBalanceOfFunction(string address)
         {
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
 
-            throw new NotImplementedException();
+            var balance = await GetSmartContractFunction("balanceOf");
+            return UnitConversion.Convert.FromWei(await balance.Function.CallAsync<BigInteger>(address));
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -115,7 +116,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
                 .ToArray();
 
-            var mapped = Mapper.Map<List<CryptoTransaction>>(confirmed);
+            var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
 
             foreach (var tx in mapped)
             {
@@ -159,24 +160,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
-        private async Task<TResult> ExecuteSmartContractFunction<TResult>(string function, params object[] parameters)
+        private async Task<(Function Function, Web3 Web3)> GetSmartContractFunction(string name)
         {
-            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
-
             var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
 
-            web3.TransactionManager.DefaultGas = 150000;
+            web3.TransactionManager.DefaultGas = _ethereumSettings.Value.DefaultGas;
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
             var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
 
-            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
-            {
-                var fn = contract.GetFunction(function);
-                return await fn.CallAsync<TResult>(address.Address, parameters);
-            }
-
-            throw new InvalidOperationException($"Failed to unlock account {address.Address}");
+            return (Function: contract.GetFunction(name), Web3: web3);
         }
 
         internal class EtherscanResponse

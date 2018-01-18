@@ -81,13 +81,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (ethAddress == null || dttAddress == null)
             {
-                Logger.LogError($"User {userId} has missing requirted addresses.");
+                Logger.LogError($"User {userId} has missing required addresses.");
                 return (Hash: null, Success: false);
             }
 
             if (user.Balance + user.BonusBalance < amount)
             {
                 throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
+            }
+
+            var balance = await _ethereumService.CallSmartContractBalanceOfFunction(ethAddress.Address);
+
+            if (balance < amount)
+            {
+                throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
             }
 
             var result = await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
