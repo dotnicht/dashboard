@@ -107,7 +107,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     Amount = amount,
                     TimeStamp = DateTime.UtcNow,
                     Direction = CryptoTransactionDirection.Outbound,
-                    Hash = result.Hash
+                    Hash = result.Hash,
+                    TokenPrice = 1,
+                    ExchangeRate = 1
                 });
 
                 await Context.SaveChangesAsync();
@@ -138,8 +140,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .SelectMany(x => x.CryptoTransactions)
                 .Where(
                     x => (x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
-                    || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null))
-                .ToArray();
+                    || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null));
 
             var balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice);
             var bonus = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
@@ -152,7 +153,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 ?? 0;
 
             var tempBalance = balance;
-            var templBonues = bonus;
+            var tempBonus = bonus;
 
             if (balance < outbound)
             {
@@ -161,7 +162,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (bonus < 0)
                 {
-                    throw new InvalidOperationException($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {templBonues}. Outbound: {outbound}.");
+                    bonus = 0;
+                    //TODO: remove hack and sync balance precisely.
+                    //throw new InvalidOperationException($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
+                    Logger.LogError($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
                 }
             }
             else
