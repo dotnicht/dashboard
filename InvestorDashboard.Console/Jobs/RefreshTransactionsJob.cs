@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,6 +37,8 @@ namespace InvestorDashboard.Console.Jobs
                     Logger.LogError(ex, $"An error occurred while refreshing inbound { service.Settings.Value.Currency } transactions.");
                 }
             }
+
+            await (_cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH) as IEthereumService).RefreshOutboundTransactions();
         }
 
         protected override void Dispose(bool disposing)

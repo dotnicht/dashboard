@@ -148,7 +148,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var outbound = user.CryptoAddresses
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && !x.Failed)
                     ?.Sum(x => x.Amount)
                 ?? 0;
 
@@ -173,19 +173,24 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 balance -= outbound;
             }
 
-            if (user.Balance != balance)
+            if (user.Balance != balance || user.BonusBalance != bonus)
             {
                 user.Balance = balance;
-            }
-
-            if (user.BonusBalance != bonus)
-            {
                 user.BonusBalance = bonus;
+
+                // TODO: balance and bonus balance change notification.
+
+                await Context.SaveChangesAsync();
             }
 
-            // TODO: balance and bonus balance change notification.
+            var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+            var updated = user.Balance + user.BonusBalance;
+            var external = await _ethereumService.CallSmartContractBalanceOfFunction(address.Address);
 
-            await Context.SaveChangesAsync();
+            if (updated != external)
+            {
+                Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {updated}. Database balance: {external}.");
+            }
         }
     }
 }
