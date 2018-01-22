@@ -4,6 +4,7 @@ using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
@@ -58,35 +59,59 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
-
-            var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
-
-            web3.TransactionManager.DefaultGas = 150000;
-            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
-
-            var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
-
-            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+            try
             {
-                var transfer = contract.GetFunction("transferFrom");
-                var converted = Convert.ToDouble(amount) * Math.Pow(10, 18);
-                var receipt = await transfer.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, new BigInteger(converted));
+                var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
 
-                return (Hash: receipt, Success: true);
+                var transfer = await GetSmartContractFunction("transferFrom");
+
+                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+                {
+                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress.Trim(), UnitConversion.Convert.ToWei(amount));
+                    return (Hash: receipt, Success: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "An error occurred while transfering tokens.");
             }
 
             return (Hash: null, Success: false);
         }
 
-        public Task<decimal> CallSmartContractBalanceOfFunction(string address)
+        public async Task<decimal> CallSmartContractBalanceOfFunction(string address)
         {
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
 
-            throw new NotImplementedException();
+            var balance = await GetSmartContractFunction("balanceOf");
+            return UnitConversion.Convert.FromWei(await balance.Function.CallAsync<BigInteger>(address));
+        }
+
+        public async Task RefreshOutboundTransactions()
+        {
+            var transactions = Context.CryptoTransactions
+                .Where(
+                    x => x.Direction == CryptoTransactionDirection.Outbound 
+                    && !x.Failed 
+                    && x.ExternalId == null 
+                    && x.CryptoAddress.Address == null
+                    && x.CryptoAddress.Currency == Currency.DTT 
+                    && x.CryptoAddress.Type == CryptoAddressType.Transfer)
+                .ToArray();
+
+            foreach (var tx in transactions)
+            {
+                var uri = new Uri($"https://api.etherscan.io/api?module=transaction&action=getstatus&txhash={tx.Hash}&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
+                var result = await _restService.GetAsync<EtherscanTransactionResponse>(uri);
+                if (result.Result.IsError == 1)
+                {
+                    tx.Failed = true;
+                    await Context.SaveChangesAsync();
+                }
+            }
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -109,13 +134,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
             var uri = new Uri($"http://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
-            var result = await _restService.GetAsync<EtherscanResponse>(uri);
+            var result = await _restService.GetAsync<EtherscanAccountResponse>(uri);
 
             var confirmed = result.Result
                 .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
                 .ToArray();
 
-            var mapped = Mapper.Map<List<CryptoTransaction>>(confirmed);
+            var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
 
             foreach (var tx in mapped)
             {
@@ -159,27 +184,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
-        private async Task<TResult> ExecuteSmartContractFunction<TResult>(string function, params object[] parameters)
+        private async Task<(Function Function, Web3 Web3)> GetSmartContractFunction(string name)
         {
-            var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
-
             var web3 = new Web3(Account.LoadFromKeyStore(KeyStore, MasterPassword), Settings.Value.NodeAddress.ToString());
 
-            web3.TransactionManager.DefaultGas = 150000;
+            web3.TransactionManager.DefaultGas = _ethereumSettings.Value.DefaultGas;
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
             var contract = web3.Eth.GetContract(Abi, _ethereumSettings.Value.ContractAddress);
 
-            if (await web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
-            {
-                var fn = contract.GetFunction(function);
-                return await fn.CallAsync<TResult>(address.Address, parameters);
-            }
-
-            throw new InvalidOperationException($"Failed to unlock account {address.Address}");
+            return (Function: contract.GetFunction(name), Web3: web3);
         }
 
-        internal class EtherscanResponse
+        internal class EtherscanAccountResponse
         {
             public string Status { get; set; }
             public string Message { get; set; }
@@ -204,6 +221,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 public string GasUsed { get; set; }
                 public string Confirmations { get; set; }
                 public string IsError { get; set; }
+            }
+        }
+
+        private class EtherscanTransactionResponse
+        {
+            public string Status { get; set; }
+            public string Message { get; set; }
+            public Transaction Result { get; set; }
+
+            public class Transaction
+            {
+                public int IsError { get; set; }
+                public string ErrDescription { get; set; }
             }
         }
     }
