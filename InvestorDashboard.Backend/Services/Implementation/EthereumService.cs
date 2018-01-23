@@ -59,6 +59,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
+            destinationAddress = destinationAddress.Trim();
+
+            if (destinationAddress.Equals(sourceAddress.Address, StringComparison.InvariantCultureIgnoreCase)
+                || destinationAddress.Equals(_ethereumSettings.Value.ContractAddress, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new InvalidOperationException("Destination address is invalid for token transfer.");
+            }
+
             try
             {
                 var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
@@ -67,7 +75,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds)))
                 {
-                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress.Trim(), UnitConversion.Convert.ToWei(amount));
+                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
                     return (Hash: receipt, Success: true);
                 }
             }
@@ -126,7 +134,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var address = ecKey.GetPublicAddress();
                 var bytes = ecKey.GetPrivateKeyAsBytes();
                 var service = new KeyStorePbkdf2Service();
-                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.KeyStoreEncryptionPassword, bytes, address);
+                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
         }
@@ -158,7 +166,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
         {
-            var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.KeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
+            var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.InvestorKeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
 
             var value = amount == null
                 ? await web3.Eth.GetBalance.SendRequestAsync(address.Address)

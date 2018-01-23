@@ -51,7 +51,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(Network).ToString();
-            var encrypted = privateKey.GetEncryptedBitcoinSecret(password ?? KeyVaultService.KeyStoreEncryptionPassword, Network).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, Network).ToString();
             return (Address: address, PrivateKey: encrypted);
         }
 
@@ -83,7 +83,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             // TODO: implement custom amount transfer.
 
-            var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.KeyStoreEncryptionPassword);
+            var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
             var response = _restService.Get<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
 
             var balance = 0m;

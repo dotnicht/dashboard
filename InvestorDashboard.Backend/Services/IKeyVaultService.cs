@@ -5,6 +5,7 @@ namespace InvestorDashboard.Backend.Services
     public interface IKeyVaultService
     {
         string DatabaseConnectionString { get; }
-        string KeyStoreEncryptionPassword { get; }
+        string InvestorKeyStoreEncryptionPassword { get; }
+        string MasterKeyStoreEncryptionPassword { get; }
     }
 }

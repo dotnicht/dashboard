@@ -10,12 +10,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class KeyVaultService : IKeyVaultService
     {
         private readonly IOptions<KeyVaultSettings> _options;
-
         private string _databaseConnectionString;
-        private string _keyStoreEncryptionPassword;
+        private string _investorKeyStoreEncryptionPassword;
+        private string _masterKeyStoreEncryptionPassword;
 
         public string DatabaseConnectionString => _databaseConnectionString ?? (_databaseConnectionString = GetSecret("DatabaseConnectionString").Result);
-        public string KeyStoreEncryptionPassword => _keyStoreEncryptionPassword ?? (_keyStoreEncryptionPassword = GetSecret("KeyStoreEncryptionPassword").Result);
+        public string InvestorKeyStoreEncryptionPassword => _investorKeyStoreEncryptionPassword ?? (_investorKeyStoreEncryptionPassword = GetSecret("KeyStoreEncryptionPassword").Result);
+        public string MasterKeyStoreEncryptionPassword => _masterKeyStoreEncryptionPassword ?? (_masterKeyStoreEncryptionPassword = GetSecret("MasterKeyStoreEncryptionPassword").Result);
 
         public KeyVaultService(IOptions<KeyVaultSettings> options)
         {
