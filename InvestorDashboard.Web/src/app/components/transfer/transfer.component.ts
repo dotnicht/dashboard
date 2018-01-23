@@ -78,8 +78,8 @@ export class TransferComponent implements OnInit {
             const db = model.json() as Dashboard;
             if (!environment.production) {
                 // this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
-                // db.clientInfoModel.balance = 2.52425455;
-                // db.clientInfoModel.bonusBalance = 0.7245145;
+                // db.clientInfoModel.balance = 5.82;
+                // db.clientInfoModel.bonusBalance = 1.746;
                 // db.clientInfoModel.isEligibleForTransfer = true;
             }
 
@@ -91,7 +91,7 @@ export class TransferComponent implements OnInit {
     checkSendEntire(check: MatCheckboxChange) {
         if (check.checked) {
             this.sendEntire = true;
-            this.transfer.amount = +(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(18);
+            this.transfer.amount = +(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(10);
 
         } else {
             this.sendEntire = false;
@@ -99,7 +99,7 @@ export class TransferComponent implements OnInit {
         }
     }
     validateValue() {
-        if (this.transfer.amount > (+(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(18))) {
+        if (this.transfer.amount > (+(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(10))) {
             this.errors = 'Not enough tokens';
         } else {
             this.errors = undefined;
@@ -110,7 +110,7 @@ export class TransferComponent implements OnInit {
         // if(this.transfer.amount > 0){
 
         // }
-        const valid = this.transfer.amount > 0 && (this.transfer.amount <= (+(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(18)));
+        const valid = this.transfer.amount > 0 && (this.transfer.amount <= (+(this.dashboard.clientInfoModel.balance + this.dashboard.clientInfoModel.bonusBalance).toFixed(10)));
         return valid;
     }
 
