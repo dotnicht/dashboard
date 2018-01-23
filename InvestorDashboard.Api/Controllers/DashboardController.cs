@@ -29,6 +29,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ITokenService _tokenService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
+        private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IMapper _mapper;
         private readonly ILogger<DashboardController> _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
@@ -45,6 +46,7 @@ namespace InvestorDashboard.Api.Controllers
             ITokenService tokenService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
+            IOptions<EthereumSettings> ethereumSettings,
             IEnumerable<ICryptoService> cryptoServices,
             IMapper mapper,
             ILogger<DashboardController> logger)
@@ -56,6 +58,7 @@ namespace InvestorDashboard.Api.Controllers
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
+            _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
@@ -184,6 +187,7 @@ namespace InvestorDashboard.Api.Controllers
             result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
             result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
             result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToList();
+            result.ContractAddress = _ethereumSettings.Value.ContractAddress;
             return result;
         }
 
