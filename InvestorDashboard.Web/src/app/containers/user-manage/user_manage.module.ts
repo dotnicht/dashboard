@@ -28,6 +28,7 @@ import { TfaComponent } from '../../components/tfa/tfa.component';
 import { LoginWithRecoveryCodeComponent } from '../../components/tfa/login-with-recovery-code/login-with-recovery-code.component';
 import { CaptchaEndpoint } from '../../services/captcha.service';
 import { CurrentLocationService } from '../../services/location.service';
+import { ResendEmailConfirmCodeComponent, ResendEmailConfirmCodeDialogComponent } from '../../components/controls/resend-email-confirm-code/resend-email-confirm-code.component';
 
 
 @NgModule({
@@ -43,7 +44,9 @@ import { CurrentLocationService } from '../../services/location.service';
     ResetPasswordDialogComponent,
     RegisterPreSaleComponent,
     TfaComponent,
-    LoginWithRecoveryCodeComponent
+    LoginWithRecoveryCodeComponent,
+    ResendEmailConfirmCodeComponent,
+    ResendEmailConfirmCodeDialogComponent
   ],
   imports: [
     CommonModule,
@@ -73,7 +76,8 @@ import { CurrentLocationService } from '../../services/location.service';
     RegisterRulesDialogComponent,
     ConfirmEmailDialogComponent,
     ForgotPasswordDialogComponent,
-    ResetPasswordDialogComponent
+    ResetPasswordDialogComponent,
+    ResendEmailConfirmCodeDialogComponent
   ],
   exports: [
     LoginComponent

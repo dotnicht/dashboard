@@ -16,6 +16,7 @@ import { RegisterPreSaleComponent } from './containers/register_presale/register
 import { TfaComponent } from './components/tfa/tfa.component';
 import { TransferComponent } from './components/transfer/transfer.component';
 import { LoginWithRecoveryCodeComponent } from './components/tfa/login-with-recovery-code/login-with-recovery-code.component';
+import { ResendEmailConfirmCodeComponent } from './components/controls/resend-email-confirm-code/resend-email-confirm-code.component';
 
 export const routingComponents = [
     NotFoundComponent
@@ -36,6 +37,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'forgot_password', component: ForgotPasswordComponent },
     { path: 'email_confirmed', component: ConfirmedEmailComponent },
+    { path: 'resend_email_confirm_code', component: ResendEmailConfirmCodeComponent },
     // { path: 'presale', component: RegisterPreSaleComponent },
     { path: 'reset_password', component: ResetPasswordComponent, },
     { path: 'tfa', component: TfaComponent, },

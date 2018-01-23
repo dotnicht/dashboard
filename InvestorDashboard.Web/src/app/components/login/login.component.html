@@ -21,13 +21,13 @@
         <div class="col-mat-12 ">
           <form *ngIf="formResetToggle" class="form-horizontal login" name="loginForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? login():''">
             <mat-form-field>
-              <input (focus)="onFocus()" matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email" #email="ngModel"
-                required />
+              <input (focus)="onFocus()" matInput type="email" id="login-email" name="email" placeholder="Enter email" [(ngModel)]="userLogin.email"
+                #email="ngModel" required />
 
             </mat-form-field>
             <mat-form-field>
-              <input (focus)="onFocus()" matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password" [(ngModel)]="userLogin.password"
-                #password="ngModel" required />
+              <input (focus)="onFocus()" matInput type="password" id="login-password" autocomplete="off" name="password" placeholder="Enter password"
+                [(ngModel)]="userLogin.password" #password="ngModel" required />
 
             </mat-form-field>
             <!-- <mat-checkbox name="rememberMe" [(ngModel)]="userLogin.rememberMe">
@@ -49,8 +49,13 @@
               </div>
               <p *ngIf="errorMsg">{{errorMsg}}</p>
             </div>
-            <div> <a [routerLink]="['/forgot_password']">Forgot your password?</a></div>
-           
+            <p>
+              <a [routerLink]="['/forgot_password']">Forgot your password?</a>
+            </p>
+            <p>
+              <a [routerLink]="['/resend_email_confirm_code']">Resend email confirmation</a>
+            </p>
+
             <div style="float: right;">
               <button type="submit" mat-raised-button color="primary" [disabled]="!f.form.valid || isLoading">
                 <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>

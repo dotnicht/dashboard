@@ -8,6 +8,7 @@ import { BaseService } from './base.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { ForgotPassWord, ChangePassWord, ResetPassword } from '../models/user-edit.model';
+import { ResendEmailConfirmCode } from '../components/controls/resend-email-confirm-code/resend-email-confirm-code.component';
 
 
 @Injectable()
@@ -24,6 +25,7 @@ export class AccountEndpoint extends BaseService {
     private readonly _tfaGetRecoveryCodes: string = environment.host + '/account/get_tf_recovery_codes';
     private readonly _tfaDisable: string = environment.host + '/account/tfa_disable';
     private readonly _tfaReset: string = environment.host + '/account/tfa_reset';
+    private readonly _resendEmailConfirmCode: string = environment.host + '/connect/resend_email_confirm_code';
 
 
     get usersUrl() { return this._usersUrl; }
@@ -39,6 +41,17 @@ export class AccountEndpoint extends BaseService {
 
     forgotPasswordEndpoint(form: ForgotPassWord): Observable<Response> {
         const res = this.http.post(this._forgotPasswordUrl, form)
+            .map((response: Response) => {
+                return response;
+            })
+            .catch(error => {
+                return this.handleError(error, () => this.forgotPasswordEndpoint(form));
+
+            });
+        return res;
+    }
+   resendEmailConfirmCodeEndpoint(form: ResendEmailConfirmCode): Observable<Response> {
+        const res = this.http.post(this._resendEmailConfirmCode, form)
             .map((response: Response) => {
                 return response;
             })

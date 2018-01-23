@@ -141,6 +141,38 @@ namespace InvestorDashboard.Api.Controllers
             }
         }
 
+        [HttpPost("~/connect/resend_email_confirm_code"), Produces("application/json")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendEmailConfirmCode([FromBody] ResendEmailConfirmCodeViewModel form)
+        {
+            try
+            {
+                var appUser = await _userManager.FindByEmailAsync(form.Email);
+                if (appUser != null)
+                {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+                    code = System.Web.HttpUtility.UrlEncode(code);
+                    var emailBody = _view.Render("EmailBody",
+                        $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
+                    await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
+
+                    return Ok();
+                }
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.InvalidGrant,
+                    ErrorDescription = "The username/password couple is invalid."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new OpenIdConnectResponse
+                {
+                    Error = OpenIdConnectConstants.Errors.ServerError,
+                    ErrorDescription = ex.Message
+                });
+            }
+        }
         #region Authorization code, implicit and implicit flows
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:

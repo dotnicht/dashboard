@@ -1,0 +1,36 @@
+﻿<mat-card>
+    <mat-card-title><mat-icon>email</mat-icon><span>Enter your email</span></mat-card-title>
+    <mat-card-content>
+      <form #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
+        <mat-form-field>
+          <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="resendEmailConfirmCode.email" #email="ngModel"
+            required email>
+        </mat-form-field>
+  
+        <div class="errors">
+          <div *ngIf="email.invalid && (email.dirty || email.touched)">
+  
+            <p *ngIf="email.errors.required">Email is
+              <strong>required</strong>
+            </p>
+            <p *ngIf="email.errors.email">Email is not
+              <strong>valid</strong>
+            </p>
+          </div>
+          <p *ngIf="errorMsg">{{errorMsg}}</p>
+        </div>
+        <div>
+          <button type="submit" [disabled]="!f.form.valid || isLoading" mat-raised-button color="primary">
+            <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
+            <span>{{'buttons.Reset' | translate}}</span>
+          </button>
+          <button [routerLink]="['/login']" class="back-btn" mat-raised-button color="primary">
+            <span>{{'buttons.Back' | translate}}</span>
+          </button>
+  
+        </div>
+      </form>
+    </mat-card-content>
+  
+  </mat-card>
+  
