@@ -34,14 +34,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
-            ICsvService csvService,
+            IResourceService resourceService,
             IMessageService messageService,
             IDashboardHistoryService dashboardHistoryService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, csvService, messageService, dashboardHistoryService, mapper, tokenSettings, ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, mapper, tokenSettings, ethereumSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
@@ -65,7 +65,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 var transfer = await GetSmartContractFunction("transferFrom");
 
-                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, 120))
+                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, MasterPassword, Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds)))
                 {
                     var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress.Trim(), UnitConversion.Convert.ToWei(amount));
                     return (Hash: receipt, Success: true);

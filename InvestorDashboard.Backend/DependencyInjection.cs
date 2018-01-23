@@ -14,7 +14,7 @@ namespace InvestorDashboard.Backend
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddTransient<ICsvService, CsvService>();
+            services.AddTransient<IResourceService, ResourceService>();
             services.AddTransient<IRestService, RestService>();
             services.AddTransient<IExternalInvestorService, ExternalInvestorService>();
             services.AddTransient<IAffiliateService, AffiliateService>();

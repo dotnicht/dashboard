@@ -16,7 +16,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IExchangeRateService _exchangeRateService;
-        private readonly ICsvService _csvService;
+        private readonly IResourceService _resourceService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
@@ -25,7 +25,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             UserManager<ApplicationUser> userManager,
             IExchangeRateService exchangeRateService,
-            ICsvService csvService,
+            IResourceService resourceService,
             IDashboardHistoryService dashboardHistoryService,
             IEnumerable<ICryptoService> cryptoServices,
             IOptions<TokenSettings> tokenSettings)
@@ -34,14 +34,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
-            _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
+            _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
         public async Task SynchronizeInvestorsData()
         {
-            var records = _csvService.GetRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv")
+            var records = _resourceService.GetCsvRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv")
                 .Where(x => x.DateTime < DateTime.UtcNow)
                 .ToArray();
 

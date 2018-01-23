@@ -14,7 +14,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
-        private readonly ICsvService _csvService;
+        private readonly IResourceService _resourceService;
         private readonly IMessageService _messageService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
 
@@ -30,7 +30,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
-            ICsvService csvService,
+            IResourceService resourceService,
             IMessageService messageService,
             IDashboardHistoryService dashboardHistoryService,
             IMapper mapper,
@@ -43,7 +43,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
-            _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
+            _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _dashboardHistoryService = dashboardHistoryService;
         }
@@ -187,7 +187,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (addressType == CryptoAddressType.Internal)
             {
-                return await _csvService.GetRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
+                return await _resourceService.GetCsvRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
                     .Where(x => x.Currency == Settings.Value.Currency)
                     .Select(async x => await CreateAddressInternal(userId, addressType, x.Address))
                     .ToArray()

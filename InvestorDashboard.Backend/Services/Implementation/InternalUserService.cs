@@ -12,26 +12,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class InternalUserService : ContextService, IInternalUserService
     {
-        private readonly ICsvService _csvService;
+        private readonly IResourceService _resourceService;
         private readonly IOptions<TokenSettings> _options;
         private readonly IRestService _restService;
 
         public InternalUserService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
-            ICsvService csvService,
+            IResourceService resourceService,
             IRestService restService,
             IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
-            _csvService = csvService ?? throw new ArgumentNullException(nameof(csvService));
+            _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
         public async Task SynchronizeInternalUsersData()
         {
-            foreach (var record in _csvService.GetRecords<InternalUserDataRecord>("InternalUserData.csv"))
+            foreach (var record in _resourceService.GetCsvRecords<InternalUserDataRecord>("InternalUserData.csv"))
             {
                 if (!Context.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
                 {
