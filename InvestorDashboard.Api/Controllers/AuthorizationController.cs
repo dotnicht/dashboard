@@ -419,7 +419,7 @@ namespace InvestorDashboard.Api.Controllers
                     {
                         return BadRequest(new OpenIdConnectResponse
                         {
-                            Error = OpenIdConnectConstants.Errors.AccessDenied,
+                            Error = "confirm_email",
                             ErrorDescription = "You must confirm your email."
                         });
                     }

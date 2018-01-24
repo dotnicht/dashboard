@@ -47,14 +47,13 @@
                   <strong>required</strong>
                 </p>
               </div>
-              <p *ngIf="errorMsg">{{errorMsg}}</p>
+              <p *ngIf="errorMsg">{{errorMsg}}  <a *ngIf="showConfirmEmailLink" [routerLink]="['/resend_email_confirm_code']">Resend email confirmation</a></p>
             </div>
+           
             <p>
               <a [routerLink]="['/forgot_password']">Forgot your password?</a>
             </p>
-            <p>
-              <a [routerLink]="['/resend_email_confirm_code']">Resend email confirmation</a>
-            </p>
+           
 
             <div style="float: right;">
               <button type="submit" mat-raised-button color="primary" [disabled]="!f.form.valid || isLoading">

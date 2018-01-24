@@ -163,7 +163,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     }
 
                 }
-                this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
+                // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
                 db.clientInfoModel = this.clientInfoService.clientInfo;
                 this.dashboard = db;
             });

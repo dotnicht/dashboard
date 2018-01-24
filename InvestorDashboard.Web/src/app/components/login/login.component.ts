@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     formResetToggle = true;
     loginStatusSubscription: any;
     errorMsg: string;
+    showConfirmEmailLink = false;
 
 
     @Input() isModal = false;
@@ -82,6 +83,12 @@ export class LoginComponent implements OnInit, OnDestroy {
                 else {
                     let errorMessage = Utilities.findHttpResponseMessage('error_description', error);
 
+
+                    const errorType = Utilities.findHttpResponseMessage('error', error);
+                    console.log(errorType);
+                    if (errorType == 'confirm_email') {
+                        this.showConfirmEmailLink = true;
+                    }
                     if (errorMessage) {
                         // this.alertService.showStickyMessage('Unable to login', errorMessage, MessageSeverity.error, error);
                         this.errorMsg = errorMessage;
