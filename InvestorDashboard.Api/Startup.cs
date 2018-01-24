@@ -34,7 +34,7 @@ namespace InvestorDashboard.Api
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{ env.EnvironmentName }.json", true, true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
@@ -48,11 +48,9 @@ namespace InvestorDashboard.Api
 
             services.AddAutoMapper(typeof(DependencyInjection), GetType());
 
-            var keyVaultService = services.BuildServiceProvider().GetRequiredService<IKeyVaultService>();
-
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(keyVaultService.DatabaseConnectionString, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("InvestorDashboard.Backend"));
                 // Register the entity sets needed by OpenIddict.
                 // Note: use the generic overload if you need
                 // to replace the default OpenIddict entities.

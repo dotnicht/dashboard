@@ -37,9 +37,9 @@ namespace InvestorDashboard.Api.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger _logger;
-        private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IMapper _mapper;
         private readonly IMessageService _messageService;
+        private readonly IGenericAddressService _genericAddressService;
 
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
@@ -47,9 +47,9 @@ namespace InvestorDashboard.Api.Controllers
           SignInManager<ApplicationUser> signInManager,
           UserManager<ApplicationUser> userManager,
           ILogger<AuthorizationController> loger,
-          IEnumerable<ICryptoService> cryptoServices,
           IMapper mapper,
           IMessageService messageService,
+          IGenericAddressService genericAddressService,
           ViewRender view)
         {
             _applicationManager = applicationManager;
@@ -57,9 +57,9 @@ namespace InvestorDashboard.Api.Controllers
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = loger;
-            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
             _view = view;
         }
 
@@ -101,10 +101,7 @@ namespace InvestorDashboard.Api.Controllers
                     {
                         try
                         {
-                            foreach (var service in _cryptoServices)
-                            {
-                                await service.CreateCryptoAddress(appUser.Id);
-                            }
+                            await _genericAddressService.CreateMissingAddresses(appUser.Id);
                         }
                         catch (Exception ex)
                         {

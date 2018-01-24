@@ -26,7 +26,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (userId == null)
             {
-                foreach (var id in Context.Users.Select(x => x.Id))
+                foreach (var id in Context.Users.Select(x => x.Id).ToArray())
                 {
                     try
                     {
@@ -187,9 +187,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var updated = user.Balance + user.BonusBalance;
             var external = await _ethereumService.CallSmartContractBalanceOfFunction(address.Address);
 
-            if (updated != external)
+            if (updated != external && user.ExternalId == null)
             {
-                Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {updated}. Database balance: {external}.");
+                Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
             }
         }
     }

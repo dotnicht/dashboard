@@ -3,7 +3,6 @@ using AutoMapper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Services;
 using InvestorDashboard.Console.Jobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,7 +36,7 @@ namespace InvestorDashboard.Console
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", false, true)
-              .AddJsonFile($"appsettings.{ Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") }.json", true, true)
+              .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
               .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
@@ -49,12 +48,8 @@ namespace InvestorDashboard.Console
 
             SetupIdentity(serviceCollection);
 
-            var keyVaultService = serviceCollection
-                .BuildServiceProvider()
-                .GetRequiredService<IKeyVaultService>();
-
             serviceCollection.AddDbContext<ApplicationDbContext>(
-                x => x.UseSqlServer(keyVaultService.DatabaseConnectionString, y => y.MigrationsAssembly("InvestorDashboard.Backend")),
+                x => x.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), y => y.MigrationsAssembly("InvestorDashboard.Backend")),
                 ServiceLifetime.Transient);
 
             await SetupScheduling(serviceCollection);

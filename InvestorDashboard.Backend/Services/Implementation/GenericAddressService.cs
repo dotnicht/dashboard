@@ -18,28 +18,54 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        public async Task CreateMissingAddresses()
+        public async Task CreateMissingAddresses(string userId = null)
         {
-            foreach (var user in Context.Users.Include(x => x.CryptoAddresses).ToArray())
+            if (userId == null)
             {
-                if (!user.CryptoAddresses.Any(x => x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer))
+                foreach (var id in Context.Users.Select(x => x.Id).ToArray())
                 {
-                    Context.CryptoAddresses.Add(new CryptoAddress
+                    try
                     {
-                        Currency = Currency.DTT,
-                        UserId = user.Id,
-                        Type = CryptoAddressType.Transfer
-                    });
-
-                    await Context.SaveChangesAsync();
-                }
-
-                foreach (var service in _cryptoServices)
-                {
-                    if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
-                    {
-                        await service.CreateCryptoAddress(user.Id);
+                        await CreateMissingAddressesInternal(id);
                     }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                    }
+                }
+            }
+            else
+            {
+                await CreateMissingAddressesInternal(userId);
+            }
+        }
+
+        private async Task CreateMissingAddressesInternal(string userId)
+        {
+            var user = Context.Users.Include(x => x.CryptoAddresses).SingleOrDefault(x => x.Id == userId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User not found with ID {userId}.");
+            }
+
+            if (!user.CryptoAddresses.Any(x => x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer))
+            {
+                Context.CryptoAddresses.Add(new CryptoAddress
+                {
+                    Currency = Currency.DTT,
+                    UserId = user.Id,
+                    Type = CryptoAddressType.Transfer
+                });
+
+                await Context.SaveChangesAsync();
+            }
+
+            foreach (var service in _cryptoServices)
+            {
+                if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
+                {
+                    await service.CreateCryptoAddress(user.Id);
                 }
             }
         }
