@@ -47,5 +47,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var resource = GetType().Namespace + ".Data." + name;
             return new StreamReader(assembly.GetManifestResourceStream(resource));
         }
+
+        public string GetResourceString(string name)
+        {
+            return GetResourceTextReader(name).ReadToEnd();
+        }
     }
 }

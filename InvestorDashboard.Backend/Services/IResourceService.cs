@@ -7,5 +7,6 @@ namespace InvestorDashboard.Backend.Services
     {
         IEnumerable<TRecord> GetCsvRecords<TRecord>(string name, bool asStream = false);
         TextReader GetResourceTextReader(string name);
+        string GetResourceString(string name);
     }
 }
