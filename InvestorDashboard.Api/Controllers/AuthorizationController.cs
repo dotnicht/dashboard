@@ -49,7 +49,7 @@ namespace InvestorDashboard.Api.Controllers
           ILogger<AuthorizationController> loger,
           IMapper mapper,
           IMessageService messageService,
-          IViewRenderService view)
+          IViewRenderService view,
           IGenericAddressService genericAddressService)
         {
             _applicationManager = applicationManager;
