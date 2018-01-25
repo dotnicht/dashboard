@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace InvestorDashboard.Backend.Services
+﻿namespace InvestorDashboard.Backend.Services
 {
     public interface IKeyVaultService
     {
