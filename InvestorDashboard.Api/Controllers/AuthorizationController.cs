@@ -31,7 +31,7 @@ namespace InvestorDashboard.Api.Controllers
     [Route("[controller]/[action]")]
     public class AuthorizationController : Controller
     {
-        private readonly ViewRender _view;
+        private readonly IViewRenderService _view;
         private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -50,7 +50,7 @@ namespace InvestorDashboard.Api.Controllers
           IEnumerable<ICryptoService> cryptoServices,
           IMapper mapper,
           IMessageService messageService,
-          ViewRender view)
+          IViewRenderService view)
         {
             _applicationManager = applicationManager;
             _identityOptions = identityOptions;
