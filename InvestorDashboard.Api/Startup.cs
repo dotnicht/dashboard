@@ -137,8 +137,7 @@ namespace InvestorDashboard.Api
             services.AddNodeServices();
 
             services.AddAuthorization();
-
-            services.AddScoped<ViewRender, ViewRender>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
