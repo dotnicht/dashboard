@@ -1,11 +1,12 @@
-﻿using InvestorDashboard.Backend.ConfigurationSections;
+﻿using CryptoCompare;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -22,79 +23,45 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency = Currency.USD, DateTime? dateTime = null)
+        public async Task<decimal> GetExchangeRate(Currency currency, DateTime? dateTime = null)
         {
-            if (baseCurrency == quoteCurrency)
+            if (!Context.ExchangeRates.Any(x => x.Base == currency))
             {
-                return 1;
+                await RefreshExchangeRate(currency);
             }
+
+            var ex = Context.ExchangeRates.Where(x => x.Base == currency).OrderByDescending(x => x.Created);
 
             if (dateTime == null)
             {
-                return await GetExchangeRateFromApi(baseCurrency, quoteCurrency);
+                return ex.First().Rate;
             }
 
-            var ex = await GetExchangeRateFromDatabase(baseCurrency, quoteCurrency, dateTime.Value);
+            var diff = ex
+                .Where(x => x.Created >= dateTime.Value - _options.Value.LookupWindow && x.Created <= dateTime.Value + _options.Value.LookupWindow)
+                .Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
 
-            if (ex == null)
+            var rate = ex
+                .Where(x => Math.Abs((x.Created - dateTime.Value).Ticks) == diff)
+                .FirstOrDefault();
+
+            if (rate == null)
             {
-                throw CreateDbException(baseCurrency, quoteCurrency, dateTime.Value);
+                throw new InvalidOperationException($"Couldn't find exchange rate for {currency} at {dateTime.Value}");
             }
 
-            return ex.Rate;
+            return rate.Rate;
         }
 
-        public async Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime, bool fallbackToCurrent)
+        public async Task RefreshExchangeRate(Currency currency)
         {
-            var result = await GetExchangeRateFromDatabase(baseCurrency, quoteCurrency, dateTime);
-            if (result == null)
+            using (var http = new HttpClient())
             {
-                var ex = CreateDbException(baseCurrency, quoteCurrency, dateTime);
-
-                if (fallbackToCurrent)
-                {
-                    Logger.LogInformation(ex.Message);
-                    return await GetExchangeRateFromApi(baseCurrency, quoteCurrency);
-                }
-
-                throw ex;
+                var client = new PricesClient(http);
+                var response = await client.SingleAsync(currency.ToString(), new[] { "USD" });
+                await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = currency, Quote = Currency.USD, Rate = response.Values.Single() });
+                await Context.SaveChangesAsync();
             }
-
-            return result.Rate;
         }
-
-        public async Task RefreshExchangeRate(Currency baseCurrency)
-        {
-            var rate = await GetExchangeRate(baseCurrency, Currency.USD);
-            await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = baseCurrency, Quote = Currency.USD, Rate = rate });
-            await Context.SaveChangesAsync();
-        }
-
-        private async Task<decimal> GetExchangeRateFromApi(Currency baseCurrency, Currency quoteCurrency)
-        {
-            if (baseCurrency == quoteCurrency)
-            {
-                return 1;
-            }
-
-            var uri = new Uri($"{_options.Value.ApiUri}ticker/t{baseCurrency}{quoteCurrency}");
-            var result = await _restService.GetAsync<List<decimal>>(uri);
-
-            if (result == null || result.Count == 0)
-            {
-                throw new InvalidOperationException("An error occurred while retrieving exchange rate from bitfinex.com.");
-            }
-
-            return result[0];
-        }
-
-        private Task<ExchangeRate> GetExchangeRateFromDatabase(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime)
-            => Context.ExchangeRates
-                .OrderByDescending(x => x.Created)
-                .ToAsyncEnumerable()
-                .FirstOrDefault(x => x.Base == baseCurrency && x.Quote == quoteCurrency && x.Created <= dateTime);
-
-        private InvalidOperationException CreateDbException(Currency baseCurrency, Currency quoteCurrency, DateTime dateTime)
-            => new InvalidOperationException($"Exchange rate record not found for currency pair {baseCurrency}/{quoteCurrency} and date & time {dateTime}.");
     }
 }
