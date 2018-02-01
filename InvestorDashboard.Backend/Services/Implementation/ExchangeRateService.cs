@@ -37,8 +37,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return ex.First().Rate;
             }
 
+            var lower = dateTime.Value - _options.Value.LookupWindow;
+            var upper = dateTime.Value + _options.Value.LookupWindow;
+
             var diff = ex
-                .Where(x => x.Created >= dateTime.Value - _options.Value.LookupWindow && x.Created <= dateTime.Value + _options.Value.LookupWindow)
+                .Where(x => x.Created >= lower && x.Created <= upper)
                 .Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
 
             var rate = ex
