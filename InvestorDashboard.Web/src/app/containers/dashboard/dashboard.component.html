@@ -26,11 +26,9 @@
       </div>
       <div class="left">
         <div class="item">
-          <!-- <div class="color-block"></div> -->
-          <img class="color-block" src="assets/img/avatar.svg">
-          <!-- <img class="color-block" src="/img/btc.png"> -->
+          <!-- <img class="color-block" src="assets/img/avatar.svg">
           <div class="value">{{dashboard.icoInfoModel.totalInvestors}}</div>
-          <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
+          <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div> -->
         </div>
         <!-- <div class="item">
           <img class="color-block" src="assets/img/wallet.svg">
@@ -45,10 +43,10 @@
         <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div> -->
-        <div style="margin-top: 20px;" >
+        <!-- <div style="margin-top: 20px;" > -->
           <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
           <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT -->
-        </div>
+        <!-- </div> -->
         <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
             <div class="item">
                 <img class="color-block" [src]="currency.img">
