@@ -40,11 +40,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var lower = dateTime.Value - _options.Value.LookupWindow;
             var upper = dateTime.Value + _options.Value.LookupWindow;
 
-            var diff = ex
+            var filtered = ex
                 .Where(x => x.Created >= lower && x.Created <= upper)
-                .Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
+                .ToArray();
+                
+            var diff = filtered.Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
 
-            var rate = ex
+            var rate = filtered
                 .Where(x => Math.Abs((x.Created - dateTime.Value).Ticks) == diff)
                 .FirstOrDefault();
 
