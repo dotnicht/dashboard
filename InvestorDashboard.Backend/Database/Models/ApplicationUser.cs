@@ -16,6 +16,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public string Configuration { get; set; }
         public string City { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
+        public bool IsEligibleForTransfer { get; set; }
         public string PhoneCode{ get; set; }
         public string ClickId { get; set; }
         public Guid? ExternalId { get; set; }

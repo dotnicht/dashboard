@@ -173,7 +173,7 @@ namespace InvestorDashboard.Api.Controllers
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
-            user.IsEligibleForTransfer = await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id) && !_tokenSettings.Value.IsTokenTransferDisabled;
+            user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer && !_tokenSettings.Value.IsTokenTransferDisabled && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
             return user;
         }
 

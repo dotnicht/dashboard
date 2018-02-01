@@ -191,6 +191,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
             }
+            else
+            {
+                // TODO: auto enable transfer.
+                // user.IsEligibleForTransfer = true;
+            }
         }
     }
 }
