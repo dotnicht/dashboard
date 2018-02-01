@@ -38,7 +38,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(message));
             }
 
-            Logger.LogInformation($"Handle incoming message from user {user}. Text: {message}");
+            if (chatId != _options.Value.BusinessNotificationChatId && chatId != _options.Value.TechnicalNotificationChatId)
+            {
+                throw new InvalidOperationException($"Unsupported chat id {chatId}. User: {user}. Message: {message}.");
+            }
+
+            Logger.LogInformation($"Handle incoming message from user {user}. Text: {message}.");
 
             var msg = message.Trim();
             var commands = new Dictionary<string, Func<Task>>

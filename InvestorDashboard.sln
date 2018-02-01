@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Backend", "InvestorDashboard.Backend\InvestorDashboard.Backend.csproj", "{AAB78B11-E0DA-4289-9F91-5B89A4D8ECC2}"
 EndProject
@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Console",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Api", "InvestorDashboard.Api\InvestorDashboard.Api.csproj", "{DD3C3886-50D3-4611-BBA7-C7F0DAE3A249}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvestorDashboard.Web", "InvestorDashboard.Web\InvestorDashboard.Web.csproj", "{80D4CF82-2772-4BE6-B266-CA58126F0EC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvestorDashboard.Web", "InvestorDashboard.Web\InvestorDashboard.Web.csproj", "{80D4CF82-2772-4BE6-B266-CA58126F0EC5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

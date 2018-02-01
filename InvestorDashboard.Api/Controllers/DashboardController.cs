@@ -183,7 +183,6 @@ namespace InvestorDashboard.Api.Controllers
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
             result.TotalBtcInvested = items[Currency.BTC].TotalInvested;
             result.TotalEthInvested = items[Currency.ETH].TotalInvested;
-            result.TotalInvestors = items.Sum(x => x.Value.TotalInvestors);
             result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
             result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
             result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToList();

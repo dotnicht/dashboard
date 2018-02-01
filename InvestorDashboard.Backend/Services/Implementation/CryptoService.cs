@@ -175,7 +175,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var item = (await _dashboardHistoryService.GetHistoryItems(transaction.TimeStamp)).FirstOrDefault().Value;
 
             transaction.CryptoAddressId = address.Id;
-            transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, Currency.USD, transaction.TimeStamp, true);
+            transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, transaction.TimeStamp);
             transaction.TokenPrice = item?.TokenPrice ?? TokenSettings.Value.Price;
             transaction.BonusPercentage = item?.BonusPercentage ?? TokenSettings.Value.BonusPercentage;
 

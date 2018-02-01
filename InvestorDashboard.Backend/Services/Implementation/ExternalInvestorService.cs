@@ -78,7 +78,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             {
                                 Amount = value.Amount,
                                 Direction = CryptoTransactionDirection.Inbound,
-                                ExchangeRate = await _exchangeRateService.GetExchangeRate(value.Currency, Currency.USD, record.DateTime, true),
+                                ExchangeRate = await _exchangeRateService.GetExchangeRate(value.Currency, record.DateTime),
                                 TokenPrice = item?.TokenPrice ?? _tokenSettings.Value.Price,
                                 BonusPercentage = item?.BonusPercentage ?? _tokenSettings.Value.BonusPercentage,
                                 CryptoAddressId = address.Id,
