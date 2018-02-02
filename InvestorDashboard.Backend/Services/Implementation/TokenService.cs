@@ -187,15 +187,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var updated = user.Balance + user.BonusBalance;
             var external = await _ethereumService.CallSmartContractBalanceOfFunction(address.Address);
 
-            if (decimal.Round(updated, 6) != external && external != 0 && user.ExternalId == null)
+            if (external != 0)
             {
-                Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
-                user.IsEligibleForTransfer = false;
-                await Context.SaveChangesAsync();
-            }
-            else if (!user.IsEligibleForTransfer)
-            {
-                user.IsEligibleForTransfer = true;
+                updated = decimal.Round(updated, 6);
+
+                if (updated != external && user.ExternalId == null)
+                {
+                    Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
+                    user.IsEligibleForTransfer = false;
+                }
+                else if (!user.IsEligibleForTransfer)
+                {
+                    user.IsEligibleForTransfer = true;
+                }
+
                 await Context.SaveChangesAsync();
             }
         }
