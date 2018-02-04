@@ -12,13 +12,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class TokenService : ContextService, ITokenService
     {
-        private readonly IEthereumService _ethereumService;
+        private readonly ISmartContractService _smartContractService;
         private readonly IOptions<TokenSettings> _options;
 
-        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory, IEthereumService ethereumService, IOptions<TokenSettings> options)
+        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory, ISmartContractService smartContractService, IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
-            _ethereumService = ethereumService ?? throw new ArgumentNullException(nameof(ethereumService));
+            _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -90,14 +90,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
             }
 
-            var balance = await _ethereumService.CallSmartContractBalanceOfFunction(ethAddress.Address);
+            var balance = await _smartContractService.CallSmartContractBalanceOfFunction(ethAddress.Address);
 
             if (balance < amount)
             {
                 throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
             }
 
-            var result = await _ethereumService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
+            var result = await _smartContractService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
 
             if (result.Success)
             {
@@ -185,7 +185,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
             var updated = user.Balance + user.BonusBalance;
-            var external = await _ethereumService.CallSmartContractBalanceOfFunction(address.Address);
+            var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
 
             if (external != 0)
             {
