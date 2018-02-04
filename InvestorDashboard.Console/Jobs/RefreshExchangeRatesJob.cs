@@ -1,13 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using InvestorDashboard.Backend.ConfigurationSections;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
+using System;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {
@@ -34,7 +33,7 @@ namespace InvestorDashboard.Console.Jobs
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, $"An error occurred while refreshing { currency } exchange rate.");
+                    Logger.LogError(ex, $"An error occurred while refreshing {currency} exchange rate.");
                 }
             }
         }

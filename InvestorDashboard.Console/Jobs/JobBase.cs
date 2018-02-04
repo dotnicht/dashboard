@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
@@ -31,6 +32,9 @@ namespace InvestorDashboard.Console.Jobs
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var sw = Stopwatch.StartNew();
+            Logger.LogInformation($"Job {GetType()} execution statrted.");
+
             try
             {
                 await ExecuteInternal(context);
@@ -38,6 +42,13 @@ namespace InvestorDashboard.Console.Jobs
             catch (Exception ex)
             {
                 Logger.LogError(ex, $"An error occurred while executing the job.");
+            }
+
+            Logger.LogInformation($"Job {GetType()} execution elapsed {sw.Elapsed}.");
+
+            if (Period < sw.Elapsed)
+            {
+                Logger.LogWarning($"Job {GetType()} execution elapsed {sw.Elapsed} which is more then estimated {Period}.");
             }
         }
 

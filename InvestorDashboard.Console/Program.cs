@@ -95,7 +95,12 @@ namespace InvestorDashboard.Console
 
         private static async Task SetupScheduling(IServiceCollection serviceCollection)
         {
-            var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
+            var propr = new NameValueCollection
+            {
+                { $"{StdSchedulerFactory.PropertyObjectSerializer}.type", "binary" },
+                { $"{StdSchedulerFactory.PropertyThreadPoolPrefix}.threadCount", "20" }
+            };
+            var schedulerFactory = new StdSchedulerFactory(propr);
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
             Assembly
