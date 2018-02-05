@@ -16,8 +16,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public override TimeSpan Period => Options.Value.RefreshTransactionsPeriod;
-
         public RefreshTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
             : base(loggerFactory, context, options)
         {
@@ -34,7 +32,7 @@ namespace InvestorDashboard.Console.Jobs
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, $"An error occurred while refreshing inbound { service.Settings.Value.Currency } transactions.");
+                    Logger.LogError(ex, $"An error occurred while refreshing inbound {service.Settings.Value.Currency} transactions.");
                 }
             }
 

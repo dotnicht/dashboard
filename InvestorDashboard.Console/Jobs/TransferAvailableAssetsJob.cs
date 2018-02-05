@@ -13,8 +13,6 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class TransferAvailableAssetsJob : JobBase
     {
-        public override TimeSpan Period => Options.Value.TransferAvailableAssetsPeriod;
-
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
         public TransferAvailableAssetsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
@@ -33,7 +31,7 @@ namespace InvestorDashboard.Console.Jobs
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, $"An error occurred while transfering { service.Settings.Value.Currency } assets.");
+                    Logger.LogError(ex, $"An error occurred while transfering {service.Settings.Value.Currency} assets.");
                 }
             }
         }

@@ -63,7 +63,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (var http = new HttpClient())
             {
                 var client = new PricesClient(http);
-                var response = await client.SingleAsync(currency.ToString(), new[] { "USD" });
+                var response = await client.SingleAsync(currency.ToString(), new[] { Currency.USD.ToString() });
                 await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = currency, Quote = Currency.USD, Rate = response.Values.Single() });
                 await Context.SaveChangesAsync();
             }

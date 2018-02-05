@@ -14,8 +14,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IExchangeRateService _exchangeRateService;
 
-        public override TimeSpan Period => Options.Value.RefreshExchangeRatesPeriod;
-
         public RefreshExchangeRatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IExchangeRateService exchangeRateService) 
             : base(loggerFactory, context, options)
         {

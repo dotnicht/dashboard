@@ -13,8 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IDashboardHistoryService _dashboardHistoryService;
 
-        public override TimeSpan Period => Options.Value.RefreshDashboardHistoryPeriod;
-
         public RefreshDashboardHistoryJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IDashboardHistoryService dashboardHistoryService)
             : base(loggerFactory, context, options)
         {

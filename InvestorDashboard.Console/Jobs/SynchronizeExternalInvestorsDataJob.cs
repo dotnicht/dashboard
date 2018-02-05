@@ -13,8 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IExternalInvestorService _investorsService;
 
-        public override TimeSpan Period => Options.Value.SynchronizeExternalInvestorsDataPeriod;
-
         public SynchronizeExternalInvestorsDataJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IExternalInvestorService investorsService)
             : base(loggerFactory, context, options)
         {

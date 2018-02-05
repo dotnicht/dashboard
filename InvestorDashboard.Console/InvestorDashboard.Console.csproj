@@ -6,11 +6,28 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="appsettings.Development.json" />
       <None Remove="appsettings.json" />
+      <None Remove="appsettings.Production.json" />
+      <None Remove="appsettings.Staging.json" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="appsettings.json" />
+        <Content Include="..\InvestorDashboard.Api\appsettings.json" Link="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\InvestorDashboard.Api\appsettings.Development.json" Link="appsettings.Development.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <DependentUpon>appsettings.json</DependentUpon>
+        </Content>
+        <Content Include="..\InvestorDashboard.Api\appsettings.Production.json" Link="appsettings.Production.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <DependentUpon>appsettings.json</DependentUpon>
+        </Content>
+        <Content Include="..\InvestorDashboard.Api\appsettings.Staging.json" Link="appsettings.Staging.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <DependentUpon>appsettings.json</DependentUpon>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -30,24 +47,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Update="appsettings.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="appsettings.Development.json">
-            <DependentUpon>appsettings.json</DependentUpon>
-            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="appsettings.Production.json">
-            <DependentUpon>appsettings.json</DependentUpon>
-            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="appsettings.Staging.json">
-            <DependentUpon>appsettings.json</DependentUpon>
-            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
         <Content Update="nlog.config">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

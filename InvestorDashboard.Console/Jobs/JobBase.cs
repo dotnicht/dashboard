@@ -13,7 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private bool isDisposed;
 
-        public abstract TimeSpan Period { get; }
         protected ApplicationDbContext Context { get; }
         protected IOptions<JobsSettings> Options { get; }
         protected ILogger Logger { get; }
@@ -41,14 +40,14 @@ namespace InvestorDashboard.Console.Jobs
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"An error occurred while executing the job.");
+                Logger.LogError(ex, $"An error occurred while executing the job {GetType()}.");
             }
 
             Logger.LogInformation($"Job {GetType()} execution elapsed {sw.Elapsed}.");
 
-            if (Period < sw.Elapsed)
+            if (Options.Value.Jobs[GetType().Name].Period < sw.Elapsed)
             {
-                Logger.LogWarning($"Job {GetType()} execution elapsed {sw.Elapsed} which is more then estimated {Period}.");
+                Logger.LogWarning($"Job {GetType()} execution elapsed {sw.Elapsed} which is more then estimated {Options.Value.Jobs[GetType().Name].Period}.");
             }
         }
 

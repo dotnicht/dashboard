@@ -26,7 +26,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (userId == null)
             {
-                foreach (var id in Context.Users.Select(x => x.Id).ToArray())
+                var ids = Context.Users
+                    .Where(x => x.ExternalId == null && x.EmailConfirmed)
+                    .Select(x => x.Id)
+                    .ToArray();
+
+                foreach (var id in ids)
                 {
                     try
                     {
@@ -51,8 +56,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            return await Context.CryptoTransactions.Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.DTT)
-                .CountAsync() < _options.Value.OutboundTransactionsLimit;
+            return await Context.CryptoTransactions
+                .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.DTT)
+                .CountAsync() 
+                    < _options.Value.OutboundTransactionsLimit;
         }
 
         public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, decimal amount)
@@ -163,8 +170,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 if (bonus < 0)
                 {
                     bonus = 0;
-                    //TODO: remove hack and sync balance precisely.
-                    //throw new InvalidOperationException($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
                     Logger.LogError($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
                 }
             }

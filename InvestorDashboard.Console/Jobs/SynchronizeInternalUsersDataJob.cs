@@ -13,8 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IInternalUserService _internalUserService;
 
-        public override TimeSpan Period => Options.Value.SynchronizeInternalUsersDataPeriod;
-
         public SynchronizeInternalUsersDataJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInternalUserService internalUserService)
             : base(loggerFactory, context, options)
         {

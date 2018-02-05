@@ -1,18 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class JobsSettings
     {
-        public TimeSpan RefreshExchangeRatesPeriod { get; set; }
-        public TimeSpan RefreshTokenBalancePeriod { get; set; }
-        public TimeSpan RefreshTransactionsPeriod { get; set; }
-        public TimeSpan RefreshDashboardHistoryPeriod { get; set; }
-        public TimeSpan TransferAvailableAssetsPeriod { get; set; }
-        public TimeSpan SynchronizeExternalInvestorsDataPeriod { get; set; }
-        public TimeSpan SynchronizeInternalUsersDataPeriod { get; set; }
-        public TimeSpan NotifyAffilicatesTransactionsPeriod { get; set; }
-        public TimeSpan NotifyDashboardHistoryPeriod { get; set; }
-        public TimeSpan CreateMissingAddressesPeriod { get; set; }
+        public int ThreadCount { get; set; }
+        public Dictionary<string, JobSettings> Jobs { get; set; }
+
+        public class JobSettings
+        {
+            public TimeSpan Period { get; set; }
+            public bool StartImmediately { get; set; }
+            public bool IsDisabled { get; set; }
+        }
     }
 }
