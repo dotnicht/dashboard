@@ -87,7 +87,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             // TODO: implement custom amount transfer.
 
             var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
-            var response = _restService.Get<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
+            var response = await _restService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
 
             var balance = 0m;
             var transaction = new Transaction();

@@ -165,6 +165,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return result;
         }
 
+        public Task SynchronizeRawTransactions()
+        {
+            throw new NotImplementedException();
+        }
+
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);

@@ -8,5 +8,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         bool IsDisabled { get; set; }
         bool ImportDisabledAddressesTransactions { get; set; }
         Uri NodeAddress { get; set; }
+        string InternalTransferUserId { get; set; }
+        long StartingBlockIndex { get; set; }
     }
 }

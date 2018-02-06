@@ -118,26 +118,29 @@ namespace InvestorDashboard.Console
                 .ToList()
                 .ForEach(async x =>
                 {
-                    serviceCollection.AddTransient(x);
-
-                    var job = JobBuilder
-                        .Create(x)
-                        .Build();
-
-                    if (!settings.Jobs[x.Name].IsDisabled)
+                    if (settings.Jobs.ContainsKey(x.Name))
                     {
-                        var builder = TriggerBuilder.Create();
+                        serviceCollection.AddTransient(x);
 
-                        if (settings.Jobs[x.Name].StartImmediately)
-                        {
-                            builder = builder.StartNow();
-                        }
-
-                        var trigger = builder
-                            .WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever())
+                        var job = JobBuilder
+                            .Create(x)
                             .Build();
 
-                        await scheduler.ScheduleJob(job, trigger);
+                        if (!settings.Jobs[x.Name].IsDisabled)
+                        {
+                            var builder = TriggerBuilder.Create();
+
+                            if (settings.Jobs[x.Name].StartImmediately)
+                            {
+                                builder = builder.StartNow();
+                            }
+
+                            var trigger = builder
+                                .WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever())
+                                .Build();
+
+                            await scheduler.ScheduleJob(job, trigger);
+                        }
                     }
                 });
 

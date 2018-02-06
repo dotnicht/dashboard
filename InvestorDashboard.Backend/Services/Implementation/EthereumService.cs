@@ -48,11 +48,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var transactions = Context.CryptoTransactions
                 .Where(
-                    x => x.Direction == CryptoTransactionDirection.Outbound 
-                    && !x.Failed 
-                    && x.ExternalId == null 
+                    x => x.Direction == CryptoTransactionDirection.Outbound
+                    && !x.Failed
+                    && x.ExternalId == null
                     && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.DTT 
+                    && x.CryptoAddress.Currency == Currency.DTT
                     && x.CryptoAddress.Type == CryptoAddressType.Transfer)
                 .ToArray();
 
@@ -87,27 +87,43 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = new Uri($"http://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
-            var result = await _restService.GetAsync<EtherscanAccountResponse>(uri);
+            var combined = new List<CryptoTransaction>();
 
-            var confirmed = result.Result
-                .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
-                .ToArray();
-
-            var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
-
-            foreach (var tx in mapped)
+            foreach (var action in new[] { "txlist", "txlistinternal" })
             {
-                // TODO: adjust direction to include outbound transactions.
-                var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
-                tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
-                    ? CryptoTransactionDirection.Inbound
-                    : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
-                        ? CryptoTransactionDirection.Internal
-                        : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
+                var uri = new Uri($"http://api.etherscan.io/api?module=account&action={action}&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
+
+                try
+                {
+                    var result = await _restService.GetAsync<EtherscanResponse<TransactionResponseResult>>(uri);
+
+                    var confirmed = result.Result
+                        .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
+                        .ToArray();
+
+                    var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
+
+                    foreach (var tx in mapped)
+                    {
+                        // TODO: adjust direction to include outbound transactions.
+                        var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
+                        tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
+                            ? CryptoTransactionDirection.Inbound
+                            : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
+                                ? CryptoTransactionDirection.Internal
+                                : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
+                    }
+
+                    combined.AddRange(mapped);
+                }
+                catch
+                {
+                    Logger.LogError($"An error occurred while processing URI {uri}.");
+                    throw;
+                }
             }
 
-            return mapped;
+            return combined;
         }
 
         protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
@@ -138,45 +154,71 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
-        internal class EtherscanAccountResponse
+        private async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchainInternal<TResponse>(string address, string action) 
+            where TResponse : EtherscanResponse<AccountInternalTransactionsResponseResult>, new()
         {
-            public string Status { get; set; }
-            public string Message { get; set; }
-            public List<Transaction> Result { get; set; }
+            var uri = new Uri($"http://api.etherscan.io/api?module=account&action={action}&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
+            var result = await _restService.GetAsync<TResponse>(uri);
 
-            public class Transaction
+            var confirmed = result.Result
+                .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
+                .ToArray();
+
+            var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
+
+            foreach (var tx in mapped)
             {
-                public string BlockNumber { get; set; }
-                public string BlockHash { get; set; }
-                public string TimeStamp { get; set; }
-                public string Hash { get; set; }
-                public string Nonce { get; set; }
-                public string TransactionIndex { get; set; }
-                public string From { get; set; }
-                public string To { get; set; }
-                public string Value { get; set; }
-                public string Gas { get; set; }
-                public string GasPrice { get; set; }
-                public string Input { get; set; }
-                public string ContractAddress { get; set; }
-                public string CumulativeGasUsed { get; set; }
-                public string GasUsed { get; set; }
-                public string Confirmations { get; set; }
-                public string IsError { get; set; }
+                // TODO: adjust direction to include outbound transactions.
+                var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
+                tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
+                    ? CryptoTransactionDirection.Inbound
+                    : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
+                        ? CryptoTransactionDirection.Internal
+                        : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
             }
+
+            return mapped;
         }
 
-        private class EtherscanTransactionResponse
+        internal class EtherscanResponse<TTransaction>
+            where TTransaction : ResponseResult, new()
         {
             public string Status { get; set; }
             public string Message { get; set; }
-            public Transaction Result { get; set; }
+            public TTransaction[] Result { get; set; }
+        }
 
-            public class Transaction
-            {
-                public int IsError { get; set; }
-                public string ErrDescription { get; set; }
-            }
+        internal abstract class ResponseResult
+        {
+            public int IsError { get; set; }
+        }
+
+        internal class TransactionResponseResult : ResponseResult
+        {
+            public string ErrDescription { get; set; }
+        }
+
+        internal class AccountInternalTransactionsResponseResult : ResponseResult
+        {
+            public string BlockNumber { get; set; }
+            public string TimeStamp { get; set; }
+            public string Hash { get; set; }
+            public string From { get; set; }
+            public string To { get; set; }
+            public string Value { get; set; }
+            public string Gas { get; set; }
+            public string GasPrice { get; set; }
+            public string Input { get; set; }
+            public string ContractAddress { get; set; }
+            public string CumulativeGasUsed { get; set; }
+            public string GasUsed { get; set; }
+            public string Confirmations { get; set; }
+        }
+
+        internal class AccountTransactionsResponseResult : AccountInternalTransactionsResponseResult
+        {
+            public string Nonce { get; set; }
+            public string TransactionIndex { get; set; }
         }
     }
 }
