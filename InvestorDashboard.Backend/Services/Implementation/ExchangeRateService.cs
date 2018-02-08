@@ -79,9 +79,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 }
                 else
                 {
+                    var adjusted = new DateTimeOffset(new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, 0, 0, DateTimeKind.Utc));
                     var client = new HistoryClient(http);
-                    var response = await client.HourAsync(currency.ToString(), Currency.USD.ToString(), limit: 1, toDate: dateTime.Value);
-                    ex = response.Data.Last().Close;
+                    var response = await client.HourAsync(currency.ToString(), Currency.USD.ToString(), limit: 1, toDate: adjusted);
+                    ex = response.Data.Single(x => x.Time == adjusted).Close;
                 }
 
                 await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = currency, Quote = Currency.USD, Rate = ex });
