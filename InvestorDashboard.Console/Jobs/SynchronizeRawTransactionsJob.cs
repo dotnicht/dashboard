@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
+using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,7 +24,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            Task.WaitAll(_cryptoServices.Select(x => x.SynchronizeRawTransactions()).ToArray());
+            Task.WaitAll(_cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH).SynchronizeRawTransactions());
             return Task.CompletedTask;
         }
 

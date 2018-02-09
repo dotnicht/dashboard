@@ -4,7 +4,6 @@ using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Console.Jobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -118,7 +117,7 @@ namespace InvestorDashboard.Console
                 .ToList()
                 .ForEach(async x =>
                 {
-                    if (settings.Jobs.ContainsKey(x.Name))
+                    if (settings.Jobs.ContainsKey(x.Name) && !settings.Jobs[x.Name].IsDisabled)
                     {
                         serviceCollection.AddTransient(x);
 
@@ -126,21 +125,19 @@ namespace InvestorDashboard.Console
                             .Create(x)
                             .Build();
 
-                        if (!settings.Jobs[x.Name].IsDisabled)
+                        var builder = TriggerBuilder.Create();
+
+                        if (settings.Jobs[x.Name].StartImmediately)
                         {
-                            var builder = TriggerBuilder.Create();
-
-                            if (settings.Jobs[x.Name].StartImmediately)
-                            {
-                                builder = builder.StartNow();
-                            }
-
-                            var trigger = builder
-                                .WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever())
-                                .Build();
-
-                            await scheduler.ScheduleJob(job, trigger);
+                            builder = builder.StartNow();
                         }
+
+                        if (!settings.Jobs[x.Name].IsInfinite)
+                        {
+                            builder = builder.WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever());
+                        }
+
+                        await scheduler.ScheduleJob(job, builder.Build());
                     }
                 });
 

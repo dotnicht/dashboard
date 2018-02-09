@@ -68,6 +68,47 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public override async Task SynchronizeRawTransactions()
+        {
+            var index = _ethereumSettings.Value.StartingBlockIndex;
+            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+
+            while (true)
+            {
+                var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+
+                while (index <= current.Value)
+                {
+                    if (!Context.EthereumBlocks.Any(x => x.BlockIndex == index))
+                    {
+                        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+
+                        var entity = Context.EthereumBlocks.Add(new EthereumBlock
+                        {
+                            BlockHash = block.BlockHash,
+                            BlockIndex = (long)block.Number.Value
+                        });
+                        
+                        foreach (var tx in block.Transactions)
+                        {
+                            Context.EthereumTransactions.Add(new EthereumTransaction
+                            {
+                                Block = entity.Entity,
+                                TransactionHash = tx.TransactionHash,
+                                //TransactionIndex = tx.TransactionIndex.Value
+                            });
+                        }
+
+                        await Context.SaveChangesAsync();
+                    }
+
+                    index++;
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(3));
+            }
+        }
+
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
         {
             var policy = Policy

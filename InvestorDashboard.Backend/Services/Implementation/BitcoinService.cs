@@ -50,6 +50,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
+        public override Task SynchronizeRawTransactions()
+        {
+            throw new NotImplementedException();
+        }
+
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
         {
             var privateKey = new Key();
