@@ -58,7 +58,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Context.CryptoTransactions
                 .Include(x => x.CryptoAddress)
                 .ThenInclude(x => x.User)
-                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
+                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment && x.ExternalId == null)
                 .ToArray()
                 .GroupBy(x => x.CryptoAddress.Currency)
                 .ToDictionary(

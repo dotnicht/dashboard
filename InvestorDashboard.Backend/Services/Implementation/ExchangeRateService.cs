@@ -69,7 +69,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             using (var http = new HttpClient())
             {
-                decimal ex;
+                var ex = 0m;
 
                 if (dateTime == null)
                 {
