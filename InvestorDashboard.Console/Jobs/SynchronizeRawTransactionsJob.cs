@@ -22,10 +22,19 @@ namespace InvestorDashboard.Console.Jobs
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        protected override Task ExecuteInternal(IJobExecutionContext context)
+        protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            Task.WaitAll(_cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH).SynchronizeRawTransactions());
-            return Task.CompletedTask;
+            while (true)
+            {
+                try
+                {
+                    await _cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH).SynchronizeRawTransactions();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"An error occurrred while executing job {GetType()}.");
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)

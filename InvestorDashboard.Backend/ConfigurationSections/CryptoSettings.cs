@@ -1,5 +1,6 @@
 ﻿using InvestorDashboard.Backend.Database.Models;
 using System;
+using System.Numerics;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {

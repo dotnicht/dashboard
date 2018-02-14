@@ -80,6 +80,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 else
                 {
                     var adjusted = new DateTimeOffset(new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, 0, 0, DateTimeKind.Utc));
+
+                    if (dateTime.Value.Minute > 30)
+                    {
+                        adjusted = adjusted.AddHours(1);
+                    }
+
                     var client = new HistoryClient(http);
                     var response = await client.HourAsync(currency.ToString(), Currency.USD.ToString(), limit: 1, toDate: adjusted);
                     ex = response.Data.Single(x => x.Time == adjusted).Close;

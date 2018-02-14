@@ -14,6 +14,7 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -70,8 +71,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public override async Task SynchronizeRawTransactions()
         {
-            var index = _ethereumSettings.Value.StartingBlockIndex;
+            var index = new BigInteger(_ethereumSettings.Value.StartingBlockIndex);
             var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+
+            //var parent = await web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync("0x26ff2e0d824009668a6191c94b9f2e1ca6baadb95d10cdcd716a56eebf6b2d2d");
 
             while (true)
             {
@@ -79,24 +82,33 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 while (index <= current.Value)
                 {
-                    if (!Context.EthereumBlocks.Any(x => x.BlockIndex == index))
+                    if (!Context.EthereumBlocks.Any(x => x.BlockIndex == index.ToString()))
                     {
                         var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
 
                         var entity = Context.EthereumBlocks.Add(new EthereumBlock
                         {
                             BlockHash = block.BlockHash,
-                            BlockIndex = (long)block.Number.Value
+                            BlockIndex = block.Number.Value.ToString()
                         });
-                        
+
                         foreach (var tx in block.Transactions)
                         {
-                            Context.EthereumTransactions.Add(new EthereumTransaction
+                            if (tx.From != null && tx.To != null)
                             {
-                                Block = entity.Entity,
-                                TransactionHash = tx.TransactionHash,
-                                //TransactionIndex = tx.TransactionIndex.Value
-                            });
+                                Context.EthereumTransactions.Add(new EthereumTransaction
+                                {
+                                    Block = entity.Entity,
+                                    TransactionHash = tx.TransactionHash,
+                                    TransactionIndex = tx.TransactionIndex.Value.ToString(),
+                                    From = tx.From,
+                                    To = tx.To
+                                });
+                            }
+                            else
+                            {
+                                Logger.LogWarning("test");
+                            }
                         }
 
                         await Context.SaveChangesAsync();

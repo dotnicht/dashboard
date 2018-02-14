@@ -9,7 +9,8 @@ namespace InvestorDashboard.Backend.Database.Models
         [Key]
         public Guid Id { get; set; }
         public DateTime Created { get; set; }
-        public long BlockIndex { get; set; }
+        [Required]
+        public string BlockIndex { get; set; }
         [Required]
         public string BlockHash { get; set; }
         public virtual ICollection<EthereumTransaction> Transactions { get; set; }

@@ -1,5 +1,6 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
+using CsvHelper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
@@ -14,10 +15,12 @@ using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console
@@ -29,10 +32,25 @@ namespace InvestorDashboard.Console
             Run().GetAwaiter().GetResult();
         }
 
+        private class Rec1
+        {
+            public Guid Id { get; set; }
+            public string Email { get; set; }
+            public decimal Balance { get; set; }
+            public DateTime DateTime { get; set; }
+        }
+
+        private class Rec2
+        {
+            public Guid Id { get; set; }
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
+
         private static async Task Run()
         {
             var serviceCollection = new ServiceCollection()
-                .AddAutoMapper(typeof(DependencyInjection));
+              .AddAutoMapper(typeof(DependencyInjection));
 
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
