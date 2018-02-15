@@ -59,9 +59,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var tx in transactions)
             {
-                var uri = new Uri($"https://api.etherscan.io/api?module=transaction&action=getstatus&txhash={tx.Hash}&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
-                var result = await _restService.GetAsync<EtherscanTransactionResponse>(uri);
-                if (result.Result.IsError == 1)
+                var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+                var trx = await web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(tx.Hash);
+
+                //if (trx.s)
                 {
                     tx.Failed = true;
                     await Context.SaveChangesAsync();
@@ -94,21 +95,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         foreach (var tx in block.Transactions)
                         {
-                            if (tx.From != null && tx.To != null)
+                            Context.EthereumTransactions.Add(new EthereumTransaction
                             {
-                                Context.EthereumTransactions.Add(new EthereumTransaction
-                                {
-                                    Block = entity.Entity,
-                                    TransactionHash = tx.TransactionHash,
-                                    TransactionIndex = tx.TransactionIndex.Value.ToString(),
-                                    From = tx.From,
-                                    To = tx.To
-                                });
-                            }
-                            else
-                            {
-                                Logger.LogWarning("test");
-                            }
+                                Block = entity.Entity,
+                                TransactionHash = tx.TransactionHash,
+                                TransactionIndex = tx.TransactionIndex.Value.ToString(),
+                                From = tx.From,
+                                To = tx.To
+                            });
                         }
 
                         await Context.SaveChangesAsync();
@@ -117,7 +111,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     index++;
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(3));
+                await Task.Delay(_ethereumSettings.Value.IdleModeRefreshPeriod);
             }
         }
 

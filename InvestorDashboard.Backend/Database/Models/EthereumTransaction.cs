@@ -13,7 +13,6 @@ namespace InvestorDashboard.Backend.Database.Models
         [ForeignKey("BlockId")]
         public EthereumBlock Block { get; set; }
         public string From { get; set; }
-        [Required]
         public string To { get; set; }
         [Required]
         public string TransactionIndex { get; set; }

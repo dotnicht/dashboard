@@ -32,21 +32,6 @@ namespace InvestorDashboard.Console
             Run().GetAwaiter().GetResult();
         }
 
-        private class Rec1
-        {
-            public Guid Id { get; set; }
-            public string Email { get; set; }
-            public decimal Balance { get; set; }
-            public DateTime DateTime { get; set; }
-        }
-
-        private class Rec2
-        {
-            public Guid Id { get; set; }
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-
         private static async Task Run()
         {
             var serviceCollection = new ServiceCollection()
