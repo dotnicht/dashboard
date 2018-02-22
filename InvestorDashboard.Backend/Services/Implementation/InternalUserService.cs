@@ -43,7 +43,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         if (user == null)
                         {
-                            throw new InvalidOperationException($"User not found with email { record.Email }.");
+                            throw new InvalidOperationException($"User not found with email {record.Email}.");
                         }
 
                         var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.DTT && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
@@ -57,14 +57,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             TokenPrice = 1,
                             ExchangeRate = 1,
                             Direction = CryptoTransactionDirection.Internal,
-                            TimeStamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow
                         });
 
                         await Context.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, $"An error occurred while processing record { record.Guid }.");
+                        Logger.LogError(ex, $"An error occurred while processing record {record.Guid}.");
                     }
                 }
             }

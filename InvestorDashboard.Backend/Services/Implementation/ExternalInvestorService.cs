@@ -82,7 +82,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 TokenPrice = item?.TokenPrice ?? _tokenSettings.Value.Price,
                                 BonusPercentage = item?.BonusPercentage ?? _tokenSettings.Value.BonusPercentage,
                                 CryptoAddressId = address.Id,
-                                TimeStamp = record.DateTime
+                                Timestamp = record.DateTime
                             };
 
                             await Context.CryptoTransactions.AddAsync(transaction);

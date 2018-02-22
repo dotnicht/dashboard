@@ -112,7 +112,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     CryptoAddressId = dttAddress.Id,
                     Amount = amount,
-                    TimeStamp = DateTime.UtcNow,
+                    Timestamp = DateTime.UtcNow,
                     Direction = CryptoTransactionDirection.Outbound,
                     Hash = result.Hash,
                     TokenPrice = 1,

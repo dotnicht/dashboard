@@ -61,8 +61,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds)))
                 {
-                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
-                    return (Hash: receipt, Success: true);
+                    var hash = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
+                    return (Hash: hash, Success: true);
                 }
             }
             catch (Exception ex)

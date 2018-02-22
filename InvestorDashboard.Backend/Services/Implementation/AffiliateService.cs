@@ -43,10 +43,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 if (!string.IsNullOrWhiteSpace(clickId))
                 {
                     var amount = tx.Amount * tx.ExchangeRate;
-                    var date = tx.TimeStamp.ToShortDateString();
-                    var time = tx.TimeStamp.ToShortTimeString();
+                    var date = tx.Timestamp.ToShortDateString();
+                    var time = tx.Timestamp.ToShortTimeString();
 
-                    var address = $"http://offers.proffico.affise.com/postback?clickid={ clickId }&action_id={ tx.Hash }&sum={ amount }&currency=USD&custom_field1={ date }&custom_field2={ time }&custom_field3={ tx.CryptoAddress.Currency }&custom_field4={ tx.Amount }&custom_field5={ tx.ExchangeRate }&status=5";
+                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&sum={amount}&currency=USD&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={tx.Amount}&custom_field5={tx.ExchangeRate}&status=5";
 
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);

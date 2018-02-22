@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
-        protected Network Network
+        private Network Network
         {
             get
             {
@@ -52,6 +52,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public override Task SynchronizeRawTransactions()
         {
+            
+
             throw new NotImplementedException();
         }
 
