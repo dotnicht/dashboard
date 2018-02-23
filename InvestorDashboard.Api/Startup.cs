@@ -1,11 +1,9 @@
 ﻿using AspNet.Security.OAuth.Validation;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
-using InvestorDashboard.Api.Services;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +30,6 @@ namespace InvestorDashboard.Api
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
-                //.SetBasePath(env.ContentRootPath)
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", false, true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", false, true)

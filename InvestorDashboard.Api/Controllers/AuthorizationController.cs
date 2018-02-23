@@ -6,7 +6,6 @@ using InvestorDashboard.Api.Helpers;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
 using InvestorDashboard.Api.Models.AuthorizationViewModels;
-using InvestorDashboard.Api.Services;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
@@ -15,6 +14,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -23,6 +28,7 @@ using OpenIddict.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -32,7 +38,6 @@ namespace InvestorDashboard.Api.Controllers
     [Route("[controller]/[action]")]
     public class AuthorizationController : Controller
     {
-        private readonly IViewRenderService _view;
         private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly IOptions<CaptchaSettings> _captchaOptions;
@@ -42,29 +47,37 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IMapper _mapper;
         private readonly IMessageService _messageService;
         private readonly IGenericAddressService _genericAddressService;
+        private readonly IRazorViewEngine _viewEngine;
+        private readonly ITempDataProvider _tempDataProvider;
+        private readonly IServiceProvider _serviceProvider;
+
 
         public AuthorizationController(
-          OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
-          IOptions<IdentityOptions> identityOptions,
-          IOptions<CaptchaSettings> captchaOptions,
-          SignInManager<ApplicationUser> signInManager,
-          UserManager<ApplicationUser> userManager,
-          ILogger<AuthorizationController> loger,
-          IMapper mapper,
-          IMessageService messageService,
-          IViewRenderService view,
-          IGenericAddressService genericAddressService)
+            OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
+            IOptions<IdentityOptions> identityOptions,
+            IOptions<CaptchaSettings> captchaOptions,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            ILogger<AuthorizationController> logger,
+            IMapper mapper,
+            IMessageService messageService,
+            IGenericAddressService genericAddressService,
+            IRazorViewEngine viewEngine,
+            ITempDataProvider tempDataProvider,
+            IServiceProvider serviceProvider)
         {
             _applicationManager = applicationManager;
             _identityOptions = identityOptions;
             _captchaOptions = captchaOptions ?? throw new ArgumentNullException(nameof(captchaOptions));
             _signInManager = signInManager;
             _userManager = userManager;
-            _logger = loger;
+            _logger = logger;
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
-            _view = view;
+            _viewEngine = viewEngine;
+            _tempDataProvider = tempDataProvider;
+            _serviceProvider = serviceProvider;
         }
 
         [HttpPost("~/connect/register"), Produces("application/json")]
@@ -112,7 +125,7 @@ namespace InvestorDashboard.Api.Controllers
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         code = System.Web.HttpUtility.UrlEncode(code);
 
-                        var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
+                        var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
 
                         await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
@@ -151,7 +164,7 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                     code = System.Web.HttpUtility.UrlEncode(code);
-                    var emailBody = _view.Render("EmailBody",
+                    var emailBody = Render("EmailBody",
                         $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
                     await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
@@ -652,6 +665,47 @@ namespace InvestorDashboard.Api.Controllers
                 Response.Cookies.Append("confirm_status", errors, options);
                 return RedirectPermanent("/email_confirmed");
 
+            }
+        }
+
+        public string Render<TModel>(string name, TModel model)
+        {
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = _serviceProvider
+            };
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var viewEngineResult = _viewEngine.FindView(actionContext, name, false);
+
+            if (!viewEngineResult.Success)
+            {
+                throw new InvalidOperationException(string.Format("Couldn't find view '{0}'", name));
+            }
+
+            var view = viewEngineResult.View;
+
+            using (var output = new StringWriter())
+            {
+                var viewContext = new ViewContext(
+                    actionContext,
+                    view,
+                    new ViewDataDictionary<TModel>(
+                        metadataProvider: new EmptyModelMetadataProvider(),
+                        modelState: new ModelStateDictionary())
+                    {
+                        Model = model
+                    },
+                    new TempDataDictionary(
+                        actionContext.HttpContext,
+                        _tempDataProvider),
+                    output,
+                    new HtmlHelperOptions());
+
+                view.RenderAsync(viewContext).GetAwaiter().GetResult();
+
+                return output.ToString();
             }
         }
     }

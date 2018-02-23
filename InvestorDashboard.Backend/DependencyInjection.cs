@@ -32,8 +32,6 @@ namespace InvestorDashboard.Backend
             services.AddTransient<IEthereumService, EthereumService>();
             services.AddTransient<ICryptoService, BitcoinService>();
             services.AddTransient<ICryptoService, EthereumService>();
-
-            services.AddTransient<IViewRenderService, ViewRenderService>();
         }
     }
 }
