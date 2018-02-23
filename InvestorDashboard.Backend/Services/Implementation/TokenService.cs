@@ -194,7 +194,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (external != 0)
             {
-                updated = decimal.Round(updated, 6);
+                updated = decimal.Round(updated, 0);
+                external = decimal.Round(external, 0);
 
                 if (updated != external && user.ExternalId == null)
                 {
