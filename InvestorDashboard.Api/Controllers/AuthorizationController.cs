@@ -7,6 +7,7 @@ using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
 using InvestorDashboard.Api.Models.AuthorizationViewModels;
 using InvestorDashboard.Api.Services;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database.Models;
 using InvestorDashboard.Backend.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -34,6 +35,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IViewRenderService _view;
         private readonly OpenIddictApplicationManager<OpenIddictApplication> _applicationManager;
         private readonly IOptions<IdentityOptions> _identityOptions;
+        private readonly IOptions<CaptchaSettings> _captchaOptions;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger _logger;
@@ -44,6 +46,7 @@ namespace InvestorDashboard.Api.Controllers
         public AuthorizationController(
           OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
           IOptions<IdentityOptions> identityOptions,
+          IOptions<CaptchaSettings> captchaOptions,
           SignInManager<ApplicationUser> signInManager,
           UserManager<ApplicationUser> userManager,
           ILogger<AuthorizationController> loger,
@@ -54,6 +57,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             _applicationManager = applicationManager;
             _identityOptions = identityOptions;
+            _captchaOptions = captchaOptions ?? throw new ArgumentNullException(nameof(captchaOptions));
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = loger;
@@ -69,16 +73,13 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
-                var response = user.ReCaptchaToken;
-                string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
                 var client = new System.Net.WebClient();
-                var recaptchaResult = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, response));
+                var recaptchaResult = client.DownloadString($"https://www.google.com/recaptcha/api/siteverify?secret={_captchaOptions.Value.GoogleSecretKey}&response={user.ReCaptchaToken}");
                 var obj = JObject.Parse(recaptchaResult);
                 var status = (bool)obj.SelectToken("success");
 
                 if (!status)
                 {
-
                     recaptchaResult =
                         client.DownloadString(
                             $"https://dp-captcha2.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
@@ -88,7 +89,6 @@ namespace InvestorDashboard.Api.Controllers
 
                 if (status)
                 {
-
                     user.UserName = user.Email;
 
                     ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
@@ -111,7 +111,9 @@ namespace InvestorDashboard.Api.Controllers
                         appUser = await _userManager.FindByEmailAsync(appUser.Email);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         code = System.Web.HttpUtility.UrlEncode(code);
+
                         var emailBody = _view.Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
+
                         await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
                         return Ok();
@@ -216,7 +218,6 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
-
 
             if (user == null)
             {
