@@ -69,7 +69,6 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
-
                 var response = user.ReCaptchaToken;
                 string secretKey = "6LdmAjkUAAAAAA0JNsS5nepCqGLgvU7koKwIG4PH";
                 var client = new System.Net.WebClient();
@@ -84,9 +83,8 @@ namespace InvestorDashboard.Api.Controllers
                         client.DownloadString(
                             $"https://dp-captcha2.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
                     obj = JObject.Parse(recaptchaResult);
-                    status = (bool) obj.SelectToken("IsApproved");
+                    status = (bool)obj.SelectToken("IsApproved");
                 }
-
 
                 if (status)
                 {
@@ -118,11 +116,13 @@ namespace InvestorDashboard.Api.Controllers
 
                         return Ok();
                     }
+
                     return BadRequest(new OpenIdConnectResponse
                     {
                         Error = "user_exist"
                     });
                 }
+
                 return BadRequest(new OpenIdConnectResponse
                 {
                     ErrorDescription = "Invalid captcha"
@@ -155,6 +155,7 @@ namespace InvestorDashboard.Api.Controllers
 
                     return Ok();
                 }
+
                 return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.InvalidGrant,
@@ -170,7 +171,9 @@ namespace InvestorDashboard.Api.Controllers
                 });
             }
         }
+
         #region Authorization code, implicit and implicit flows
+
         // Note: to support interactive flows like the code flow,
         // you must provide your own authorization endpoint action:
         //[HttpGet]
@@ -213,7 +216,7 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
-          
+
 
             if (user == null)
             {
@@ -226,8 +229,8 @@ namespace InvestorDashboard.Api.Controllers
 
             var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-           // var result =              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
-           var result= await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, authenticatorCode);
+            // var result =              await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, false, false);
+            var result = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, authenticatorCode);
 
             if (result)
             {
@@ -387,9 +390,11 @@ namespace InvestorDashboard.Api.Controllers
             // to the post_logout_redirect_uri specified by the client application.
             return SignOut(OpenIdConnectServerDefaults.AuthenticationScheme);
         }
+
         #endregion
 
         #region Password, authorization code and refresh token flows
+
         // Note: to support non-interactive flows like password,
         // you must provide your own token endpoint action:
         [HttpPost("~/connect/token"), Produces("application/json")]
@@ -430,7 +435,7 @@ namespace InvestorDashboard.Api.Controllers
                     }
                     // Validate the username/password parameters and ensure the account is not locked out.
                     var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
-                   // var result = await _signInManager.PasswordSignInAsync(request.Username, request.Password, false, lockoutOnFailure: true);
+                    // var result = await _signInManager.PasswordSignInAsync(request.Username, request.Password, false, lockoutOnFailure: true);
                     if (!result.Succeeded)
                     {
                         return BadRequest(new OpenIdConnectResponse
@@ -497,7 +502,7 @@ namespace InvestorDashboard.Api.Controllers
                     ErrorDescription = "The specified grant type is not supported."
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new OpenIdConnectResponse
                 {
@@ -506,19 +511,17 @@ namespace InvestorDashboard.Api.Controllers
                 });
             }
         }
+
         #endregion
 
-        private async Task<AuthenticationTicket> CreateTicketAsync(
-          OpenIdConnectRequest request, ApplicationUser user,
-              AuthenticationProperties properties = null)
+        private async Task<AuthenticationTicket> CreateTicketAsync(OpenIdConnectRequest request, ApplicationUser user, AuthenticationProperties properties = null)
         {
             // Create a new ClaimsPrincipal containing the claims that
             // will be used to create an id_token, a token or a code.
             var principal = await _signInManager.CreateUserPrincipalAsync(user);
 
             // Create a new authentication ticket holding the user identity.
-            var ticket = new AuthenticationTicket(principal, properties,
-              OpenIdConnectServerDefaults.AuthenticationScheme);
+            var ticket = new AuthenticationTicket(principal, properties, OpenIdConnectServerDefaults.AuthenticationScheme);
 
             //if (!request.IsAuthorizationCodeGrantType() && !request.IsRefreshTokenGrantType())
             //{
@@ -559,16 +562,16 @@ namespace InvestorDashboard.Api.Controllers
                 // The other claims will only be added to the access_token, which is encrypted when using the default format.
                 if ((claim.Type == OpenIdConnectConstants.Claims.Name && ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
                     || (claim.Type == OpenIdConnectConstants.Claims.Email && ticket.HasScope(OpenIdConnectConstants.Scopes.Email))
-                    || (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles)) ||
-                    (claim.Type == CustomClaimTypes.Permission && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
+                    || (claim.Type == OpenIdConnectConstants.Claims.Role && ticket.HasScope(OpenIddictConstants.Claims.Roles))
+                    || (claim.Type == CustomClaimTypes.Permission && ticket.HasScope(OpenIddictConstants.Claims.Roles)))
                 {
                     destinations.Add(OpenIdConnectConstants.Destinations.IdentityToken);
                 }
 
                 claim.SetDestinations(destinations);
             }
-            var identity = principal.Identity as ClaimsIdentity;
 
+            var identity = principal.Identity as ClaimsIdentity;
 
             if (ticket.HasScope(OpenIdConnectConstants.Scopes.Profile))
             {
@@ -588,13 +591,11 @@ namespace InvestorDashboard.Api.Controllers
                     identity.AddClaim(CustomClaimTypes.Email, user.Email, OpenIdConnectConstants.Destinations.IdentityToken);
             }
 
-
-
             if (ticket.HasScope(OpenIdConnectConstants.Scopes.Phone))
             {
                 if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
                     identity.AddClaim(CustomClaimTypes.Phone, user.PhoneNumber, OpenIdConnectConstants.Destinations.IdentityToken);
-                   
+
             }
 
             identity.AddClaim(CustomClaimTypes.TwoFactorEnabled, user.TwoFactorEnabled.ToString().ToLower(), OpenIdConnectConstants.Destinations.IdentityToken);
@@ -643,7 +644,8 @@ namespace InvestorDashboard.Api.Controllers
             else
             {
                 var errors = "";
-                foreach(var e in result.Errors){
+                foreach (var e in result.Errors)
+                {
                     errors += e.Description;
                 }
                 Response.Cookies.Append("confirm_status", errors, options);
