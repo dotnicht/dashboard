@@ -159,9 +159,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     transactions.AddRange(mapped);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Logger.LogError($"An error occurred while accessing URI {uri}.");
+                    Logger.LogError(ex, $"An error occurred while accessing URI {uri}.");
                     throw;
                 }
             }
