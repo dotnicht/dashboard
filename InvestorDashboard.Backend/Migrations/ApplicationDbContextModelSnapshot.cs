@@ -261,69 +261,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.ToTable("DashboardHistoryItems");
                 });
 
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.EthereumBlock", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("BlockHash")
-                        .IsRequired();
-
-                    b.Property<string>("BlockIndex")
-                        .IsRequired();
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlockHash")
-                        .IsUnique();
-
-                    b.HasIndex("BlockIndex")
-                        .IsUnique();
-
-                    b.ToTable("EthereumBlocks");
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.EthereumTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<Guid>("BlockId");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("From")
-                        .IsRequired();
-
-                    b.Property<string>("To")
-                        .IsRequired();
-
-                    b.Property<string>("TransactionHash")
-                        .IsRequired();
-
-                    b.Property<string>("TransactionIndex")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("From");
-
-                    b.HasIndex("To");
-
-                    b.HasIndex("TransactionHash")
-                        .IsUnique();
-
-                    b.ToTable("EthereumTransactions");
-                });
-
             modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.ExchangeRate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -542,14 +479,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.HasOne("InvestorDashboard.Backend.Database.Models.CryptoAddress", "CryptoAddress")
                         .WithMany("CryptoTransactions")
                         .HasForeignKey("CryptoAddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.EthereumTransaction", b =>
-                {
-                    b.HasOne("InvestorDashboard.Backend.Database.Models.EthereumBlock", "Block")
-                        .WithMany("Transactions")
-                        .HasForeignKey("BlockId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
