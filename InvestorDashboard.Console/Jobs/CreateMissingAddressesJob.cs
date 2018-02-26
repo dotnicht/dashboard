@@ -13,8 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IGenericAddressService _genericAddressService;
 
-        public override TimeSpan Period => Options.Value.CreateMissingAddressesPeriod;
-
         public CreateMissingAddressesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IGenericAddressService genericAddressService)
             : base(loggerFactory, context, options)
         {

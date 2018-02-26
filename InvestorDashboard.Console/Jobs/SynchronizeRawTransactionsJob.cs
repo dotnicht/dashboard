@@ -12,31 +12,20 @@ using Quartz;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class RefreshTransactionsJob : JobBase
+    public class SynchronizeRawTransactionsJob : JobBase
     {
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public RefreshTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
+        public SynchronizeRawTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
             : base(loggerFactory, context, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        protected override async Task ExecuteInternal(IJobExecutionContext context)
+        protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            foreach (var service in _cryptoServices)
-            {
-                try
-                {
-                    await service.RefreshInboundTransactions();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"An error occurred while refreshing inbound {service.Settings.Value.Currency} transactions.");
-                }
-            }
-
-            await (_cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH) as IEthereumService).RefreshOutboundTransactions();
+            Task.WaitAll(_cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH).SynchronizeRawTransactions());
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

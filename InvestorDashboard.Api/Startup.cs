@@ -32,9 +32,10 @@ namespace InvestorDashboard.Api
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
+                //.SetBasePath(env.ContentRootPath)
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", false, true)
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();

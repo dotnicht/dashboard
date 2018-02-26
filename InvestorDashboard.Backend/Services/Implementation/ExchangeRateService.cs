@@ -30,7 +30,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await RefreshExchangeRate(currency);
             }
 
-            var ex = Context.ExchangeRates.Where(x => x.Base == currency).OrderByDescending(x => x.Created);
+            var ex = Context.ExchangeRates
+                .Where(x => x.Base == currency)
+                .OrderByDescending(x => x.Created);
 
             if (dateTime == null)
             {
@@ -43,29 +45,49 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var filtered = ex
                 .Where(x => x.Created >= lower && x.Created <= upper)
                 .ToArray();
-                
-            var diff = filtered.Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
 
-            var rate = filtered
-                .Where(x => Math.Abs((x.Created - dateTime.Value).Ticks) == diff)
-                .FirstOrDefault();
-
-            if (rate == null)
+            if (filtered.Any())
             {
-                throw new InvalidOperationException($"Couldn't find exchange rate for {currency} at {dateTime.Value}");
+                var diff = filtered.Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
+
+                var rate = filtered
+                    .Where(x => Math.Abs((x.Created - dateTime.Value).Ticks) == diff)
+                    .FirstOrDefault();
+
+                if (rate == null)
+                {
+                    throw new InvalidOperationException($"Couldn't find exchange rate for {currency} at {dateTime.Value}");
+                }
+
+                return rate.Rate;
             }
 
-            return rate.Rate;
+            return await RefreshExchangeRate(currency, dateTime);
         }
 
-        public async Task RefreshExchangeRate(Currency currency)
+        public async Task<decimal> RefreshExchangeRate(Currency currency, DateTime? dateTime = null)
         {
             using (var http = new HttpClient())
             {
-                var client = new PricesClient(http);
-                var response = await client.SingleAsync(currency.ToString(), new[] { "USD" });
-                await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = currency, Quote = Currency.USD, Rate = response.Values.Single() });
+                var ex = 0m;
+
+                if (dateTime == null)
+                {
+                    var client = new PricesClient(http);
+                    var response = await client.SingleAsync(currency.ToString(), new[] { Currency.USD.ToString() });
+                    ex = response.Values.Single();
+                }
+                else
+                {
+                    var adjusted = new DateTimeOffset(new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, 0, 0, DateTimeKind.Utc));
+                    var client = new HistoryClient(http);
+                    var response = await client.HourAsync(currency.ToString(), Currency.USD.ToString(), limit: 1, toDate: adjusted);
+                    ex = response.Data.Single(x => x.Time == adjusted).Close;
+                }
+
+                await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = currency, Quote = Currency.USD, Rate = ex });
                 await Context.SaveChangesAsync();
+                return ex;
             }
         }
     }

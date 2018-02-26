@@ -16,6 +16,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class BitcoinService : CryptoService, IBitcoinService
     {
+        private readonly ITokenService _tokenService;
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
@@ -37,14 +38,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IResourceService resourceService,
             IMessageService messageService,
             IDashboardHistoryService dashboardHistoryService,
+            ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, mapper, tokenSettings, bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, tokenService, mapper, tokenSettings, bitcoinSettings)
         {
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+        }
+
+        public override Task SynchronizeRawTransactions()
+        {
+            throw new NotImplementedException();
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -84,7 +92,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             // TODO: implement custom amount transfer.
 
             var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
-            var response = _restService.Get<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
+            var response = await _restService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
 
             var balance = 0m;
             var transaction = new Transaction();

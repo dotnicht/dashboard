@@ -10,7 +10,7 @@ namespace InvestorDashboard.Backend
     {
         public MappingProfile()
         {
-            CreateMap<EthereumService.EtherscanAccountResponse.Transaction, CryptoTransaction>()
+            CreateMap<EthereumService.EtherscanAccountResponse.Transaction , CryptoTransaction>()
                 .ForMember(x => x.Amount, x => x.MapFrom(y => double.Parse(y.Value)/Math.Pow(10, 18)))
                 .ForMember(x => x.TimeStamp, x => x.MapFrom(y => DateTimeOffset.FromUnixTimeSeconds(long.Parse(y.TimeStamp)).UtcDateTime));
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
@@ -12,7 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private bool isDisposed;
 
-        public abstract TimeSpan Period { get; }
         protected ApplicationDbContext Context { get; }
         protected IOptions<JobsSettings> Options { get; }
         protected ILogger Logger { get; }
@@ -31,13 +31,23 @@ namespace InvestorDashboard.Console.Jobs
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var sw = Stopwatch.StartNew();
+            Logger.LogInformation($"Job {GetType()} execution statrted.");
+
             try
             {
                 await ExecuteInternal(context);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"An error occurred while executing the job.");
+                Logger.LogError(ex, $"An error occurred while executing the job {GetType()}.");
+            }
+
+            Logger.LogInformation($"Job {GetType()} execution elapsed {sw.Elapsed}.");
+
+            if (Options.Value.Jobs[GetType().Name].Period < sw.Elapsed)
+            {
+                Logger.LogWarning($"Job {GetType()} execution elapsed {sw.Elapsed} which is more then estimated {Options.Value.Jobs[GetType().Name].Period}.");
             }
         }
 

@@ -14,8 +14,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly ITokenService _tokenService;
 
-        public override TimeSpan Period => Options.Value.RefreshTokenBalancePeriod;
-
         public RefreshTokenBalanceJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, ITokenService tokenService) 
             : base(loggerFactory, context, options)
         {

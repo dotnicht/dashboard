@@ -2,6 +2,7 @@
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -16,6 +17,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IMessageService _messageService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
+        private readonly ITokenService _tokenService;
 
         public IOptions<CryptoSettings> Settings { get; }
 
@@ -33,6 +35,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IResourceService resourceService,
             IMessageService messageService,
             IDashboardHistoryService dashboardHistoryService,
+            ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)
@@ -45,7 +48,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
             ResourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _dashboardHistoryService = dashboardHistoryService;
+            _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         public async Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment, string password = null)
@@ -96,6 +100,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         await FillAndSaveTransaction(transaction, address);
                         // TODO: send transaction received message.
+
+                        await _tokenService.RefreshTokenBalance(address.UserId);
                     }
                 }
 
@@ -158,6 +164,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             return result;
         }
+
+        public abstract Task SynchronizeRawTransactions();
 
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);

@@ -13,8 +13,6 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IMessageService _messageService;
 
-        public override TimeSpan Period => Options.Value.NotifyDashboardHistoryPeriod;
-
         public NotifyDashboardHistoryJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IMessageService messageService) 
             : base(loggerFactory, context, options)
         {

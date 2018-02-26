@@ -4,7 +4,6 @@ using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
@@ -15,13 +14,13 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : CryptoService, IEthereumService
     {
+        private readonly ITokenService _tokenService;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IRestService _restService;
 
@@ -33,76 +32,27 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IResourceService resourceService,
             IMessageService messageService,
             IDashboardHistoryService dashboardHistoryService,
+            ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, mapper, tokenSettings, ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, tokenService, mapper, tokenSettings, ethereumSettings)
         {
+            _tokenService = tokenService;
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
-        }
-
-        public async Task<(string Hash, bool Success)> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
-        {
-            if (sourceAddress == null)
-            {
-                throw new ArgumentNullException(nameof(sourceAddress));
-            }
-
-            if (destinationAddress == null)
-            {
-                throw new ArgumentNullException(nameof(destinationAddress));
-            }
-
-            destinationAddress = destinationAddress.Trim();
-
-            if (destinationAddress.Equals(sourceAddress.Address, StringComparison.InvariantCultureIgnoreCase)
-                || destinationAddress.Equals(_ethereumSettings.Value.ContractAddress, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new InvalidOperationException("Destination address is invalid for token transfer.");
-            }
-
-            try
-            {
-                var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
-
-                var transfer = await GetSmartContractFunction("transferFrom");
-
-                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, KeyVaultService.MasterKeyStoreEncryptionPassword, Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds)))
-                {
-                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
-                    return (Hash: receipt, Success: true);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "An error occurred while transfering tokens.");
-            }
-
-            return (Hash: null, Success: false);
-        }
-
-        public async Task<decimal> CallSmartContractBalanceOfFunction(string address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            var balance = await GetSmartContractFunction("balanceOf");
-            return UnitConversion.Convert.FromWei(await balance.Function.CallAsync<BigInteger>(address));
         }
 
         public async Task RefreshOutboundTransactions()
         {
             var transactions = Context.CryptoTransactions
                 .Where(
-                    x => x.Direction == CryptoTransactionDirection.Outbound 
-                    && !x.Failed 
-                    && x.ExternalId == null 
+                    x => x.Direction == CryptoTransactionDirection.Outbound
+                    && !x.Failed
+                    && x.ExternalId == null
                     && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.DTT 
+                    && x.CryptoAddress.Currency == Currency.DTT
                     && x.CryptoAddress.Type == CryptoAddressType.Transfer)
                 .ToArray();
 
@@ -115,6 +65,47 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     tx.Failed = true;
                     await Context.SaveChangesAsync();
                 }
+            }
+        }
+
+        public override async Task SynchronizeRawTransactions()
+        {
+            var index = _ethereumSettings.Value.StartingBlockIndex;
+            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+
+            while (true)
+            {
+                var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+
+                while (index <= current.Value)
+                {
+                    if (!Context.EthereumBlocks.Any(x => x.BlockIndex == index))
+                    {
+                        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+
+                        var entity = Context.EthereumBlocks.Add(new EthereumBlock
+                        {
+                            BlockHash = block.BlockHash,
+                            BlockIndex = (long)block.Number.Value
+                        });
+                        
+                        foreach (var tx in block.Transactions)
+                        {
+                            Context.EthereumTransactions.Add(new EthereumTransaction
+                            {
+                                Block = entity.Entity,
+                                TransactionHash = tx.TransactionHash,
+                                //TransactionIndex = tx.TransactionIndex.Value
+                            });
+                        }
+
+                        await Context.SaveChangesAsync();
+                    }
+
+                    index++;
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(3));
             }
         }
 
@@ -137,27 +128,43 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var uri = new Uri($"http://api.etherscan.io/api?module=account&action=txlist&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
-            var result = await _restService.GetAsync<EtherscanAccountResponse>(uri);
+            var transactions = new List<CryptoTransaction>();
 
-            var confirmed = result.Result
-                .Where(x => int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
-                .ToArray();
-
-            var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
-
-            foreach (var tx in mapped)
+            foreach (var action in new[] { "txlist", "txlistinternal" })
             {
-                // TODO: adjust direction to include outbound transactions.
-                var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
-                tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
-                    ? CryptoTransactionDirection.Inbound
-                    : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
-                        ? CryptoTransactionDirection.Internal
-                        : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
+                var uri = new Uri($"http://api.etherscan.io/api?module=account&action={action}&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
+
+                try
+                {
+                    var result = await _restService.GetAsync<EtherscanAccountResponse>(uri);
+
+                    var confirmed = result.Result
+                        .Where(x => string.IsNullOrWhiteSpace(x.Confirmations) || int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
+                        .ToArray();
+
+                    var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
+
+                    foreach (var tx in mapped)
+                    {
+                        // TODO: adjust direction to include outbound transactions.
+                        var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
+                        tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
+                            ? CryptoTransactionDirection.Inbound
+                            : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
+                                ? CryptoTransactionDirection.Internal
+                                : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
+                    }
+
+                    transactions.AddRange(mapped);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"An error occurred while accessing URI {uri}.");
+                    throw;
+                }
             }
 
-            return mapped;
+            return transactions;
         }
 
         protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
@@ -186,18 +193,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
-        }
-
-        private async Task<(Function Function, Web3 Web3)> GetSmartContractFunction(string name)
-        {
-            var web3 = new Web3(Account.LoadFromKeyStore(ResourceService.GetResourceString("MasterKeyStore.json"), KeyVaultService.MasterKeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
-
-            web3.TransactionManager.DefaultGas = _ethereumSettings.Value.DefaultGas;
-            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
-
-            var contract = web3.Eth.GetContract(ResourceService.GetResourceString("ContractAbi.json"), _ethereumSettings.Value.ContractAddress);
-
-            return (Function: contract.GetFunction(name), Web3: web3);
         }
 
         internal class EtherscanAccountResponse

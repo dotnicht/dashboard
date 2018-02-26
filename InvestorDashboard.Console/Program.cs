@@ -1,14 +1,15 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
 using InvestorDashboard.Backend;
+using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using InvestorDashboard.Console.Jobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
@@ -36,7 +37,7 @@ namespace InvestorDashboard.Console
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", false, true)
-              .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
+              .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", false, true)
               .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
@@ -95,7 +96,18 @@ namespace InvestorDashboard.Console
 
         private static async Task SetupScheduling(IServiceCollection serviceCollection)
         {
-            var schedulerFactory = new StdSchedulerFactory(new NameValueCollection { { "quartz.serializer.type", "binary" } });
+            var settings = serviceCollection
+                .BuildServiceProvider()
+                .GetRequiredService<IOptions<JobsSettings>>()
+                .Value;
+
+            var propr = new NameValueCollection
+            {
+                { $"{StdSchedulerFactory.PropertyObjectSerializer}.type", "binary" },
+                { $"{StdSchedulerFactory.PropertyThreadPoolPrefix}.threadCount", settings.ThreadCount.ToString() }
+            };
+
+            var schedulerFactory = new StdSchedulerFactory(propr);
             var scheduler = await schedulerFactory.GetScheduler().ConfigureAwait(false);
 
             Assembly
@@ -105,23 +117,27 @@ namespace InvestorDashboard.Console
                 .ToList()
                 .ForEach(async x =>
                 {
-                    serviceCollection.AddTransient(x);
-
-                    var job = JobBuilder
-                        .Create(x)
-                        .Build();
-
-                    var period = (serviceCollection.BuildServiceProvider().GetService(x) as JobBase)?.Period;
-
-                    if (period != null && period.Value != default(TimeSpan))
+                    if (settings.Jobs.ContainsKey(x.Name) && !settings.Jobs[x.Name].IsDisabled)
                     {
-                        var trigger = TriggerBuilder
-                            .Create()
-                            .StartNow()
-                            .WithSimpleSchedule(y => y.WithInterval(period.Value).RepeatForever())
+                        serviceCollection.AddTransient(x);
+
+                        var job = JobBuilder
+                            .Create(x)
                             .Build();
 
-                        await scheduler.ScheduleJob(job, trigger);
+                        var builder = TriggerBuilder.Create();
+
+                        if (settings.Jobs[x.Name].StartImmediately)
+                        {
+                            builder = builder.StartNow();
+                        }
+
+                        if (!settings.Jobs[x.Name].IsInfinite)
+                        {
+                            builder = builder.WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever());
+                        }
+
+                        await scheduler.ScheduleJob(job, builder.Build());
                     }
                 });
 

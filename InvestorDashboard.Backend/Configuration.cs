@@ -28,6 +28,7 @@ namespace InvestorDashboard.Backend
             services.Configure<SendGridEmailSettings>(configuration.GetSection("SendGridEmail"));
             services.Configure<AmazonEmailSettings>(configuration.GetSection("AmazonEmail"));
             services.Configure<TelegramSettings>(configuration.GetSection("Telegram"));
+            services.Configure<CaptchaSettings>(configuration.GetSection("Captcha"));
         }
     }
 }

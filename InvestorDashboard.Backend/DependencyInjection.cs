@@ -27,7 +27,7 @@ namespace InvestorDashboard.Backend
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IDashboardHistoryService, DashboardHistoryService>();
             services.AddTransient<IGenericAddressService, GenericAddressService>();
-
+            services.AddTransient<ISmartContractService, SmartContractService>();
             services.AddTransient<IBitcoinService, BitcoinService>();
             services.AddTransient<IEthereumService, EthereumService>();
             services.AddTransient<ICryptoService, BitcoinService>();
