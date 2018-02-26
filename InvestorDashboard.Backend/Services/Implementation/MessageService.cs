@@ -31,7 +31,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public async Task HandleIncomingMessage(string user, string message, int chatId)
+        public async Task HandleIncomingMessage(string externalUserName, string message, int chatId)
         {
             if (message == null)
             {
@@ -40,10 +40,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (chatId != _options.Value.BusinessNotificationChatId && chatId != _options.Value.TechnicalNotificationChatId)
             {
-                throw new InvalidOperationException($"Unsupported chat id {chatId}. User: {user}. Message: {message}.");
+                throw new InvalidOperationException($"Unsupported chat id {chatId}. User: {externalUserName}. Message: {message}.");
             }
 
-            Logger.LogInformation($"Handle incoming message from user {user}. Text: {message}.");
+            Logger.LogInformation($"Handle incoming message from user {externalUserName}. Text: {message}.");
 
             var msg = message.Trim();
             var commands = new Dictionary<string, Func<Task>>
@@ -76,14 +76,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var user = Context.Users.Single(x => x.Id == userId);
-            await _emailService.SendEmailAsync(user.Email, "Confirm your email", message);
+            await _emailService.SendEmailAsync(user.Email, "Confirm Your Email", message);
         }
 
-        public async Task SendPasswordResetMessage(string email, string message)
+        public async Task SendPasswordResetMessage(string userId, string message)
         {
-            if (email == null)
+            if (userId == null)
             {
-                throw new ArgumentNullException(nameof(email));
+                throw new ArgumentNullException(nameof(userId));
             }
 
             if (message == null)
@@ -91,7 +91,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var user = Context.Users.Single(x => x.Id == email);
+            var user = Context.Users.Single(x => x.Id == userId);
             await _emailService.SendEmailAsync(user.Email, "Reset Password", message);
         }
 
