@@ -5,6 +5,6 @@
         USD = 0,
         ETH = 1,
         BTC = 2,
-        DTT = 666
+        Token = int.MaxValue
     }
 }

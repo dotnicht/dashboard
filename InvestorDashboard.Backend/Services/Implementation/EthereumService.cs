@@ -50,10 +50,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var transactions = Context.CryptoTransactions
                 .Where(
                     x => x.Direction == CryptoTransactionDirection.Outbound
-                    && !x.Failed
+                    && x.IsFailed == null
                     && x.ExternalId == null
                     && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.DTT
+                    && x.CryptoAddress.Currency == Currency.Token
                     && x.CryptoAddress.Type == CryptoAddressType.Transfer)
                 .ToArray();
 
@@ -62,9 +62,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
                 var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
 
-                if (receipt.Status.Value == 0)
+                if (receipt != null)
                 {
-                    tx.Failed = true;
+                    tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
                     await Context.SaveChangesAsync();
                 }
             }
@@ -81,28 +81,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 while (index <= current.Value)
                 {
-                    if (!Context.RawBlocks.Any(x => x.BlockIndex == index.ToString()))
-                    {
-                        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+                    //if (!Context.RawBlocks.Any(x => x.BlockIndex == index.ToString()))
+                    //{
+                    //    var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
 
-                        var entity = Context.RawBlocks.Add(new RawBlock
-                        {
-                            BlockHash = block.BlockHash,
-                            BlockIndex = block.Number.Value.ToString()
-                        });
+                    //    var entity = Context.RawBlocks.Add(new RawBlock
+                    //    {
+                    //        BlockHash = block.BlockHash,
+                    //        BlockIndex = block.Number.Value.ToString()
+                    //    });
 
-                        foreach (var tx in block.Transactions)
-                        {
-                            Context.RawTransactions.Add(new RawTransaction
-                            {
-                                Block = entity.Entity,
-                                TransactionHash = tx.TransactionHash,
-                                TransactionIndex = tx.TransactionIndex.Value.ToString(),
-                            });
-                        }
+                    //    foreach (var tx in block.Transactions)
+                    //    {
+                    //        Context.RawTransactions.Add(new RawTransaction
+                    //        {
+                    //            Block = entity.Entity,
+                    //            TransactionHash = tx.TransactionHash,
+                    //            TransactionIndex = tx.TransactionIndex.Value.ToString(),
+                    //        });
+                    //    }
 
-                        await Context.SaveChangesAsync();
-                    }
+                    //    await Context.SaveChangesAsync();
+                    //}
 
                     index++;
                 }

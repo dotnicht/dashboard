@@ -1,6 +1,5 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
-using CsvHelper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
@@ -15,12 +14,10 @@ using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console
