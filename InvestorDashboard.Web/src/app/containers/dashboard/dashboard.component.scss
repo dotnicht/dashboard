@@ -32,7 +32,7 @@
     width: calc(35% - 7.5px);
     margin-left: 5px;
     margin-bottom: 20px;
-    .left{
+    .left {
       width: 50%;
     }
     .right {
@@ -224,6 +224,8 @@
       position: absolute;
       color: white;
       text-align: center;
+      display: grid;
+      height: 100%;
       width: 100%;
       margin-top: 30px;
       .line {
@@ -269,7 +271,7 @@
         border: none;
         resize: inherit;
       }
-      button{
+      button {
         width: calc(30% - 20px);
       }
     }
@@ -335,7 +337,7 @@
         }
       }
     }
-    .sixth{
+    .sixth {
       height: 380px;
     }
     .seventh {
