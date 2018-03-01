@@ -38,6 +38,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var result = items.ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created <= dateTime.Value).FirstOrDefault())
                 ?? items.ToDictionary(x => x.Key, x => x.OrderBy(y => y.Created).Where(y => dateTime == null || y.Created > dateTime.Value).FirstOrDefault());
 
+            // TODO: remove this on fresh environment.
             result.Remove(Currency.USD);
 
             return result;
