@@ -203,7 +203,7 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     Currency = x.Address.Currency.ToString(),
                     Address = x.Address.Address,
-                    Rate = await _exchangeRateService.GetExchangeRate(x.Address.Currency),
+                    Rate = await _exchangeRateService.GetExchangeRate(x.Address.Currency, _tokenSettings.Value.Currency),
                     Confirmations = x.Settings.Value.Confirmations
                 })
                 .Select(m => m.Result)
