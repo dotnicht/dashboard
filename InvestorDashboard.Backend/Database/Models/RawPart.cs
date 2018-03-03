@@ -14,7 +14,8 @@ namespace InvestorDashboard.Backend.Database.Models
         public RawTransaction Transaction { get; set; }
         public RawPartType Type { get; set; }
         public string Reference { get; set; }
-        public long Index { get; set; }
+        [Required]
+        public string Index { get; set; }
         [Required]
         public string Address { get; set; }
         [Required]

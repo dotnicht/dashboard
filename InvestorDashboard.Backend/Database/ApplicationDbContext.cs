@@ -18,9 +18,9 @@ namespace InvestorDashboard.Backend.Database
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
         public DbSet<DashboardHistoryItem> DashboardHistoryItems { get; set; }
 
-        //public DbSet<RawBlock> RawBlocks { get; set; }
-        //public DbSet<RawTransaction> RawTransactions { get; set; }
-        //public DbSet<RawPart> RawParts { get; set; }
+        public DbSet<RawBlock> RawBlocks { get; set; }
+        public DbSet<RawTransaction> RawTransactions { get; set; }
+        public DbSet<RawPart> RawParts { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -53,17 +53,25 @@ namespace InvestorDashboard.Backend.Database
                 .HasIndex(x => x.Created)
                 .IsUnique(false);
 
-            //builder.Entity<RawBlock>()
-            //    .HasIndex(x => x.BlockHash)
-            //    .IsUnique(true);
+            builder.Entity<RawBlock>()
+                .HasIndex(x => x.BlockHash)
+                .IsUnique(true);
 
-            //builder.Entity<RawBlock>()
-            //    .HasIndex(x => new { x.BlockIndex, x.Currency })
-            //    .IsUnique(true);
+            builder.Entity<RawBlock>()
+                .HasIndex(x => new { x.BlockIndex, x.Currency })
+                .IsUnique(true);
 
-            //builder.Entity<RawTransaction>()
-            //    .HasIndex(x => x.TransactionHash)
-            //    .IsUnique(true);
+            builder.Entity<RawTransaction>()
+                .HasIndex(x => x.TransactionHash)
+                .IsUnique(true);
+
+            builder.Entity<RawPart>()
+                .HasIndex(x => x.Address)
+                .IsUnique(false);
+
+            builder.Entity<RawPart>()
+                .HasIndex(x => x.Reference)
+                .IsUnique(false);
 
             foreach (var property in GetProperties(builder, p => p.ClrType == typeof(decimal)))
             {
