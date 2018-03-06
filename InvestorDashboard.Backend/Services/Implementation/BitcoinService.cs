@@ -6,6 +6,7 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NBitcoin.BitcoinCore;
 using NBitcoin.Protocol;
 using System;
 using System.Collections.Generic;
@@ -24,8 +25,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             get
             {
-                return _bitcoinSettings.Value.IsTestNet 
-                    ? Network.TestNet 
+                return _bitcoinSettings.Value.IsTestNet
+                    ? Network.TestNet
                     : Network.Main;
             }
         }
@@ -50,11 +51,73 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
-        public override Task SynchronizeRawTransactions()
+        public override async Task SynchronizeRawTransactions()
         {
-            
+            var index = _bitcoinSettings.Value.StartingBlockIndex;
 
-            throw new NotImplementedException();
+            while (true)
+            {
+                var store = new IndexedBlockStore(new InMemoryNoSqlRepository(), new BlockStore(_bitcoinSettings.Value.LocalBlockchainFilesPath, Network));
+                store.ReIndex();
+
+                var node = Node.Connect(Network, _bitcoinSettings.Value.NodeAddress.ToString());
+                node.VersionHandshake();
+                var chain = node.GetChain().ToEnumerable(false);
+                var current = chain.Last().Height;
+
+                while (index <= current)
+                {
+                    if (!Context.RawBlocks.Any(x => x.Index == index && x.Currency == Currency.BTC))
+                    {
+                        var header = chain.Single(x => x.Height == index);
+                        var source = store.Get(header.HashBlock);
+
+                        var block = new RawBlock
+                        {
+                            Hash = source.GetHash().ToString(),
+                            Index = header.Height,
+                            Timestamp = header.Header.BlockTime.UtcDateTime
+                        };
+
+                        foreach (var tx in source.Transactions)
+                        {
+                            var transaction = new RawTransaction
+                            {
+                                Hash = tx.GetHash().ToString()
+                            };
+
+                            var outputs = tx.Outputs.Select((x, i) => new RawPart
+                            {
+                                Type = RawPartType.Output,
+                                Address = x.ScriptPubKey.GetDestinationAddress(Network).ToString(),
+                                Value = x.Value.Satoshi.ToString(),
+                                Index = i
+                            });
+
+                            transaction.Parts = tx.Inputs
+                                .Select(x =>
+                                    new RawPart
+                                    {
+                                        Type = RawPartType.Input,
+                                        Address = x.ScriptSig.GetScriptAddress(Network).ToString(),
+                                        Reference = x.PrevOut.Hash.ToString(),
+                                        Index = x.PrevOut.N
+                                    })
+                                .Union(outputs)
+                                .ToHashSet();
+
+                            block.Transactions.Add(transaction);
+                        }
+
+                        await Context.RawBlocks.AddAsync(block);
+                        await Context.SaveChangesAsync();
+                    }
+
+                    index++;
+                }
+
+                await Task.Delay(_bitcoinSettings.Value.IdleModeRefreshPeriod);
+            }
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)

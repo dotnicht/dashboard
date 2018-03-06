@@ -28,7 +28,7 @@ namespace InvestorDashboard.Console.Jobs
             {
                 try
                 {
-                    await _cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH).SynchronizeRawTransactions();
+                    await _cryptoServices.Single(x => x.Settings.Value.Currency == Currency.BTC).SynchronizeRawTransactions();
                 }
                 catch (Exception ex)
                 {

@@ -81,28 +81,45 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 while (index <= current.Value)
                 {
-                    //if (!Context.RawBlocks.Any(x => x.BlockIndex == index.ToString()))
-                    //{
-                    //    var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+                    if (!Context.RawBlocks.Any(x => x.Index == index && x.Currency == Currency.ETH))
+                    {
+                        var source = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
 
-                    //    var entity = Context.RawBlocks.Add(new RawBlock
-                    //    {
-                    //        BlockHash = block.BlockHash,
-                    //        BlockIndex = block.Number.Value.ToString()
-                    //    });
+                        var block = new RawBlock
+                        {
+                            Hash = source.BlockHash,
+                            Index = (long)source.Number.Value,
+                            Timestamp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(source.Timestamp.Value.ToString())).UtcDateTime
+                        };
 
-                    //    foreach (var tx in block.Transactions)
-                    //    {
-                    //        Context.RawTransactions.Add(new RawTransaction
-                    //        {
-                    //            Block = entity.Entity,
-                    //            TransactionHash = tx.TransactionHash,
-                    //            TransactionIndex = tx.TransactionIndex.Value.ToString(),
-                    //        });
-                    //    }
+                        foreach (var tx in source.Transactions)
+                        {
+                            var transaction = new RawTransaction
+                            {
+                                Hash = tx.TransactionHash,
+                                Index = (long)tx.TransactionIndex.Value
+                            };
 
-                    //    await Context.SaveChangesAsync();
-                    //}
+                            transaction.Parts.Add(new RawPart
+                            {
+                                Type = RawPartType.Input,
+                                Address = tx.From,
+                                Value = tx.Value.Value.ToString()
+                            });
+
+                            transaction.Parts.Add(new RawPart
+                            {
+                                Type = RawPartType.Output,
+                                Address = tx.To,
+                                Value = tx.Value.Value.ToString()
+                            });
+
+                            block.Transactions.Add(transaction);
+                        }
+
+                        await Context.RawBlocks.AddAsync(block);
+                        await Context.SaveChangesAsync();
+                    }
 
                     index++;
                 }

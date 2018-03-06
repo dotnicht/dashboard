@@ -10,11 +10,10 @@ namespace InvestorDashboard.Backend.Database.Models
         public Guid Id { get; set; }
         public DateTime Created { get; set; }
         public DateTime Timestamp { get; set; }
+        public long Index { get; set; }
         [Required]
-        public string BlockIndex { get; set; }
-        [Required]
-        public string BlockHash { get; set; }
+        public string Hash { get; set; }
         public Currency Currency { get; set; }
-        public virtual ICollection<RawTransaction> Transactions { get; set; }
+        public virtual ICollection<RawTransaction> Transactions { get; } = new HashSet<RawTransaction>();
     }
 }

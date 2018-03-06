@@ -54,15 +54,15 @@ namespace InvestorDashboard.Backend.Database
                 .IsUnique(false);
 
             builder.Entity<RawBlock>()
-                .HasIndex(x => x.BlockHash)
+                .HasIndex(x => x.Hash)
                 .IsUnique(true);
 
             builder.Entity<RawBlock>()
-                .HasIndex(x => new { x.BlockIndex, x.Currency })
+                .HasIndex(x => new { x.Index, x.Currency })
                 .IsUnique(true);
 
             builder.Entity<RawTransaction>()
-                .HasIndex(x => x.TransactionHash)
+                .HasIndex(x => x.Hash)
                 .IsUnique(true);
 
             builder.Entity<RawPart>()
