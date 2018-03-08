@@ -335,8 +335,7 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<int>("Type");
 
-                    b.Property<string>("Value")
-                        .IsRequired();
+                    b.Property<string>("Value");
 
                     b.HasKey("Id");
 

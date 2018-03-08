@@ -96,8 +96,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         {
                             var transaction = new RawTransaction
                             {
-                                Hash = tx.TransactionHash,
-                                Index = (long)tx.TransactionIndex.Value
+                                Hash = tx.TransactionHash
                             };
 
                             transaction.Parts.Add(new RawPart

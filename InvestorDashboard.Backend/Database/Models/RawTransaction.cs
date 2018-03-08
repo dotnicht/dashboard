@@ -13,7 +13,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public Guid BlockId { get; set; }
         [ForeignKey("BlockId")]
         public RawBlock Block { get; set; }
-        public long Index { get; set; }
         [Required]
         public string Hash { get; set; }
         public ICollection<RawPart> Parts { get; set; }

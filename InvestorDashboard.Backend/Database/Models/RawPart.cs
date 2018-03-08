@@ -16,7 +16,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public string Reference { get; set; }
         public long Index { get; set; }
         public string Address { get; set; }
-        [Required]
         public string Value { get; set; }
     }
 }

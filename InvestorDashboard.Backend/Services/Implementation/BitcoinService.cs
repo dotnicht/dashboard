@@ -74,6 +74,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         var block = new RawBlock
                         {
+                            Currency = Currency.BTC,
                             Hash = source.GetHash().ToString(),
                             Index = header.Height,
                             Timestamp = header.Header.BlockTime.UtcDateTime
@@ -86,24 +87,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 Hash = tx.GetHash().ToString()
                             };
 
-                            var outputs = tx.Outputs.Select((x, i) => new RawPart
-                            {
-                                Type = RawPartType.Output,
-                                Address = x.ScriptPubKey.GetDestinationAddress(Network).ToString(),
-                                Value = x.Value.Satoshi.ToString(),
-                                Index = i
-                            });
-
                             transaction.Parts = tx.Inputs
                                 .Select(x =>
                                     new RawPart
                                     {
                                         Type = RawPartType.Input,
-                                        Address = x.ScriptSig.GetScriptAddress(Network).ToString(),
-                                        Reference = x.PrevOut.Hash.ToString(),
-                                        Index = x.PrevOut.N
+                                        Index = x.PrevOut.N,
+                                        Reference = x.PrevOut.Hash.ToString()
                                     })
-                                .Union(outputs)
+                                .Union(tx.Outputs.Select((x, i) =>
+                                    new RawPart
+                                    {
+                                        Type = RawPartType.Output,
+                                        Address = x.ScriptPubKey.GetDestination()?.GetAddress(Network).ToString(),
+                                        Value = x.Value.Satoshi.ToString(),
+                                        Index = i
+                                    }))
                                 .ToHashSet();
 
                             block.Transactions.Add(transaction);
@@ -180,7 +179,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             transaction.AddOutput(new TxOut
             {
-                ScriptPubKey = BitcoinAddress.Create(destinationAddress).ScriptPubKey
+                ScriptPubKey = BitcoinAddress.Create(destinationAddress, Network).ScriptPubKey
             });
 
             var fee = Money.Satoshis(response.FastestFee * transaction.GetVirtualSize());

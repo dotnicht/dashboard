@@ -12,7 +12,7 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20180305162330_RawData")]
+    [Migration("20180307124700_RawData")]
     partial class RawData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -336,8 +336,7 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<int>("Type");
 
-                    b.Property<string>("Value")
-                        .IsRequired();
+                    b.Property<string>("Value");
 
                     b.HasKey("Id");
 

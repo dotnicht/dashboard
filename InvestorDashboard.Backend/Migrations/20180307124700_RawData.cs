@@ -56,7 +56,7 @@ namespace InvestorDashboard.Backend.Migrations
                     Reference = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     TransactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
