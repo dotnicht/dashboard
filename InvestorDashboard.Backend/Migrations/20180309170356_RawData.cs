@@ -31,8 +31,7 @@ namespace InvestorDashboard.Backend.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     BlockId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    Hash = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Index = table.Column<long>(type: "bigint", nullable: false)
+                    Hash = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -52,8 +51,8 @@ namespace InvestorDashboard.Backend.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    Hash = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Index = table.Column<long>(type: "bigint", nullable: false),
-                    Reference = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     TransactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -87,9 +86,9 @@ namespace InvestorDashboard.Backend.Migrations
                 column: "Address");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RawParts_Reference",
+                name: "IX_RawParts_Hash",
                 table: "RawParts",
-                column: "Reference");
+                column: "Hash");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RawParts_TransactionId",

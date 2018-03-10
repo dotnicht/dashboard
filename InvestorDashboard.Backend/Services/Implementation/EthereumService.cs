@@ -87,6 +87,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         var block = new RawBlock
                         {
+                            Currency = Currency.ETH,
                             Hash = source.BlockHash,
                             Index = (long)source.Number.Value,
                             Timestamp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(source.Timestamp.Value.ToString())).UtcDateTime

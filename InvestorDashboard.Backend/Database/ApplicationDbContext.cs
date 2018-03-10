@@ -70,7 +70,7 @@ namespace InvestorDashboard.Backend.Database
                 .IsUnique(false);
 
             builder.Entity<RawPart>()
-                .HasIndex(x => x.Reference)
+                .HasIndex(x => x.Hash)
                 .IsUnique(false);
 
             foreach (var property in GetProperties(builder, p => p.ClrType == typeof(decimal)))

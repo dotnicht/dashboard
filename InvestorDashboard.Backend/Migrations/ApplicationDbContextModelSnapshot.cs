@@ -327,9 +327,9 @@ namespace InvestorDashboard.Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<long>("Index");
+                    b.Property<string>("Hash");
 
-                    b.Property<string>("Reference");
+                    b.Property<long>("Index");
 
                     b.Property<Guid>("TransactionId");
 
@@ -341,7 +341,7 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.HasIndex("Address");
 
-                    b.HasIndex("Reference");
+                    b.HasIndex("Hash");
 
                     b.HasIndex("TransactionId");
 
@@ -361,8 +361,6 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<string>("Hash")
                         .IsRequired();
-
-                    b.Property<long>("Index");
 
                     b.HasKey("Id");
 

@@ -93,7 +93,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                     {
                                         Type = RawPartType.Input,
                                         Index = x.PrevOut.N,
-                                        Reference = x.PrevOut.Hash.ToString()
+                                        Hash = x.PrevOut.Hash.ToString()
                                     })
                                 .Union(tx.Outputs.Select((x, i) =>
                                     new RawPart

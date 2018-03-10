@@ -13,7 +13,7 @@ namespace InvestorDashboard.Backend.Database.Models
         [ForeignKey("TransactionId")]
         public RawTransaction Transaction { get; set; }
         public RawPartType Type { get; set; }
-        public string Reference { get; set; }
+        public string Hash { get; set; }
         public long Index { get; set; }
         public string Address { get; set; }
         public string Value { get; set; }
