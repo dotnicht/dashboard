@@ -26,9 +26,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null)
         {
-            if (!Context.DashboardHistoryItems.Any())
+            if (!await Context.DashboardHistoryItems.AnyAsync())
             {
-                await RefreshHistory();
+                //await RefreshHistory();
             }
 
             var items = Context.DashboardHistoryItems
@@ -42,13 +42,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         }
 
         public async Task RefreshHistory()
-        {
-            var items = CreateLatestDashboardHistoryItems();
-            await Context.DashboardHistoryItems.AddRangeAsync(items.Values);
-            await Context.SaveChangesAsync();
-        }
-
-        private IDictionary<Currency, DashboardHistoryItem> CreateLatestDashboardHistoryItems()
         {
             bool nonInternalPredicate(CryptoTransaction tx) => tx.CryptoAddress.User.ExternalId == null;
 
@@ -97,7 +90,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 }
             }
 
-            return items;
+            await Context.DashboardHistoryItems.AddRangeAsync(items.Values);
+            await Context.SaveChangesAsync();
         }
     }
 }

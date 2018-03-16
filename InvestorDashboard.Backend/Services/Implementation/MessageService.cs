@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -17,12 +18,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<TelegramSettings> _options;
 
         public MessageService(
-            ApplicationDbContext context, 
-            ILoggerFactory loggerFactory, 
-            IDashboardHistoryService dashboardHistoryService, 
-            IEmailService emailService, 
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IDashboardHistoryService dashboardHistoryService,
+            IEmailService emailService,
             ITelegramService telegramService,
-            IOptions<TelegramSettings> options) 
+            IOptions<TelegramSettings> options)
             : base(context, loggerFactory)
         {
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
@@ -104,12 +105,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var items = await _dashboardHistoryService.GetHistoryItems();
 
-            var msg = $@"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}
-Total users: {items.First().Value.TotalNonInternalUsers}
-Total investors: {items.Sum(x => x.Value.TotalNonInternalInvestors)}
-{string.Join(Environment.NewLine, items.Select(x => $"Total {x.Key}: {x.Value.TotalNonInternalInvested}"))}";
+            var sb = new StringBuilder();
 
-            await _telegramService.SendMessage(msg, chatId ?? _options.Value.BusinessNotificationChatId);
+            sb.Append($"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
+
+            if (items.Any())
+            {
+                sb.Append($"Total users: {items.First().Value.TotalNonInternalUsers}");
+                sb.Append($"Total investors: {items.Sum(x => x.Value.TotalNonInternalInvestors)}");
+                sb.Append(string.Join(Environment.NewLine, items.Select(x => $"Total {x.Key}: {x.Value.TotalNonInternalInvested}")));
+            }
+            else
+            {
+                sb.Append("Dashboard history is empty.");
+            }
+
+            await _telegramService.SendMessage(sb.ToString(), chatId ?? _options.Value.BusinessNotificationChatId);
         }
     }
 }
