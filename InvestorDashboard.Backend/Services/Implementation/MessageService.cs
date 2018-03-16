@@ -107,17 +107,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var sb = new StringBuilder();
 
-            sb.Append($"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
+            sb.AppendLine($"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
 
             if (items.Any())
             {
-                sb.Append($"Total users: {items.First().Value.TotalNonInternalUsers}");
-                sb.Append($"Total investors: {items.Sum(x => x.Value.TotalNonInternalInvestors)}");
-                sb.Append(string.Join(Environment.NewLine, items.Select(x => $"Total {x.Key}: {x.Value.TotalNonInternalInvested}")));
+                sb.AppendLine($"Total users: {items.First().Value.TotalNonInternalUsers}");
+                sb.AppendLine($"Total investors: {items.Sum(x => x.Value.TotalNonInternalInvestors)}");
+                sb.AppendLine(string.Join(Environment.NewLine, items.Select(x => $"Total {x.Key}: {x.Value.TotalNonInternalInvested}")));
             }
             else
             {
-                sb.Append("Dashboard history is empty.");
+                sb.AppendLine("Dashboard history is empty.");
             }
 
             await _telegramService.SendMessage(sb.ToString(), chatId ?? _options.Value.BusinessNotificationChatId);
