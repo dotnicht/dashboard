@@ -70,64 +70,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public override async Task SynchronizeRawTransactions()
-        {
-            var index = new BigInteger(_ethereumSettings.Value.StartingBlockIndex);
-            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-
-            while (true)
-            {
-                var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-
-                while (index <= current.Value)
-                {
-                    if (!Context.RawBlocks.Any(x => x.Index == index && x.Currency == Currency.ETH))
-                    {
-                        var source = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
-
-                        var block = new RawBlock
-                        {
-                            Currency = Currency.ETH,
-                            Hash = source.BlockHash,
-                            Index = (long)source.Number.Value,
-                            Timestamp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(source.Timestamp.Value.ToString())).UtcDateTime
-                        };
-
-                        foreach (var tx in source.Transactions)
-                        {
-                            var transaction = new RawTransaction
-                            {
-                                Hash = tx.TransactionHash
-                            };
-
-                            transaction.Parts.Add(new RawPart
-                            {
-                                Type = RawPartType.Input,
-                                Address = tx.From,
-                                Value = tx.Value.Value.ToString()
-                            });
-
-                            transaction.Parts.Add(new RawPart
-                            {
-                                Type = RawPartType.Output,
-                                Address = tx.To,
-                                Value = tx.Value.Value.ToString()
-                            });
-
-                            block.Transactions.Add(transaction);
-                        }
-
-                        await Context.RawBlocks.AddAsync(block);
-                        await Context.SaveChangesAsync();
-                    }
-
-                    index++;
-                }
-
-                await Task.Delay(_ethereumSettings.Value.IdleModeRefreshPeriod);
-            }
-        }
-
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
         {
             var policy = Policy
@@ -143,6 +85,52 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
+        }
+
+        protected override async Task<long> GetCurrentBlockIndex()
+        {
+            var web3 = new Web3(Settings.Value.NodeAddress.ToString());
+            var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+            return (long)current.Value;
+        }
+
+        protected override async Task<RawBlock> GetBlock(long index)
+        {
+            var source = await new Web3(Settings.Value.NodeAddress.ToString()).Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+
+            var block = new RawBlock
+            {
+                Currency = Currency.ETH,
+                Hash = source.BlockHash,
+                Index = (long)source.Number.Value,
+                Timestamp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(source.Timestamp.Value.ToString())).UtcDateTime
+            };
+
+            foreach (var tx in source.Transactions)
+            {
+                var transaction = new RawTransaction
+                {
+                    Hash = tx.TransactionHash
+                };
+
+                transaction.Parts.Add(new RawPart
+                {
+                    Type = RawPartType.Input,
+                    Address = tx.From,
+                    Value = tx.Value.Value.ToString()
+                });
+
+                transaction.Parts.Add(new RawPart
+                {
+                    Type = RawPartType.Output,
+                    Address = tx.To,
+                    Value = tx.Value.Value.ToString()
+                });
+
+                block.Transactions.Add(transaction);
+            }
+
+            return block;
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)

@@ -15,6 +15,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public RawBlock Block { get; set; }
         [Required]
         public string Hash { get; set; }
-        public ICollection<RawPart> Parts { get; set; }
+        public ICollection<RawPart> Parts { get; set; } = new HashSet<RawPart>();
     }
 }

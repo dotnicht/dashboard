@@ -14,6 +14,6 @@ namespace InvestorDashboard.Backend.Database.Models
         [Required]
         public string Hash { get; set; }
         public Currency Currency { get; set; }
-        public virtual ICollection<RawTransaction> Transactions { get; } = new HashSet<RawTransaction>();
+        public virtual ICollection<RawTransaction> Transactions { get; set; } = new HashSet<RawTransaction>();
     }
 }

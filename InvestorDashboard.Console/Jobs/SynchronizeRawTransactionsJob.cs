@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
@@ -22,19 +23,22 @@ namespace InvestorDashboard.Console.Jobs
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        protected override Task ExecuteInternal(IJobExecutionContext context)
+        protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             while (true)
             {
-                try
+                using (var cts = new CancellationTokenSource())
                 {
-                    var eth = _cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH).SynchronizeRawTransactions();
-                    var btc = _cryptoServices.Single(x => x.Settings.Value.Currency == Currency.BTC).SynchronizeRawTransactions();
-                    Task.WaitAll(btc, eth);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"An error occurrred while executing job {GetType()}.");
+                    try
+                    {
+                        Task.WaitAll(_cryptoServices.Select(x => x.SynchronizeRawTransactions(cts.Token)).ToArray());
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurrred while executing job {GetType()}.");
+                        cts.Cancel();
+                        await Task.Delay(TimeSpan.FromMinutes(1));
+                    }
                 }
             }
         }
