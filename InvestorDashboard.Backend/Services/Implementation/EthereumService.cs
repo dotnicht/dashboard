@@ -14,6 +14,7 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -49,63 +50,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var transactions = Context.CryptoTransactions
                 .Where(
                     x => x.Direction == CryptoTransactionDirection.Outbound
-                    && !x.Failed
+                    && x.IsFailed == null
                     && x.ExternalId == null
                     && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.DTT
+                    && x.CryptoAddress.Currency == Currency.Token
                     && x.CryptoAddress.Type == CryptoAddressType.Transfer)
                 .ToArray();
 
             foreach (var tx in transactions)
             {
-                var uri = new Uri($"https://api.etherscan.io/api?module=transaction&action=getstatus&txhash={tx.Hash}&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
-                var result = await _restService.GetAsync<EtherscanTransactionResponse>(uri);
-                if (result.Result.IsError == 1)
+                var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+                var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+
+                if (receipt != null)
                 {
-                    tx.Failed = true;
+                    tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
                     await Context.SaveChangesAsync();
                 }
-            }
-        }
-
-        public override async Task SynchronizeRawTransactions()
-        {
-            var index = _ethereumSettings.Value.StartingBlockIndex;
-            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-
-            while (true)
-            {
-                var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-
-                while (index <= current.Value)
-                {
-                    if (!Context.EthereumBlocks.Any(x => x.BlockIndex == index))
-                    {
-                        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
-
-                        var entity = Context.EthereumBlocks.Add(new EthereumBlock
-                        {
-                            BlockHash = block.BlockHash,
-                            BlockIndex = (long)block.Number.Value
-                        });
-                        
-                        foreach (var tx in block.Transactions)
-                        {
-                            Context.EthereumTransactions.Add(new EthereumTransaction
-                            {
-                                Block = entity.Entity,
-                                TransactionHash = tx.TransactionHash,
-                                //TransactionIndex = tx.TransactionIndex.Value
-                            });
-                        }
-
-                        await Context.SaveChangesAsync();
-                    }
-
-                    index++;
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(3));
             }
         }
 
@@ -124,6 +85,52 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
+        }
+
+        protected override async Task<long> GetCurrentBlockIndex()
+        {
+            var web3 = new Web3(Settings.Value.NodeAddress.ToString());
+            var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+            return (long)current.Value;
+        }
+
+        protected override async Task<RawBlock> GetBlock(long index)
+        {
+            var source = await new Web3(Settings.Value.NodeAddress.ToString()).Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+
+            var block = new RawBlock
+            {
+                Currency = Currency.ETH,
+                Hash = source.BlockHash,
+                Index = (long)source.Number.Value,
+                Timestamp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(source.Timestamp.Value.ToString())).UtcDateTime
+            };
+
+            foreach (var tx in source.Transactions)
+            {
+                var transaction = new RawTransaction
+                {
+                    Hash = tx.TransactionHash
+                };
+
+                transaction.Parts.Add(new RawPart
+                {
+                    Type = RawPartType.Input,
+                    Address = tx.From,
+                    Value = tx.Value.Value.ToString()
+                });
+
+                transaction.Parts.Add(new RawPart
+                {
+                    Type = RawPartType.Output,
+                    Address = tx.To,
+                    Value = tx.Value.Value.ToString()
+                });
+
+                block.Transactions.Add(transaction);
+            }
+
+            return block;
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)

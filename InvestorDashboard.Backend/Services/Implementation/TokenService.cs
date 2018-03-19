@@ -57,7 +57,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return await Context.CryptoTransactions
-                .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.DTT)
+                .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token)
                 .CountAsync() 
                     < _options.Value.OutboundTransactionsLimit;
         }
@@ -84,9 +84,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
 
             var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-            var dttAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+            var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.Token);
 
-            if (ethAddress == null || dttAddress == null)
+            if (ethAddress == null || tokenAddress == null)
             {
                 Logger.LogError($"User {userId} has missing required addresses.");
                 return (Hash: null, Success: false);
@@ -110,9 +110,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 await Context.CryptoTransactions.AddAsync(new CryptoTransaction
                 {
-                    CryptoAddressId = dttAddress.Id,
+                    CryptoAddressId = tokenAddress.Id,
                     Amount = amount,
-                    TimeStamp = DateTime.UtcNow,
+                    Timestamp = DateTime.UtcNow,
                     Direction = CryptoTransactionDirection.Outbound,
                     Hash = result.Hash,
                     TokenPrice = 1,
@@ -142,8 +142,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var transactions = user.CryptoAddresses
                 .Where(
-                    x => (x.Type == CryptoAddressType.Investment && x.Currency != Currency.DTT)
-                    || (x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT))
+                    x => (x.Type == CryptoAddressType.Investment && x.Currency != Currency.Token)
+                    || (x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token))
                 .SelectMany(x => x.CryptoTransactions)
                 .Where(
                     x => (x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
@@ -153,9 +153,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var bonus = decimal.Round(transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100)), 6);
 
             var outbound = user.CryptoAddresses
-                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
+                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && !x.Failed)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && x.IsFailed == false)
                     ?.Sum(x => x.Amount)
                 ?? 0;
 

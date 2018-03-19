@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180224133031_IsFailedTransactionNullable")]
+    partial class IsFailedTransactionNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -287,91 +288,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.ToTable("ExchangeRates");
                 });
 
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawBlock", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("Currency");
-
-                    b.Property<string>("Hash")
-                        .IsRequired();
-
-                    b.Property<long>("Index");
-
-                    b.Property<DateTime>("Timestamp");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Hash")
-                        .IsUnique();
-
-                    b.HasIndex("Index", "Currency")
-                        .IsUnique();
-
-                    b.ToTable("RawBlocks");
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawPart", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Address");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Hash");
-
-                    b.Property<long>("Index");
-
-                    b.Property<Guid>("TransactionId");
-
-                    b.Property<int>("Type");
-
-                    b.Property<string>("Value");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Address");
-
-                    b.HasIndex("Hash");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("RawParts");
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<Guid>("BlockId");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Hash")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("Hash")
-                        .IsUnique();
-
-                    b.ToTable("RawTransactions");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -567,22 +483,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.HasOne("InvestorDashboard.Backend.Database.Models.CryptoAddress", "CryptoAddress")
                         .WithMany("CryptoTransactions")
                         .HasForeignKey("CryptoAddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawPart", b =>
-                {
-                    b.HasOne("InvestorDashboard.Backend.Database.Models.RawTransaction", "Transaction")
-                        .WithMany("Parts")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawTransaction", b =>
-                {
-                    b.HasOne("InvestorDashboard.Backend.Database.Models.RawBlock", "Block")
-                        .WithMany("Transactions")
-                        .HasForeignKey("BlockId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -43,28 +43,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         if (user == null)
                         {
-                            throw new InvalidOperationException($"User not found with email { record.Email }.");
+                            throw new InvalidOperationException($"User not found with email {record.Email}.");
                         }
 
-                        var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.DTT && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
-                            ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.DTT, Type = CryptoAddressType.Internal }).Entity;
+                        var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
+                            ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
 
                         Context.CryptoTransactions.Add(new CryptoTransaction
                         {
-                            Amount = record.DTT,
+                            Amount = record.Tokens,
                             ExternalId = record.Guid,
                             CryptoAddress = address,
                             TokenPrice = 1,
                             ExchangeRate = 1,
                             Direction = CryptoTransactionDirection.Internal,
-                            TimeStamp = DateTime.UtcNow
+                            Timestamp = DateTime.UtcNow
                         });
 
                         await Context.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, $"An error occurred while processing record { record.Guid }.");
+                        Logger.LogError(ex, $"An error occurred while processing record {record.Guid}.");
                     }
                 }
             }
@@ -74,7 +74,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             public Guid Guid { get; set; }
             public string Email { get; set; }
-            public decimal DTT { get; set; }
+            public decimal Tokens { get; set; }
         }
     }
 }

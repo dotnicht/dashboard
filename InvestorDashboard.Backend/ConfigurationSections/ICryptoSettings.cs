@@ -12,5 +12,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         Uri NodeAddress { get; set; }
         string InternalTransferUserId { get; set; }
         long StartingBlockIndex { get; set; }
+        TimeSpan IdleModeRefreshPeriod { get; set; }
     }
 }

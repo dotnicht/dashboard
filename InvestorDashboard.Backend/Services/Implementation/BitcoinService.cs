@@ -6,6 +6,7 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NBitcoin.BitcoinCore;
 using NBitcoin.Protocol;
 using System;
 using System.Collections.Generic;
@@ -20,12 +21,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
         private readonly IRestService _restService;
 
-        protected Network Network
+        private Network Network
         {
             get
             {
-                return _bitcoinSettings.Value.IsTestNet 
-                    ? Network.TestNet 
+                return _bitcoinSettings.Value.IsTestNet
+                    ? Network.TestNet
                     : Network.Main;
             }
         }
@@ -48,11 +49,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
-        }
-
-        public override Task SynchronizeRawTransactions()
-        {
-            throw new NotImplementedException();
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -115,7 +111,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             transaction.AddOutput(new TxOut
             {
-                ScriptPubKey = BitcoinAddress.Create(destinationAddress).ScriptPubKey
+                ScriptPubKey = BitcoinAddress.Create(destinationAddress, Network).ScriptPubKey
             });
 
             var fee = Money.Satoshis(response.FastestFee * transaction.GetVirtualSize());
@@ -129,8 +125,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 
-                var node = Node.Connect(Network, _bitcoinSettings.Value.NodeAddress.ToString());
-                node.VersionHandshake();
+                var node = GetNode();
                 node.SendMessage(new InvPayload(transaction));
                 node.SendMessage(new TxPayload(transaction));
                 await Task.Delay(TimeSpan.FromSeconds(5));
@@ -145,6 +140,58 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
+        }
+
+        protected override async Task<long> GetCurrentBlockIndex()
+        {
+            return (await GetChainEnumerable().Last()).Height;
+        }
+
+        protected override async Task<RawBlock> GetBlock(long index)
+        {
+            var store = new IndexedBlockStore(new InMemoryNoSqlRepository(), new BlockStore(_bitcoinSettings.Value.LocalBlockchainFilesPath, Network));
+            store.ReIndex();
+
+            var header = await GetChainEnumerable().Single(x => x.Height == index);
+            var source = store.Get(header.HashBlock);
+
+            var block = new RawBlock
+            {
+                Currency = Currency.BTC,
+                Hash = source.GetHash().ToString(),
+                Index = header.Height,
+                Timestamp = header.Header.BlockTime.UtcDateTime
+            };
+
+            foreach (var tx in source.Transactions)
+            {
+                var transaction = new RawTransaction
+                {
+                    Hash = tx.GetHash().ToString()
+                };
+
+                transaction.Parts = tx.Inputs
+                    .Select(x =>
+                        new RawPart
+                        {
+                            Type = RawPartType.Input,
+                            Index = x.PrevOut.N,
+                            Hash = x.PrevOut.Hash.ToString()
+                        })
+                    .Union(tx.Outputs.Select((x, i) =>
+                        new RawPart
+                        {
+                            Type = RawPartType.Output,
+                            Address = x.ScriptPubKey.GetDestination()?.GetAddress(Network).ToString(),
+                            Value = x.Value.Satoshi.ToString(),
+                            Index = i
+                        }))
+                    .ToHashSet();
+
+                block.Transactions.Add(transaction);
+            }
+
+            return block;
         }
 
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockchain(string address)
@@ -223,6 +270,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return mapped;
+        }
+
+        private IAsyncEnumerable<ChainedBlock> GetChainEnumerable()
+        {
+            return GetNode().GetChain().ToEnumerable(false).ToAsyncEnumerable();
+        }
+
+        private Node GetNode()
+        {
+            var node = Node.Connect(Network, Settings.Value.NodeAddress.ToString());
+            node.VersionHandshake();
+            return node;
         }
 
         internal class ChainResponse

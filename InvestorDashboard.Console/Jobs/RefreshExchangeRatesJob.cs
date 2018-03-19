@@ -12,11 +12,13 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class RefreshExchangeRatesJob : JobBase
     {
+        private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IExchangeRateService _exchangeRateService;
 
-        public RefreshExchangeRatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IExchangeRateService exchangeRateService) 
+        public RefreshExchangeRatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IOptions<TokenSettings> tokenSettings, IExchangeRateService exchangeRateService) 
             : base(loggerFactory, context, options)
         {
+            _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
         }
 
@@ -27,7 +29,7 @@ namespace InvestorDashboard.Console.Jobs
             {
                 try
                 {
-                    await _exchangeRateService.RefreshExchangeRate(currency);
+                    await _exchangeRateService.RefreshExchangeRate(currency, _tokenSettings.Value.Currency);
                 }
                 catch (Exception ex)
                 {

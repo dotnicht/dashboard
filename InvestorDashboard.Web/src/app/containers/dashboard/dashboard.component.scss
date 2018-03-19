@@ -224,8 +224,12 @@
       position: absolute;
       color: white;
       text-align: center;
-      width: 100%;
-      margin-top: 30px;
+      /* width: 100%; */
+      /* margin-top: 30px; */
+      display: inline-grid;
+      /* justify-content: center; */
+      align-items: center;
+      height: 100%;
       .line {
         background-color: white;
         height: 5px;

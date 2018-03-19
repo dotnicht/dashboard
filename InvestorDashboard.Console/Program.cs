@@ -32,7 +32,7 @@ namespace InvestorDashboard.Console
         private static async Task Run()
         {
             var serviceCollection = new ServiceCollection()
-                .AddAutoMapper(typeof(DependencyInjection));
+              .AddAutoMapper(typeof(DependencyInjection));
 
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
