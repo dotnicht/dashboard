@@ -149,8 +149,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     x => (x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
                     || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null));
 
-            var balance = transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice);
-            var bonus = transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100));
+            var balance = decimal.Round(transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice), 6);
+            var bonus = decimal.Round(transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100)), 6);
 
             var outbound = user.CryptoAddresses
                     .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)

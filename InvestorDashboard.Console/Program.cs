@@ -132,7 +132,7 @@ namespace InvestorDashboard.Console
                             builder = builder.StartNow();
                         }
 
-                        if (!settings.Jobs[x.Name].IsInfinite)
+                        if (!settings.Jobs[x.Name].IsInfinite && settings.Jobs[x.Name].Period != default(TimeSpan))
                         {
                             builder = builder.WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever());
                         }

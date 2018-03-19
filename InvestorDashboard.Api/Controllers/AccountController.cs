@@ -18,6 +18,7 @@ using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -149,9 +150,9 @@ namespace InvestorDashboard.Api.Controllers
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 code = System.Web.HttpUtility.UrlEncode(code);
 
-                var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/account/reset_password?email={System.Web.HttpUtility.UrlEncode(user.Email)}&code={code}";
+                var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/account/reset_password?email={HttpUtility.UrlEncode(user.Email)}&code={code}";
 
-                await _messageService.SendPasswordResetMessage(model.Email, $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                await _messageService.SendPasswordResetMessage(user.Id, $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
                 return Ok();
                 //return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
