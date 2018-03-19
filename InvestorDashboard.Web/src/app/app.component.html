@@ -50,11 +50,11 @@
 
             <ng-container *ngIf="!isTab">
 
-                <!-- <a target="_blank" href="http://data-trading.com/token-en/">
+                <a target="_blank" href="http://data-trading.com/token-en/">
                     <button mat-button>
-                        <mat-icon>info</mat-icon><span>Sale terms</span>
+                        <mat-icon>info</mat-icon><span>Web site</span>
                     </button>
-                </a> -->
+                </a>
 
                 <button *ngIf="isUserLoggedIn" mat-button [disabled]="routerLinkActiveInstance.isActive" [routerLink]="['/dashboard']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
                     <mat-icon>dashboard</mat-icon>
