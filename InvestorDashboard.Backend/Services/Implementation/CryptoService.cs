@@ -9,6 +9,7 @@ using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,6 +28,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IKeyVaultService KeyVaultService { get; }
         protected IResourceService ResourceService { get; }
         protected IMapper Mapper { get; }
+
+        protected abstract byte Denomination { get; }
 
         protected CryptoService(
             ApplicationDbContext context,
@@ -99,9 +102,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (!Context.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                     {
-                        await FillAndSaveTransaction(transaction, address);
                         // TODO: send transaction received message.
 
+                        await Context.CryptoTransactions.AddAsync(transaction);
+                        await Context.SaveChangesAsync();
                         await _tokenService.RefreshTokenBalance(address.UserId);
                     }
                 }
@@ -137,7 +141,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
+        public async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null)
         {
             if (sourceAddress == null)
             {
@@ -156,11 +160,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var transaction = new CryptoTransaction
                 {
                     Hash = result.Hash,
-                    Amount = result.AdjustedAmount,
-                    Timestamp = DateTime.UtcNow
+                    Amount = result.AdjustedAmount.ToString(),
+                    Timestamp = DateTime.UtcNow,
+                    Direction = CryptoTransactionDirection.Internal
                 };
 
-                await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+                await Context.CryptoTransactions.AddAsync(transaction);
+                await Context.SaveChangesAsync();
             }
 
             return result;
@@ -211,31 +217,29 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public decimal ToDecimalValue(string value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            // TODO: check this.
+            var bi = BigInteger.Parse(value);
+            var result = Math.Exp(BigInteger.Log(bi) - BigInteger.Log(new BigInteger(Math.Pow(10, Denomination))));
+            return Convert.ToDecimal(result);
+        }
+
+        public string ToStringValue(decimal value)
+        {
+            return new BigInteger((double)value * Math.Pow(10, Denomination)).ToString();
+        }
+
         protected abstract Task<long> GetCurrentBlockIndex();
         protected abstract Task<RawBlock> GetBlock(long index);
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
-
-        private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection? direction = null)
-        {
-            Logger.LogInformation($"Adding {Settings.Value.Currency} transaction. Hash: {transaction.Hash}.");
-
-            if (direction != null)
-            {
-                transaction.Direction = direction.Value;
-            }
-
-            var item = (await _dashboardHistoryService.GetHistoryItems(transaction.Timestamp)).FirstOrDefault().Value;
-
-            transaction.CryptoAddressId = address.Id;
-            transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, TokenSettings.Value.Currency, transaction.Timestamp);
-            transaction.TokenPrice = item?.TokenPrice ?? TokenSettings.Value.Price;
-            transaction.BonusPercentage = item?.BonusPercentage ?? TokenSettings.Value.BonusPercentage;
-
-            await Context.CryptoTransactions.AddAsync(transaction);
-            await Context.SaveChangesAsync();
-        }
+        protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType, string password = null)
         {

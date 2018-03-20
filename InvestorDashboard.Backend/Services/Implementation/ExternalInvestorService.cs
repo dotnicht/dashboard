@@ -51,7 +51,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     var user = new ApplicationUser
                     {
-                        Email = $"{record.Id}@data-trading.com",
+                        Email = $"{record.Id}@{record.Id}.com",
                         UserName = record.Id.ToString(),
                         ExternalId = record.Id
                     };
@@ -62,25 +62,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         try
                         {
-                            (Currency Currency, decimal Amount) value = record.ETH > 0
-                                ? (Currency.ETH, record.ETH)
-                                : record.BTC > 0
-                                    ? (Currency.BTC, record.BTC)
-                                    : throw new InvalidOperationException($"Failed to create external investor. ID { record.Id }.");
-
-                            var address = await _cryptoServices
-                                .Single(x => x.Settings.Value.Currency == value.Currency)
-                                .CreateCryptoAddress(user.Id);
-
-                            var item = (await _dashboardHistoryService.GetHistoryItems(record.DateTime)).FirstOrDefault().Value;
+                            var service = _cryptoServices.Single(x => x.Settings.Value.Currency == record.Currency);
+                            var address = await service.CreateCryptoAddress(user.Id);
+                            var value = service.ToStringValue(record.Value);
 
                             var transaction = new CryptoTransaction
                             {
-                                Amount = value.Amount,
+                                Amount = value,
                                 Direction = CryptoTransactionDirection.Inbound,
-                                ExchangeRate = await _exchangeRateService.GetExchangeRate(value.Currency, _tokenSettings.Value.Currency, record.DateTime),
-                                TokenPrice = item?.TokenPrice ?? _tokenSettings.Value.Price,
-                                BonusPercentage = item?.BonusPercentage ?? _tokenSettings.Value.BonusPercentage,
                                 CryptoAddressId = address.Id,
                                 Timestamp = record.DateTime
                             };
@@ -102,8 +91,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             public Guid Id { get; set; }
             public DateTime DateTime { get; set; }
-            public decimal ETH { get; set; }
-            public decimal BTC { get; set; }
+            public Currency Currency { get; set; }
+            public decimal Value { get; set; }
         }
     }
 }

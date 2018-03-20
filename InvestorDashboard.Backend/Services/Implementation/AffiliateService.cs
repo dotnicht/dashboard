@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,11 +14,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class AffiliateService : ContextService, IAffiliateService
     {
         private readonly IRestService _restService;
+        private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly IOptions<TokenSettings> _options;
 
-        public AffiliateService(ApplicationDbContext context, ILoggerFactory loggerFactory, IRestService restService)
+        public AffiliateService(ApplicationDbContext context, ILoggerFactory loggerFactory, IRestService restService, IEnumerable<ICryptoService> cryptoServices, IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public async Task NotifyTransactionsCreated()
@@ -42,11 +47,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (!string.IsNullOrWhiteSpace(clickId))
                 {
-                    var amount = tx.Amount * tx.ExchangeRate;
                     var date = tx.Timestamp.ToShortDateString();
                     var time = tx.Timestamp.ToShortTimeString();
 
-                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&sum={amount}&currency=USD&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={tx.Amount}&custom_field5={tx.ExchangeRate}&status=5";
+                    var amount = _cryptoServices.Single(x => x.Settings.Value.Currency == tx.CryptoAddress.Currency).ToDecimalValue(tx.Amount);
+
+                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&currency=USD&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={amount}status=5";
 
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);

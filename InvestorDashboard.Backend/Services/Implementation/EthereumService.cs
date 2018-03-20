@@ -25,6 +25,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IRestService _restService;
 
+        protected override byte Denomination { get; } = 18;
+
         public EthereumService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
@@ -43,31 +45,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _tokenService = tokenService;
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
-        }
-
-        public async Task RefreshOutboundTransactions()
-        {
-            var transactions = Context.CryptoTransactions
-                .Where(
-                    x => x.Direction == CryptoTransactionDirection.Outbound
-                    && x.IsFailed == null
-                    && x.ExternalId == null
-                    && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.Token
-                    && x.CryptoAddress.Type == CryptoAddressType.Transfer)
-                .ToArray();
-
-            foreach (var tx in transactions)
-            {
-                var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-                var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
-
-                if (receipt != null)
-                {
-                    tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
-                    await Context.SaveChangesAsync();
-                }
-            }
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -174,13 +151,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return transactions;
         }
 
-        protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, BigInteger? amount = null)
         {
             var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.InvestorKeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
 
             var value = amount == null
                 ? await web3.Eth.GetBalance.SendRequestAsync(address.Address)
-                : new HexBigInteger(UnitConversion.Convert.ToWei(amount.Value));
+                : new HexBigInteger(amount.Value);
 
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
@@ -191,7 +168,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var adjustedAmount = value - fee;
                 var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, new HexBigInteger(adjustedAmount));
 
-                return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount), Success: true);
+                return (Hash: hash, AdjustedAmount: adjustedAmount, Success: true);
             }
 
             if (value.Value > 0)

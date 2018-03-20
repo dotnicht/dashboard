@@ -67,34 +67,41 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task<decimal> RefreshExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null)
         {
-            using (var http = new HttpClient())
+            var ex = 0m;
+
+            if (baseCurrency == quoteCurrency)
             {
-                var ex = 0m;
-
-                if (dateTime == null)
-                {
-                    var client = new PricesClient(http);
-                    var response = await client.SingleAsync(baseCurrency.ToString(), new[] { quoteCurrency.ToString() });
-                    ex = response.Values.Single();
-                }
-                else
-                {
-                    var adjusted = new DateTimeOffset(new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, 0, 0, DateTimeKind.Utc));
-
-                    if (dateTime.Value.Minute > 30)
-                    {
-                        adjusted = adjusted.AddHours(1);
-                    }
-
-                    var client = new HistoryClient(http);
-                    var response = await client.HourAsync(baseCurrency.ToString(), quoteCurrency.ToString(), limit: 1, toDate: adjusted);
-                    ex = response.Data.Single(x => x.Time == adjusted).Close;
-                }
-
-                await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = baseCurrency, Quote = quoteCurrency, Rate = ex });
-                await Context.SaveChangesAsync();
-                return ex;
+                ex = 1;
             }
+            else
+            {
+                using (var http = new HttpClient())
+                {
+                    if (dateTime == null)
+                    {
+                        var client = new PricesClient(http);
+                        var response = await client.SingleAsync(baseCurrency.ToString(), new[] { quoteCurrency.ToString() });
+                        ex = response.Values.Single();
+                    }
+                    else
+                    {
+                        var adjusted = new DateTimeOffset(new DateTime(dateTime.Value.Year, dateTime.Value.Month, dateTime.Value.Day, dateTime.Value.Hour, 0, 0, DateTimeKind.Utc));
+
+                        if (dateTime.Value.Minute > 30)
+                        {
+                            adjusted = adjusted.AddHours(1);
+                        }
+
+                        var client = new HistoryClient(http);
+                        var response = await client.HourAsync(baseCurrency.ToString(), quoteCurrency.ToString(), limit: 1, toDate: adjusted);
+                        ex = response.Data.Single(x => x.Time == adjusted).Close;
+                    }
+                }
+            }
+
+            await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = baseCurrency, Quote = quoteCurrency, Rate = ex });
+            await Context.SaveChangesAsync();
+            return ex;
         }
     }
 }

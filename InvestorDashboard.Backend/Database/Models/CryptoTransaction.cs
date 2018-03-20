@@ -14,11 +14,8 @@ namespace InvestorDashboard.Backend.Database.Models
         public CryptoAddress CryptoAddress { get; set; }
         public CryptoTransactionDirection Direction { get; set; }
         public string Hash { get; set; }
-        public decimal Amount { get; set; }
+        public string Amount { get; set; }
         public DateTime Timestamp { get; set; }
-        public decimal ExchangeRate { get; set; }
-        public decimal TokenPrice { get; set; }
-        public decimal BonusPercentage { get; set; }
         public Guid? ExternalId { get; set; }
         public bool IsNotified { get; set; }
         public bool? IsFailed { get; set; }

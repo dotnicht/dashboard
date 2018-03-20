@@ -15,11 +15,13 @@ namespace InvestorDashboard.Console.Jobs
     public class RefreshTransactionsJob : JobBase
     {
         private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly ISmartContractService _smartContractService;
 
-        public RefreshTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
+        public RefreshTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices, ISmartContractService smartContractService)
             : base(loggerFactory, context, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
+            _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
@@ -36,7 +38,7 @@ namespace InvestorDashboard.Console.Jobs
                 }
             }
 
-            await (_cryptoServices.Single(x => x.Settings.Value.Currency == Currency.ETH) as IEthereumService).RefreshOutboundTransactions();
+            await _smartContractService.RefreshOutboundTransactions();
         }
 
         protected override void Dispose(bool disposing)

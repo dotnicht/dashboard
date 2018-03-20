@@ -51,11 +51,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         Context.CryptoTransactions.Add(new CryptoTransaction
                         {
-                            Amount = record.Tokens,
+                            Amount = record.Tokens.ToString(),
                             ExternalId = record.Guid,
                             CryptoAddress = address,
-                            TokenPrice = 1,
-                            ExchangeRate = 1,
                             Direction = CryptoTransactionDirection.Internal,
                             Timestamp = DateTime.UtcNow
                         });
@@ -74,7 +72,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             public Guid Guid { get; set; }
             public string Email { get; set; }
-            public decimal Tokens { get; set; }
+            public long Tokens { get; set; }
         }
     }
 }

@@ -84,6 +84,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return UnitConversion.Convert.FromWei(await balance.Function.CallAsync<BigInteger>(address));
         }
 
+        public async Task RefreshOutboundTransactions()
+        {
+            var transactions = Context.CryptoTransactions
+                .Where(
+                    x => x.Direction == CryptoTransactionDirection.Outbound
+                    && x.IsFailed == null
+                    && x.ExternalId == null
+                    && x.CryptoAddress.Address == null
+                    && x.CryptoAddress.Currency == Currency.Token
+                    && x.CryptoAddress.Type == CryptoAddressType.Transfer)
+                .ToArray();
+
+            foreach (var tx in transactions)
+            {
+                var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+                var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+
+                if (receipt != null)
+                {
+                    tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
+                    await Context.SaveChangesAsync();
+                }
+            }
+        }
+
         private async Task<(Function Function, Web3 Web3)> GetSmartContractFunction(string name)
         {
             var web3 = new Web3(Account.LoadFromKeyStore(_resourceService.GetResourceString("MasterKeyStore.json"), _keyVaultService.MasterKeyStoreEncryptionPassword), _ethereumSettings.Value.NodeAddress.ToString());

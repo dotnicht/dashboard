@@ -145,12 +145,6 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
-        [Authorize, HttpPost("add_question"), Produces("application/json")]
-        public IActionResult AddQuestion([FromBody]QuestionModel question)
-        {
-            return Ok();
-        }
-
         [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
         public async Task<IActionResult> AddTokenTransfer([FromBody]TokenTransferModel transfer)
         {
@@ -173,20 +167,22 @@ namespace InvestorDashboard.Api.Controllers
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
-            user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer && !_tokenSettings.Value.IsTokenTransferDisabled && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
+            user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer 
+                && !_tokenSettings.Value.IsTokenTransferDisabled 
+                && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
             return user;
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
             var items = await _dashboardHistoryService.GetHistoryItems();
+
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
-            result.TotalBtcInvested = items[Currency.BTC].TotalInvested;
-            result.TotalEthInvested = items[Currency.ETH].TotalInvested;
-            result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
-            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
-            result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToList();
+
+            // TODO: reimplement ICO info.
+
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
+
             return result;
         }
 
