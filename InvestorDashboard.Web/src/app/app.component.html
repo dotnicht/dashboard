@@ -13,9 +13,9 @@
         <mat-icon mat-list-icon>home</mat-icon>
         <span mat-line>{{'mainMenu.Home' | translate}}</span>
       </a> -->
-            <a mat-list-item target="_blank" href="http://data-trading.com/token-en/" (click)="start.close()">
+            <a mat-list-item target="_blank" href="http://www.racoin.io/" (click)="start.close()">
                 <mat-icon mat-list-icon>info</mat-icon>
-                <span mat-line>Sale terms</span>
+                <span mat-line>Web site</span>
             </a>
             <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/transfer']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
                 (click)="start.close()">
@@ -50,7 +50,7 @@
 
             <ng-container *ngIf="!isTab">
 
-                <a target="_blank" href="http://data-trading.com/token-en/">
+                <a target="_blank" href="http://www.racoin.io/">
                     <button mat-button>
                         <mat-icon>info</mat-icon><span>Web site</span>
                     </button>

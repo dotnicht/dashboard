@@ -21,6 +21,7 @@ export class ConfigurationService {
 
     public baseUrl: string = Utilities.baseUrl().replace(/\/$/, '');
     public fallbackBaseUrl: string = "https://dashboard.data-trading.com/";
+    // public fallbackBaseUrl: string = "https://dashboard.racoin.io/";
     public loginUrl: string = "/login";
 
     //***Specify default configurations here***
