@@ -34,12 +34,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null)
         {
-            var items = await Context.DashboardHistoryItems
-                .GroupBy(x => x.Currency)
-                .ToArrayAsync();
+            // TODO: remove date time based selection.
 
-            var result = items.ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created <= dateTime.Value).FirstOrDefault())
-                ?? items.ToDictionary(x => x.Key, x => x.OrderBy(y => y.Created).Where(y => dateTime == null || y.Created > dateTime.Value).FirstOrDefault());
+            var items = Context.DashboardHistoryItems
+                .ToArray()
+                .GroupBy(x => x.Currency);
+
+            var result = await items.ToAsyncEnumerable().ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created <= dateTime.Value).FirstOrDefault())
+                ?? await items.ToAsyncEnumerable().ToDictionary(x => x.Key, x => x.OrderBy(y => y.Created).Where(y => dateTime == null || y.Created > dateTime.Value).FirstOrDefault());
 
             return result;
         }
@@ -68,8 +70,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     TotalNonInternalCoinsBoughts = Context.Users.Where(x => x.ExternalId == null).Sum(x => x.Balance)
                 };
 
-                var total = new BigInteger();
-                var totalNonInternal = new BigInteger();
+                var total = BigInteger.Zero;
+                var totalNonInternal = BigInteger.Zero;
 
                 foreach (var tx in item)
                 {

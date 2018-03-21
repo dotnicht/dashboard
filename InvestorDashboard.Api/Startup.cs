@@ -62,8 +62,8 @@ namespace InvestorDashboard.Api
 
             // add identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
-              .AddEntityFrameworkStores<ApplicationDbContext>()
-              .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             // Configure Identity options and password complexity here
             services.Configure<IdentityOptions>(options =>
@@ -81,8 +81,6 @@ namespace InvestorDashboard.Api
                 // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
                 options.Lockout.MaxFailedAccessAttempts = 10;
-
-                
 
                 options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
                 options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
@@ -135,13 +133,11 @@ namespace InvestorDashboard.Api
             services.AddNodeServices();
 
             services.AddAuthorization();
-            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-
             var options = new RewriteOptions().AddRedirectToHttps();
 
             app.UseRewriter(options);
@@ -163,8 +159,8 @@ namespace InvestorDashboard.Api
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
-                     name: "default",
-                     template: "{controller=Home}/{action=Index}/{id?}");
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
 
             // Seed the database with the sample applications.
