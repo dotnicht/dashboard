@@ -34,7 +34,8 @@
         "Faq": "FAQ",
         "Login": "Login",
         "Logout": "Logout",
-        "Transfer": "Transfer"
+        "Transfer": "Transfer",
+        "Referral": "Referral"
     },
     "pageHeader": {
         "Dashboard": "Dashboard",
