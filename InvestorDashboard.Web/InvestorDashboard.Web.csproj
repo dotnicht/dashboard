@@ -7,7 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="src\app\components\tfa\NewFolder\" />
+    <Compile Remove="e2e\**" />
+    <Content Remove="e2e\**" />
+    <EmbeddedResource Remove="e2e\**" />
+    <None Remove="e2e\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\assets\styles\presale\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
