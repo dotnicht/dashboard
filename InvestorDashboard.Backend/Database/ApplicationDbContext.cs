@@ -17,8 +17,6 @@ namespace InvestorDashboard.Backend.Database
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
         public DbSet<DashboardHistoryItem> DashboardHistoryItems { get; set; }
-        public DbSet<EthereumBlock> EthereumBlocks { get; set; }
-        public DbSet<EthereumTransaction> EthereumTransactions { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -51,26 +49,6 @@ namespace InvestorDashboard.Backend.Database
                 .HasIndex(x => x.Created)
                 .IsUnique(false);
 
-            builder.Entity<EthereumBlock>()
-                .HasIndex(x => x.BlockHash)
-                .IsUnique(true);
-
-            builder.Entity<EthereumBlock>()
-                .HasIndex(x => x.BlockIndex)
-                .IsUnique(true);
-
-            builder.Entity<EthereumTransaction>()
-                .HasIndex(x => x.TransactionHash)
-                .IsUnique(true);
-
-            builder.Entity<EthereumTransaction>()
-                .HasIndex(x => x.From)
-                .IsUnique(false);
-
-            builder.Entity<EthereumTransaction>()
-                .HasIndex(x => x.To)
-                .IsUnique(false);
-
             foreach (var property in GetProperties(builder, p => p.ClrType == typeof(decimal)))
             {
                 property.Relational().ColumnType = "decimal(18, 6)";
@@ -82,7 +60,7 @@ namespace InvestorDashboard.Backend.Database
             }
         }
 
-        private IEnumerable<IMutableProperty> GetProperties(ModelBuilder builder, Func<IMutableProperty, bool> predicate)
+        private static IEnumerable<IMutableProperty> GetProperties(ModelBuilder builder, Func<IMutableProperty, bool> predicate)
         {
             return builder.Model
                 .GetEntityTypes()

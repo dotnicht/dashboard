@@ -6,7 +6,7 @@ namespace InvestorDashboard.Backend.Services
 {
     public interface IExchangeRateService : IDisposable
     {
-        Task<decimal> GetExchangeRate(Currency currency, DateTime? dateTime = null);
-        Task<decimal> RefreshExchangeRate(Currency currency, DateTime? dateTime = null);
+        Task<decimal> GetExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null);
+        Task<decimal> RefreshExchangeRate(Currency baseCurrency, Currency quoteCurrency, DateTime? dateTime = null);
     }
 }

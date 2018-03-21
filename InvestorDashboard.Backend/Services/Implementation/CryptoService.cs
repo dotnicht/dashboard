@@ -2,21 +2,19 @@
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
-        private readonly IMessageService _messageService;
-        private readonly IDashboardHistoryService _dashboardHistoryService;
         private readonly ITokenService _tokenService;
 
         public IOptions<CryptoSettings> Settings { get; }
@@ -25,6 +23,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
         protected IResourceService ResourceService { get; }
+        public IRestService RestService { get; }
         protected IMapper Mapper { get; }
 
         protected CryptoService(
@@ -33,8 +32,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
-            IMessageService messageService,
-            IDashboardHistoryService dashboardHistoryService,
+            IRestService restService,
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
@@ -47,8 +45,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
             ResourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            RestService = restService ?? throw new ArgumentNullException(nameof(restService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
@@ -98,9 +95,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (!Context.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                     {
-                        await FillAndSaveTransaction(transaction, address);
                         // TODO: send transaction received message.
 
+                        await Context.CryptoTransactions.AddAsync(transaction);
+                        await Context.SaveChangesAsync();
                         await _tokenService.RefreshTokenBalance(address.UserId);
                     }
                 }
@@ -136,7 +134,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null)
+        public async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null)
         {
             if (sourceAddress == null)
             {
@@ -155,41 +153,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var transaction = new CryptoTransaction
                 {
                     Hash = result.Hash,
-                    Amount = result.AdjustedAmount,
-                    TimeStamp = DateTime.UtcNow
+                    Amount = result.AdjustedAmount.ToString(),
+                    Timestamp = DateTime.UtcNow,
+                    Direction = CryptoTransactionDirection.Internal
                 };
 
-                await FillAndSaveTransaction(transaction, sourceAddress, CryptoTransactionDirection.Internal);
+                await Context.CryptoTransactions.AddAsync(transaction);
+                await Context.SaveChangesAsync();
             }
 
             return result;
         }
 
-        public abstract Task SynchronizeRawTransactions();
-
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
-        protected abstract Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, decimal? amount = null);
-
-        private async Task FillAndSaveTransaction(CryptoTransaction transaction, CryptoAddress address, CryptoTransactionDirection? direction = null)
-        {
-            Logger.LogInformation($"Adding {Settings.Value.Currency} transaction. Hash: {transaction.Hash}.");
-
-            if (direction != null)
-            {
-                transaction.Direction = direction.Value;
-            }
-
-            var item = (await _dashboardHistoryService.GetHistoryItems(transaction.TimeStamp)).FirstOrDefault().Value;
-
-            transaction.CryptoAddressId = address.Id;
-            transaction.ExchangeRate = await ExchangeRateService.GetExchangeRate(Settings.Value.Currency, transaction.TimeStamp);
-            transaction.TokenPrice = item?.TokenPrice ?? TokenSettings.Value.Price;
-            transaction.BonusPercentage = item?.BonusPercentage ?? TokenSettings.Value.BonusPercentage;
-
-            await Context.CryptoTransactions.AddAsync(transaction);
-            await Context.SaveChangesAsync();
-        }
+        protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
 
         private async Task<CryptoAddress> CreateAddress(string userId, CryptoAddressType addressType, string password = null)
         {

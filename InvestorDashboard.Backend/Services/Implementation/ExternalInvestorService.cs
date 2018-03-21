@@ -18,6 +18,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IExchangeRateService _exchangeRateService;
         private readonly IResourceService _resourceService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
+        private readonly ICalculationService _calculationService;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
         public ExternalInvestorService(
@@ -27,6 +28,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IResourceService resourceService,
             IDashboardHistoryService dashboardHistoryService,
+            ICalculationService calculationService,
             IEnumerable<ICryptoService> cryptoServices,
             IOptions<TokenSettings> tokenSettings)
             : base(context, loggerFactory)
@@ -36,6 +38,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
@@ -51,7 +54,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     var user = new ApplicationUser
                     {
-                        Email = $"{ record.Id }@data-trading.com",
+                        Email = $"{record.Id}@{record.Id}.com",
                         UserName = record.Id.ToString(),
                         ExternalId = record.Id
                     };
@@ -62,27 +65,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         try
                         {
-                            (Currency Currency, decimal Amount) value = record.ETH > 0
-                                ? (Currency.ETH, record.ETH)
-                                : record.BTC > 0
-                                    ? (Currency.BTC, record.BTC)
-                                    : throw new InvalidOperationException($"Failed to create external investor. ID { record.Id }.");
-
-                            var address = await _cryptoServices
-                                .Single(x => x.Settings.Value.Currency == value.Currency)
-                                .CreateCryptoAddress(user.Id);
-
-                            var item = (await _dashboardHistoryService.GetHistoryItems(record.DateTime)).FirstOrDefault().Value;
+                            var address = await _cryptoServices.Single(x => x.Settings.Value.Currency == record.Currency).CreateCryptoAddress(user.Id);
+                            var value = _calculationService.ToStringValue(record.Value, record.Currency);
 
                             var transaction = new CryptoTransaction
                             {
-                                Amount = value.Amount,
+                                Amount = value,
                                 Direction = CryptoTransactionDirection.Inbound,
-                                ExchangeRate = await _exchangeRateService.GetExchangeRate(value.Currency, record.DateTime),
-                                TokenPrice = item?.TokenPrice ?? _tokenSettings.Value.Price,
-                                BonusPercentage = item?.BonusPercentage ?? _tokenSettings.Value.BonusPercentage,
                                 CryptoAddressId = address.Id,
-                                TimeStamp = record.DateTime
+                                Timestamp = record.DateTime
                             };
 
                             await Context.CryptoTransactions.AddAsync(transaction);
@@ -102,8 +93,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             public Guid Id { get; set; }
             public DateTime DateTime { get; set; }
-            public decimal ETH { get; set; }
-            public decimal BTC { get; set; }
+            public Currency Currency { get; set; }
+            public decimal Value { get; set; }
         }
     }
 }

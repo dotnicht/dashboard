@@ -3,9 +3,9 @@
     <mat-card-content>
       <h4>{{'clientInfo.Balance' | translate}}:
         <p style="font-size: 35px;
-        font-weight: bold;">{{dashboard.clientInfoModel.balance}} DTT</p>
+        font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
       </h4>
-      <p *ngIf="dashboard.clientInfoModel.bonusBalance>0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} DTT bonuses</p>
+      <p *ngIf="dashboard.clientInfoModel.bonusBalance>0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
       <div>
 
       </div>
@@ -25,11 +25,11 @@
 
       </div>
       <div class="left">
-        <!-- <div class="item">
-          <img class="color-block" src="assets/img/avatar.svg">
+        <!-- <div class="item"> -->
+          <!-- <img class="color-block" src="assets/img/avatar.svg">
           <div class="value">{{dashboard.icoInfoModel.totalInvestors}}</div>
-          <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
-        </div> -->
+          <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div> -->
+        <!-- </div> -->
         <!-- <div class="item">
           <img class="color-block" src="assets/img/wallet.svg">
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
@@ -37,7 +37,7 @@
         </div>
         <div class="item" *ngIf="false">
           <img class="color-block" src="assets/img/coin.svg">
-          <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} DTT</div>
+          <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} </div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div> -->
         <!-- <div style="margin-bottom: 25px;">
@@ -45,7 +45,7 @@
         </div> -->
         <!-- <div style="margin-top: 20px;" > -->
           <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
-          <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}} DTT -->
+          <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}}  -->
         <!-- </div> -->
         <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
             <div class="item">
@@ -74,6 +74,9 @@
         <p style="font-size: 26px;">Token sale is finished.</p>
         <p style="font-size: 20px;">Thank to all who became part of DataTrading community.</p>
         <p style="font-size: 18px;">We are working on listing of DTT on exchanges, so follow our news</p>
+        <!-- <img style="width: 60px;margin-top: 20px;" src="assets/img/round_a/placeholder.svg">
+        <div class="line"></div> -->
+        <!-- <img width="100%" height="100%" src="assets/img/round_a/round_a.svg"> -->
       </div>
 
     </mat-card-content>
@@ -131,7 +134,7 @@
               <img class="currency-icon" [src]="type.image">
               <!-- <div class="currency-icon"></div> -->
               <div class="value">{{type.currency}}</div>
-              <div class="title">1 {{type.currency}} = {{type.rate}} DTT</div>
+              <div class="title">1 {{type.currency}} = {{type.rate}} </div>
   
             </button>
           </div>

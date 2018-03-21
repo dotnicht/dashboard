@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -16,71 +17,91 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<TokenSettings> _options;
         private readonly IMapper _mapper;
+        private readonly ICalculationService _calculationService;
 
-        public DashboardHistoryService(ApplicationDbContext context, ILoggerFactory loggerFactory, IOptions<TokenSettings> options, IMapper mapper)
+        public DashboardHistoryService(
+            ApplicationDbContext context, 
+            ILoggerFactory loggerFactory, 
+            IOptions<TokenSettings> options, 
+            IMapper mapper, 
+            ICalculationService calculationService)
             : base(context, loggerFactory)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
         }
 
         public async Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null)
         {
-            if (!Context.DashboardHistoryItems.Any())
-            {
-                await RefreshHistory();
-            }
-
-            var items = Context.DashboardHistoryItems
-                .ToArray()
-                .GroupBy(x => x.Currency);
+            var items = await Context.DashboardHistoryItems
+                .GroupBy(x => x.Currency)
+                .ToArrayAsync();
 
             var result = items.ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.Created).Where(y => dateTime == null || y.Created <= dateTime.Value).FirstOrDefault())
                 ?? items.ToDictionary(x => x.Key, x => x.OrderBy(y => y.Created).Where(y => dateTime == null || y.Created > dateTime.Value).FirstOrDefault());
-
-            result.Remove(Currency.USD);
 
             return result;
         }
 
         public async Task RefreshHistory()
         {
-            var items = CreateLatestDashboardHistoryItems();
-            await Context.DashboardHistoryItems.AddRangeAsync(items.Values);
-            await Context.SaveChangesAsync();
-        }
-
-        private IDictionary<Currency, DashboardHistoryItem> CreateLatestDashboardHistoryItems()
-        {
-            bool nonInternalPredicate(CryptoTransaction tx) => tx.CryptoAddress.User.ExternalId == null;
-
-            // TODO: optimize the query.
-            return Context.CryptoTransactions
+            var items = Context.CryptoTransactions
                 .Include(x => x.CryptoAddress)
                 .ThenInclude(x => x.User)
                 .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment && x.ExternalId == null)
                 .ToArray()
-                .GroupBy(x => x.CryptoAddress.Currency)
-                .ToDictionary(
-                    x => x.Key,
-                    x => new DashboardHistoryItem
+                .GroupBy(x => x.CryptoAddress.Currency);
+
+            var result = new Dictionary<Currency, DashboardHistoryItem>();
+
+            foreach (var item in items)
+            {
+                var dhi = new DashboardHistoryItem
+                {
+                    Currency = item.Key,
+                    TotalUsers = Context.Users.Count(),
+                    TotalInvestors = item.Select(x => x.CryptoAddress.UserId).Distinct().Count(),
+                    TotalCoinsBoughts = Context.Users.Sum(x => x.Balance),
+                    TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null),
+                    TotalNonInternalInvestors = item.Where(x => x.CryptoAddress.User.ExternalId == null).Select(x => x.CryptoAddress.UserId).Distinct().Count(),
+                    TotalNonInternalCoinsBoughts = Context.Users.Where(x => x.ExternalId == null).Sum(x => x.Balance)
+                };
+
+                var total = new BigInteger();
+                var totalNonInternal = new BigInteger();
+
+                foreach (var tx in item)
+                {
+                    total += BigInteger.Parse(tx.Amount);
+
+                    if (tx.CryptoAddress.User.ExternalId == null)
                     {
-                        IsTokenSaleDisabled = _options.Value.IsTokenSaleDisabled,
-                        BonusPercentage = _options.Value.BonusPercentage,
-                        TokenPrice = _options.Value.Price,
-                        TotalCoins = _options.Value.TotalCoins,
-                        Currency = x.Key,
+                        totalNonInternal += BigInteger.Parse(tx.Amount);
+                    }
+                }
+
+                dhi.TotalInvested = _calculationService.ToDecimalValue(total.ToString(), item.Key);
+                dhi.TotalNonInternalInvested = _calculationService.ToDecimalValue(totalNonInternal.ToString(), item.Key);
+
+                result.Add(item.Key, dhi);
+            }
+
+            foreach (var currency in new[] { Currency.ETH, Currency.BTC })
+            {
+                if (!result.ContainsKey(currency))
+                {
+                    result.Add(currency, new DashboardHistoryItem
+                    {
+                        Currency = currency,
                         TotalUsers = Context.Users.Count(),
-                        TotalInvestors = x.Select(y => y.CryptoAddress.UserId).Distinct().Count(),
-                        TotalInvested = x.Sum(y => y.Amount),
-                        TotalUsdInvested = x.Sum(y => y.Amount * y.ExchangeRate),
-                        TotalCoinsBought = x.Sum(y => y.Amount * y.ExchangeRate / y.TokenPrice),
-                        TotalNonInternalUsers = Context.Users.Count(y => y.ExternalId == null),
-                        TotalNonInternalInvestors = x.Where(nonInternalPredicate).Select(y => y.CryptoAddress.UserId).Distinct().Count(),
-                        TotalNonInternalInvested = x.Where(nonInternalPredicate).Sum(y => y.Amount),
-                        TotalNonInternalUsdInvested = x.Where(nonInternalPredicate).Sum(y => y.Amount * y.ExchangeRate),
-                        TotalNonInternalCoinsBought = x.Where(nonInternalPredicate).Sum(y => y.Amount * y.ExchangeRate / y.TokenPrice),
+                        TotalNonInternalUsers = Context.Users.Count(y => y.ExternalId == null)
                     });
+                }
+            }
+
+            await Context.DashboardHistoryItems.AddRangeAsync(result.Values);
+            await Context.SaveChangesAsync();
         }
     }
 }

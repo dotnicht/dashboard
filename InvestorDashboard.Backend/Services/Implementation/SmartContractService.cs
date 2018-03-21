@@ -61,8 +61,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds)))
                 {
-                    var receipt = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
-                    return (Hash: receipt, Success: true);
+                    var hash = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
+                    return (Hash: hash, Success: true);
                 }
             }
             catch (Exception ex)
@@ -82,6 +82,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var balance = await GetSmartContractFunction("balanceOf");
             return UnitConversion.Convert.FromWei(await balance.Function.CallAsync<BigInteger>(address));
+        }
+
+        public async Task RefreshOutboundTransactions()
+        {
+            var transactions = Context.CryptoTransactions
+                .Where(
+                    x => x.Direction == CryptoTransactionDirection.Outbound
+                    && x.IsFailed == null
+                    && x.ExternalId == null
+                    && x.CryptoAddress.Address == null
+                    && x.CryptoAddress.Currency == Currency.Token
+                    && x.CryptoAddress.Type == CryptoAddressType.Transfer)
+                .ToArray();
+
+            foreach (var tx in transactions)
+            {
+                var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+                var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+
+                if (receipt != null)
+                {
+                    tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
+                    await Context.SaveChangesAsync();
+                }
+            }
         }
 
         private async Task<(Function Function, Web3 Web3)> GetSmartContractFunction(string name)

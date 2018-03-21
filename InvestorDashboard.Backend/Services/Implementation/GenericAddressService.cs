@@ -49,11 +49,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"User not found with ID {userId}.");
             }
 
-            if (!user.CryptoAddresses.Any(x => x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer))
+            if (!user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer))
             {
                 Context.CryptoAddresses.Add(new CryptoAddress
                 {
-                    Currency = Currency.DTT,
+                    Currency = Currency.Token,
                     UserId = user.Id,
                     Type = CryptoAddressType.Transfer
                 });

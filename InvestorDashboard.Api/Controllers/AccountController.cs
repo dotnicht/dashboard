@@ -194,12 +194,14 @@ namespace InvestorDashboard.Api.Controllers
                         errors += $"{e.ErrorMessage}";
                     }
                 }
+
                 return BadRequest(new OpenIdConnectResponse
                 {
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = errors
                 });
             }
+
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
@@ -208,6 +210,7 @@ namespace InvestorDashboard.Api.Controllers
                     Error = OpenIdConnectConstants.Errors.ServerError
                 });
             }
+
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {

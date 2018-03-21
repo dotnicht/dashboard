@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180224133031_IsFailedTransactionNullable")]
+    partial class IsFailedTransactionNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,9 +55,11 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<int>("AccessFailedCount");
 
-                    b.Property<long>("Balance");
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18, 6)");
 
-                    b.Property<long>("BonusBalance");
+                    b.Property<decimal>("BonusBalance")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<string>("City");
 
@@ -161,7 +164,11 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Amount");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 6)");
+
+                    b.Property<decimal>("BonusPercentage")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -170,6 +177,9 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<Guid>("CryptoAddressId");
 
                     b.Property<int>("Direction");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<Guid?>("ExternalId");
 
@@ -180,6 +190,9 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<bool>("IsNotified");
 
                     b.Property<DateTime>("Timestamp");
+
+                    b.Property<decimal>("TokenPrice")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.HasKey("Id");
 
@@ -201,27 +214,46 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<decimal>("BonusPercentage")
+                        .HasColumnType("decimal(18, 6)");
+
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<int>("Currency");
 
-                    b.Property<long>("TotalCoinsBoughts");
+                    b.Property<bool>("IsTokenSaleDisabled");
+
+                    b.Property<decimal>("TokenPrice")
+                        .HasColumnType("decimal(18, 6)");
+
+                    b.Property<decimal>("TotalCoins")
+                        .HasColumnType("decimal(18, 6)");
+
+                    b.Property<decimal>("TotalCoinsBought")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<decimal>("TotalInvested")
                         .HasColumnType("decimal(18, 6)");
 
                     b.Property<int>("TotalInvestors");
 
-                    b.Property<long>("TotalNonInternalCoinsBoughts");
+                    b.Property<decimal>("TotalNonInternalCoinsBought")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<decimal>("TotalNonInternalInvested")
                         .HasColumnType("decimal(18, 6)");
 
                     b.Property<int>("TotalNonInternalInvestors");
 
+                    b.Property<decimal>("TotalNonInternalUsdInvested")
+                        .HasColumnType("decimal(18, 6)");
+
                     b.Property<int>("TotalNonInternalUsers");
+
+                    b.Property<decimal>("TotalUsdInvested")
+                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<int>("TotalUsers");
 

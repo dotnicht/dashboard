@@ -7,22 +7,20 @@ using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
-using Nethereum.Util;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : CryptoService, IEthereumService
     {
-        private readonly ITokenService _tokenService;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
-        private readonly IRestService _restService;
 
         public EthereumService(
             ApplicationDbContext context,
@@ -30,83 +28,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
-            IMessageService messageService,
-            IDashboardHistoryService dashboardHistoryService,
+            IRestService restService,
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
-            IOptions<EthereumSettings> ethereumSettings,
-            IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, tokenService, mapper, tokenSettings, ethereumSettings)
+            IOptions<EthereumSettings> ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, tokenService, mapper, tokenSettings, ethereumSettings)
         {
-            _tokenService = tokenService;
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
-            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
-        }
-
-        public async Task RefreshOutboundTransactions()
-        {
-            var transactions = Context.CryptoTransactions
-                .Where(
-                    x => x.Direction == CryptoTransactionDirection.Outbound
-                    && !x.Failed
-                    && x.ExternalId == null
-                    && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.DTT
-                    && x.CryptoAddress.Type == CryptoAddressType.Transfer)
-                .ToArray();
-
-            foreach (var tx in transactions)
-            {
-                var uri = new Uri($"https://api.etherscan.io/api?module=transaction&action=getstatus&txhash={tx.Hash}&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
-                var result = await _restService.GetAsync<EtherscanTransactionResponse>(uri);
-                if (result.Result.IsError == 1)
-                {
-                    tx.Failed = true;
-                    await Context.SaveChangesAsync();
-                }
-            }
-        }
-
-        public override async Task SynchronizeRawTransactions()
-        {
-            var index = _ethereumSettings.Value.StartingBlockIndex;
-            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-
-            while (true)
-            {
-                var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-
-                while (index <= current.Value)
-                {
-                    if (!Context.EthereumBlocks.Any(x => x.BlockIndex == index))
-                    {
-                        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
-
-                        var entity = Context.EthereumBlocks.Add(new EthereumBlock
-                        {
-                            BlockHash = block.BlockHash,
-                            BlockIndex = (long)block.Number.Value
-                        });
-                        
-                        foreach (var tx in block.Transactions)
-                        {
-                            Context.EthereumTransactions.Add(new EthereumTransaction
-                            {
-                                Block = entity.Entity,
-                                TransactionHash = tx.TransactionHash,
-                                //TransactionIndex = tx.TransactionIndex.Value
-                            });
-                        }
-
-                        await Context.SaveChangesAsync();
-                    }
-
-                    index++;
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(3));
-            }
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -136,7 +65,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 try
                 {
-                    var result = await _restService.GetAsync<EtherscanAccountResponse>(uri);
+                    var result = await RestService.GetAsync<EtherscanAccountResponse>(uri);
 
                     var confirmed = result.Result
                         .Where(x => string.IsNullOrWhiteSpace(x.Confirmations) || int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
@@ -167,13 +96,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return transactions;
         }
 
-        protected override async Task<(string Hash, decimal AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, decimal? amount = null)
+        protected override async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, BigInteger? amount = null)
         {
             var web3 = new Web3(Account.LoadFromKeyStore(address.PrivateKey, KeyVaultService.InvestorKeyStoreEncryptionPassword), Settings.Value.NodeAddress.ToString());
 
             var value = amount == null
                 ? await web3.Eth.GetBalance.SendRequestAsync(address.Address)
-                : new HexBigInteger(UnitConversion.Convert.ToWei(amount.Value));
+                : new HexBigInteger(amount.Value);
 
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
@@ -184,7 +113,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var adjustedAmount = value - fee;
                 var hash = await web3.TransactionManager.SendTransactionAsync(address.Address, destinationAddress, new HexBigInteger(adjustedAmount));
 
-                return (Hash: hash, AdjustedAmount: UnitConversion.Convert.FromWei(adjustedAmount), Success: true);
+                return (Hash: hash, AdjustedAmount: adjustedAmount, Success: true);
             }
 
             if (value.Value > 0)

@@ -9,6 +9,7 @@ export class PaymentType {
 }
 
 export class IcoInfo {
+    tokenName: string;
     totalInvestors: number;
     contractAddress: string;
     totalUsdInvested: number;

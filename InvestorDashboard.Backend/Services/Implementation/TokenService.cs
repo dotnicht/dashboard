@@ -13,12 +13,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class TokenService : ContextService, ITokenService
     {
         private readonly ISmartContractService _smartContractService;
+        private readonly IExchangeRateService _exchangeRateService;
+        private readonly ICalculationService _calculationService;
         private readonly IOptions<TokenSettings> _options;
 
-        public TokenService(ApplicationDbContext context, ILoggerFactory loggerFactory, ISmartContractService smartContractService, IOptions<TokenSettings> options)
+        public TokenService(
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            ISmartContractService smartContractService,
+            IExchangeRateService exchangeRateService,
+            ICalculationService calculationService,
+            IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
+            _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
+            _calculationService = calculationService;
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -56,13 +66,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            return await Context.CryptoTransactions
-                .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.DTT)
-                .CountAsync() 
-                    < _options.Value.OutboundTransactionsLimit;
+            var count = await Context.CryptoTransactions
+                .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token)
+                .CountAsync();
+
+            return count < _options.Value.OutboundTransactionsLimit;
         }
 
-        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, long amount)
         {
             if (destinationAddress == null)
             {
@@ -84,9 +95,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
 
             var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-            var dttAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.DTT);
+            var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.Token);
 
-            if (ethAddress == null || dttAddress == null)
+            if (ethAddress == null || tokenAddress == null)
             {
                 Logger.LogError($"User {userId} has missing required addresses.");
                 return (Hash: null, Success: false);
@@ -110,13 +121,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 await Context.CryptoTransactions.AddAsync(new CryptoTransaction
                 {
-                    CryptoAddressId = dttAddress.Id,
-                    Amount = amount,
-                    TimeStamp = DateTime.UtcNow,
+                    CryptoAddressId = tokenAddress.Id,
+                    Amount = amount.ToString(),
+                    Timestamp = DateTime.UtcNow,
                     Direction = CryptoTransactionDirection.Outbound,
-                    Hash = result.Hash,
-                    TokenPrice = 1,
-                    ExchangeRate = 1
+                    Hash = result.Hash
                 });
 
                 await Context.SaveChangesAsync();
@@ -140,23 +149,50 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"User not found with ID {userId}.");
             }
 
-            var transactions = user.CryptoAddresses
-                .Where(
-                    x => (x.Type == CryptoAddressType.Investment && x.Currency != Currency.DTT)
-                    || (x.Type == CryptoAddressType.Internal && x.Currency == Currency.DTT))
+            var inboundTx = user.CryptoAddresses.Where(x => x.Type == CryptoAddressType.Investment && x.Currency != Currency.Token)
                 .SelectMany(x => x.CryptoTransactions)
-                .Where(
-                    x => (x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
-                    || (x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null));
+                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
+                .ToArray();
 
-            var balance = decimal.Round(transactions.Sum(x => (x.Amount * x.ExchangeRate) / x.TokenPrice), 6);
-            var bonus = decimal.Round(transactions.Sum(x => ((x.Amount * x.ExchangeRate) / x.TokenPrice) * (x.BonusPercentage / 100)), 6);
+            var balance = 0L;
+
+            foreach (var tx in inboundTx)
+            {
+                var ex = await _exchangeRateService.GetExchangeRate(tx.CryptoAddress.Currency, _options.Value.Currency, tx.Timestamp);
+                balance += (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
+            }
+
+            var bonus = 0L;
+
+            if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
+            {
+                // TODO: reimplement schedule bonus system.
+            }
+            else if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Percentage)
+            {
+                foreach (var item in _options.Value.Bonus.Percentage)
+                {
+                    if ((item.Lower == null || balance >= item.Lower) && (item.Upper == null || balance < item.Upper))
+                    {
+                        bonus = (long)Math.Ceiling(balance * item.Amount);
+                        break;
+                    }
+                }
+            }
+
+            balance += user.CryptoAddresses
+                .Where(x => x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token)
+                .SelectMany(x => x.CryptoTransactions)
+                .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null)
+                .ToArray()
+                .Sum(x => long.Parse(x.Amount));
 
             var outbound = user.CryptoAddresses
-                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.DTT && x.Type == CryptoAddressType.Transfer)
+                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer)
                     ?.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && !x.Failed)
-                    ?.Sum(x => x.Amount)
+                    ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && x.IsFailed == false)
+                    ?.ToArray()
+                    ?.Sum(x => long.Parse(x.Amount))
                 ?? 0;
 
             var tempBalance = balance;
@@ -188,26 +224,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await Context.SaveChangesAsync();
             }
 
-            var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
-            var updated = user.Balance + user.BonusBalance;
-            var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
-
-            if (external != 0)
+            if (_options.Value.AutomaticallyEnableTokenTransfer)
             {
-                updated = decimal.Round(updated, 0);
-                external = decimal.Round(external, 0);
+                var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+                var updated = user.Balance + user.BonusBalance;
+                var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
 
-                if (updated != external && user.ExternalId == null)
+                if (external != 0)
                 {
-                    Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
-                    user.IsEligibleForTransfer = false;
-                }
-                else if (!user.IsEligibleForTransfer)
-                {
-                    user.IsEligibleForTransfer = true;
-                }
+                    if (updated != external && user.ExternalId == null)
+                    {
+                        Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
+                        user.IsEligibleForTransfer = false;
+                    }
+                    else if (!user.IsEligibleForTransfer)
+                    {
+                        user.IsEligibleForTransfer = true;
+                    }
 
-                await Context.SaveChangesAsync();
+                    await Context.SaveChangesAsync();
+                }
             }
         }
     }

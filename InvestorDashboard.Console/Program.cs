@@ -32,7 +32,7 @@ namespace InvestorDashboard.Console
         private static async Task Run()
         {
             var serviceCollection = new ServiceCollection()
-                .AddAutoMapper(typeof(DependencyInjection));
+              .AddAutoMapper(typeof(DependencyInjection));
 
             var configurationBuilder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
@@ -132,7 +132,7 @@ namespace InvestorDashboard.Console
                             builder = builder.StartNow();
                         }
 
-                        if (!settings.Jobs[x.Name].IsInfinite && settings.Jobs[x.Name].Period != default(TimeSpan))
+                        if (settings.Jobs[x.Name].Period != default(TimeSpan))
                         {
                             builder = builder.WithSimpleSchedule(y => y.WithInterval(settings.Jobs[x.Name].Period).RepeatForever());
                         }

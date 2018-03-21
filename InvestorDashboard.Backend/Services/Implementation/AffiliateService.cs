@@ -13,11 +13,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class AffiliateService : ContextService, IAffiliateService
     {
         private readonly IRestService _restService;
+        private readonly ICalculationService _calculationService;
+        private readonly IOptions<TokenSettings> _options;
 
-        public AffiliateService(ApplicationDbContext context, ILoggerFactory loggerFactory, IRestService restService)
+        public AffiliateService(
+            ApplicationDbContext context, 
+            ILoggerFactory loggerFactory, 
+            IRestService restService, 
+            ICalculationService calculationService, 
+            IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public async Task NotifyTransactionsCreated()
@@ -42,11 +51,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (!string.IsNullOrWhiteSpace(clickId))
                 {
-                    var amount = tx.Amount * tx.ExchangeRate;
-                    var date = tx.TimeStamp.ToShortDateString();
-                    var time = tx.TimeStamp.ToShortTimeString();
+                    var date = tx.Timestamp.ToShortDateString();
+                    var time = tx.Timestamp.ToShortTimeString();
 
-                    var address = $"http://offers.proffico.affise.com/postback?clickid={ clickId }&action_id={ tx.Hash }&sum={ amount }&currency=USD&custom_field1={ date }&custom_field2={ time }&custom_field3={ tx.CryptoAddress.Currency }&custom_field4={ tx.Amount }&custom_field5={ tx.ExchangeRate }&status=5";
+                    var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
+
+                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&currency=USD&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={amount}status=5";
 
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);
