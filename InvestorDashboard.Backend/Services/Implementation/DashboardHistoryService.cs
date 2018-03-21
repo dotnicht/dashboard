@@ -17,14 +17,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<TokenSettings> _options;
         private readonly IMapper _mapper;
-        private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly ICalculationService _calculationService;
 
-        public DashboardHistoryService(ApplicationDbContext context, ILoggerFactory loggerFactory, IOptions<TokenSettings> options, IMapper mapper, IEnumerable<ICryptoService> cryptoServices)
+        public DashboardHistoryService(
+            ApplicationDbContext context, 
+            ILoggerFactory loggerFactory, 
+            IOptions<TokenSettings> options, 
+            IMapper mapper, 
+            ICalculationService calculationService)
             : base(context, loggerFactory)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
         }
 
         public async Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null)
@@ -41,8 +46,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshHistory()
         {
-            bool nonInternalPredicate(CryptoTransaction tx) => tx.CryptoAddress.User.ExternalId == null;
-
             var items = Context.CryptoTransactions
                 .Include(x => x.CryptoAddress)
                 .ThenInclude(x => x.User)
@@ -59,8 +62,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     Currency = item.Key,
                     TotalUsers = Context.Users.Count(),
                     TotalInvestors = item.Select(x => x.CryptoAddress.UserId).Distinct().Count(),
-                    TotalNonInternalUsers = Context.Users.Count(y => y.ExternalId == null),
-                    TotalNonInternalInvestors = item.Where(nonInternalPredicate).Select(x => x.CryptoAddress.UserId).Distinct().Count()
+                    TotalCoinsBoughts = Context.Users.Sum(x => x.Balance),
+                    TotalNonInternalUsers = Context.Users.Count(x => x.ExternalId == null),
+                    TotalNonInternalInvestors = item.Where(x => x.CryptoAddress.User.ExternalId == null).Select(x => x.CryptoAddress.UserId).Distinct().Count(),
+                    TotalNonInternalCoinsBoughts = Context.Users.Where(x => x.ExternalId == null).Sum(x => x.Balance)
                 };
 
                 var total = new BigInteger();
@@ -70,16 +75,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     total += BigInteger.Parse(tx.Amount);
 
-                    if (nonInternalPredicate(tx))
+                    if (tx.CryptoAddress.User.ExternalId == null)
                     {
                         totalNonInternal += BigInteger.Parse(tx.Amount);
                     }
                 }
 
-                var service = _cryptoServices.Single(x => x.Settings.Value.Currency == item.Key);
-
-                dhi.TotalInvested = service.ToDecimalValue(total.ToString());
-                dhi.TotalNonInternalInvested = service.ToDecimalValue(totalNonInternal.ToString());
+                dhi.TotalInvested = _calculationService.ToDecimalValue(total.ToString(), item.Key);
+                dhi.TotalNonInternalInvested = _calculationService.ToDecimalValue(totalNonInternal.ToString(), item.Key);
 
                 result.Add(item.Key, dhi);
             }

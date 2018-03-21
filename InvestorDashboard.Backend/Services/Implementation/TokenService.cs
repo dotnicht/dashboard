@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,7 +14,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly ISmartContractService _smartContractService;
         private readonly IExchangeRateService _exchangeRateService;
-        private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly ICalculationService _calculationService;
         private readonly IOptions<TokenSettings> _options;
 
         public TokenService(
@@ -23,13 +22,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory,
             ISmartContractService smartContractService,
             IExchangeRateService exchangeRateService,
-            IEnumerable<ICryptoService> cryptoServices,
+            ICalculationService calculationService,
             IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
-            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
+            _calculationService = calculationService;
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -160,14 +159,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             foreach (var tx in inboundTx)
             {
                 var ex = await _exchangeRateService.GetExchangeRate(tx.CryptoAddress.Currency, _options.Value.Currency, tx.Timestamp);
-                balance += (long)Math.Ceiling(_cryptoServices.Single(x => x.Settings.Value.Currency == tx.CryptoAddress.Currency).ToDecimalValue(tx.Amount) * ex / _options.Value.Price);
+                balance += (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
             }
 
             var bonus = 0L;
 
-            if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Scheduled)
+            if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
             {
-                // TODO: reimplement scheduled bonus system.
+                // TODO: reimplement schedule bonus system.
             }
             else if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Percentage)
             {
@@ -225,23 +224,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await Context.SaveChangesAsync();
             }
 
-            var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
-            var updated = user.Balance + user.BonusBalance;
-            var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
-
-            if (external != 0)
+            if (_options.Value.AutomaticallyEnableTokenTransfer)
             {
-                if (updated != external && user.ExternalId == null)
-                {
-                    Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
-                    user.IsEligibleForTransfer = false;
-                }
-                else if (!user.IsEligibleForTransfer)
-                {
-                    user.IsEligibleForTransfer = true;
-                }
+                var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+                var updated = user.Balance + user.BonusBalance;
+                var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
 
-                await Context.SaveChangesAsync();
+                if (external != 0)
+                {
+                    if (updated != external && user.ExternalId == null)
+                    {
+                        Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
+                        user.IsEligibleForTransfer = false;
+                    }
+                    else if (!user.IsEligibleForTransfer)
+                    {
+                        user.IsEligibleForTransfer = true;
+                    }
+
+                    await Context.SaveChangesAsync();
+                }
             }
         }
     }

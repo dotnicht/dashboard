@@ -22,13 +22,13 @@ namespace InvestorDashboard.Backend
             services.Configure<KeyVaultSettings>(configuration.GetSection("KeyVault"));
             services.Configure<JobsSettings>(configuration.GetSection("Jobs"));
             services.Configure<TokenSettings>(configuration.GetSection("Token"));
-            services.Configure<BitcoinSettings>(configuration.GetSection("Bitcoin"));
-            services.Configure<EthereumSettings>(configuration.GetSection("Ethereum"));
             services.Configure<ExchangeRateSettings>(configuration.GetSection("ExchangeRate"));
             services.Configure<SendGridEmailSettings>(configuration.GetSection("SendGridEmail"));
             services.Configure<AmazonEmailSettings>(configuration.GetSection("AmazonEmail"));
             services.Configure<TelegramSettings>(configuration.GetSection("Telegram"));
             services.Configure<CaptchaSettings>(configuration.GetSection("Captcha"));
+            services.Configure<EthereumSettings>(configuration.GetSection("Ethereum"));
+            services.Configure<BitcoinSettings>(configuration.GetSection("Bitcoin"));
         }
     }
 }

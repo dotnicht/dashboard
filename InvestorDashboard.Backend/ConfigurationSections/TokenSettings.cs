@@ -1,6 +1,5 @@
 ﻿using InvestorDashboard.Backend.Database.Models;
 using System;
-using System.Collections.Generic;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {
@@ -12,6 +11,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public long TotalCoins { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsTokenTransferDisabled { get; set; }
+        public bool AutomaticallyEnableTokenTransfer { get; set; }
         public int OutboundTransactionsLimit { get; set; }
         public long BalanceThreshold { get; set; }
         public BonusSettings Bonus { get; set; }
@@ -19,17 +19,17 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public class BonusSettings
         {
             public BonusSystem System { get; set; }
-            public ScheduledItem[] Scheduled { get; set; }
+            public ScheduleItem[] Schedule { get; set; }
             public PercentageItem[] Percentage { get; set; }
 
             public enum BonusSystem
             {
                 None,
-                Scheduled,
+                Schedule,
                 Percentage
             }
 
-            public class ScheduledItem
+            public class ScheduleItem
             {
                 public DateTime? Start { get; set; }
                 public DateTime? End { get; set; }

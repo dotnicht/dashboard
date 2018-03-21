@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,14 +13,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class AffiliateService : ContextService, IAffiliateService
     {
         private readonly IRestService _restService;
-        private readonly IEnumerable<ICryptoService> _cryptoServices;
+        private readonly ICalculationService _calculationService;
         private readonly IOptions<TokenSettings> _options;
 
-        public AffiliateService(ApplicationDbContext context, ILoggerFactory loggerFactory, IRestService restService, IEnumerable<ICryptoService> cryptoServices, IOptions<TokenSettings> options)
+        public AffiliateService(
+            ApplicationDbContext context, 
+            ILoggerFactory loggerFactory, 
+            IRestService restService, 
+            ICalculationService calculationService, 
+            IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
-            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -50,7 +54,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     var date = tx.Timestamp.ToShortDateString();
                     var time = tx.Timestamp.ToShortTimeString();
 
-                    var amount = _cryptoServices.Single(x => x.Settings.Value.Currency == tx.CryptoAddress.Currency).ToDecimalValue(tx.Amount);
+                    var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
 
                     var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&currency=USD&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={amount}status=5";
 

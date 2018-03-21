@@ -12,8 +12,8 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20180309170356_RawData")]
-    partial class RawData
+    [Migration("20180321124627_IntegerRefactoring")]
+    partial class IntegerRefactoring
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -55,11 +55,9 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<int>("AccessFailedCount");
 
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18, 6)");
+                    b.Property<long>("Balance");
 
-                    b.Property<decimal>("BonusBalance")
-                        .HasColumnType("decimal(18, 6)");
+                    b.Property<long>("BonusBalance");
 
                     b.Property<string>("City");
 
@@ -164,11 +162,7 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18, 6)");
-
-                    b.Property<decimal>("BonusPercentage")
-                        .HasColumnType("decimal(18, 6)");
+                    b.Property<string>("Amount");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -177,9 +171,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<Guid>("CryptoAddressId");
 
                     b.Property<int>("Direction");
-
-                    b.Property<decimal>("ExchangeRate")
-                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<Guid?>("ExternalId");
 
@@ -190,9 +181,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<bool>("IsNotified");
 
                     b.Property<DateTime>("Timestamp");
-
-                    b.Property<decimal>("TokenPrice")
-                        .HasColumnType("decimal(18, 6)");
 
                     b.HasKey("Id");
 
@@ -214,46 +202,27 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<decimal>("BonusPercentage")
-                        .HasColumnType("decimal(18, 6)");
-
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<int>("Currency");
 
-                    b.Property<bool>("IsTokenSaleDisabled");
-
-                    b.Property<decimal>("TokenPrice")
-                        .HasColumnType("decimal(18, 6)");
-
-                    b.Property<decimal>("TotalCoins")
-                        .HasColumnType("decimal(18, 6)");
-
-                    b.Property<decimal>("TotalCoinsBought")
-                        .HasColumnType("decimal(18, 6)");
+                    b.Property<long>("TotalCoinsBoughts");
 
                     b.Property<decimal>("TotalInvested")
                         .HasColumnType("decimal(18, 6)");
 
                     b.Property<int>("TotalInvestors");
 
-                    b.Property<decimal>("TotalNonInternalCoinsBought")
-                        .HasColumnType("decimal(18, 6)");
+                    b.Property<long>("TotalNonInternalCoinsBoughts");
 
                     b.Property<decimal>("TotalNonInternalInvested")
                         .HasColumnType("decimal(18, 6)");
 
                     b.Property<int>("TotalNonInternalInvestors");
 
-                    b.Property<decimal>("TotalNonInternalUsdInvested")
-                        .HasColumnType("decimal(18, 6)");
-
                     b.Property<int>("TotalNonInternalUsers");
-
-                    b.Property<decimal>("TotalUsdInvested")
-                        .HasColumnType("decimal(18, 6)");
 
                     b.Property<int>("TotalUsers");
 
@@ -286,91 +255,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.HasIndex("Created");
 
                     b.ToTable("ExchangeRates");
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawBlock", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("Currency");
-
-                    b.Property<string>("Hash")
-                        .IsRequired();
-
-                    b.Property<long>("Index");
-
-                    b.Property<DateTime>("Timestamp");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Hash")
-                        .IsUnique();
-
-                    b.HasIndex("Index", "Currency")
-                        .IsUnique();
-
-                    b.ToTable("RawBlocks");
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawPart", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Address");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Hash");
-
-                    b.Property<long>("Index");
-
-                    b.Property<Guid>("TransactionId");
-
-                    b.Property<int>("Type");
-
-                    b.Property<string>("Value");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Address");
-
-                    b.HasIndex("Hash");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("RawParts");
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<Guid>("BlockId");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Hash")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlockId");
-
-                    b.HasIndex("Hash")
-                        .IsUnique();
-
-                    b.ToTable("RawTransactions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -568,22 +452,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.HasOne("InvestorDashboard.Backend.Database.Models.CryptoAddress", "CryptoAddress")
                         .WithMany("CryptoTransactions")
                         .HasForeignKey("CryptoAddressId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawPart", b =>
-                {
-                    b.HasOne("InvestorDashboard.Backend.Database.Models.RawTransaction", "Transaction")
-                        .WithMany("Parts")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("InvestorDashboard.Backend.Database.Models.RawTransaction", b =>
-                {
-                    b.HasOne("InvestorDashboard.Backend.Database.Models.RawBlock", "Block")
-                        .WithMany("Transactions")
-                        .HasForeignKey("BlockId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

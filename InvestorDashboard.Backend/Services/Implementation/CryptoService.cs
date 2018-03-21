@@ -2,7 +2,6 @@
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -10,15 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
-        private readonly IMessageService _messageService;
-        private readonly IDashboardHistoryService _dashboardHistoryService;
         private readonly ITokenService _tokenService;
 
         public IOptions<CryptoSettings> Settings { get; }
@@ -27,9 +23,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
         protected IResourceService ResourceService { get; }
+        public IRestService RestService { get; }
         protected IMapper Mapper { get; }
-
-        protected abstract byte Denomination { get; }
 
         protected CryptoService(
             ApplicationDbContext context,
@@ -37,8 +32,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
-            IMessageService messageService,
-            IDashboardHistoryService dashboardHistoryService,
+            IRestService restService,
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
@@ -51,8 +45,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
             ResourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            RestService = restService ?? throw new ArgumentNullException(nameof(restService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
@@ -170,24 +163,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return result;
-        }
-
-        public decimal ToDecimalValue(string value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            // TODO: check this.
-            var bi = BigInteger.Parse(value);
-            var result = Math.Exp(BigInteger.Log(bi) - BigInteger.Log(new BigInteger(Math.Pow(10, Denomination))));
-            return Convert.ToDecimal(result);
-        }
-
-        public string ToStringValue(decimal value)
-        {
-            return new BigInteger((double)value * Math.Pow(10, Denomination)).ToString();
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);

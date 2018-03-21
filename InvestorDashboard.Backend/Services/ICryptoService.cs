@@ -14,7 +14,5 @@ namespace InvestorDashboard.Backend.Services
         Task RefreshInboundTransactions();
         Task TransferAvailableAssets();
         Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
-        decimal ToDecimalValue(string value);
-        string ToStringValue(decimal value);
     }
 }

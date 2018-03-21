@@ -18,6 +18,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IExchangeRateService _exchangeRateService;
         private readonly IResourceService _resourceService;
         private readonly IDashboardHistoryService _dashboardHistoryService;
+        private readonly ICalculationService _calculationService;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
         public ExternalInvestorService(
@@ -27,6 +28,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IResourceService resourceService,
             IDashboardHistoryService dashboardHistoryService,
+            ICalculationService calculationService,
             IEnumerable<ICryptoService> cryptoServices,
             IOptions<TokenSettings> tokenSettings)
             : base(context, loggerFactory)
@@ -36,6 +38,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
@@ -62,9 +65,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         try
                         {
-                            var service = _cryptoServices.Single(x => x.Settings.Value.Currency == record.Currency);
-                            var address = await service.CreateCryptoAddress(user.Id);
-                            var value = service.ToStringValue(record.Value);
+                            var address = await _cryptoServices.Single(x => x.Settings.Value.Currency == record.Currency).CreateCryptoAddress(user.Id);
+                            var value = _calculationService.ToStringValue(record.Value, record.Currency);
 
                             var transaction = new CryptoTransaction
                             {

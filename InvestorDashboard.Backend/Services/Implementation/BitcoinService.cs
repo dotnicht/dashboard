@@ -6,7 +6,6 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NBitcoin.BitcoinCore;
 using NBitcoin.Protocol;
 using System;
 using System.Collections.Generic;
@@ -18,11 +17,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class BitcoinService : CryptoService, IBitcoinService
     {
-        private readonly ITokenService _tokenService;
         private readonly IOptions<BitcoinSettings> _bitcoinSettings;
-        private readonly IRestService _restService;
-
-        protected override byte Denomination { get; } = 8;
 
         private Network Network
         {
@@ -40,18 +35,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
-            IMessageService messageService,
-            IDashboardHistoryService dashboardHistoryService,
+            IRestService restService,
             ITokenService tokenService,
             IMapper mapper,
-            IOptions<TokenSettings> tokenSettings,
-            IOptions<BitcoinSettings> bitcoinSettings,
-            IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, tokenService, mapper, tokenSettings, bitcoinSettings)
+            IOptions<TokenSettings> tokenSettings, 
+            IOptions<BitcoinSettings> bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, tokenService, mapper, tokenSettings, bitcoinSettings)
         {
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
-            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -91,7 +82,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             // TODO: implement custom amount transfer.
 
             var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
-            var response = await _restService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
+            var response = await RestService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
 
             var balance = 0m;
             var transaction = new Transaction();
@@ -174,7 +165,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
         {
             var uri = new Uri($"https://blockexplorer.com/api/txs/?address={address}");
-            var result = await _restService.GetAsync<BlockExplorerResponse>(uri);
+            var result = await RestService.GetAsync<BlockExplorerResponse>(uri);
             var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
 
@@ -205,7 +196,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
         {
             var uri = new Uri($"https://chain.so/api/v2/address/{(_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC")}/{address}");
-            var result = await _restService.GetAsync<ChainResponse>(uri);
+            var result = await RestService.GetAsync<ChainResponse>(uri);
             var unmapped = result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
             var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
 

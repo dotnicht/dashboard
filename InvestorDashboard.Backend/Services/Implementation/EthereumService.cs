@@ -20,11 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class EthereumService : CryptoService, IEthereumService
     {
-        private readonly ITokenService _tokenService;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
-        private readonly IRestService _restService;
-
-        protected override byte Denomination { get; } = 18;
 
         public EthereumService(
             ApplicationDbContext context,
@@ -32,18 +28,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
-            IMessageService messageService,
-            IDashboardHistoryService dashboardHistoryService,
+            IRestService restService,
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
-            IOptions<EthereumSettings> ethereumSettings,
-            IRestService restService)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, messageService, dashboardHistoryService, tokenService, mapper, tokenSettings, ethereumSettings)
+            IOptions<EthereumSettings> ethereumSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, tokenService, mapper, tokenSettings, ethereumSettings)
         {
-            _tokenService = tokenService;
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
-            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -73,7 +65,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 try
                 {
-                    var result = await _restService.GetAsync<EtherscanAccountResponse>(uri);
+                    var result = await RestService.GetAsync<EtherscanAccountResponse>(uri);
 
                     var confirmed = result.Result
                         .Where(x => string.IsNullOrWhiteSpace(x.Confirmations) || int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)

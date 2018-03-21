@@ -175,11 +175,14 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
-            var items = await _dashboardHistoryService.GetHistoryItems();
-
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
 
-             
+            var items = await _dashboardHistoryService.GetHistoryItems();
+
+            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBoughts);
+            result.Currencies = items
+                .Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested })
+                .ToList();
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
 
