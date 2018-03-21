@@ -13,7 +13,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
             public TimeSpan Period { get; set; }
             public bool StartImmediately { get; set; }
             public bool IsDisabled { get; set; }
-            public bool IsInfinite { get; set; }
         }
     }
 }

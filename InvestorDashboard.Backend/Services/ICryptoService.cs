@@ -3,7 +3,6 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Options;
 using System;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
@@ -15,7 +14,6 @@ namespace InvestorDashboard.Backend.Services
         Task RefreshInboundTransactions();
         Task TransferAvailableAssets();
         Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
-        Task SynchronizeRawTransactions(CancellationToken cancellationToken);
         decimal ToDecimalValue(string value);
         string ToStringValue(decimal value);
     }

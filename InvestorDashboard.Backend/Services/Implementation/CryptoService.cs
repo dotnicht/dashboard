@@ -172,51 +172,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return result;
         }
 
-        public virtual async Task SynchronizeRawTransactions(CancellationToken cancellationToken)
-        {
-            var index = Settings.Value.StartingBlockIndex;
-
-            while (true)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                var current = await GetCurrentBlockIndex();
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                while (index <= current)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    if (!Context.RawBlocks.Any(x => x.Currency == Settings.Value.Currency && x.Index == index))
-                    {
-                        var block = await GetBlock(index);
-
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            return;
-                        }
-
-                        await Context.RawBlocks.AddAsync(block);
-                        await Context.SaveChangesAsync();
-                    }
-
-                    index++;
-                }
-
-                await Task.Delay(Settings.Value.IdleModeRefreshPeriod);
-            }
-        }
-
         public decimal ToDecimalValue(string value)
         {
             if (value == null)
@@ -235,8 +190,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return new BigInteger((double)value * Math.Pow(10, Denomination)).ToString();
         }
 
-        protected abstract Task<long> GetCurrentBlockIndex();
-        protected abstract Task<RawBlock> GetBlock(long index);
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);

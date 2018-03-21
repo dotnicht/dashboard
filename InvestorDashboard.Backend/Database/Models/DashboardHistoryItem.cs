@@ -10,10 +10,10 @@ namespace InvestorDashboard.Backend.Database.Models
         public DateTime Created { get; set; }
         public int TotalUsers { get; set; }
         public int TotalInvestors { get; set; }
-        public string TotalInvested { get; set; }
+        public decimal TotalInvested { get; set; }
         public int TotalNonInternalUsers { get; set; }
         public int TotalNonInternalInvestors { get; set; }
-        public string TotalNonInternalInvested { get; set; }
+        public decimal TotalNonInternalInvested { get; set; }
         public Currency Currency { get; set; }
     }
 }

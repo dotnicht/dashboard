@@ -145,58 +145,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
-        protected override async Task<long> GetCurrentBlockIndex()
-        {
-            return (await GetChainEnumerable().Last()).Height;
-        }
-
-        protected override async Task<RawBlock> GetBlock(long index)
-        {
-            var store = new IndexedBlockStore(new InMemoryNoSqlRepository(), new BlockStore(_bitcoinSettings.Value.LocalBlockchainFilesPath, Network));
-            store.ReIndex();
-
-            var header = await GetChainEnumerable().Single(x => x.Height == index);
-            var source = store.Get(header.HashBlock);
-
-            var block = new RawBlock
-            {
-                Currency = Currency.BTC,
-                Hash = source.GetHash().ToString(),
-                Index = header.Height,
-                Timestamp = header.Header.BlockTime.UtcDateTime
-            };
-
-            foreach (var tx in source.Transactions)
-            {
-                var transaction = new RawTransaction
-                {
-                    Hash = tx.GetHash().ToString()
-                };
-
-                transaction.Parts = tx.Inputs
-                    .Select(x =>
-                        new RawPart
-                        {
-                            Type = RawPartType.Input,
-                            Index = x.PrevOut.N,
-                            Hash = x.PrevOut.Hash.ToString()
-                        })
-                    .Union(tx.Outputs.Select((x, i) =>
-                        new RawPart
-                        {
-                            Type = RawPartType.Output,
-                            Address = x.ScriptPubKey.GetDestination()?.GetAddress(Network).ToString(),
-                            Value = x.Value.Satoshi.ToString(),
-                            Index = i
-                        }))
-                    .ToHashSet();
-
-                block.Transactions.Add(transaction);
-            }
-
-            return block;
-        }
-
         private async Task<IEnumerable<CryptoTransaction>> GetFromBlockchain(string address)
         {
             var be = new BlockExplorer();

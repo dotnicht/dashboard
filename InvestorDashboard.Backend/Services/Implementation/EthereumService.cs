@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Nethereum.Hex.HexTypes;
 using Nethereum.KeyStore;
 using Nethereum.Signer;
-using Nethereum.Util;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using Polly;
@@ -62,52 +61,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
-        }
-
-        protected override async Task<long> GetCurrentBlockIndex()
-        {
-            var web3 = new Web3(Settings.Value.NodeAddress.ToString());
-            var current = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-            return (long)current.Value;
-        }
-
-        protected override async Task<RawBlock> GetBlock(long index)
-        {
-            var source = await new Web3(Settings.Value.NodeAddress.ToString()).Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
-
-            var block = new RawBlock
-            {
-                Currency = Currency.ETH,
-                Hash = source.BlockHash,
-                Index = (long)source.Number.Value,
-                Timestamp = DateTimeOffset.FromUnixTimeSeconds(long.Parse(source.Timestamp.Value.ToString())).UtcDateTime
-            };
-
-            foreach (var tx in source.Transactions)
-            {
-                var transaction = new RawTransaction
-                {
-                    Hash = tx.TransactionHash
-                };
-
-                transaction.Parts.Add(new RawPart
-                {
-                    Type = RawPartType.Input,
-                    Address = tx.From,
-                    Value = tx.Value.Value.ToString()
-                });
-
-                transaction.Parts.Add(new RawPart
-                {
-                    Type = RawPartType.Output,
-                    Address = tx.To,
-                    Value = tx.Value.Value.ToString()
-                });
-
-                block.Transactions.Add(transaction);
-            }
-
-            return block;
         }
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)

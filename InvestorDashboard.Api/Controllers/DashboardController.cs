@@ -179,7 +179,7 @@ namespace InvestorDashboard.Api.Controllers
 
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
 
-            // TODO: reimplement ICO info.
+             
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
 

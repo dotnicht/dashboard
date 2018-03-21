@@ -17,12 +17,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<TokenSettings> _options;
         private readonly IMapper _mapper;
+        private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public DashboardHistoryService(ApplicationDbContext context, ILoggerFactory loggerFactory, IOptions<TokenSettings> options, IMapper mapper)
+        public DashboardHistoryService(ApplicationDbContext context, ILoggerFactory loggerFactory, IOptions<TokenSettings> options, IMapper mapper, IEnumerable<ICryptoService> cryptoServices)
             : base(context, loggerFactory)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
         public async Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null)
@@ -67,14 +69,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 foreach (var tx in item)
                 {
                     total += BigInteger.Parse(tx.Amount);
+
                     if (nonInternalPredicate(tx))
                     {
                         totalNonInternal += BigInteger.Parse(tx.Amount);
                     }
                 }
 
-                dhi.TotalInvested = total.ToString();
-                dhi.TotalNonInternalInvested = totalNonInternal.ToString();
+                var service = _cryptoServices.Single(x => x.Settings.Value.Currency == item.Key);
+
+                dhi.TotalInvested = service.ToDecimalValue(total.ToString());
+                dhi.TotalNonInternalInvested = service.ToDecimalValue(totalNonInternal.ToString());
 
                 result.Add(item.Key, dhi);
             }
