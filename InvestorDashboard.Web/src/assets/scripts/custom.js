@@ -56,8 +56,8 @@ jQuery(document).ready(function($) {
             $('.progress-holder .progress_percent_value').attr('aria-valuenow', progress);
             $('.progress-holder .progress_percent_value').css('width', progress + '%');
 
-            html = '<strong>' + numberWithCommas(progressbar_data.totalUsdInvested.toFixed(0)) + '</strong>  &nbsp;/&nbsp; ' + numberWithCommas(progressbar_data.totalCoins * progressbar_data.tokenPrice) + ' USD';
-
+            // html = '<strong>' + numberWithCommas(progressbar_data.totalUsdInvested.toFixed(0)) + '</strong>  &nbsp;/&nbsp; ' + numberWithCommas(progressbar_data.totalCoins * progressbar_data.tokenPrice) + ' USD';
+            html = '';
             $('.progress-holder .progress_amount_text').html(html);
         }
     }

@@ -196,18 +196,22 @@ app-register_presale {
         justify-content: center;
         align-items: center;
         .block {
+            display: flex;
             font-size: 12px;
-            display: inline-flex;
             height: 50px;
             line-height: normal;
             margin-right: 85px;
-            .icon {
-                width: 30px;
-                margin-right: 10px;
+            .icon-link {
+                display: flex;
+                align-items: center;
+                .icon {
+                    width: 30px;
+                    margin-right: 10px;
+                }
             }
         }
         .right {
-            display: inline-flex;
+            // display: inline-flex;
             font-size: 12px;
             height: 50px;
             .icon {
@@ -215,7 +219,7 @@ app-register_presale {
                 margin-right: 5px;
             }
             .copyright {
-                top: 15px;
+                // top: 15px;
                 position: relative;
             }
         }
