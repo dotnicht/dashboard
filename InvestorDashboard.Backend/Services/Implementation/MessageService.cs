@@ -112,7 +112,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (items.Any())
             {
                 sb.AppendLine($"Total users: {items.First().Value.TotalNonInternalUsers}");
-                sb.AppendLine($"Total investors: {items.Sum(x => x.Value.TotalNonInternalInvestors)}");
+                sb.AppendLine($"Total investors: {items.First().Value.TotalNonInternalInvestors}");
                 sb.AppendLine(string.Join(Environment.NewLine, items.Select(x => $"Total {x.Key}: {x.Value.TotalNonInternalInvested}")));
             }
             else
