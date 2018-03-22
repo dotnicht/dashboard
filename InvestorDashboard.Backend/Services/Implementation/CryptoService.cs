@@ -95,10 +95,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (!Context.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                     {
-                        // TODO: send transaction received message.
+                        transaction.CryptoAddressId = address.Id;
 
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
+
+                        // TODO: send transaction received message.
+
                         await _tokenService.RefreshTokenBalance(address.UserId);
                     }
                 }

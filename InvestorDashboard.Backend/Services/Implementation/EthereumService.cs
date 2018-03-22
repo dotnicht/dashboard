@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Etherscan.NetSDK;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -12,6 +13,7 @@ using Nethereum.Web3.Accounts;
 using Polly;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
