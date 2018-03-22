@@ -18,8 +18,8 @@
   .first {
       width: calc(65% - 7.5px);
       margin-right: 5px;
-      // background: linear-gradient(to bottom, #a1e276, #30b9ad);
-      background-image: url("/assets/img/balance_back.jpg") center;
+      background-image: url("/assets/img/balance_back.jpg");
+      background-position: center;
       color: white;
       margin-bottom: 20px;
       .ether-addres {
@@ -43,7 +43,7 @@
           display: inline-flex;
       }
       .right {
-          color: rgba(0, 0, 0, .54);
+          color: rgba(255, 255, 255, 0.54);
       }
       .item {
           margin-bottom: 15px;
@@ -57,7 +57,7 @@
               font-weight: bold;
           }
           .title {
-              color: rgba(0, 0, 0, .54);
+              color: rgba(255, 255, 255, 0.54);
           }
       }
   }
@@ -67,7 +67,7 @@
       min-height: 305px;
       margin-right: 5px;
       .title {
-          color: rgba(0, 0, 0, .54);
+          color: rgba(255, 255, 255, 1);
       }
       .left,
       .right {
@@ -103,7 +103,7 @@
                       font-weight: bold;
                   }
                   .title {
-                      color: rgba(0, 0, 0, .54);
+                      color: rgba(255, 255, 255, 0.54);
                   }
               }
           }
@@ -176,7 +176,7 @@
               overflow-y: auto;
               height: 100%;
               .header {
-                  color: rgba(0, 0, 0, 0.54);
+                  color: rgba(255, 255, 255, 1);
                   margin-bottom: 10px;
                   &:first-child {
                       margin-top: 0;
@@ -190,11 +190,11 @@
               width: calc(100% - 15px);
               z-index: 2;
               bottom: -3px;
-              background-image: -webkit-gradient(linear, 0 50%, 100% 50%, color-stop(100%, rgba(255, 255, 255, 1)), color-stop(0, rgba(255, 255, 255, 0)));
-              background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-              background-image: -moz-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-              background-image: -o-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-              background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+              // background-image: -webkit-gradient(linear, 0 50%, 100% 50%, color-stop(100%, rgba(255, 255, 255, 1)), color-stop(0, rgba(255, 255, 255, 0)));
+              // background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+              // background-image: -moz-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+              // background-image: -o-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+              // background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
           }
       }
   }
