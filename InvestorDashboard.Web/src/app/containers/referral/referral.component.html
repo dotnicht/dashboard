@@ -13,9 +13,16 @@
         <div class="info-label">Bitcoin</div>
         <div class="info-value">
             <mat-form-field>
-                <input matInput #btcAddress value="{{referralInfo.btc_address}}" type="text" readonly>
+                <input matInput #btcAddress value="{{referralInfo.btc_address}}" type="text" [readonly]='readonly'>
             </mat-form-field>
             <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="btcAddressIsCopied = true" mat-raised-button>{{(!btcAddressIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+            <button mat-raised-button *ngIf="!isEditMode " color="primary" type="button" (click)="edit()" class="btn btn-default">
+                <i class='fa fa-edit'></i> {{'users.editor.Edit' | translate}}
+            </button>
+            <button mat-raised-button *ngIf="isEditMode" type="button" (click)="cancel()" class="btn btn-default btn-danger" color="primary">
+                    <!-- [disabled]="isSaving" -->
+                <i class='fa fa-times'></i> {{'users.editor.Cancel' | translate}}
+            </button>
         </div>
         <div class="info-description"></div>
     </div>

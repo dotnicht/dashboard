@@ -47,7 +47,7 @@ const routes: Routes = [
         path: 'settings', canActivate: [AuthGuard],
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'
     },
-    { path: 'referral', component: ReferralComponent, canActivate: [AuthGuard]},
+    // { path: 'referral', component: ReferralComponent, canActivate: [AuthGuard]},
     {
         path: 'faq', component: FaqComponent,
         data: {
