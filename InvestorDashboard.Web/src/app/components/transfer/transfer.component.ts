@@ -117,7 +117,7 @@ export class TransferComponent implements OnInit {
 }
 @Component({
     selector: 'succsess-transfer-dialog',
-    template: `<h4>Token transfer was made. You should see your DTT tokens in your ERC20 wallet within an hour!</h4>
+    template: `<h4>Token transfer was made. You should see your RAC tokens in your ERC20 wallet within an hour!</h4>
     <p>Transaction hash <b>{{hash}}</b></p>
     <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
         <span>{{'buttons.Close' | translate}}</span>

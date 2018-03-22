@@ -1,0 +1,31 @@
+﻿.copy-btn {
+    margin-left: 5px;
+}
+
+.subheader {
+    text-transform: uppercase;
+    font-size: 18px;
+}
+
+.info-block {
+    display: flex;
+    line-height: 2.5em;
+    .info-label {
+        width: 115px;
+        align-items: center;
+        display: flex;
+    }
+    .info-value {
+        font-weight: 600;
+        margin-right: 7px;
+        & .transaction {
+            width: 100%;
+        }
+    }
+    .info-description {}
+}
+
+.transactions-info-block {
+    line-height: 2.5em;
+    margin-bottom: 10px;
+}

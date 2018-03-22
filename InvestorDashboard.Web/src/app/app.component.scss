@@ -1,0 +1,18 @@
+.main-toolbar {
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+    .mat-button {
+        height: 50px;
+        border-radius: 0;
+        &.active {
+            background-color: black;
+            border-left: 3px solid #fd850f;
+            .mat-icon {
+                color: #fd850f;
+            }
+            color: white;
+        }
+    }
+}

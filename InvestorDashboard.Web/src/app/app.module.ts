@@ -31,6 +31,7 @@ import { OtherService } from './services/other.service';
 
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { ReferralModule } from './containers/referral/referral.module';
 
 
 @NgModule({
@@ -53,6 +54,7 @@ import { environment } from '../environments/environment';
     MaterialModule,
     UserManageModule,
     DashboardModule,
+    ReferralModule,
     //environment.production ? ServiceWorkerModule.register('/ngsw-worker.js') : [],
     TranslateModule.forRoot({
       loader: {
