@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
@@ -58,7 +58,8 @@ export class RegisterComponent implements OnInit {
         if (this.country == 'CN') {
             return false;
         }
-        return true;
+        //return true;
+        return false;
     }
     @HostListener('window:message', ['$event'])
     onMessage(e) {

@@ -1,0 +1,65 @@
+﻿<mat-card>
+  <h2 class="header">Referral</h2>
+  <h3 class="subheader">My referral link</h3>
+  <div>
+    <mat-form-field>
+      <input matInput #referralLink value="https://racoin.io/?ref={{referralInfo.link}}" type="text" readonly>
+    </mat-form-field>
+    <button [color]="'primary'" class="copy-btn" [ngxClipboard]="referralLink" (cbOnSuccess)="referralLinkIsCopied = true" mat-raised-button>{{(!referralLinkIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+  </div>
+
+  <h3 class="subheader">My referral addresses</h3>
+  <div class="info-block">
+    <div class="info-label">Bitcoin</div>
+    <div class="info-value">
+      <!-- <mat-form-field>
+        <input matInput #btcAddress value="{{referralInfo.btc_address}}" type="text" [readonly]='readonly'>
+      </mat-form-field> -->
+      <!-- <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="btcAddressIsCopied = true" mat-raised-button>{{(!btcAddressIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button> -->
+      <!-- <button mat-raised-button *ngIf="!isEditMode " color="primary" type="button" (click)="edit()" class="btn btn-default">
+        <i class='fa fa-edit'></i> {{'users.editor.Edit' | translate}}
+      </button> -->
+      <!-- <button mat-raised-button 
+            *ngIf="isEditMode" type="button" (click)="cancel()" class="btn btn-default btn-danger" color="primary">
+                <i class='fa fa-times'></i> {{'users.editor.Cancel' | translate}}
+            </button> -->
+    </div>
+    <div class="info-description"></div>
+  </div>
+  <div class="info-block">
+    <div class="info-label">Ethereum</div>
+    <div class="info-value">
+      <mat-form-field>
+        <input matInput #ethAddress value="{{referralInfo.eth_address}}" type="text" readonly>
+      </mat-form-field>
+      <button [color]="'primary'" class="copy-btn" [ngxClipboard]="ethAddress" (cbOnSuccess)="ethAddressIsCopied = true" mat-raised-button>{{(!ethAddressIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+    </div>
+    <div class="info-description"></div>
+  </div>
+
+  <h3 class="subheader">My referral balance</h3>
+  <div class="info-block">
+    <div class="info-label">Total Bitcoin:</div>
+    <div class="info-value">{{referralInfo.btc_balance}} BTC</div>
+    <div class="info-description">Где деньги, Лебовски?!</div>
+  </div>
+  <div class="info-block">
+    <div class="info-label">Total Ethereum:</div>
+    <div class="info-value">{{referralInfo.eth_balance}} ETH</div>
+    <div class="info-description">Где деньги, Лебовски?!</div>
+  </div>
+
+  <h3 class="subheader">Transfer Transactions</h3>
+  <div class="transactions-info-block">
+    <div>Bitcoin:</div>
+    <div *ngFor="let transaction of referralInfo.btc_transactions">
+      <div>{{transaction}}</div>
+    </div>
+  </div>
+  <div class="transactions-info-block">
+    <div>Ethereum:</div>
+    <div *ngFor="let transaction of referralInfo.eth_transactions">
+      <div>{{transaction}}</div>
+    </div>
+  </div>
+</mat-card>

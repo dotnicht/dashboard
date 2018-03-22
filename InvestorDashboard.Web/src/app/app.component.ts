@@ -34,7 +34,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     if (window.location.pathname == "/presale") {
-      window.location.href = 'https://data-trading.com';
+      // window.location.href = 'https://data-trading.com';
+      window.location.href = 'http://www.racoin.io/';
     }
     if (isPlatformBrowser) {
       this.year = new Date().getFullYear();
