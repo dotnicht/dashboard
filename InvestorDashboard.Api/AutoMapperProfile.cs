@@ -31,7 +31,8 @@ namespace InvestorDashboard.Api
 
             CreateMap<DashboardHistoryItem, IcoInfoModel>();
             CreateMap<TokenSettings, IcoInfoModel>()
-                .ForMember(x => x.TokenPrice, x => x.MapFrom(y => y.Price));
+                .ForMember(x => x.TokenPrice, x => x.MapFrom(y => y.Price))
+                .ForMember(x => x.TokenName, x => x.MapFrom(y => y.Name));
 
             CreateMap<ApplicationUser, ClientInfoModel>();
         }
