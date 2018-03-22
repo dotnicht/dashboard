@@ -58,8 +58,8 @@ export class RegisterComponent implements OnInit {
         if (this.country == 'CN') {
             return false;
         }
-        //return true;
-        return false;
+        return true;
+        //return false;
     }
     @HostListener('window:message', ['$event'])
     onMessage(e) {

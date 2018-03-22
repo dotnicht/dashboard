@@ -137,7 +137,7 @@ export class SuccsessTransferDialogComponent {
 @Component({
     selector: 'failed-transfer-dialog',
     template: `<h4>Sorry, there were problems with tokens transfer.
-    You may try again latter or contact support@data-trading.com for further help</h4>
+    You may try again latter or contact support@racoin.io for further help</h4>
 
     <button style="float: right" (click)="dialogRef.close()" mat-raised-button>
         <span>{{'buttons.Close' | translate}}</span>
