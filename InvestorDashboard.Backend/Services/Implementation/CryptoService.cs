@@ -15,15 +15,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class CryptoService : ContextService, ICryptoService
     {
-        private readonly ITokenService _tokenService;
-
         public IOptions<CryptoSettings> Settings { get; }
 
         protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
         protected IResourceService ResourceService { get; }
-        public IRestService RestService { get; }
+        protected IRestService RestService { get; }
+        protected ICalculationService CalculationService { get; }
+        public ITokenService TokenService { get; }
         protected IMapper Mapper { get; }
 
         protected CryptoService(
@@ -33,6 +33,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
             IRestService restService,
+            ICalculationService calculationService,
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
@@ -46,7 +47,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
             ResourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             RestService = restService ?? throw new ArgumentNullException(nameof(restService));
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            CalculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
+            TokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         public async Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment, string password = null)
@@ -102,7 +104,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         // TODO: send transaction received message.
 
-                        await _tokenService.RefreshTokenBalance(address.UserId);
+                        await TokenService.RefreshTokenBalance(address.UserId);
                     }
                 }
 

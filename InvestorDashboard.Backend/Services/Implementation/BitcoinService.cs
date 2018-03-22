@@ -36,11 +36,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IKeyVaultService keyVaultService,
             IResourceService resourceService,
             IRestService restService,
+            ICalculationService calculationService,
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings, 
             IOptions<BitcoinSettings> bitcoinSettings)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, tokenService, mapper, tokenSettings, bitcoinSettings)
+            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
         }
@@ -55,26 +56,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var sources = new Dictionary<string, Func<string, Task<IEnumerable<CryptoTransaction>>>>
-            {
-                { "blockchain.info", GetFromBlockchain },
-                { "blockexplorer.com", GetFromBlockExplorer },
-                { "chain.so", GetFromChain }
-            };
+            var be = new BlockExplorer();
+            var addr = await be.GetBase58AddressAsync(address);
 
-            foreach (var source in sources)
+            var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
+
+            foreach (var tx in addr.Transactions)
             {
-                try
+                var result = mapped.Single(x => x.Hash == tx.Hash);
+
+                if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
                 {
-                    return await source.Value(address);
+                    result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.Satoshis).ToString();
+                    result.Direction = CryptoTransactionDirection.Internal;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Logger.LogError(ex, $"An error occurred while getting transaction info from {source.Key}.");
+                    result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.Satoshis).ToString();
+                    result.Direction = CryptoTransactionDirection.Inbound;
                 }
             }
 
-            throw new InvalidOperationException("All sources failed to retrieve transaction info.");
+            return mapped;
         }
 
         protected override async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, BigInteger? amount = null)
@@ -119,7 +122,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 
-                var node = GetNode();
+                var node = Node.Connect(Network, Settings.Value.NodeAddress.ToString());
+                node.VersionHandshake();
                 node.SendMessage(new InvPayload(transaction));
                 node.SendMessage(new TxPayload(transaction));
                 await Task.Delay(TimeSpan.FromSeconds(5));
@@ -134,241 +138,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
-        }
-
-        private async Task<IEnumerable<CryptoTransaction>> GetFromBlockchain(string address)
-        {
-            var be = new BlockExplorer();
-            var addr = await be.GetBase58AddressAsync(address);
-
-            var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
-
-            foreach (var tx in addr.Transactions)
-            {
-                var result = mapped.Single(x => x.Hash == tx.Hash);
-
-                if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
-                {
-                    result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.Satoshis).ToString();
-                    result.Direction = CryptoTransactionDirection.Internal;
-                }
-                else
-                {
-                    result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.Satoshis).ToString();
-                    result.Direction = CryptoTransactionDirection.Inbound;
-                }
-            }
-
-            return mapped;
-        }
-
-        private async Task<IEnumerable<CryptoTransaction>> GetFromBlockExplorer(string address)
-        {
-            var uri = new Uri($"https://blockexplorer.com/api/txs/?address={address}");
-            var result = await RestService.GetAsync<BlockExplorerResponse>(uri);
-            var unmapped = result.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
-            var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
-
-            foreach (var tx in unmapped)
-            {
-                var transaction = mapped.Single(x => x.Hash == tx.Txid);
-
-                if (tx.Vout.Any(x => x.ScriptPubKey.Addresses.Any(y => y == address)))
-                {
-                    transaction.Amount = tx.Vout
-                        .Where(x => x.ScriptPubKey.Addresses.Any(y => y == address))
-                        .Sum(x => long.Parse(x.Value))
-                        .ToString();
-                    transaction.Direction = CryptoTransactionDirection.Inbound;
-                }
-                else
-                {
-                    transaction.Amount = tx.Vout.Where(x => x.ScriptPubKey.Addresses.Any(y => y != address))
-                        .Sum(x => long.Parse(x.Value))
-                        .ToString();
-                    transaction.Direction = CryptoTransactionDirection.Internal;
-                }
-            }
-
-            return mapped;
-        }
-
-        private async Task<IEnumerable<CryptoTransaction>> GetFromChain(string address)
-        {
-            var uri = new Uri($"https://chain.so/api/v2/address/{(_bitcoinSettings.Value.IsTestNet ? "BTCTEST" : "BTC")}/{address}");
-            var result = await RestService.GetAsync<ChainResponse>(uri);
-            var unmapped = result.Data.Txs.Where(x => x.Confirmations >= _bitcoinSettings.Value.Confirmations);
-            var mapped = Mapper.Map<List<CryptoTransaction>>(unmapped);
-
-            foreach (var tx in unmapped)
-            {
-                var transaction = mapped.Single(x => x.Hash == tx.Txid);
-
-                if (tx.Outgoing.Outputs.Any(x => x.Address == address))
-                {
-                    transaction.Amount = tx.Outgoing.Outputs
-                        .Where(x => x.Address == address)
-                        .Sum(x => long.Parse(x.Value))
-                        .ToString();
-                    transaction.Direction = CryptoTransactionDirection.Inbound;
-                }
-                else
-                {
-                    transaction.Amount = tx.Outgoing.Outputs
-                        .Where(x => x.Address != address)
-                        .Sum(x => long.Parse(x.Value))
-                        .ToString();
-                    transaction.Direction = CryptoTransactionDirection.Internal;
-                }
-            }
-
-            return mapped;
-        }
-
-        private IAsyncEnumerable<ChainedBlock> GetChainEnumerable()
-        {
-            return GetNode().GetChain().ToEnumerable(false).ToAsyncEnumerable();
-        }
-
-        private Node GetNode()
-        {
-            var node = Node.Connect(Network, Settings.Value.NodeAddress.ToString());
-            node.VersionHandshake();
-            return node;
-        }
-
-        internal class ChainResponse
-        {
-            public string Status { get; set; }
-            public ResponseData Data { get; set; }
-            public int Code { get; set; }
-            public string Message { get; set; }
-
-            public class ResponseData
-            {
-                public string Network { get; set; }
-                public string Address { get; set; }
-                public string Balance { get; set; }
-                public string Received_value { get; set; }
-                public string Pending_value { get; set; }
-                public int Total_txs { get; set; }
-                public List<Transaction> Txs { get; set; }
-            }
-
-            public class Transaction
-            {
-                public string Txid { get; set; }
-                public int? Block_no { get; set; }
-                public int Confirmations { get; set; }
-                public int Time { get; set; }
-                public Outgoing Outgoing { get; set; }
-                public Incoming Incoming { get; set; }
-            }
-
-            public class Incoming
-            {
-                public int Output_no { get; set; }
-                public string Value { get; set; }
-                public Spent Spent { get; set; }
-                public List<Input> Inputs { get; set; }
-                public int Req_sigs { get; set; }
-                public string Script_asm { get; set; }
-                public string Script_hex { get; set; }
-            }
-
-            public class Outgoing
-            {
-                public string Value { get; set; }
-                public List<Output> Outputs { get; set; }
-            }
-
-            public class Output
-            {
-                public int Output_no { get; set; }
-                public string Address { get; set; }
-                public string Value { get; set; }
-                public Spent Spent { get; set; }
-            }
-
-            public class Spent
-            {
-                public string Txid { get; set; }
-                public int Input_no { get; set; }
-            }
-
-            public class Input
-            {
-                public int Input_no { get; set; }
-                public string Address { get; set; }
-                public ReceivedFrom Received_from { get; set; }
-            }
-
-            public class ReceivedFrom
-            {
-                public string Txid { get; set; }
-                public int Output_no { get; set; }
-            }
-        }
-
-        internal class BlockExplorerResponse
-        {
-            public int PagesTotal { get; set; }
-            public List<Tx> Txs { get; set; }
-
-            public class ScriptSig
-            {
-                public string Asm { get; set; }
-                public string Hex { get; set; }
-            }
-
-            public class Vin
-            {
-                public string Txid { get; set; }
-                public int Vout { get; set; }
-                public ScriptSig ScriptSig { get; set; }
-                public object Sequence { get; set; }
-                public int N { get; set; }
-                public string Addr { get; set; }
-                public int ValueSat { get; set; }
-                public double Value { get; set; }
-                public object DoubleSpentTxID { get; set; }
-            }
-
-            public class ScriptPubKey
-            {
-                public string Hex { get; set; }
-                public string Asm { get; set; }
-                public List<string> Addresses { get; set; }
-                public string Type { get; set; }
-            }
-
-            public class Vout
-            {
-                public string Value { get; set; }
-                public int N { get; set; }
-                public ScriptPubKey ScriptPubKey { get; set; }
-                public object SpentTxId { get; set; }
-                public object SpentIndex { get; set; }
-                public object SpentHeight { get; set; }
-            }
-
-            public class Tx
-            {
-                public string Txid { get; set; }
-                public int Version { get; set; }
-                public int Locktime { get; set; }
-                public List<Vin> Vin { get; set; }
-                public List<Vout> Vout { get; set; }
-                public string Blockhash { get; set; }
-                public int Blockheight { get; set; }
-                public int Confirmations { get; set; }
-                public int Time { get; set; }
-                public int Blocktime { get; set; }
-                public double ValueOut { get; set; }
-                public int Size { get; set; }
-                public double ValueIn { get; set; }
-                public double Fees { get; set; }
-            }
         }
 
         private class EarnResponse

@@ -1,79 +1,76 @@
 ﻿<div class="vertical-center-flex">
-  <div class="login-container center-block">
-    <nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="'primary'">
+    <div class="login-container center-block">
+        <nav mat-tab-nav-bar aria-label="navigation links" [backgroundColor]="'primary'">
 
-      <a mat-tab-link [routerLink]="['/login']" [active]="false">
+            <a mat-tab-link [routerLink]="['/login']" [active]="false">
         {{'buttons.Login' | translate}}
       </a>
-      <a mat-tab-link [active]="true">
+            <a mat-tab-link [active]="true">
         {{'buttons.Register' | translate}}
       </a>
 
-    </nav>
-    <mat-card class="panel ">
-      <mat-card-title class="panel-heading">
-        <span class="glyphicon glyphicon-lock"></span> Registration
-      </mat-card-title>
-      <mat-card-content class="panel-body">
-        <div class="col-mat-12 ">
-          <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
-            <div>
-              <mat-form-field class="login">
-                <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel"
-                  required email>
+        </nav>
+        <mat-card class="panel ">
+            <mat-card-title class="panel-heading">
+                <span class="glyphicon glyphicon-lock"></span> Registration
+            </mat-card-title>
+            <mat-card-content class="panel-body">
+                <div class="col-mat-12 ">
+                    <form class="form-horizontal login" *ngIf="formResetToggle" #f="ngForm" novalidate (ngSubmit)="OnSubmit()">
+                        <div>
+                            <mat-form-field class="login">
+                                <input matInput id="login-email" type="email" name="email" placeholder="Enter email" [(ngModel)]="registerForm.email" #email="ngModel" required email>
 
-              </mat-form-field>
+                            </mat-form-field>
 
-            </div>
-            <mat-form-field>
-              <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password"
-                [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
+                        </div>
+                        <mat-form-field>
+                            <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
 
-            </mat-form-field>
-            <mat-form-field>
-              <input matInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel"
-                placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
+                        </mat-form-field>
+                        <mat-form-field>
+                            <input matInput autocomplete="off" type="password" name="confirmPassword" reverse="false" validateEqual="password" #confirmPassword="ngModel" placeholder="Confirm password" [(ngModel)]="registerForm.confirmPassword" required>
 
 
-            </mat-form-field>
-            <div class="errors">
-              <div *ngIf="email.invalid && (email.dirty || email.touched)">
+                        </mat-form-field>
+                        <div class="errors">
+                            <div *ngIf="email.invalid && (email.dirty || email.touched)">
 
-                <p *ngIf="email.errors.required">Email is
-                  <strong>required</strong>
-                </p>
-                <p *ngIf="email.errors.email">Email is not
-                  <strong>valid</strong>
-                </p>
-              </div>
-              <div *ngIf="password.invalid && (password.dirty || password.touched)">
-                <p *ngIf="password.errors.minlength">Min length is 8</p>
-                <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
-                  <br/> 1 LowerCase Alphabet, 1 Number</p>
-              </div>
+                                <p *ngIf="email.errors.required">Email is
+                                    <strong>required</strong>
+                                </p>
+                                <p *ngIf="email.errors.email">Email is not
+                                    <strong>valid</strong>
+                                </p>
+                            </div>
+                            <div *ngIf="password.invalid && (password.dirty || password.touched)">
+                                <p *ngIf="password.errors.minlength">Min length is 8</p>
+                                <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
+                                    <br/> 1 LowerCase Alphabet, 1 Number</p>
+                            </div>
 
-              <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
-              <p *ngIf="errorMsg">{{errorMsg}}</p>
-            </div>
-            <div class="recaptcha">
-              <re-captcha *ngIf="allowGoogleCaptcha" (captchaExpired)="handleCaptchaExpired()" (captchaResponse)="handleCorrectCaptcha($event)" site_key="6LdmAjkUAAAAAJdKqXjRbDK586VXRNchP1e7sQlb"></re-captcha>
-              <div *ngIf="guid && !allowGoogleCaptcha" >
-                <iframe [src]="captchaUrl" width="270" height="150" role="presentation" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox"></iframe>
-              
-              </div>
-              
-            </div>
+                            <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
+                            <p *ngIf="errorMsg">{{errorMsg}}</p>
+                        </div>
+                        <div class="recaptcha">
+                            <re-captcha *ngIf="allowGoogleCaptcha" (captchaExpired)="handleCaptchaExpired()" (captchaResponse)="handleCorrectCaptcha($event)" site_key="6LdSL04UAAAAAHnXuMfHb--Or2lGhnAjJtyn76EX"></re-captcha>
+                            <div *ngIf="guid && !allowGoogleCaptcha">
+                                <iframe [src]="captchaUrl" width="270" height="150" role="presentation" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox"></iframe>
 
-            <div style="float: right;margin-top: 20px;">
-              <button type="submit" [disabled]="!f.form.valid || isLoading || !reCaptchaStatus" mat-raised-button color="primary">
+                            </div>
+
+                        </div>
+
+                        <div style="float: right;margin-top: 20px;">
+                            <button type="submit" [disabled]="!f.form.valid || isLoading || !reCaptchaStatus" mat-raised-button color="primary">
                 <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
                 <span>{{'buttons.Register' | translate}}</span>
               </button>
-            </div>
-          </form>
+                        </div>
+                    </form>
 
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
 </div>
