@@ -167,8 +167,8 @@ namespace InvestorDashboard.Api.Controllers
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
-            user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer 
-                && !_tokenSettings.Value.IsTokenTransferDisabled 
+            user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer
+                && !_tokenSettings.Value.IsTokenTransferDisabled
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
             return user;
         }
@@ -178,12 +178,12 @@ namespace InvestorDashboard.Api.Controllers
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
 
             var items = await _dashboardHistoryService.GetHistoryItems();
-            var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
-            result.TotalBtcInvested = items[Currency.BTC].TotalInvested;
-            result.TotalEthInvested = items[Currency.ETH].TotalInvested;
-            result.TotalUsdInvested = items.Sum(x => x.Value.TotalUsdInvested);
-            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBought);
-            result.Currencies = items.Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested }).ToList();
+
+            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBoughts);
+            result.Currencies = items
+                .Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested })
+                .ToList();
+
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
 
             return result;
