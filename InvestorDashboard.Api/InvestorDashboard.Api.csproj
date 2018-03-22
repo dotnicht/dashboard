@@ -14,6 +14,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Properties\PublishProfiles\Production.pubxml" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- New Meta Package has SpaServices in It -->
         <PackageReference Include="AspNet.Security.OAuth.Validation" Version="2.0.0-rc1-0287" />
         <PackageReference Include="AutoMapper" Version="6.1.1" />
