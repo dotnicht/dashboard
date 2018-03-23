@@ -52,15 +52,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
                             ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
 
-                        Context.CryptoTransactions.Add(new CryptoTransaction
+                        var tx = new CryptoTransaction
                         {
                             Amount = record.Tokens.ToString(),
                             ExternalId = record.Guid,
                             CryptoAddress = address,
                             Direction = CryptoTransactionDirection.Internal,
                             Timestamp = DateTime.UtcNow
-                        });
+                        };
 
+                        await Context.CryptoTransactions.AddAsync(tx);
                         await Context.SaveChangesAsync();
                         await _tokenService.RefreshTokenBalance(user.Id);
                     }
