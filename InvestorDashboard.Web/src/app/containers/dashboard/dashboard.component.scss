@@ -91,6 +91,10 @@
                       // border: 1px solid #eeeeee;
                       // box-shadow: none;
                       border-radius: 5px;
+                      background-color: rgba(144, 72, 0, 1) !important;
+                      &.active {
+                          background-color: #222 !important
+                      }
                   }
                   .currency-icon {
                       border-radius: 2px;
