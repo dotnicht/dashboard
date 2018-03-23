@@ -170,6 +170,7 @@ namespace InvestorDashboard.Api.Controllers
             user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer
                 && !_tokenSettings.Value.IsTokenTransferDisabled
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
+            user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
             return user;
         }
 
