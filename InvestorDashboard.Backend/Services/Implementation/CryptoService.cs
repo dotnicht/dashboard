@@ -51,21 +51,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
             TokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
-        public async Task<CryptoAddress> CreateCryptoAddress(string userId, CryptoAddressType cryptoAddressType = CryptoAddressType.Investment, string password = null)
+        public async Task<CryptoAddress> CreateCryptoAddress(string userId, string password = null)
         {
             if (userId == null)
             {
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (cryptoAddressType != CryptoAddressType.Investment && !(cryptoAddressType == CryptoAddressType.Master && Settings.Value.Currency == Currency.ETH))
-            {
-                throw new NotSupportedException();
-            }
-
             return Settings.Value.IsDisabled
                 ? null
-                : await CreateAddress(userId, cryptoAddressType, password);
+                : await CreateAddress(userId, CryptoAddressType.Investment, password);
         }
 
         public async Task RefreshInboundTransactions()

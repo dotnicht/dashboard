@@ -55,13 +55,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             try
             {
-                var address = Context.CryptoAddresses.Single(x => x.UserId == _ethereumSettings.Value.MasterAccountUserId && !x.IsDisabled && x.Type == CryptoAddressType.Master);
-
                 var transfer = await GetSmartContractFunction("transferFrom");
+                var window = Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds);
 
-                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(address.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds)))
+                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(transfer.Account.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, window))
                 {
-                    var hash = await transfer.Function.SendTransactionAsync(address.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
+                    var hash = await transfer.Function.SendTransactionAsync(transfer.Account.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
                     return (Hash: hash, Success: true);
                 }
             }
@@ -109,16 +108,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        private async Task<(Function Function, Web3 Web3)> GetSmartContractFunction(string name)
+        private async Task<(Function Function, Web3 Web3, Account Account)> GetSmartContractFunction(string name)
         {
-            var web3 = new Web3(Account.LoadFromKeyStore(_resourceService.GetResourceString("MasterKeyStore.json"), _keyVaultService.MasterKeyStoreEncryptionPassword), _ethereumSettings.Value.NodeAddress.ToString());
+            var account = Account.LoadFromKeyStore(_resourceService.GetResourceString("MasterKeyStore.json"), _keyVaultService.MasterKeyStoreEncryptionPassword);
+            var web3 = new Web3(account, _ethereumSettings.Value.NodeAddress.ToString());
 
             web3.TransactionManager.DefaultGas = _ethereumSettings.Value.DefaultGas;
             web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
 
             var contract = web3.Eth.GetContract(_resourceService.GetResourceString("ContractAbi.json"), _ethereumSettings.Value.ContractAddress);
 
-            return (Function: contract.GetFunction(name), Web3: web3);
+            return (Function: contract.GetFunction(name), Web3: web3, Account: account);
         }
     }
 }
