@@ -15,18 +15,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IResourceService _resourceService;
         private readonly IOptions<TokenSettings> _options;
         private readonly IRestService _restService;
+        private readonly ITokenService _tokenService;
 
         public InternalUserService(
             ApplicationDbContext context,
             ILoggerFactory loggerFactory,
             IResourceService resourceService,
             IRestService restService,
+            ITokenService tokenService,
             IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         public async Task SynchronizeInternalUsersData()
@@ -59,6 +62,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         });
 
                         await Context.SaveChangesAsync();
+                        await _tokenService.RefreshTokenBalance(user.Id);
                     }
                     catch (Exception ex)
                     {
