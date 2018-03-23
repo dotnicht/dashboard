@@ -56,8 +56,7 @@ jQuery(document).ready(function($) {
             $('.progress-holder .progress_percent_value').attr('aria-valuenow', progress);
             $('.progress-holder .progress_percent_value').css('width', progress + '%');
 
-            // html = '<strong>' + numberWithCommas(progressbar_data.totalCoinsBought.toFixed(0)) + '</strong>  &nbsp;/&nbsp; ' + numberWithCommas(progressbar_data.totalCoins);
-            html = '';
+            html = '<strong>' + numberWithCommas(progressbar_data.totalCoinsBought.toFixed(0)) + '</strong>  &nbsp;/&nbsp; ' + numberWithCommas(progressbar_data.totalCoins);
             $('.progress-holder .progress_amount_text').html(html);
         }
     }

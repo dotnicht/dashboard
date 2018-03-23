@@ -12,21 +12,21 @@ export class IcoInfo {
     tokenName: string;
     totalInvestors: number;
     contractAddress: string;
-    totalUsdInvested: number;
+    // totalUsdInvested: number;
     totalCoins: number;
     totalCoinsBought: number;
     totalCoinsBoughtPercent: number;
     isTokenSaleDisabled: boolean;
     tokenPrice: number;
-    bonusPercentage: number;
+    // bonusPercentage: number;
     currencies: { currency: string, value: number, img: string }[];
     constructor() {
         this.totalCoins = 0;
         this.totalInvestors = 0;
-        this.totalUsdInvested = 0;
+        // this.totalUsdInvested = 0;
         this.totalCoinsBought = 0;
         this.totalCoinsBoughtPercent = 0;
-        this.bonusPercentage = 0;
+        // this.bonusPercentage = 0;
     }
 }
 export class Dashboard {
