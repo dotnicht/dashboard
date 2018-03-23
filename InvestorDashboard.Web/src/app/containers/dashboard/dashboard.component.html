@@ -2,8 +2,9 @@
     <mat-card class="first">
         <mat-card-content>
             <h4>{{'clientInfo.Balance' | translate}}:
-                <p style="font-size: 35px;
-        font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
+
+                <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
+                <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 35px; font-weight: bold;">Not reach minimum amount</p>
             </h4>
             <p *ngIf="dashboard.clientInfoModel.bonusBalance>0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
             <div>
@@ -22,7 +23,7 @@
                 <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale
                     <div style="margin: 3px 0;"> Round A</div>
                     is in progress </div>
-                <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p>
+                <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
             </div>
             <div class="left">
                 <div style="display: inline-block;"></div>

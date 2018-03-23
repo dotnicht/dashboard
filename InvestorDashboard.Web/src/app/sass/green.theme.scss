@@ -170,10 +170,22 @@
         .btn-danger {
             background-color: #222 !important;
         }
-        // .mat-focused {
-        //     color: yellow !important;
-        // }
-        // .mat-input-element {
-        //     color: yellow !important;
-        // }
+        .mat-input-element {
+            caret-color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .mat-form-field-invalid .mat-input-element {
+            caret-color: #ff5722 !important;
+        }
+        .mat-form-field-label {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .mat-form-field-invalid .mat-form-field-label {
+            color: #ff5722 !important;
+        }
+        .mat-form-field-ripple {
+            background-color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .mat-form-field-invalid .mat-form-field-ripple {
+            background-color: #ff5722 !important;
+        }
     }

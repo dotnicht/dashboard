@@ -142,7 +142,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
             this.dashboardService.getDashboard().subscribe(model => {
                 let db = model.json() as Dashboard;
                 db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
-                db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
+                // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
                 db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
 
                 db.paymentInfoList.forEach(element => {

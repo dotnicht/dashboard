@@ -20,7 +20,6 @@ export class ConfigurationService {
     public static readonly appVersion: string = "1.0.0";
 
     public baseUrl: string = Utilities.baseUrl().replace(/\/$/, '');
-    // public fallbackBaseUrl: string = "https://dashboard.data-trading.com/";
     public fallbackBaseUrl: string = "https://dashboard.racoin.io/";
     public loginUrl: string = "/login";
 
