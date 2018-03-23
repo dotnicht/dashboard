@@ -68,7 +68,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         ExternalId = record.Id
                     };
 
-                    var result = await _userManager.CreateAsync(user);
+                    var result = await _userManager.CreateAsync(user, "QAZwsxedc123");
 
                     if (result.Succeeded)
                     {

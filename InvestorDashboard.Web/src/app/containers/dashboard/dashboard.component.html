@@ -4,7 +4,7 @@
             <h4>{{'clientInfo.Balance' | translate}}:
 
                 <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
-                <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 35px; font-weight: bold;">Not reach minimum amount</p>
+                <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p>
             </h4>
             <p *ngIf="dashboard.clientInfoModel.bonusBalance>0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
             <div>
