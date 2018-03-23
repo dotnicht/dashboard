@@ -56,7 +56,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
 
-                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&currency=USD&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={amount}status=5";
+                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&action_id={tx.Hash}&custom_field1={date}&custom_field2={time}&custom_field3={tx.CryptoAddress.Currency}&custom_field4={amount}status=5";
 
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);

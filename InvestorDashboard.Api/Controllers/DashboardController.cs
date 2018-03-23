@@ -167,17 +167,18 @@ namespace InvestorDashboard.Api.Controllers
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
+            
             user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer
                 && !_tokenSettings.Value.IsTokenTransferDisabled
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
             user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
+
             return user;
         }
 
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
-
             var items = await _dashboardHistoryService.GetHistoryItems();
 
             result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBoughts);
