@@ -164,6 +164,18 @@ namespace InvestorDashboard.Api.Controllers
             });
         }
 
+        [Authorize, HttpGet("referral"), Produces("application/json")]
+        public async Task<IActionResult> GetReferralData()
+        {
+            return Ok(new ReferralInfoModel { Items = new Dictionary<Currency, ReferralInfoModel.ReferralCurrencyItem> { { Currency.BTC, new ReferralInfoModel.ReferralCurrencyItem { Transactions = new Dictionary<string, decimal>() } } } });
+        }
+
+        [Authorize, HttpPost("referral"), Produces("application/json")]
+        public Task<IActionResult> PostReferralData()
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
@@ -181,7 +193,7 @@ namespace InvestorDashboard.Api.Controllers
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
             var items = await _dashboardHistoryService.GetHistoryItems();
 
-            result.TotalCoinsBought = items.Sum(x => x.Value.TotalCoinsBoughts);
+            result.TotalCoinsBought = items.First().Value.TotalCoinsBoughts;
             result.Currencies = items
                 .Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested })
                 .ToList();
