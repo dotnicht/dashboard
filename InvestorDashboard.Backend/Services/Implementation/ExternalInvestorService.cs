@@ -48,7 +48,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task SynchronizeInvestorsData()
         {
-            var records = _resourceService.GetCsvRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv")
+            var records = _resourceService.GetCsvRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv");
+
+            records = records
                 .Where(x => x.DateTime < DateTime.UtcNow)
                 .ToArray();
 
@@ -74,6 +76,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         try
                         {
+                            await _userManager.ConfirmEmailAsync(user, await _userManager.GenerateEmailConfirmationTokenAsync(user));
                             _cryptoServices.ToList().ForEach(async x => await x.CreateCryptoAddress(user.Id));
                             await CreateTransaction(record, user);
                         }

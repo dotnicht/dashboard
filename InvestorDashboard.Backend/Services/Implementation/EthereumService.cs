@@ -68,6 +68,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     var result = await RestService.GetAsync<EtherscanAccountResponse>(uri);
 
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException($"An error occurred while processing URL {uri}.");
+                    }
+
                     var confirmed = result.Result
                         .Where(x => string.IsNullOrWhiteSpace(x.Confirmations) || int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
                         .ToArray();
