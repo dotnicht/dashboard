@@ -1,11 +1,12 @@
 ﻿import { Component } from '@angular/core';
-import { ReferralInfo } from '../../models/referral-info.model';
 import { link } from 'fs';
+import { ReferralInfo } from '../../models/referral/referral-info.model';
+import { ReferralCurrencyDescription } from '../../models/referral/referral-currency-description.model';
 
 
 const CURRENCIES = {
-    BTC: 'btc',
-    ETH: 'eth'
+    BTC: 'BTC',
+    ETH: 'ETH'
 }
 
 @Component({
@@ -36,15 +37,18 @@ export class ReferralComponent {
         this.referralInfo = new ReferralInfo();
 
         this.referralInfo.link = "ref_link";
+        this.referralInfo[CURRENCIES.BTC] = new ReferralCurrencyDescription(
+            "btc_address",
+            0.0174,
+            ["btc_transaction1", "btc_transaction2", "btc_transaction3"]
+        );
 
-        this.referralInfo.btc_address = "btc_address";
-        this.referralInfo.eth_address = "eth_address";
+        this.referralInfo[CURRENCIES.ETH] = new ReferralCurrencyDescription(
+            "eth_address",
+            2.34,
+            ["eth_transaction1", "eth_transaction2", "eth_transaction3"]
+        );
 
-        this.referralInfo.btc_balance = 0.0174;
-        this.referralInfo.eth_balance = 2.34;
-
-        this.referralInfo.btc_transactions = ["btc_transaction1", "btc_transaction2", "btc_transaction3"];
-        this.referralInfo.eth_transactions = ["eth_transaction1", "eth_transaction2", "eth_transaction3"];
     }
 
     private edit(currency: string = null) {
