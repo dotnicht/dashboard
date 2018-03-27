@@ -1,65 +1,57 @@
-﻿<mat-card>
+﻿<mat-card *ngIf="referralInfo">
     <h2 class="header">Referral</h2>
     <h3 class="subheader">My referral link</h3>
     <div>
         <mat-form-field>
             <input matInput #referralLink value="https://racoin.io/?ref={{referralInfo.link}}" type="text" readonly>
         </mat-form-field>
-        <button [color]="'primary'" class="copy-btn" [ngxClipboard]="referralLink" (cbOnSuccess)="referralLinkIsCopied = true" mat-raised-button>{{(!referralLinkIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+        <button [color]="'primary'" class="copy-btn" [ngxClipboard]="referralLink" (cbOnSuccess)="copyToClipboard('REF_LINK')" mat-raised-button>{{(!referralLinkIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
     </div>
 
     <h3 class="subheader">My referral addresses</h3>
-    <div class="info-block">
-        <div class="info-label">Bitcoin</div>
-        <div class="info-value">
-            <mat-form-field>
-                <input matInput #btcAddress value="{{referralInfo.BTC.address}}" type="text" [readonly]='referralInfo.BTC.readonlyRefAddress'>
-            </mat-form-field>
-            <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="referralInfo.BTC.addressIsCopied = true" mat-raised-button>{{(!referralInfo.BTC.addressIsCopied ?'buttons.Copy':'buttons.Copied') | translate}}</button>
-            <!-- <button mat-raised-button *ngIf="!isEditMode " color="primary" type="button" (click)="edit()" class="btn btn-default">
-        <i class='fa fa-edit'></i> {{'users.editor.Edit' | translate}}
-      </button> -->
-            <!-- <button mat-raised-button 
-            *ngIf="isEditMode" type="button" (click)="cancel()" class="btn btn-default btn-danger" color="primary">
+    <div *ngFor="let curr of CURRENCIES">
+        <div class="info-block">
+            <div class="info-label">{{curr.name}}</div>
+            <div class="info-value">
+                <mat-form-field>
+                    <input matInput #btcAddress [ngModel]="referralInfo.items[curr.acronym].address" (change)="savePreviousAddress($event, curr.acronym)" type="text" [readonly]='referralInfo.items[curr.acronym].readonlyRefAddress'>
+                </mat-form-field>
+                <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="copyToClipboard(curr.acronym)" mat-raised-button>{{(!referralInfo.items[curr.acronym].addressIsCopied ?'buttons.Copy':'buttons.Copied') | translate}}</button>
+                <button mat-raised-button *ngIf="!referralInfo.items[curr.acronym].isEditModeRefAddress " color="primary" type="button" (click)="edit(curr.acronym)" class="btn btn-default">
+                <i class='fa fa-edit'></i> {{'users.editor.Edit' | translate}}
+                </button>
+                <button mat-raised-button *ngIf="referralInfo.items[curr.acronym].isEditModeRefAddress" type="button" (click)="save(curr.acronym)" class="btn btn-default btn-danger" color="primary">
+                    <i class='fa fa-times'></i> {{'users.editor.Save' | translate}}
+                    </button>
+                <button mat-raised-button *ngIf="referralInfo.items[curr.acronym].isEditModeRefAddress" type="button" (click)="cancel(curr.acronym)" class="btn btn-default btn-danger" color="primary">
                 <i class='fa fa-times'></i> {{'users.editor.Cancel' | translate}}
-            </button>
+                </button>
+                <button mat-raised-button *ngIf="referralInfo.items[curr.acronym].isEditModeRefAddress" type="button" (click)="delete(curr.acronym)" class="btn btn-default btn-danger" color="primary">
+                    <i class='fa fa-times'></i> {{'users.management.Delete' | translate}}
+                    </button>
+
+            </div>
+            <div class="info-description"></div>
         </div>
-        <div class="info-description"></div>
-    </div>
-    <div class="info-block">
-        <div class="info-label">Ethereum</div>
-        <div class="info-value">
-             <mat-form-field>
-                <input matInput #ethAddress value="{{referralInfo.eth_address}}" type="text" readonly>
-            </mat-form-field>
-            <button [color]="'primary'" class="copy-btn" [ngxClipboard]="ethAddress" (cbOnSuccess)="ethAddressIsCopied = true" mat-raised-button>{{(!ethAddressIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button> -->
-        </div>
-        <div class="info-description"></div>
     </div>
 
+
     <h3 class="subheader">My referral balance</h3>
-    <div class="info-block">
-        <div class="info-label">Total Bitcoin:</div>
-        <!-- <div class="info-value">{{referralInfo.btc_balance}} BTC</div> -->
-        <div class="info-description">Где деньги, Лебовски?!</div>
-    </div>
-    <div class="info-block">
-        <div class="info-label">Total Ethereum:</div>
-        <!-- <div class="info-value">{{referralInfo.eth_balance}} ETH</div> -->
-        <div class="info-description">Где деньги, Лебовски?!</div>
+    <div *ngFor="let curr of CURRENCIES">
+        <div class="info-block">
+            <div class="info-label">Total {{curr.name}}:</div>
+            <div class="info-value">{{referralInfo.items[curr.acronym].balance }} BTC</div>
+            <div class="info-description">Pending: {{referralInfo.items[curr.acronym].pending }} Где деньги, Лебовски?!</div>
+        </div>
     </div>
 
     <h3 class="subheader">Transfer Transactions</h3>
-    <div class="transactions-info-block">
-        <div>Bitcoin:</div>
-        <!-- <div *ngFor="let transaction of referralInfo.btc_transactions"> -->
-        <!-- <div>{{transaction}}</div> -->
-        <!-- </div> -->
+    <div *ngFor="let curr of CURRENCIES">
+        <div class="transactions-info-block">
+            <div>{{curr.name}}:</div>
+            <!-- <div *ngFor="let transaction of referralInfo.items[curr.acronym].transactions">
+                <div>{{transaction}}</div>
+            </div> -->
+        </div>
     </div>
-    <div class="transactions-info-block">
-        <div>Ethereum:</div>
-        <!-- <div *ngFor="let transaction of referralInfo.eth_transactions"> -->
-        <!-- <div>{{transaction}}</div> -->
-    </div>
-    <!-- </div> -->
 </mat-card>

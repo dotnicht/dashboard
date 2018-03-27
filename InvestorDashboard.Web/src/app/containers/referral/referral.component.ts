@@ -1,13 +1,9 @@
 ﻿import { Component } from '@angular/core';
 import { link } from 'fs';
 import { ReferralInfo } from '../../models/referral/referral-info.model';
-import { ReferralCurrencyDescription } from '../../models/referral/referral-currency-description.model';
+import { ReferralService } from '../../services/referral.service';
+import { ReferralCurrencyItem } from '../../models/referral/referral-currency-item.model';
 
-
-const CURRENCIES = {
-    BTC: 'BTC',
-    ETH: 'ETH'
-}
 
 @Component({
     selector: 'app-referral',
@@ -17,58 +13,86 @@ const CURRENCIES = {
 /** referral component*/
 export class ReferralComponent {
     /** referral ctor */
-    
+
     public referralInfo: ReferralInfo;
+    public CURRENCIES = [
+        { acronym: 'BTC', name: 'Bitcoin' },
+        { acronym: 'ETH', name: 'Etherium' }
+    ];
 
     public referralLinkIsCopied: boolean = false;
-    public btcAddressIsCopied: boolean = false;
-    public ethAddressIsCopied: boolean = false;
 
-    public isEditModeBtcRefAddress: boolean = false;
-    public readonlyBtcRefAddress: boolean = !this.isEditModeBtcRefAddress;
-
-    public isEditModeEthRefAddress: boolean = false;
-    public readonlyEthRefAddress: boolean = !this.isEditModeEthRefAddress;
-    constructor() {
+    constructor(private referralService: ReferralService) {
 
     }
 
     ngOnInit() {
-        this.referralInfo = new ReferralInfo();
+        // this.referralInfo.link = "ref_link";
 
-        this.referralInfo.link = "ref_link";
-        this.referralInfo[CURRENCIES.BTC] = new ReferralCurrencyDescription(
-            "btc_address",
-            0.0174,
-            ["btc_transaction1", "btc_transaction2", "btc_transaction3"]
-        );
+        this.referralService.getReferralInfo().subscribe(data => {
+            console.log(data);
+            data.items.ETH = new ReferralCurrencyItem(
+                'asd',
+                2.34,
+                0,
+                { 1: 1 });
+            data.items.BTC.address = 'asdasdasdasd'
+            data.items.BTC.readonlyRefAddress = true;
+            this.referralInfo = data as ReferralInfo;
 
-        this.referralInfo[CURRENCIES.ETH] = new ReferralCurrencyDescription(
-            "eth_address",
-            2.34,
-            ["eth_transaction1", "eth_transaction2", "eth_transaction3"]
-        );
-
-    }
-
-    private edit(currency: string = null) {
-        if (currency.toLowerCase() == CURRENCIES.BTC) {
-            this.isEditModeBtcRefAddress = true;
-            this.readonlyBtcRefAddress = !this.isEditModeBtcRefAddress;
-        }
-
-        //TODO
-        if (currency.toLowerCase() == CURRENCIES.ETH) {
-            this.isEditModeBtcRefAddress = true;
-            this.readonlyBtcRefAddress = !this.isEditModeBtcRefAddress;
-        }
-
-        throw `Currency ${currency} is incorrect!`;
+        });
 
     }
 
-    private cancel() {
-        this.isEditModeBtcRefAddress = false;
-        this.readonlyBtcRefAddress = !this.isEditModeBtcRefAddress;
+    copyToClipboard(copiedElement: string) {
+        if (copiedElement.toUpperCase() == 'REF_LINK') {
+            this.referralLinkIsCopied = true;
+        }
+        else {
+            this.referralLinkIsCopied = false;
+        }
+
+        for (let el of this.CURRENCIES) {
+            if (el.acronym == copiedElement.toUpperCase()) {
+                this.referralInfo.items[el.acronym].addressIsCopied = true;
+            }
+            else {
+                this.referralInfo.items[el.acronym].addressIsCopied = false;
+            }
+        }
+    }
+
+    private savePreviousAddress(event: any, currencyAcronym: string) {
+        this.referralInfo.items[currencyAcronym].currentValue = event.target.value;
+        // this.referralInfo.items[currencyAcronym].previosValue = this.referralInfo.items[currencyAcronym].address;
+        // this.referralInfo.items[currencyAcronym].address = event;
+        console.log(event.target.value, this.referralInfo.items[currencyAcronym].currentValue, this.referralInfo.items[currencyAcronym].address);
+    }
+
+    private save(currencyAcronym: string) {
+        this.referralService.changeReferralInfo(currencyAcronym, this.referralInfo.items[currencyAcronym].address).subscribe(response => {
+            console.log('response', response);
+        });
+    }
+
+    private edit(currencyAcronym: string) {
+        currencyAcronym = currencyAcronym.toUpperCase();
+        this.referralInfo.items[currencyAcronym].isEditModeRefAddress = true;
+        this.referralInfo.items[currencyAcronym].readonlyRefAddress = !this.referralInfo.items[currencyAcronym].isEditModeRefAddress;
+    }
+
+    private cancel(currencyAcronym: string) {
+        currencyAcronym = currencyAcronym.toUpperCase();
+        this.referralInfo.items[currencyAcronym].isEditModeRefAddress = false;
+        this.referralInfo.items[currencyAcronym].readonlyRefAddress = !this.referralInfo.items[currencyAcronym].isEditModeRefAddress;
+        
+        console.log('cancel', this.referralInfo.items[currencyAcronym].currentValue, this.referralInfo.items[currencyAcronym].address);
+        this.referralInfo.items[currencyAcronym].address = this.referralInfo.items[currencyAcronym].address;
+    }
+
+    private delete(currencyAcronym: string) {
+        this.referralService.changeReferralInfo(currencyAcronym).subscribe(response => {
+            console.log('response', response);
+        });
     }
 }

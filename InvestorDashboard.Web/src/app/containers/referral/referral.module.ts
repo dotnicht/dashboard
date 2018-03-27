@@ -11,6 +11,9 @@ import { FormsModule } from '@angular/forms';
 import { TransferComponent, SuccsessTransferDialogComponent, FailedTransferDialogComponent } from '../../components/transfer/transfer.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
 import { ReferralComponent } from './referral.component';
+import { ReferralService } from '../../services/referral.service';
+import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
     declarations: [
@@ -23,6 +26,7 @@ import { ReferralComponent } from './referral.component';
         RouterModule,
         ReCaptchaModule,
         FormsModule,
+        HttpClientModule,
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
@@ -32,6 +36,7 @@ import { ReferralComponent } from './referral.component';
     ],
     providers: [
         AppTranslationService,
+        ReferralService
         // ClientInfoEndpointService,
         // DashboardEndpoint
     ],
