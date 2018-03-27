@@ -40,8 +40,6 @@ namespace InvestorDashboard.Api.Controllers
 
         private readonly UrlEncoder _urlEncoder;
 
-        private const string AuthenicatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
-
         public AccountController(
           ApplicationDbContext context,
           UserManager<ApplicationUser> userManager,
@@ -96,7 +94,6 @@ namespace InvestorDashboard.Api.Controllers
                 });
             }
         }
-
 
         [HttpPut("users/me")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
@@ -234,7 +231,6 @@ namespace InvestorDashboard.Api.Controllers
                     ErrorDescription = errors
                 });
             }
-
         }
 
         [HttpPost("change_password"), Produces("application/json")]
@@ -276,6 +272,7 @@ namespace InvestorDashboard.Api.Controllers
                 Error = OpenIdConnectConstants.Errors.ServerError
             });
         }
+
         [HttpGet("tfa"), Produces("application/json")]
         public async Task<IActionResult> TwoFactorAuthentication()
         {
@@ -298,6 +295,7 @@ namespace InvestorDashboard.Api.Controllers
 
             return Ok(model);
         }
+
         [HttpPost("tfa_reset"), Produces("application/json")]
         public async Task<IActionResult> ResetAuthenticator()
         {
@@ -317,6 +315,7 @@ namespace InvestorDashboard.Api.Controllers
 
             return Ok();
         }
+
         [HttpPost("tfa_disable"), Produces("application/json")]
         public async Task<IActionResult> Disable2fa()
         {
@@ -343,6 +342,7 @@ namespace InvestorDashboard.Api.Controllers
             _logger.LogInformation("User with ID {UserId} has disabled 2fa.", user.Id);
             return Ok();
         }
+
         [HttpGet("tfa_enable"), Produces("application/json")]
         public async Task<IActionResult> EnableAuthenticator()
         {
@@ -364,10 +364,29 @@ namespace InvestorDashboard.Api.Controllers
                     unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
                 }
 
+                var result = new StringBuilder();
+                int currentPosition = 0;
+                while (currentPosition + 4 < unformattedKey.Length)
+                {
+                    result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
+                    currentPosition += 4;
+                }
+
+                if (currentPosition < unformattedKey.Length)
+                {
+                    result.Append(unformattedKey.Substring(currentPosition));
+                }
+
                 var model = new EnableAuthenticatorViewModel
                 {
-                    SharedKey = FormatKey(unformattedKey),
-                    AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey)
+                    SharedKey = result
+                        .ToString()
+                        .ToLowerInvariant(),
+                    AuthenticatorUri = string.Format(
+                        "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6",
+                        _urlEncoder.Encode("DataTradingTokenSaleDashboard"),
+                        _urlEncoder.Encode(user.Email),
+                        unformattedKey)
                 };
 
                 return Ok(model);
@@ -459,6 +478,7 @@ namespace InvestorDashboard.Api.Controllers
 
             return Ok(model);
         }
+
         private string FormatKey(string unformattedKey)
         {
             var result = new StringBuilder();
@@ -468,6 +488,7 @@ namespace InvestorDashboard.Api.Controllers
                 result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
                 currentPosition += 4;
             }
+
             if (currentPosition < unformattedKey.Length)
             {
                 result.Append(unformattedKey.Substring(currentPosition));
@@ -475,16 +496,5 @@ namespace InvestorDashboard.Api.Controllers
 
             return result.ToString().ToLowerInvariant();
         }
-
-        private string GenerateQrCodeUri(string email, string unformattedKey)
-        {
-            return string.Format(
-                AuthenicatorUriFormat,
-                _urlEncoder.Encode("DataTradingTokenSaleDashboard"),
-                _urlEncoder.Encode(email),
-                unformattedKey);
-        }
-
-
     }
 }

@@ -27,6 +27,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IDashboardHistoryService _dashboardHistoryService;
         private readonly IMessageService _messageService;
         private readonly ITokenService _tokenService;
+        private readonly IReferralService _referralService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
@@ -44,6 +45,7 @@ namespace InvestorDashboard.Api.Controllers
             IDashboardHistoryService dashboardHistoryService,
             IMessageService messageService,
             ITokenService tokenService,
+            IReferralService referralService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
@@ -56,6 +58,7 @@ namespace InvestorDashboard.Api.Controllers
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
@@ -167,19 +170,47 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpGet("referral"), Produces("application/json")]
         public async Task<IActionResult> GetReferralData()
         {
-            return Ok(new ReferralInfoModel { Items = new Dictionary<Currency, ReferralInfoModel.ReferralCurrencyItem> { { Currency.BTC, new ReferralInfoModel.ReferralCurrencyItem { Transactions = new Dictionary<string, decimal>() } } } });
+            // TODO: refactor.
+            var result = _cryptoServices
+                .Select(async x => new
+                    {
+                        x.Settings.Value.Currency,
+                        Data = await _referralService.GetRererralData(ApplicationUser.Id, x.Settings.Value.Currency)
+                    })
+                .Select(x => x.Result)
+                .ToDictionary(x => x.Currency.ToString(), x => new ReferralInfoModel.ReferralCurrencyItem
+                    {
+                        Address = ApplicationUser.CryptoAddresses
+                            .SingleOrDefault(y => y.Currency == x.Currency && !y.IsDisabled && y.Type == CryptoAddressType.Referral)
+                            ?.Address,
+                        Pending = x.Data.Pending,
+                        Transactions = x.Data.Transactions.ToDictionary(y => y.Key, y => y.Value)
+                    });
+
+            return Ok(new ReferralInfoModel
+                {
+                    Items = result,
+                    Link = new Uri($"{Request.Scheme}://{Request.Host}?ref={ApplicationUser.ReferralCode}").ToString()
+                });
         }
 
-        [Authorize, HttpPost("referral"), Produces("application/json")]
-        public Task<IActionResult> PostReferralData()
+        [Authorize, HttpPost("referral")]
+        public async Task<IActionResult> PostReferralData([FromBody]ReferralInfoUpdateModel referralInfoUpdateModel)
         {
-            throw new NotImplementedException();
+            if (referralInfoUpdateModel == null)
+            {
+                throw new ArgumentNullException(nameof(referralInfoUpdateModel));
+            }
+
+            var currency = (Currency)Enum.Parse(typeof(Currency), referralInfoUpdateModel.Currency);
+            await _referralService.UpdateReferralAddress(ApplicationUser, currency, referralInfoUpdateModel.Address);
+            return Ok();
         }
 
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
-            
+
             user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer
                 && !_tokenSettings.Value.IsTokenTransferDisabled
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);

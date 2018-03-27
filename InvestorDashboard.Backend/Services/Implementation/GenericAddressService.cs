@@ -49,21 +49,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"User not found with ID {userId}.");
             }
 
-            if (!user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer))
+            if (!user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer && !x.IsDisabled))
             {
-                Context.CryptoAddresses.Add(new CryptoAddress
+                var address = new CryptoAddress
                 {
                     Currency = Currency.Token,
                     UserId = user.Id,
                     Type = CryptoAddressType.Transfer
-                });
+                };
 
+                await Context.CryptoAddresses.AddAsync(address);
                 await Context.SaveChangesAsync();
             }
 
             foreach (var service in _cryptoServices)
             {
-                if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment))
+                if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled))
                 {
                     await service.CreateCryptoAddress(user.Id);
                 }

@@ -2,6 +2,7 @@
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -71,6 +72,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var addresses = Context.CryptoAddresses
+                .Include(x => x.User)
                 .Where(
                     x => x.Currency == Settings.Value.Currency
                     && x.Type == CryptoAddressType.Investment
@@ -94,6 +96,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         transaction.CryptoAddressId = address.Id;
 
+                        if (address.User.ReferralUserId != null)
+                        {
+                            transaction.IsReferralPaid = false;
+                        }
+
                         await Context.CryptoTransactions.AddAsync(transaction);
                         await Context.SaveChangesAsync();
 
@@ -113,6 +120,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 return;
             }
+
+            // TODO: implement referral payments.
 
             var destination = Context.CryptoAddresses
                     .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Settings.Value.Currency)

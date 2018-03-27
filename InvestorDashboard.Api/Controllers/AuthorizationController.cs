@@ -32,6 +32,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -46,6 +47,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
         private readonly IMessageService _messageService;
+        private readonly IReferralService _referralService;
         private readonly IGenericAddressService _genericAddressService;
         private readonly IRazorViewEngine _viewEngine;
         private readonly ITempDataProvider _tempDataProvider;
@@ -61,28 +63,29 @@ namespace InvestorDashboard.Api.Controllers
             ILogger<AuthorizationController> logger,
             IMapper mapper,
             IMessageService messageService,
+            IReferralService referralService,
             IGenericAddressService genericAddressService,
             IRazorViewEngine viewEngine,
             ITempDataProvider tempDataProvider,
             IServiceProvider serviceProvider)
         {
-            _applicationManager = applicationManager;
-            _identityOptions = identityOptions;
+            _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
+            _identityOptions = identityOptions ?? throw new ArgumentNullException(nameof(identityOptions));
             _captchaOptions = captchaOptions ?? throw new ArgumentNullException(nameof(captchaOptions));
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _logger = logger;
+            _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
-            _viewEngine = viewEngine;
-            _tempDataProvider = tempDataProvider;
-            _serviceProvider = serviceProvider;
+            _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
+            _tempDataProvider = tempDataProvider ?? throw new ArgumentNullException(nameof(tempDataProvider));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        [HttpPost("~/connect/register"), Produces("application/json")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterViewModel user)
+        [AllowAnonymous, HttpPost("~/connect/register"), Produces("application/json")]
+        public async Task<IActionResult> Register([FromBody]RegisterViewModel user)
         {
             try
             {
@@ -103,15 +106,14 @@ namespace InvestorDashboard.Api.Controllers
                 if (status)
                 {
                     user.UserName = user.Email;
-
                     ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
-
                     var result = await _userManager.CreateAsync(appUser, user.Password);
 
                     if (result.Succeeded)
                     {
                         try
                         {
+                            await _referralService.PopulateReferralData(appUser, user.ReferralCode);
                             await _genericAddressService.CreateMissingAddresses(appUser.Id);
                         }
                         catch (Exception ex)
@@ -123,7 +125,7 @@ namespace InvestorDashboard.Api.Controllers
 
                         appUser = await _userManager.FindByEmailAsync(appUser.Email);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                        code = System.Web.HttpUtility.UrlEncode(code);
+                        code = HttpUtility.UrlEncode(code);
 
                         var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
 
@@ -163,9 +165,8 @@ namespace InvestorDashboard.Api.Controllers
                 if (appUser != null)
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                    code = System.Web.HttpUtility.UrlEncode(code);
-                    var emailBody = Render("EmailBody",
-                        $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
+                    code = HttpUtility.UrlEncode(code);
+                    var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
                     await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
                     return Ok();
