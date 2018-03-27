@@ -31,7 +31,7 @@ namespace InvestorDashboard.Backend.Database
 
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.Hash)
-                .IsUnique();
+                .IsUnique(false);
 
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.ExternalId)
@@ -48,6 +48,10 @@ namespace InvestorDashboard.Backend.Database
             builder.Entity<ExchangeRate>()
                 .HasIndex(x => x.Created)
                 .IsUnique(false);
+
+            builder.Entity<ApplicationUser>()
+                .HasIndex(x => x.ReferralCode)
+                .IsUnique(true);
 
             foreach (var property in GetProperties(builder, p => p.ClrType == typeof(decimal)))
             {

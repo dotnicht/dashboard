@@ -18,6 +18,7 @@ namespace InvestorDashboard.Backend
             services.AddTransient<IRestService, RestService>();
             services.AddTransient<ICalculationService, CalculationService>();
             services.AddTransient<IExternalInvestorService, ExternalInvestorService>();
+            services.AddTransient<IReferralService, ReferralService>();
             services.AddTransient<IAffiliateService, AffiliateService>();
             services.AddTransient<IInternalUserService, InternalUserService>();
             services.AddTransient<IKeyVaultService, KeyVaultService>();

@@ -19,5 +19,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public Guid? ExternalId { get; set; }
         public bool IsNotified { get; set; }
         public bool? IsFailed { get; set; }
+        public bool? IsReferralPaid { get; set; }
     }
 }
