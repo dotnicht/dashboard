@@ -32,6 +32,7 @@ import { OtherService } from './services/other.service';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { ReferralModule } from './containers/referral/referral.module';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -47,6 +48,7 @@ import { ReferralModule } from './containers/referral/referral.module';
     CommonModule,
     ClipboardModule,
     HttpModule,
+    HttpClientModule,
     FormsModule,
 
     CdkTableModule,

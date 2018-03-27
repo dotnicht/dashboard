@@ -1,7 +1,9 @@
-import { ReferralCurrencyDescription } from "./referral-currency-description.model";
+import { ReferralCurrencyItem } from "./referral-currency-item.model";
 
 export class ReferralInfo {
     link: string;
-    BTC: ReferralCurrencyDescription;
-    ETH: ReferralCurrencyDescription;
+    items: {
+        BTC: ReferralCurrencyItem;
+        ETH: ReferralCurrencyItem;
+    };
 }
