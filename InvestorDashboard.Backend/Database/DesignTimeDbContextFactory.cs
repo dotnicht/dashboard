@@ -8,7 +8,7 @@ namespace InvestorDashboard.Backend.Database
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            builder.UseSqlServer("Server=(local);Database=BlockchainDashboard;Trusted_Connection=True;MultipleActiveResultSets=true");
+            builder.UseSqlServer("Server=(local);Database=InvestorDashboard;Trusted_Connection=True;MultipleActiveResultSets=true");
             return new ApplicationDbContext(builder.Options);
         }
     }
