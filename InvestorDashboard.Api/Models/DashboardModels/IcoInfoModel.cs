@@ -10,6 +10,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
         public long TotalCoins { get; set; }
         public decimal TokenPrice { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
+        public bool IsReferralSystemDisabled { get; set; }
         public List<CurrencyValue> Currencies { get; set; }
 
         public class CurrencyValue
