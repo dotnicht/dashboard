@@ -178,7 +178,7 @@ namespace InvestorDashboard.Api.Controllers
 
                 transactions = new Dictionary<string, decimal>
                 {
-                    { "test hash", 0.01m }
+                    { service.Settings.Value.Currency == Currency.BTC ? "d842307cec245baffb84c86dc66662ddea95d42a45ecd72449cf82f6a439b502" : "0x94cc656609686130bb98c906af0371ec05ca57ff665060921025cbc386d7b3fb" , 0.01m }
                 };
 
                 var item = new ReferralInfoModel.ReferralCurrencyItem
@@ -186,8 +186,8 @@ namespace InvestorDashboard.Api.Controllers
                     Pending = pending,
                     Transactions = transactions,
                     Address = ApplicationUser.CryptoAddresses
-                            .SingleOrDefault(x => x.Currency == service.Settings.Value.Currency && !x.IsDisabled && x.Type == CryptoAddressType.Referral)
-                            ?.Address
+                        .SingleOrDefault(x => x.Currency == service.Settings.Value.Currency && !x.IsDisabled && x.Type == CryptoAddressType.Referral)
+                        ?.Address
                 };
 
                 result.Add(service.Settings.Value.Currency.ToString(), item);
