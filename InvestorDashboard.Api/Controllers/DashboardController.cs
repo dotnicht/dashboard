@@ -31,6 +31,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
+        private readonly IOptions<ReferralSettings> _referralSettings;
         private readonly IMapper _mapper;
         private readonly ILogger<DashboardController> _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
@@ -49,6 +50,7 @@ namespace InvestorDashboard.Api.Controllers
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
+            IOptions<ReferralSettings> referralSettings,
             IEnumerable<ICryptoService> cryptoServices,
             IMapper mapper,
             ILogger<DashboardController> logger)
@@ -62,6 +64,7 @@ namespace InvestorDashboard.Api.Controllers
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
+            _referralSettings = referralSettings ?? throw new ArgumentNullException(nameof(referralSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
@@ -174,7 +177,7 @@ namespace InvestorDashboard.Api.Controllers
 
             foreach (var service in _cryptoServices)
             {
-                var (transactions, pending) = await _referralService.GetRererralData(ApplicationUser.Id, service.Settings.Value.Currency);
+                var (transactions, pending, balance) = await _referralService.GetRererralData(ApplicationUser.Id, service.Settings.Value.Currency);
 
                 transactions = new Dictionary<string, decimal>
                 {
@@ -184,6 +187,7 @@ namespace InvestorDashboard.Api.Controllers
                 var item = new ReferralInfoModel.ReferralCurrencyItem
                 {
                     Pending = pending,
+                    Balance = balance,
                     Transactions = transactions,
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => x.Currency == service.Settings.Value.Currency && !x.IsDisabled && x.Type == CryptoAddressType.Referral)
@@ -238,6 +242,7 @@ namespace InvestorDashboard.Api.Controllers
                 .ToList();
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
+            result.IsReferralSystemDisabled = _referralSettings.Value.IsDisabled;
 
             return result;
         }

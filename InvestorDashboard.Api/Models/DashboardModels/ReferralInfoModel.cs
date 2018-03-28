@@ -11,6 +11,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
         {
             public string Address { get; set; }
             public decimal Pending { get; set; }
+            public decimal Balance { get; set; }
             public Dictionary<string, decimal> Transactions { get; set; } = new Dictionary<string, decimal>();
         }
     }
