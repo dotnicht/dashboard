@@ -224,8 +224,10 @@
       margin-left: 5px;
       height: 280px;
       padding: 0;
-      background: linear-gradient(to bottom, #a1e276, #30b9ad);
+      //   background: linear-gradient(to bottom, #a1e276, #30b9ad);
       .content {
+          padding-top: 20px;
+          width: 100%;
           position: absolute;
           color: white;
           text-align: center;

@@ -1,8 +1,10 @@
 ﻿import { Component } from '@angular/core';
-import { link } from 'fs';
 import { ReferralInfo } from '../../models/referral/referral-info.model';
 import { ReferralService } from '../../services/referral.service';
 import { ReferralCurrencyItem } from '../../models/referral/referral-currency-item.model';
+import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
+// import { Router } from '@angular/router';
+// import { DOCUMENT } from '@angular/platform-browser';
 
 
 @Component({
@@ -22,15 +24,26 @@ export class ReferralComponent {
 
     public referralLinkIsCopied: boolean = false;
 
-    constructor(private referralService: ReferralService) {
+    constructor(private referralService: ReferralService,
+        private dialog: MatDialog) {
+        // @Inject(DOCUMENT) doc: any) {
 
+        //     dialog.afterOpen.subscribe(() => {
+        //         if (!doc.body.classList.contains('no-scroll')) {
+        //             doc.body.classList.add('no-scroll');
+        //         }
+        //     });
+        //     dialog.afterAllClosed.subscribe(() => {
+        //         doc.body.classList.remove('no-scroll');
+        //     });
     }
 
     ngOnInit() {
-        // this.referralInfo.link = "ref_link";
-
         this.referralService.getReferralInfo().subscribe((data: ReferralInfo) => {
             this.referralInfo = data;
+            for (let curr of this.CURRENCIES) {
+                this.referralInfo.items[curr.acronym].previousAddress = this.referralInfo.items[curr.acronym].address;
+            }
         });
 
     }
@@ -43,21 +56,14 @@ export class ReferralComponent {
             this.referralLinkIsCopied = false;
         }
 
-        for (let el of this.CURRENCIES) {
-            if (el.acronym == copiedElement.toUpperCase()) {
-                this.referralInfo.items[el.acronym].addressIsCopied = true;
+        for (let curr of this.CURRENCIES) {
+            if (curr.acronym == copiedElement.toUpperCase()) {
+                this.referralInfo.items[curr.acronym].addressIsCopied = true;
             }
             else {
-                this.referralInfo.items[el.acronym].addressIsCopied = false;
+                this.referralInfo.items[curr.acronym].addressIsCopied = false;
             }
         }
-    }
-
-    private savePreviousAddress(event: any, currencyAcronym: string) {
-        this.referralInfo.items[currencyAcronym].currentValue = event.target.value;
-        // this.referralInfo.items[currencyAcronym].previosValue = this.referralInfo.items[currencyAcronym].address;
-        // this.referralInfo.items[currencyAcronym].address = event;
-        console.log(event.target.value, this.referralInfo.items[currencyAcronym].currentValue, this.referralInfo.items[currencyAcronym].address);
     }
 
     private save(currencyAcronym: string) {
@@ -74,12 +80,32 @@ export class ReferralComponent {
         currencyAcronym = currencyAcronym.toUpperCase();
         this.referralInfo.items[currencyAcronym].isEditModeRefAddress = false;
         this.referralInfo.items[currencyAcronym].readonlyRefAddress = !this.referralInfo.items[currencyAcronym].isEditModeRefAddress;
-        
-        console.log('cancel', this.referralInfo.items[currencyAcronym].currentValue, this.referralInfo.items[currencyAcronym].address);
-        this.referralInfo.items[currencyAcronym].address = this.referralInfo.items[currencyAcronym].address;
+        this.referralInfo.items[currencyAcronym].address = this.referralInfo.items[currencyAcronym].previousAddress;
     }
 
     private delete(currencyAcronym: string) {
         this.referralService.changeReferralInfo(currencyAcronym).subscribe();
     }
 }
+
+
+// @Component({
+//     selector: 'confirm-email-dialog',
+//     templateUrl: './confirm-email.dialog.component.html'
+// })
+// export class ConfirmEmailDialogComponent {
+//     public email: string;
+
+//     constructor(
+//         public dialogRef: MatDialogRef<ConfirmEmailDialogComponent>,
+//         private router: Router,
+//         @Inject(MAT_DIALOG_DATA) public data: any) {
+//         this.email = data;
+//     }
+
+//     close() {
+//         this.dialogRef.close();
+//         document.location.href = '/login';
+//     }
+// }
+

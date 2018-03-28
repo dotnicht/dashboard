@@ -14,7 +14,7 @@
             <div class="info-label">{{curr.name}}</div>
             <div class="info-value">
                 <mat-form-field>
-                    <input matInput #btcAddress [ngModel]="referralInfo.items[curr.acronym].address" (change)="savePreviousAddress($event, curr.acronym)" type="text" [readonly]='referralInfo.items[curr.acronym].readonlyRefAddress'>
+                    <input matInput #btcAddress [(ngModel)]="this.referralInfo.items[curr.acronym].address" type="text" [readonly]='referralInfo.items[curr.acronym].readonlyRefAddress'>
                 </mat-form-field>
                 <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="copyToClipboard(curr.acronym)" mat-raised-button>{{(!referralInfo.items[curr.acronym].addressIsCopied ?'buttons.Copy':'buttons.Copied') | translate}}</button>
                 <button mat-raised-button *ngIf="!referralInfo.items[curr.acronym].isEditModeRefAddress " color="primary" type="button" (click)="edit(curr.acronym)" class="btn btn-default">

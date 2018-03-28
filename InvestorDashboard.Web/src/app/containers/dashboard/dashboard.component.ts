@@ -82,6 +82,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         });
     }
     qrInitialize(data: string) {
+        if (document.getElementById('qrCode')) {
         document.getElementById('qrCode').innerHTML = '';
         let qrCode = new QRCode(document.getElementById('qrCode'), {
             text: data,
@@ -91,16 +92,14 @@ export class DashboardComponent implements OnDestroy, OnInit {
         document.getElementById('qrCode').getElementsByTagName('img')[0].style.display = 'none';
         document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
 
-
+    }
     }
 
     chooseVideo() {
-
-        const list = ['https://www.youtube.com/embed/PhXtedgJXXo',
-            'https://www.youtube.com/embed/kKaYKnAYuDQ',
-            'https://www.youtube.com/embed/doLiQVxuWyQ',
-            'https://www.youtube.com/embed/wBS-zMiolok',
-            'https://www.youtube.com/embed/_byRbCEBLCM'];
+        const list = [
+            'https://www.youtube.com/embed/YgY6o1LNlq4',
+            'https://www.youtube.com/embed/-i8NetY74b4'
+        ];
         const index = Math.floor((Math.random() * list.length));
 
         this.selectedVideo = this.sanitizer.bypassSecurityTrustResourceUrl(list[index]);

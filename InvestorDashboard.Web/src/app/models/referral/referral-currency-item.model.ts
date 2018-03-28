@@ -3,7 +3,7 @@ import { ReferralTransaction } from './referral-transaction.model';
 
 export class ReferralCurrencyItem {
     address: string;
-    currentValue: string;
+    previousAddress: string;
     balance: number;
     pending: number;
     transactions: Dictionary<ReferralTransaction>;
