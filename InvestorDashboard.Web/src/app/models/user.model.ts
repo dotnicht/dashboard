@@ -62,7 +62,7 @@ export class UserRegister {
     confirmPassword: string;
     clickId: string;
     reCaptchaToken: String;
-
+    referralCode: string;
 
     constructor(email?: string, password?: string, confirmPassword?: string) {
         this.email = email;

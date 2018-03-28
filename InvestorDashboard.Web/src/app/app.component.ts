@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, AfterViewInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
 import { ResizeService } from './services/resize.service';
@@ -10,6 +10,7 @@ import { LocalStoreManager } from './services/local-store-manager.service';
 import { isPlatformBrowser } from '@angular/common';
 import { AccountService } from './services/account.service';
 import { OtherService } from './services/other.service';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-root',
@@ -32,6 +33,34 @@ export class AppComponent implements OnInit {
     return this.translationService.getTranslation('languages.' + this.translationService.getCurrentLanguage);
   }
 
+  constructor(
+    private domSanitizer: DomSanitizer,
+    private storageManager: LocalStoreManager,
+    private authService: AuthService,
+    private accountService: AccountService,
+    private configurations: ConfigurationService,
+    private translationService: AppTranslationService,
+    private otherService: OtherService,
+    // private clientInfoService: ClientInfoEndpointService,
+    private resizeService: ResizeService,
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private cookieService: CookieService
+  ) {
+
+    storageManager.initialiseStorageSyncListener();
+
+    translationService.addLanguages(['en', 'ru']);
+    translationService.setDefaultLanguage('en');
+
+    this.activatedRoute.queryParams.subscribe(params => {
+      if (this.cookieService.get('ref_address') == '' && params['ref']) {
+        this.cookieService.set('ref_address', params['ref']);
+      }
+    });
+
+  }
+
   ngOnInit(): void {
     if (window.location.pathname == "/presale") {
       window.location.href = 'http://www.racoin.io/';
@@ -44,13 +73,14 @@ export class AppComponent implements OnInit {
     }
     this.otherService.showMainComponent = true;
     this.isUserLoggedIn = this.authService.isLoggedIn;
-
     // if (this.isUserLoggedIn) {
     //   this.refreshData();
     // }
+
     this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
       this.isUserLoggedIn = isLoggedIn;
     });
+
     // this.router.events.subscribe(event => {
     //   if (event instanceof NavigationStart) {
     //     let url = (<NavigationStart>event).url;
@@ -62,25 +92,7 @@ export class AppComponent implements OnInit {
     // });
   }
 
-  constructor(
-    private domSanitizer: DomSanitizer,
-    private storageManager: LocalStoreManager,
-    private authService: AuthService,
-    private accountService: AccountService,
-    private configurations: ConfigurationService,
-    private translationService: AppTranslationService,
-    private otherService: OtherService,
-    // private clientInfoService: ClientInfoEndpointService,
-    private resizeService: ResizeService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
-
-    storageManager.initialiseStorageSyncListener();
-
-    translationService.addLanguages(['en', 'ru']);
-    translationService.setDefaultLanguage('en');
-  }
+  
 
   get userName(): string {
     return this.authService.currentUser ? this.authService.currentUser.userName : '';
@@ -108,11 +120,11 @@ export class AppComponent implements OnInit {
         // this.alertService.showMessage("New Defaults", "Account defaults updated successfully", MessageSeverity.success)
 
       },
-      error => {
-        // this.alertService.stopLoadingMessage();
-        // this.alertService.showStickyMessage("Save Error", `An error occured whilst saving configuration defaults.\r\nErrors: "${Utilities.getHttpResponseMessage(error)}"`,
-        //   MessageSeverity.error, error);
-      });
+        error => {
+          // this.alertService.stopLoadingMessage();
+          // this.alertService.showStickyMessage("Save Error", `An error occured whilst saving configuration defaults.\r\nErrors: "${Utilities.getHttpResponseMessage(error)}"`,
+          //   MessageSeverity.error, error);
+        });
 
   }
 }

@@ -170,11 +170,15 @@ export class RegisterComponent implements OnInit {
                     this.registerForm.reCaptchaToken = this.guid;
                 }
 
+                if (this.cookieService.get('ref_address') != '') {
+                    this.registerForm.referralCode = this.cookieService.get('ref_address');
+                }
+
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
                         // this.alertService.stopLoadingMessage();
-
+                        this.cookieService.delete('ref_address');
                         this.openEmailConfirmDialog();
                         this.reset();
 
