@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
         }
 
-        public async Task<(IDictionary<string, decimal> Transactions, decimal Pending)> GetRererralData(string userId, Currency currency)
+        public async Task<(Dictionary<string, decimal> Transactions, decimal Pending)> GetRererralData(string userId, Currency currency)
         {
             if (userId == null)
             {

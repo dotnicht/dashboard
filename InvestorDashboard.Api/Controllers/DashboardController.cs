@@ -170,28 +170,36 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpGet("referral"), Produces("application/json")]
         public async Task<IActionResult> GetReferralData()
         {
-            // TODO: refactor.
-            var result = _cryptoServices
-                .Select(async x => new
-                    {
-                        x.Settings.Value.Currency,
-                        Data = await _referralService.GetRererralData(ApplicationUser.Id, x.Settings.Value.Currency)
-                    })
-                .Select(x => x.Result)
-                .ToDictionary(x => x.Currency.ToString(), x => new ReferralInfoModel.ReferralCurrencyItem
-                    {
-                        Address = ApplicationUser.CryptoAddresses
-                            .SingleOrDefault(y => y.Currency == x.Currency && !y.IsDisabled && y.Type == CryptoAddressType.Referral)
-                            ?.Address,
-                        Pending = x.Data.Pending,
-                        Transactions = x.Data.Transactions.ToDictionary(y => y.Key, y => y.Value)
-                    });
+            var result = new Dictionary<string, ReferralInfoModel.ReferralCurrencyItem>();
 
-            return Ok(new ReferralInfoModel
+            foreach (var service in _cryptoServices)
+            {
+                var (transactions, pending) = await _referralService.GetRererralData(ApplicationUser.Id, service.Settings.Value.Currency);
+
+                transactions = new Dictionary<string, decimal>
                 {
-                    Items = result,
-                    Link = new Uri($"{Request.Scheme}://{Request.Host}?ref={ApplicationUser.ReferralCode}").ToString()
-                });
+                    { service.Settings.Value.Currency == Currency.BTC ? "d842307cec245baffb84c86dc66662ddea95d42a45ecd72449cf82f6a439b502" : "0x94cc656609686130bb98c906af0371ec05ca57ff665060921025cbc386d7b3fb" , 0.01m }
+                };
+
+                var item = new ReferralInfoModel.ReferralCurrencyItem
+                {
+                    Pending = pending,
+                    Transactions = transactions,
+                    Address = ApplicationUser.CryptoAddresses
+                        .SingleOrDefault(x => x.Currency == service.Settings.Value.Currency && !x.IsDisabled && x.Type == CryptoAddressType.Referral)
+                        ?.Address
+                };
+
+                result.Add(service.Settings.Value.Currency.ToString(), item);
+            }
+
+            var model = new ReferralInfoModel
+            {
+                Items = result,
+                Link = new Uri($"{Request.Scheme}://{Request.Host}?ref={ApplicationUser.ReferralCode}").ToString()
+            };
+
+            return Ok(model);
         }
 
         [Authorize, HttpPost("referral")]
