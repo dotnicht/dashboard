@@ -12,9 +12,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class ReferralService : ContextService, IReferralService
     {
-        private readonly CalculationService _calculationService;
+        private readonly ICalculationService _calculationService;
 
-        public ReferralService(ApplicationDbContext context, ILoggerFactory loggerFactory, CalculationService calculationService)
+        public ReferralService(ApplicationDbContext context, ILoggerFactory loggerFactory, ICalculationService calculationService)
             : base(context, loggerFactory)
         {
             _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
