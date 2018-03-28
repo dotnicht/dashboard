@@ -29,17 +29,8 @@ export class ReferralComponent {
     ngOnInit() {
         // this.referralInfo.link = "ref_link";
 
-        this.referralService.getReferralInfo().subscribe(data => {
-            console.log(data);
-            data.items.ETH = new ReferralCurrencyItem(
-                'asd',
-                2.34,
-                0,
-                { 1: 1 });
-            data.items.BTC.address = 'asdasdasdasd'
-            data.items.BTC.readonlyRefAddress = true;
-            this.referralInfo = data as ReferralInfo;
-
+        this.referralService.getReferralInfo().subscribe((data: ReferralInfo) => {
+            this.referralInfo = data;
         });
 
     }
@@ -70,9 +61,7 @@ export class ReferralComponent {
     }
 
     private save(currencyAcronym: string) {
-        this.referralService.changeReferralInfo(currencyAcronym, this.referralInfo.items[currencyAcronym].address).subscribe(response => {
-            console.log('response', response);
-        });
+        this.referralService.changeReferralInfo(currencyAcronym, this.referralInfo.items[currencyAcronym].address).subscribe();
     }
 
     private edit(currencyAcronym: string) {
@@ -91,8 +80,6 @@ export class ReferralComponent {
     }
 
     private delete(currencyAcronym: string) {
-        this.referralService.changeReferralInfo(currencyAcronym).subscribe(response => {
-            console.log('response', response);
-        });
+        this.referralService.changeReferralInfo(currencyAcronym).subscribe();
     }
 }

@@ -6,10 +6,16 @@ import { Observable } from "rxjs/Observable";
 import { ConfigurationService } from "./configuration.service";
 import { AuthService } from "./auth.service";
 import { BaseService } from './base.service';
+import { ReferralCurrencyItem } from "../models/referral/referral-currency-item.model";
 
 
 @Injectable()
 export class ReferralService {
+    public CURRENCIES = [
+        { acronym: 'BTC', name: 'Bitcoin' },
+        { acronym: 'ETH', name: 'Etherium' }
+    ];
+    
     private referralInfoUrl = environment.host + '/dashboard/referral'
 
     constructor(private http: HttpClient, private authService: AuthService) {
@@ -23,10 +29,27 @@ export class ReferralService {
                 'App-Version': ConfigurationService.appVersion
             })
         };
-        return this.http.get<ReferralInfo>(this.referralInfoUrl, httpOptions);
+
+        return this.http.get<ReferralInfo>(this.referralInfoUrl, httpOptions)
+        .map((response) => {
+            let items = {};
+            for (let curr of this.CURRENCIES) {
+                items[curr.acronym] = new ReferralCurrencyItem(
+                    response['items'][curr.acronym]['address'],
+                    response['items'][curr.acronym]['balance'],
+                    response['items'][curr.acronym]['pending'],
+                    response['items'][curr.acronym]['transactions']
+                );
+            }
+
+            return new ReferralInfo(
+                response['link'],
+                items
+            );
+        });
     }
 
-    changeReferralInfo(currencyAcronym: string, refAddress: string = ''): Observable<Response> {
+    changeReferralInfo(currencyAcronym: string, refAddress: string = null): Observable<Response> {
         let httpOptions = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',

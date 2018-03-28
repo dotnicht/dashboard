@@ -6,4 +6,9 @@ export class ReferralInfo {
         BTC: ReferralCurrencyItem;
         ETH: ReferralCurrencyItem;
     };
+
+    constructor (link, items) {
+        this.link = link;
+        this.items = items;
+    }
 }
