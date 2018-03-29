@@ -10,7 +10,7 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { FormsModule } from '@angular/forms';
 import { TransferComponent, SuccsessTransferDialogComponent, FailedTransferDialogComponent } from '../../components/transfer/transfer.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
-import { ReferralComponent } from './referral.component';
+import { ReferralComponent, ConfirmChangingAddressDialogComponent } from './referral.component';
 import { ReferralService } from '../../services/referral.service';
 import { HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
@@ -18,6 +18,7 @@ import { HttpClientModule } from '@angular/common/http';
 @NgModule({
     declarations: [
         ReferralComponent,
+        ConfirmChangingAddressDialogComponent
     ],
     imports: [
         CommonModule,
@@ -41,6 +42,7 @@ import { HttpClientModule } from '@angular/common/http';
         // DashboardEndpoint
     ],
     entryComponents: [
+        ConfirmChangingAddressDialogComponent
         // AddedQuestionDialogComponent,
         // SuccsessTransferDialogComponent,
         // FailedTransferDialogComponent

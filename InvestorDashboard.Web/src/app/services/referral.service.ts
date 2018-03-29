@@ -11,14 +11,8 @@ import { ReferralCurrencyItem } from "../models/referral/referral-currency-item.
 
 @Injectable()
 export class ReferralService {
-    //todo refactor currencies to config file or smth like this. This list of currencies also in referral component.
-    public CURRENCIES = [
-        { acronym: 'BTC', name: 'Bitcoin' },
-        { acronym: 'ETH', name: 'Etherium' }
-    ];
-    
     isReferralSystemDisabled: boolean;
-    
+
     private referralInfoUrl = environment.host + '/dashboard/referral'
 
     constructor(private http: HttpClient, private authService: AuthService) {
@@ -35,14 +29,15 @@ export class ReferralService {
 
         return this.http.get<ReferralInfo>(this.referralInfoUrl, httpOptions)
         .map((response) => {
-            let items = {};
-            for (let curr of this.CURRENCIES) {
-                items[curr.acronym] = new ReferralCurrencyItem(
-                    response['items'][curr.acronym]['address'],
-                    response['items'][curr.acronym]['balance'],
-                    response['items'][curr.acronym]['pending'],
-                    response['items'][curr.acronym]['transactions']
-                );
+            let items = [];
+            for (let item of response['items']) {
+                items.push(new ReferralCurrencyItem(
+                    item['address'],
+                    item['balance'],
+                    item['pending'],
+                    item['transactions'],
+                    item['currency']
+                ));
             }
 
             return new ReferralInfo(

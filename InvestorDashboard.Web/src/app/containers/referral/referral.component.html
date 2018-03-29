@@ -9,24 +9,24 @@
     </div>
 
     <h3 class="subheader">My referral addresses</h3>
-    <div *ngFor="let curr of CURRENCIES">
+    <div *ngFor="let item of referralInfo.items">
         <div class="info-block">
-            <div class="info-label">{{curr.name}}</div>
+            <div class="info-label">{{item.currName}}</div>
             <div class="info-value">
                 <mat-form-field>
-                    <input matInput #btcAddress [(ngModel)]="this.referralInfo.items[curr.acronym].address" type="text" [readonly]='referralInfo.items[curr.acronym].readonlyRefAddress'>
+                    <input matInput #btcAddress [(ngModel)]="item.address" type="text" [readonly]='item.readonlyRefAddress'>
                 </mat-form-field>
-                <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="copyToClipboard(curr.acronym)" mat-raised-button>{{(!referralInfo.items[curr.acronym].addressIsCopied ?'buttons.Copy':'buttons.Copied') | translate}}</button>
-                <button mat-raised-button *ngIf="!referralInfo.items[curr.acronym].isEditModeRefAddress " color="primary" type="button" (click)="edit(curr.acronym)" class="btn btn-default">
+                <button [color]="'primary'" class="copy-btn" [ngxClipboard]="btcAddress" (cbOnSuccess)="copyToClipboard(item.currAcronym)" mat-raised-button>{{(!item.addressIsCopied ?'buttons.Copy':'buttons.Copied') | translate}}</button>
+                <button mat-raised-button *ngIf="!item.isEditModeRefAddress " color="primary" type="button" (click)="edit(item.currAcronym)" class="btn btn-default">
                 <i class='fa fa-edit'></i> {{'users.editor.Edit' | translate}}
                 </button>
-                <button mat-raised-button *ngIf="referralInfo.items[curr.acronym].isEditModeRefAddress" type="button" (click)="save(curr.acronym)" class="btn btn-default btn-danger" color="primary">
+                <button mat-raised-button *ngIf="item.isEditModeRefAddress" type="button" (click)="save(item.currAcronym)" class="btn btn-default btn-danger" color="primary">
                     <i class='fa fa-times'></i> {{'users.editor.Save' | translate}}
                     </button>
-                <button mat-raised-button *ngIf="referralInfo.items[curr.acronym].isEditModeRefAddress" type="button" (click)="cancel(curr.acronym)" class="btn btn-default btn-danger" color="primary">
+                <button mat-raised-button *ngIf="item.isEditModeRefAddress" type="button" (click)="cancel(item.currAcronym)" class="btn btn-default btn-danger" color="primary">
                 <i class='fa fa-times'></i> {{'users.editor.Cancel' | translate}}
                 </button>
-                <button mat-raised-button *ngIf="referralInfo.items[curr.acronym].isEditModeRefAddress" type="button" (click)="delete(curr.acronym)" class="btn btn-default btn-danger" color="primary">
+                <button mat-raised-button [disabled]="item.address == '' || item.address == null" *ngIf="item.isEditModeRefAddress" type="button" (click)="delete(item.currAcronym)" class="btn btn-default btn-danger" color="primary">
                     <i class='fa fa-times'></i> {{'users.management.Delete' | translate}}
                     </button>
 
@@ -37,20 +37,20 @@
 
 
     <h3 class="subheader">My referral balance</h3>
-    <div *ngFor="let curr of CURRENCIES">
+    <div *ngFor="let item of referralInfo.items">
         <div class="info-block">
-            <div class="info-label">Total {{curr.name}}:</div>
-            <div class="info-value">{{referralInfo.items[curr.acronym].balance }} BTC</div>
-            <div class="info-description">Pending: {{referralInfo.items[curr.acronym].pending }} Где деньги, Лебовски?!</div>
+            <div class="info-label">Total {{item.currName}}:</div>
+            <div class="info-value">{{item.balance }} BTC</div>
+            <div class="info-description">Pending: {{item.pending }} Где деньги, Лебовски?!</div>
         </div>
     </div>
 
     <h3 class="subheader">Transfer Transactions</h3>
-    <div *ngFor="let curr of CURRENCIES">
+    <div *ngFor="let item of referralInfo.items">
         <div class="transactions-info-block">
-            <div>{{curr.name}}:</div>
-            <div *ngFor="let transaction of referralInfo.items[curr.acronym].transactions">
-                <div>{{transaction}}</div>
+            <div>{{item.currName}}:</div>
+            <div *ngFor="let transaction of item.transactions">
+                <div>{{transaction.hash}} // {{transaction.amount}} {{item.currAcronym}}</div>
             </div>
         </div>
     </div>

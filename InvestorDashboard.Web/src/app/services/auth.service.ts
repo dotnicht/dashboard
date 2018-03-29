@@ -140,9 +140,9 @@ export class AuthService {
   private handleError(error, continuation: () => Observable<any>) {
 
     if (error.status == 401) {
-      // this.logout();
-      // this.redirectLogoutUser();
-      this.refreshLogin();
+      this.logout();
+      this.redirectLogoutUser();
+      // this.refreshLogin();
     }
 
     if (error.url && error.url.toLowerCase().includes(this.loginUrl.toLowerCase())) {

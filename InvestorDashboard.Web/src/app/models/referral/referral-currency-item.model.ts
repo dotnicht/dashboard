@@ -6,16 +6,19 @@ export class ReferralCurrencyItem {
     previousAddress: string;
     balance: number;
     pending: number;
-    transactions: Dictionary<ReferralTransaction>;
+    currAcronym: string;
+    currName: string;
+    transactions: ReferralTransaction[];
 
     readonlyRefAddress = true;
     isEditModeRefAddress = false;
     addressIsCopied = false;
 
-    constructor(address, balance, pending, transactions) {
+    constructor(address, balance, pending, transactions, currency) {
         this.address = address;
         this.balance = balance;
         this.pending = pending;
         this.transactions = transactions;
+        this.currAcronym = currency;
     }
 }

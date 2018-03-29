@@ -1,10 +1,10 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, Inject } from '@angular/core';
 import { ReferralInfo } from '../../models/referral/referral-info.model';
 import { ReferralService } from '../../services/referral.service';
 import { ReferralCurrencyItem } from '../../models/referral/referral-currency-item.model';
 import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
-// import { Router } from '@angular/router';
-// import { DOCUMENT } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { DOCUMENT } from '@angular/platform-browser';
 
 
 @Component({
@@ -15,36 +15,44 @@ import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 /** referral component*/
 export class ReferralComponent {
     /** referral ctor */
+    confirmChangingAddressDialogRef: MatDialogRef<ConfirmChangingAddressDialogComponent> | null;
+    
+    config = {
+        // disableClose: true,
+        // hasBackdrop: false,
+        // panelClass: 'register-rules-dialog',
+        data: {},
+    };
 
     public referralInfo: ReferralInfo;
-    
-    //todo refactor currencies to config file or smth like this. This list of currencies also in referral component.
-    public CURRENCIES = [
-        { acronym: 'BTC', name: 'Bitcoin' },
-        { acronym: 'ETH', name: 'Etherium' }
-    ];
+    public CURRENCIES =
+        {
+            'BTC': 'Bitcoin',
+            'ETH': 'Etherium'
+        };
 
     public referralLinkIsCopied: boolean = false;
 
     constructor(private referralService: ReferralService,
-        private dialog: MatDialog) {
-        // @Inject(DOCUMENT) doc: any) {
+        private dialog: MatDialog,
+        @Inject(DOCUMENT) doc: any) {
 
-        //     dialog.afterOpen.subscribe(() => {
-        //         if (!doc.body.classList.contains('no-scroll')) {
-        //             doc.body.classList.add('no-scroll');
-        //         }
-        //     });
-        //     dialog.afterAllClosed.subscribe(() => {
-        //         doc.body.classList.remove('no-scroll');
-        //     });
+        dialog.afterOpen.subscribe(() => {
+            if (!doc.body.classList.contains('no-scroll')) {
+                doc.body.classList.add('no-scroll');
+            }
+        });
+        dialog.afterAllClosed.subscribe(() => {
+            doc.body.classList.remove('no-scroll');
+        });
     }
 
     ngOnInit() {
         this.referralService.getReferralInfo().subscribe((data: ReferralInfo) => {
             this.referralInfo = data;
-            for (let curr of this.CURRENCIES) {
-                this.referralInfo.items[curr.acronym].previousAddress = this.referralInfo.items[curr.acronym].address;
+            for (let item of this.referralInfo.items) {
+                item.previousAddress = item.address;
+                item.currName = this.CURRENCIES[item.currAcronym];
             }
         });
 
@@ -58,56 +66,110 @@ export class ReferralComponent {
             this.referralLinkIsCopied = false;
         }
 
-        for (let curr of this.CURRENCIES) {
-            if (curr.acronym == copiedElement.toUpperCase()) {
-                this.referralInfo.items[curr.acronym].addressIsCopied = true;
+        for (let item of this.referralInfo.items) {
+            if (item.currAcronym == copiedElement.toUpperCase()) {
+                item.addressIsCopied = true;
             }
             else {
-                this.referralInfo.items[curr.acronym].addressIsCopied = false;
+                item.addressIsCopied = false;
             }
         }
     }
 
     private save(currencyAcronym: string) {
-        this.referralService.changeReferralInfo(currencyAcronym, this.referralInfo.items[currencyAcronym].address).subscribe();
+        let item = this.referralInfo.items.find((item) => {
+            if (item.currAcronym == currencyAcronym) {
+                return true;
+            }
+            return false;
+        });
+
+        this.config.data['newAddress'] = item.address;
+        this.config.data['previousAddress'] = item.previousAddress;
+        this.config.data['remove'] = false;
+
+        this.confirmChangingAddressDialogRef = this.dialog.open(ConfirmChangingAddressDialogComponent, this.config);
+        this.confirmChangingAddressDialogRef.afterClosed().subscribe((result) => {
+            if (result == true) {
+                this.referralService.changeReferralInfo(currencyAcronym, item.address).subscribe();
+                item.isEditModeRefAddress = false;
+                item.readonlyRefAddress = !item.isEditModeRefAddress;
+                this.config.data = {};
+            }
+        });
     }
 
     private edit(currencyAcronym: string) {
         currencyAcronym = currencyAcronym.toUpperCase();
-        this.referralInfo.items[currencyAcronym].isEditModeRefAddress = true;
-        this.referralInfo.items[currencyAcronym].readonlyRefAddress = !this.referralInfo.items[currencyAcronym].isEditModeRefAddress;
+        let item = this.referralInfo.items.find((item) => {
+            if (item.currAcronym == currencyAcronym) {
+                return true;
+            }
+            return false;
+        });
+        item.isEditModeRefAddress = true;
+        item.readonlyRefAddress = !item.isEditModeRefAddress;
     }
-
+    
     private cancel(currencyAcronym: string) {
         currencyAcronym = currencyAcronym.toUpperCase();
-        this.referralInfo.items[currencyAcronym].isEditModeRefAddress = false;
-        this.referralInfo.items[currencyAcronym].readonlyRefAddress = !this.referralInfo.items[currencyAcronym].isEditModeRefAddress;
-        this.referralInfo.items[currencyAcronym].address = this.referralInfo.items[currencyAcronym].previousAddress;
+        let item = this.referralInfo.items.find((item) => {
+            if (item.currAcronym == currencyAcronym) {
+                return true;
+            }
+            return false;
+        });
+
+        item.isEditModeRefAddress = false;
+        item.readonlyRefAddress = !item.isEditModeRefAddress;
+        item.address = item.previousAddress;
     }
 
     private delete(currencyAcronym: string) {
+        currencyAcronym = currencyAcronym.toUpperCase();
+        let item = this.referralInfo.items.find((item) => {
+            if (item.currAcronym == currencyAcronym) {
+                return true;
+            }
+            return false;
+        });
+
+        this.config.data['newAddress'] = item.address;
+        this.config.data['remove'] = true;
+        
+        this.confirmChangingAddressDialogRef = this.dialog.open(ConfirmChangingAddressDialogComponent, this.config);
+        this.confirmChangingAddressDialogRef.afterClosed().subscribe((result) => {
+            if (result == true) {
+                this.referralService.changeReferralInfo(currencyAcronym, item.address).subscribe();
+                item.isEditModeRefAddress = false;
+                item.readonlyRefAddress = !item.isEditModeRefAddress;
+                item.address = null;
+                this.config.data = {};
+            }
+        });
+
         this.referralService.changeReferralInfo(currencyAcronym).subscribe();
     }
 }
 
 
-// @Component({
-//     selector: 'confirm-email-dialog',
-//     templateUrl: './confirm-email.dialog.component.html'
-// })
-// export class ConfirmEmailDialogComponent {
-//     public email: string;
+@Component({
+    selector: 'confirm-changing-address-dialog',
+    templateUrl: './confirm-changing-address-dialog.component.html'
+})
+export class ConfirmChangingAddressDialogComponent {
+    public info: any;
 
-//     constructor(
-//         public dialogRef: MatDialogRef<ConfirmEmailDialogComponent>,
-//         private router: Router,
-//         @Inject(MAT_DIALOG_DATA) public data: any) {
-//         this.email = data;
-//     }
+    constructor(
+        public dialogRef: MatDialogRef<ConfirmChangingAddressDialogComponent>,
+        private router: Router,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.info = data;
+    }
 
-//     close() {
-//         this.dialogRef.close();
-//         document.location.href = '/login';
-//     }
-// }
+    close() {
+        this.dialogRef.close();
+        // document.location.href = '/login';
+    }
+}
 
