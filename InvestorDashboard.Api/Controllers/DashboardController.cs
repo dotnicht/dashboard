@@ -173,7 +173,7 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpGet("referral"), Produces("application/json")]
         public async Task<IActionResult> GetReferralData()
         {
-            var result = new Dictionary<string, ReferralInfoModel.ReferralCurrencyItem>();
+            var result = new List<ReferralInfoModel.ReferralCurrencyItem>();
 
             foreach (var service in _cryptoServices)
             {
@@ -186,20 +186,23 @@ namespace InvestorDashboard.Api.Controllers
 
                 var item = new ReferralInfoModel.ReferralCurrencyItem
                 {
+                    Currency = service.Settings.Value.Currency.ToString(),
                     Pending = pending,
                     Balance = balance,
-                    Transactions = transactions,
+                    Transactions = transactions
+                        .Select(x => new ReferralInfoModel.ReferralCurrencyItem.ReferralCurrencyTransaction { Hash = x.Key, Amount = x.Value })
+                        .ToArray(),
                     Address = ApplicationUser.CryptoAddresses
                         .SingleOrDefault(x => x.Currency == service.Settings.Value.Currency && !x.IsDisabled && x.Type == CryptoAddressType.Referral)
                         ?.Address
                 };
 
-                result.Add(service.Settings.Value.Currency.ToString(), item);
+                result.Add(item);
             }
 
             var model = new ReferralInfoModel
             {
-                Items = result,
+                Items = result.ToArray(),
                 Link = new Uri($"{Request.Scheme}://{Request.Host}?ref={ApplicationUser.ReferralCode}").ToString()
             };
 
