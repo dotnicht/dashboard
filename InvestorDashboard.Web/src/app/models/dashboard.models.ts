@@ -12,6 +12,7 @@ export class IcoInfo {
     tokenName: string;
     totalInvestors: number;
     contractAddress: string;
+    isReferralSystemDisabled: boolean;
     // totalUsdInvested: number;
     totalCoins: number;
     totalCoinsBought: number;

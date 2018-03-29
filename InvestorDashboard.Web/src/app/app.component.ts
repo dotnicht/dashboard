@@ -11,6 +11,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { AccountService } from './services/account.service';
 import { OtherService } from './services/other.service';
 import { CookieService } from 'ngx-cookie-service';
+import { ReferralService } from './services/referral.service';
 
 @Component({
   selector: 'app-root',
@@ -25,6 +26,8 @@ export class AppComponent implements OnInit {
   appTitle = 'Data Trading';
   isAppLoaded: boolean;
   isUserLoggedIn: boolean;
+  isReferralSystemDisabled: boolean;
+
   public year: number;
   get showMainContainer() {
     return this.otherService.showMainComponent;
@@ -45,14 +48,15 @@ export class AppComponent implements OnInit {
     private resizeService: ResizeService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private referralService: ReferralService
   ) {
 
     storageManager.initialiseStorageSyncListener();
 
     translationService.addLanguages(['en', 'ru']);
     translationService.setDefaultLanguage('en');
-
+    
     this.activatedRoute.queryParams.subscribe(params => {
       if (this.cookieService.get('ref_address') == '' && params['ref']) {
         this.cookieService.set('ref_address', params['ref']);
@@ -73,6 +77,7 @@ export class AppComponent implements OnInit {
     }
     this.otherService.showMainComponent = true;
     this.isUserLoggedIn = this.authService.isLoggedIn;
+    this.isReferralSystemDisabled = this.referralService.isReferralSystemDisabled;
     // if (this.isUserLoggedIn) {
     //   this.refreshData();
     // }

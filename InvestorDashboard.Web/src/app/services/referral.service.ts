@@ -11,10 +11,13 @@ import { ReferralCurrencyItem } from "../models/referral/referral-currency-item.
 
 @Injectable()
 export class ReferralService {
+    //todo refactor currencies to config file or smth like this. This list of currencies also in referral component.
     public CURRENCIES = [
         { acronym: 'BTC', name: 'Bitcoin' },
         { acronym: 'ETH', name: 'Etherium' }
     ];
+    
+    isReferralSystemDisabled: boolean;
     
     private referralInfoUrl = environment.host + '/dashboard/referral'
 
@@ -74,6 +77,8 @@ export class ReferralService {
         // });
         return res;
     }
+
+    
 
 
 }

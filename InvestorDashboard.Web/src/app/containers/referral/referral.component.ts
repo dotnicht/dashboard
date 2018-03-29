@@ -17,6 +17,8 @@ export class ReferralComponent {
     /** referral ctor */
 
     public referralInfo: ReferralInfo;
+    
+    //todo refactor currencies to config file or smth like this. This list of currencies also in referral component.
     public CURRENCIES = [
         { acronym: 'BTC', name: 'Bitcoin' },
         { acronym: 'ETH', name: 'Etherium' }

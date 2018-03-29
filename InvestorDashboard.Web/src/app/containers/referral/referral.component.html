@@ -2,7 +2,7 @@
     <h2 class="header">Referral</h2>
     <h3 class="subheader">My referral link</h3>
     <div>
-        <mat-form-field>
+        <mat-form-field class="ref-link">
             <input matInput #referralLink value="{{referralInfo.link}}" type="text" readonly>
         </mat-form-field>
         <button [color]="'primary'" class="copy-btn" [ngxClipboard]="referralLink" (cbOnSuccess)="copyToClipboard('REF_LINK')" mat-raised-button>{{(!referralLinkIsCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
@@ -49,9 +49,9 @@
     <div *ngFor="let curr of CURRENCIES">
         <div class="transactions-info-block">
             <div>{{curr.name}}:</div>
-            <!-- <div *ngFor="let transaction of referralInfo.items[curr.acronym].transactions">
+            <div *ngFor="let transaction of referralInfo.items[curr.acronym].transactions">
                 <div>{{transaction}}</div>
-            </div> -->
+            </div>
         </div>
     </div>
 </mat-card>

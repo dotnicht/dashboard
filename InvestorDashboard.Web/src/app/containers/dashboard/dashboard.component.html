@@ -19,7 +19,7 @@
     </mat-card>
     <mat-card class="second">
         <mat-card-content>
-            <div class="right" *ngIf="true">
+            <div class="right" *ngIf="false">
                 <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale starts on
                     <div style="margin: 3px 0;"> April 16th, 2018</div>
                 </div>
@@ -74,7 +74,13 @@
         <mat-card-content>
             <div class="content">
                 <p style="font-size: 28px;">Pre-sale is finished</p>
-                <p style="font-size: 20px;">4706.573 ETH and 199.055 BTC gathered</p>
+
+                <p style="font-size: 20px;">
+                    <span *ngFor="let currency of dashboard.icoInfoModel.currencies; let last = last">
+                            {{currency.value}} {{currency.currency}} 
+                            <span *ngIf="!last"> and </span>
+                    </span> gathered
+                </p>
                 <p style="font-size: 18px;">Token sale starts on April 16th, 2018</p>
                 <img style="width: 60px;margin-top: 20px; margin: 0 auto;" src="assets/img/round_a/placeholder.svg">
                 <div class="line"></div>
