@@ -82,7 +82,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (!string.IsNullOrWhiteSpace(address))
             {
-                Context.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = user.Id, Address = address });
+                Context.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = user.Id, Address = address, Type = CryptoAddressType.Referral });
             }
 
             await Context.SaveChangesAsync();
