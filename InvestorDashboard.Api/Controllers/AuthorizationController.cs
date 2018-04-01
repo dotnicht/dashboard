@@ -157,11 +157,11 @@ namespace InvestorDashboard.Api.Controllers
 
         [HttpPost("~/connect/resend_email_confirm_code"), Produces("application/json")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResendEmailConfirmCode([FromBody] ResendEmailConfirmCodeViewModel form)
+        public async Task<IActionResult> ResendEmailConfirmCode([FromBody]EmailViewModel model)
         {
             try
             {
-                var appUser = await _userManager.FindByEmailAsync(form.Email);
+                var appUser = await _userManager.FindByEmailAsync(model.Email);
                 if (appUser != null)
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);

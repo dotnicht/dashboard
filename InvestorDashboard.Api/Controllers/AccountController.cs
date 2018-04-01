@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -22,13 +21,9 @@ using System.Web;
 
 namespace InvestorDashboard.Api.Controllers
 {
-    [Authorize]
-    [Route("[controller]")]
+    [Authorize, Route("[controller]")]
     public class AccountController : Controller
     {
-        private const string GetUserByIdActionName = "GetUserById";
-        private const string GetRoleByIdActionName = "GetRoleById";
-
         private readonly IAuthorizationService _authorizationService;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly IMessageService _messageService;
@@ -121,7 +116,7 @@ namespace InvestorDashboard.Api.Controllers
 
         [HttpPost("forgot_password"), Produces("application/json")]
         [AllowAnonymous]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
+        public async Task<IActionResult> ForgotPassword([FromBody] EmailViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -145,7 +140,7 @@ namespace InvestorDashboard.Api.Controllers
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                code = System.Web.HttpUtility.UrlEncode(code);
+                code = HttpUtility.UrlEncode(code);
 
                 var callbackUrl = $"{Request.Scheme}://{Request.Host}/api/account/reset_password?email={HttpUtility.UrlEncode(user.Email)}&code={code}";
 
@@ -188,7 +183,7 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     foreach (var e in i.Errors)
                     {
-                        errors += $"{e.ErrorMessage}";
+                        errors += e.ErrorMessage;
                     }
                 }
 
@@ -267,6 +262,7 @@ namespace InvestorDashboard.Api.Controllers
 
                 return Ok();
             }
+
             return BadRequest(new OpenIdConnectResponse
             {
                 Error = OpenIdConnectConstants.Errors.ServerError
