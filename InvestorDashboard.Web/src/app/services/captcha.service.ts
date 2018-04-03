@@ -13,7 +13,7 @@ import { environment } from '../../environments/environment';
 @Injectable()
 export class CaptchaEndpoint extends BaseService {
 
-    private readonly _generateGuidUrl: string = (environment.production?'https':'http' )+'://dp-captcha.azurewebsites.net/api/captchaapi/generateguid';
+    private readonly _generateGuidUrl: string = (environment.production?'https':'http' )+'://dp-captcha2.azurewebsites.net/api/captchaapi/generateguid';
 
     constructor(http: Http, authService: AuthService) {
 
