@@ -62,7 +62,6 @@ export class AppComponent implements OnInit {
         this.cookieService.set('ref_address', params['ref']);
       }
     });
-
   }
 
   ngOnInit(): void {

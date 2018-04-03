@@ -2,7 +2,7 @@
 {
     public class ReferralInfoModel
     {
-        public string Link { get; set; }
+        public string Code { get; set; }
         public ReferralCurrencyItem[] Items { get; set; }
 
         public class ReferralCurrencyItem
