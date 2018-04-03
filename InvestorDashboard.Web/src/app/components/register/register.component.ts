@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
+﻿import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
@@ -59,7 +59,7 @@ export class RegisterComponent implements OnInit {
             return false;
         }
         return true;
-        //return false;
+        // return false;
     }
     @HostListener('window:message', ['$event'])
     onMessage(e) {
@@ -107,7 +107,7 @@ export class RegisterComponent implements OnInit {
         this.captchaService.generateGuidEndpoint().subscribe(data => {
             const value = data.json() as { Guid: string };
             this.guid = value.Guid;
-            this.captchaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://dp-captcha.azurewebsites.net/captcha?lang=en-EN&captchaId=${this.guid}`);
+            this.captchaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://dp-captcha2.azurewebsites.net/captcha?lang=en-EN&captchaId=${this.guid}`);
             // setTimeout(() => {
             //     const frame = document.getElementById('captcha');
             //     const content = (<HTMLIFrameElement>frame);
