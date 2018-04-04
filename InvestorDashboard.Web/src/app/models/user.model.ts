@@ -1,4 +1,4 @@
-﻿export class UserLogin {
+export class UserLogin {
     email: string;
     password: string;
     rememberMe: boolean;
@@ -62,7 +62,7 @@ export class UserRegister {
     confirmPassword: string;
     clickId: string;
     reCaptchaToken: String;
-    referralCode: string;
+    referral: string;
 
     constructor(email?: string, password?: string, confirmPassword?: string) {
         this.email = email;

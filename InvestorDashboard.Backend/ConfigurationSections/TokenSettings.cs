@@ -18,6 +18,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 
         public class BonusSettings
         {
+            public long? KycBonus { get; set; }
             public BonusSystem System { get; set; }
             public ScheduleItem[] Schedule { get; set; }
             public PercentageItem[] Percentage { get; set; }

@@ -203,7 +203,7 @@ namespace InvestorDashboard.Api.Controllers
             var model = new ReferralInfoModel
             {
                 Items = result.ToArray(),
-                Uri = string.Format(_referralSettings.Value.UriMask, ApplicationUser.ReferralCode)
+                Link = string.Format(_referralSettings.Value.UriMask, ApplicationUser.ReferralCode)
             };
 
             return Ok(model);
