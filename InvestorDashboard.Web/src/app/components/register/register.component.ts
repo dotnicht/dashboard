@@ -7,13 +7,14 @@ import { Utilities } from '../../services/utilities';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogConfig } from '@angular/material';
 import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 import { AppTranslationService } from '../../services/app-translation.service';
-import { Router, ActivatedRouteSnapshot } from '@angular/router';
+import { Router, ActivatedRouteSnapshot, ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { CookieService } from 'ngx-cookie-service';
 import { ReCaptchaComponent } from 'angular2-recaptcha';
 import { CaptchaEndpoint } from '../../services/captcha.service';
 import { CurrentLocationService } from '../../services/location.service';
 import { Location } from '@angular/common';
+import { ReferralService } from '../../services/referral.service';
 
 const defaultDialogConfig = new MatDialogConfig();
 
@@ -29,7 +30,7 @@ export class RegisterComponent implements OnInit {
     @ViewChild(ReCaptchaComponent) captcha: ReCaptchaComponent;
     registerRulesDialogRef: MatDialogRef<RegisterRulesDialogComponent> | null;
     emailConfirmDialogRef: MatDialogRef<ConfirmEmailDialogComponent> | null;
-
+    queryParams: any = null;
 
     registerRules: RegisterRules[] = [
         { name: this.translationService.getTranslation('users.register.rules.first'), checked: false },
@@ -76,6 +77,8 @@ export class RegisterComponent implements OnInit {
         private captchaService: CaptchaEndpoint,
         private sanitizer: DomSanitizer,
         private currentLocationService: CurrentLocationService,
+        private referralService: ReferralService,
+        private activatedRoute: ActivatedRoute,
         @Inject(DOCUMENT) doc: any) {
 
         dialog.afterOpen.subscribe(() => {
@@ -92,10 +95,19 @@ export class RegisterComponent implements OnInit {
 
     /** Called by Angular after register component initialized */
     ngOnInit(): void {
-
-        if (this.authService.isLoggedIn) {
-            this.router.navigate(['/login']);
+        if (this.referralService.refLink) {
+            this.queryParams = {ref: this.referralService.refLink};
         }
+        
+        if (this.authService.isLoggedIn) {
+            if (this.referralService.refLink) {
+                this.router.navigate(['/login'], { queryParams: { ref: this.referralService.refLink } });
+            }
+            else {
+                this.router.navigate(['/login']);
+            }
+        }
+
         this.currentLocationService.getCurrentIpLocation().subscribe(data => {
             this.country = data.country;
             // this.country = 'CN';
@@ -170,15 +182,15 @@ export class RegisterComponent implements OnInit {
                     this.registerForm.reCaptchaToken = this.guid;
                 }
 
-                if (this.cookieService.get('ref_address') != '') {
-                    this.registerForm.referralCode = this.cookieService.get('ref_address');
+                if (this.activatedRoute.snapshot.queryParams['ref']){
+                    this.registerForm.referralCode = this.activatedRoute.snapshot.queryParams['ref'];
+                    this.referralService.refLink = '';
                 }
 
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {
                     setTimeout(() => {
                         // this.alertService.stopLoadingMessage();
-                        this.cookieService.delete('ref_address');
                         this.openEmailConfirmDialog();
                         this.reset();
 

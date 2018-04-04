@@ -5,6 +5,7 @@ import { ReferralCurrencyItem } from '../../models/referral/referral-currency-it
 import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/platform-browser';
+import { ClientInfoEndpointService } from '../../services/client-info.service';
 
 
 @Component({
@@ -18,9 +19,6 @@ export class ReferralComponent {
     confirmChangingAddressDialogRef: MatDialogRef<ConfirmChangingAddressDialogComponent> | null;
     
     config = {
-        // disableClose: true,
-        // hasBackdrop: false,
-        // panelClass: 'register-rules-dialog',
         data: {},
     };
 
@@ -169,7 +167,6 @@ export class ConfirmChangingAddressDialogComponent {
 
     close() {
         this.dialogRef.close();
-        // document.location.href = '/login';
     }
 }
 

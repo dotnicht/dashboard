@@ -1,17 +1,31 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { Injectable, OnInit } from '@angular/core';
 import {
     CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot,
     CanActivateChild, NavigationExtras, CanLoad, Route
 } from '@angular/router';
 import { AuthService } from './auth.service';
+import { ReferralService } from './referral.service';
+import { IcoInfo } from '../models/dashboard.models';
+import { ClientInfoEndpointService } from './client-info.service';
 
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
-    constructor(private authService: AuthService, private router: Router) { }
+    private isReferralSystemDisabled: boolean;
+
+    constructor(
+        private authService: AuthService,
+        private router: Router,
+        private referralService: ReferralService,
+        private clientInfoEndpointService: ClientInfoEndpointService
+    ) {
+        this.clientInfoEndpointService.icoInfo$.subscribe(data => {
+            this.isReferralSystemDisabled = data.isReferralSystemDisabled;
+        })
+    }
+
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-
         let url: string = state.url;
         return this.checkLogin(url);
     }
@@ -27,8 +41,11 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     }
 
     checkLogin(url: string): boolean {
-
         if (this.authService.isLoggedIn) {
+            if (url == '/referral' && this.isReferralSystemDisabled) {
+                this.router.navigate(['/dashboard']);
+                return false;
+            }
             return true;
         }
 

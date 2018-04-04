@@ -68,7 +68,7 @@
                     <mat-icon>swap_horiz</mat-icon>
                     <span>{{'mainMenu.Referral' | translate}}</span>
                   </button>
-                <button mat-button [routerLink]="['/faq']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+                <button mat-button [routerLink]="['/faq']" [queryParams]="queryParams" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
                     <mat-icon>help</mat-icon>
                     <span>{{'mainMenu.Faq' | translate}}</span>
                   </button>
@@ -79,7 +79,7 @@
                 <mat-menu #userMenu="matMenu">
                     <app-client-info></app-client-info>
                 </mat-menu>
-                <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" mat-button>
+                <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" [queryParams]="queryParams" mat-button>
                     <mat-icon>account_circle</mat-icon>
                     <span>{{'mainMenu.Login' | translate}}</span>
                   </button>

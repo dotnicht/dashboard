@@ -7,7 +7,7 @@ import { AppTranslationService } from './services/app-translation.service';
 import { ConfigurationService } from './services/configuration.service';
 import { AuthService } from './services/auth.service';
 import { LocalStoreManager } from './services/local-store-manager.service';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, Location } from '@angular/common';
 import { AccountService } from './services/account.service';
 import { OtherService } from './services/other.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -26,7 +26,8 @@ export class AppComponent implements OnInit {
   appTitle = 'Data Trading';
   isAppLoaded: boolean;
   isUserLoggedIn: boolean;
-  isReferralSystemDisabled: boolean;
+  isReferralSystemDisabled = true;
+  queryParams: any = null;
 
   public year: number;
   get showMainContainer() {
@@ -49,6 +50,8 @@ export class AppComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private cookieService: CookieService,
+    private clientInfoEndpointService: ClientInfoEndpointService,
+    private location: Location,
     private referralService: ReferralService
   ) {
 
@@ -56,10 +59,16 @@ export class AppComponent implements OnInit {
 
     translationService.addLanguages(['en', 'ru']);
     translationService.setDefaultLanguage('en');
-    
+
     this.activatedRoute.queryParams.subscribe(params => {
-      if (this.cookieService.get('ref_address') == '' && params['ref']) {
-        this.cookieService.set('ref_address', params['ref']);
+      if (params['ref']) {
+        this.referralService.refLink = params['ref'];
+        this.queryParams = {ref: params['ref']}
+      }
+      else {
+        if (this.referralService.refLink) {
+          this.location.replaceState(window.location.pathname, `ref=${this.referralService.refLink}`)
+        }
       }
     });
   }
@@ -76,7 +85,17 @@ export class AppComponent implements OnInit {
     }
     this.otherService.showMainComponent = true;
     this.isUserLoggedIn = this.authService.isLoggedIn;
-    this.isReferralSystemDisabled = this.referralService.isReferralSystemDisabled;
+
+    this.clientInfoEndpointService.icoInfo$.subscribe(data => {
+      this.isReferralSystemDisabled = data.isReferralSystemDisabled;
+    });
+    // setTimeout(()=> {
+    //   console.log(22222,this.activatedRoute.snapshot.queryParams['ref'])
+    // }, 2000);
+    // console.log(123,this.activatedRoute.snapshot.params['ref'])
+    // if (this.activatedRoute.snapshot.params['ref']){
+    //   console.log(123,this.activatedRoute.snapshot.params['ref'])
+    // }
     // if (this.isUserLoggedIn) {
     //   this.refreshData();
     // }
@@ -96,7 +115,7 @@ export class AppComponent implements OnInit {
     // });
   }
 
-  
+
 
   get userName(): string {
     return this.authService.currentUser ? this.authService.currentUser.userName : '';

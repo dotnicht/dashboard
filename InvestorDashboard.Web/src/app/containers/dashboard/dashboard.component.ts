@@ -12,7 +12,6 @@ import { AuthService } from '../../services/auth.service';
 import { ClientInfo } from '../../models/client-info.model';
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
-import { ReferralService } from '../../services/referral.service';
 
 declare var QRCode: any;
 
@@ -49,8 +48,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         private sanitizer: DomSanitizer,
         private authService: AuthService,
         private dialog: MatDialog,
-        @Inject(DOCUMENT) doc: any,
-        private referralService: ReferralService
+        @Inject(DOCUMENT) doc: any
     ) {
 
         dialog.afterOpen.subscribe(() => {
@@ -143,7 +141,6 @@ export class DashboardComponent implements OnDestroy, OnInit {
         if (this.authService.isLoggedIn) {
             this.dashboardService.getDashboard().subscribe(model => {
                 let db = model.json() as Dashboard;
-                this.referralService.isReferralSystemDisabled = db.icoInfoModel.isReferralSystemDisabled;
                 db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
                 // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
                 db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;

@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { Utilities } from '../../services/utilities';
 import { Router } from '@angular/router';
+import { ReferralService } from '../../services/referral.service';
 
 @Component({
     selector: 'app-login',
@@ -18,17 +19,28 @@ export class LoginComponent implements OnInit, OnDestroy {
     loginStatusSubscription: any;
     errorMsg: string;
     showConfirmEmailLink = false;
-
+    queryParams: any = null;
 
     @Input() isModal = false;
 
     constructor(private router: Router,
         private authService: AuthService,
-        private configurations: ConfigurationService) { }
+        private configurations: ConfigurationService,
+        private referralService: ReferralService
+    ) { }
 
     ngOnInit(): void {
+        if (this.referralService.refLink) {
+            this.queryParams = {ref: this.referralService.refLink};
+        }
+        
         if (this.authService.isLoggedIn) {
-            this.router.navigate(['/login']);
+            if (this.referralService.refLink) {
+                this.router.navigate(['/login'], { queryParams: { ref: this.referralService.refLink } });
+            }
+            else {
+                this.router.navigate(['/login']);
+            }
         }
 
         this.userLogin.rememberMe = this.authService.rememberMe;

@@ -40,8 +40,8 @@
     <div *ngFor="let item of referralInfo.items">
         <div class="info-block">
             <div class="info-label">Total {{item.currName}}:</div>
-            <div class="info-value">{{item.balance }} BTC</div>
-            <div class="info-description">Pending: {{item.pending }} Где деньги, Лебовски?!</div>
+            <div class="info-value">{{item.balance}} {{item.currAcronym}}</div>
+            <div class="info-description">Pending: {{item.pending }} {{item.currAcronym}}</div>
         </div>
     </div>
 

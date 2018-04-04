@@ -1,6 +1,6 @@
 import { Injectable, Injector, OnDestroy, OnInit } from '@angular/core';
 import { Http, Response } from '@angular/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/first';
@@ -13,17 +13,18 @@ import { BaseService } from './base.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { Subscription } from 'rxjs/Subscription';
+import { DashboardEndpoint } from './dashboard-endpoint.service';
 
 @Injectable()
 export class ClientInfoEndpointService extends BaseService implements OnInit {
 
     public clientInfo: ClientInfo = new ClientInfo();
-
+    public icoInfo$ = new BehaviorSubject(new IcoInfo());
 
 
     private readonly _clientInfoUrl: string = environment.host + '/dashboard/client_info';
 
-    constructor(http: Http, authService: AuthService) {
+    constructor(http: Http, authService: AuthService, private dashboardEndpoint: DashboardEndpoint) {
 
         super(authService, http);
 
@@ -42,6 +43,10 @@ export class ClientInfoEndpointService extends BaseService implements OnInit {
             model.bonusBalance = Math.round(model.bonusBalance * 100) / 100;
             model.summary = Math.round((model.balance + model.bonusBalance) * 100) / 100;
             this.clientInfo = model;
+
+        });
+        this.dashboardEndpoint.getIcoInfo().subscribe(data => {
+            this.icoInfo$.next(data.json() as IcoInfo);
 
         });
     }

@@ -7,12 +7,12 @@ import { ConfigurationService } from "./configuration.service";
 import { AuthService } from "./auth.service";
 import { BaseService } from './base.service';
 import { ReferralCurrencyItem } from "../models/referral/referral-currency-item.model";
+import { Subject } from "rxjs";
 
 
 @Injectable()
 export class ReferralService {
-    isReferralSystemDisabled: boolean;
-
+    refLink: string = '';
     private referralInfoUrl = environment.host + '/dashboard/referral'
 
     constructor(private http: HttpClient, private authService: AuthService) {
