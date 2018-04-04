@@ -8,13 +8,79 @@
 
   <ItemGroup>
     <Compile Remove="e2e\**" />
-    <Compile Remove="wwwroot\**" />
     <Content Remove="e2e\**" />
-    <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="e2e\**" />
-    <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="e2e\**" />
-    <None Remove="wwwroot\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\assets\img\avatar.svg" />
+    <None Include="wwwroot\assets\img\BCC.svg" />
+    <None Include="wwwroot\assets\img\bitcoin.svg" />
+    <None Include="wwwroot\assets\img\bitcointalk.svg" />
+    <None Include="wwwroot\assets\img\BTC.svg" />
+    <None Include="wwwroot\assets\img\coin.svg" />
+    <None Include="wwwroot\assets\img\DASH.svg" />
+    <None Include="wwwroot\assets\img\data_trading_logo.svg" />
+    <None Include="wwwroot\assets\img\ETH.svg" />
+    <None Include="wwwroot\assets\img\facebook.svg" />
+    <None Include="wwwroot\assets\img\Group 202.svg" />
+    <None Include="wwwroot\assets\img\logo.svg" />
+    <None Include="wwwroot\assets\img\LTC.svg" />
+    <None Include="wwwroot\assets\img\people.svg" />
+    <None Include="wwwroot\assets\img\phone-call.svg" />
+    <None Include="wwwroot\assets\img\placeholder.svg" />
+    <None Include="wwwroot\assets\img\presale\bitcoin.svg" />
+    <None Include="wwwroot\assets\img\presale\facebook.svg" />
+    <None Include="wwwroot\assets\img\presale\logo.svg" />
+    <None Include="wwwroot\assets\img\presale\telegram.svg" />
+    <None Include="wwwroot\assets\img\presale\twitter.svg" />
+    <None Include="wwwroot\assets\img\presale\twitter.zip" />
+    <None Include="wwwroot\assets\img\presale\youtube.svg" />
+    <None Include="wwwroot\assets\img\racoin_logo.svg" />
+    <None Include="wwwroot\assets\img\round_a.svg" />
+    <None Include="wwwroot\assets\img\round_a\bitcoin.svg" />
+    <None Include="wwwroot\assets\img\round_a\facebook.svg" />
+    <None Include="wwwroot\assets\img\round_a\placeholder.svg" />
+    <None Include="wwwroot\assets\img\round_a\round_a.svg" />
+    <None Include="wwwroot\assets\img\round_a\telegram.svg" />
+    <None Include="wwwroot\assets\img\round_a\twitter.svg" />
+    <None Include="wwwroot\assets\img\round_a\youtube.svg" />
+    <None Include="wwwroot\assets\img\social_icons\bitcointalk.svg" />
+    <None Include="wwwroot\assets\img\social_icons\facebook.svg" />
+    <None Include="wwwroot\assets\img\social_icons\reddit.svg" />
+    <None Include="wwwroot\assets\img\social_icons\telegram.svg" />
+    <None Include="wwwroot\assets\img\social_icons\twitter.svg" />
+    <None Include="wwwroot\assets\img\social_icons\youtube.svg" />
+    <None Include="wwwroot\assets\img\telegram.svg" />
+    <None Include="wwwroot\assets\img\twitter.svg" />
+    <None Include="wwwroot\assets\img\wallet.svg" />
+    <None Include="wwwroot\assets\scripts\bootstrap.js" />
+    <None Include="wwwroot\assets\scripts\bootstrap.min.js" />
+    <None Include="wwwroot\assets\scripts\custom.js" />
+    <None Include="wwwroot\assets\scripts\hammer.min.js" />
+    <None Include="wwwroot\assets\scripts\jquery.backstretch.min.js" />
+    <None Include="wwwroot\assets\scripts\jquery.downCount.js" />
+    <None Include="wwwroot\assets\scripts\jquery.js" />
+    <None Include="wwwroot\assets\scripts\qrcode.min.js" />
+    <None Include="wwwroot\assets\scripts\wow.min.js" />
+    <None Include="wwwroot\glyphicons-halflings-regular.448c34a56d699c29117a.woff2" />
+    <None Include="wwwroot\glyphicons-halflings-regular.89889688147bd7575d63.svg" />
+    <None Include="wwwroot\inline.bundle.js" />
+    <None Include="wwwroot\inline.bundle.js.map" />
+    <None Include="wwwroot\main.bundle.js" />
+    <None Include="wwwroot\main.bundle.js.map" />
+    <None Include="wwwroot\MaterialIcons-Regular.570eb83859dc23dd0eec.woff2" />
+    <None Include="wwwroot\polyfills.bundle.js" />
+    <None Include="wwwroot\polyfills.bundle.js.map" />
+    <None Include="wwwroot\settings.module.chunk.js" />
+    <None Include="wwwroot\settings.module.chunk.js.map" />
+    <None Include="wwwroot\styles.bundle.js" />
+    <None Include="wwwroot\styles.bundle.js.map" />
+    <None Include="wwwroot\tf_settings.module.chunk.js" />
+    <None Include="wwwroot\tf_settings.module.chunk.js.map" />
+    <None Include="wwwroot\vendor.bundle.js" />
+    <None Include="wwwroot\vendor.bundle.js.map" />
   </ItemGroup>
 
   <ItemGroup>
