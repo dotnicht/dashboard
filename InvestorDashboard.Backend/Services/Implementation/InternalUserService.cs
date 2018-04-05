@@ -91,7 +91,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     && x.CryptoAddress.UserId == user.Id
                     && x.Hash == _kycTransactionHash);
 
-                Context.CryptoTransactions.Remove(tx);
+                if (tx != null)
+                {
+                    Context.CryptoTransactions.Remove(tx);
+                }
             }
             else if (_options.Value.Bonus.KycBonus != null)
             {

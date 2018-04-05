@@ -251,6 +251,7 @@ namespace InvestorDashboard.Api.Controllers
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
             result.IsReferralSystemDisabled = _referralSettings.Value.IsDisabled;
+            result.KycBonus = _tokenSettings.Value.Bonus.KycBonus;
 
             return result;
         }
