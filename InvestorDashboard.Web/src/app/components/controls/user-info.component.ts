@@ -13,6 +13,7 @@ import { Observable } from 'rxjs/Observable';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { PapaParseService } from 'ngx-papaparse';
 import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
+import { ClientInfoEndpointService } from '../../services/client-info.service';
 
 
 @Component({
@@ -37,7 +38,6 @@ export class UserInfoComponent implements OnInit {
     private countryCodes: CountryCode[];
     private countries: Country[] = [];
     private isEditMode = false;
-    // private isEditMode = true;
     private isNewUser = false;
     private isSaving = false;
     private isChangePassword = false;
@@ -48,6 +48,7 @@ export class UserInfoComponent implements OnInit {
     private user: User = new User();
     private userEdit: UserEdit;
     private errorClass: string;
+    kycBonus: number;
     get selectedCountry() {
         if (this.countries.length > 0 && this.user.countryCode != undefined) {
             return this.countries.find(x => x.key == this.user.countryCode).value;
@@ -85,7 +86,8 @@ export class UserInfoComponent implements OnInit {
         private configurationService: ConfigurationService,
         private translationService: AppTranslationService,
         private papa: PapaParseService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private clientInfoEndpointService: ClientInfoEndpointService
     ) {
 
     }
@@ -125,6 +127,9 @@ export class UserInfoComponent implements OnInit {
             }
         });
 
+        this.clientInfoEndpointService.icoInfo$.subscribe(data=> {
+            this.kycBonus = data.kycBonus;
+        });
 
     }
     getCountryCode() {
@@ -188,6 +193,8 @@ export class UserInfoComponent implements OnInit {
     }
 
     private getImage(base64img: string): SafeUrl {
+        if (!base64img)
+            return '';
         return this.sanitizer.bypassSecurityTrustUrl('data:image/* ;base64,' + base64img);
     }
 

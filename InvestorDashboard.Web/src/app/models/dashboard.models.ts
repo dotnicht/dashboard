@@ -19,6 +19,7 @@ export class IcoInfo {
     totalCoinsBoughtPercent: number;
     isTokenSaleDisabled: boolean;
     tokenPrice: number;
+    kycBonus: number;
     // bonusPercentage: number;
     currencies: { currency: string, value: number, img: string }[];
     constructor() {
