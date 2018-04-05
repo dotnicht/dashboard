@@ -89,16 +89,7 @@ export class AppComponent implements OnInit {
     this.clientInfoEndpointService.icoInfo$.subscribe(data => {
       this.isReferralSystemDisabled = data.isReferralSystemDisabled;
     });
-    // setTimeout(()=> {
-    //   console.log(22222,this.activatedRoute.snapshot.queryParams['ref'])
-    // }, 2000);
-    // console.log(123,this.activatedRoute.snapshot.params['ref'])
-    // if (this.activatedRoute.snapshot.params['ref']){
-    //   console.log(123,this.activatedRoute.snapshot.params['ref'])
-    // }
-    // if (this.isUserLoggedIn) {
-    //   this.refreshData();
-    // }
+
 
     this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
       this.isUserLoggedIn = isLoggedIn;

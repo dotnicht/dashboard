@@ -36,6 +36,7 @@ export class UserInfoComponent implements OnInit {
     private countryCodes: CountryCode[];
     private countries: Country[] = [];
     private isEditMode = false;
+    // private isEditMode = true;
     private isNewUser = false;
     private isSaving = false;
     private isChangePassword = false;
@@ -224,6 +225,19 @@ export class UserInfoComponent implements OnInit {
         this.isChangePassword = false;
     }
 
+    loadPhoto(event: any) {
+        let file = event.target.files[0];
+        let reader = new FileReader();
+
+        reader.onload = this._handleReaderLoaded.bind(this);
+        reader.readAsBinaryString(file);
+
+    }
+
+    _handleReaderLoaded(readerEvt) {
+        var binaryString = readerEvt.target.result;
+        this.userEdit.photo = btoa(binaryString);
+    }
 
     private save() {
         this.isSaving = true;
@@ -310,10 +324,10 @@ export class UserInfoComponent implements OnInit {
             .subscribe(user => {
                 this.loadCurrentUserData();
             },
-            error => {
-                // this.alertService.resetStickyMessage();
-                // this.alertService.showStickyMessage('Refresh failed', 'An error occured whilst refreshing logged in user information from the server', MessageSeverity.error, error);
-            });
+                error => {
+                    // this.alertService.resetStickyMessage();
+                    // this.alertService.showStickyMessage('Refresh failed', 'An error occured whilst refreshing logged in user information from the server', MessageSeverity.error, error);
+                });
     }
 
 

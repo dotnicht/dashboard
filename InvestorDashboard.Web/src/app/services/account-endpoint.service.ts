@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { ForgotPassWord, ChangePassWord, ResetPassword } from '../models/user-edit.model';
 import { ResendEmailConfirmCode } from '../components/controls/resend-email-confirm-code/resend-email-confirm-code.component';
+import { ContentType } from '../models/content-type-enum.model';
 
 
 @Injectable()
@@ -103,7 +104,7 @@ export class AccountEndpoint extends BaseService {
 
     getUpdateUserEndpoint(userObject: any, userId?: string): Observable<Response> {
         const endpointUrl = this.currentUserUrl;
-        return this.http.put(endpointUrl, JSON.stringify(userObject), this.authService.getAuthHeader(true))
+        return this.http.put(endpointUrl, JSON.stringify(userObject), this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -128,7 +129,7 @@ export class AccountEndpoint extends BaseService {
             patchDocument = valueOrPatch;
         }
 
-        return this.http.patch(endpointUrl, JSON.stringify(patchDocument), this.authService.getAuthHeader(true))
+        return this.http.patch(endpointUrl, JSON.stringify(patchDocument), this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -150,7 +151,7 @@ export class AccountEndpoint extends BaseService {
     }
 
     getUpdateUserPreferencesEndpoint(configuration: string): Observable<Response> {
-        return this.http.put(this.currentUserPreferencesUrl, JSON.stringify(configuration), this.authService.getAuthHeader(true))
+        return this.http.put(this.currentUserPreferencesUrl, JSON.stringify(configuration), this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -161,7 +162,7 @@ export class AccountEndpoint extends BaseService {
 
 
     TfGetActivationDataEndpoint(): Observable<Response> {
-        const res = this.http.get(this._tfaEnableUrl, this.authService.getAuthHeader(true))
+        const res = this.http.get(this._tfaEnableUrl, this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -172,7 +173,7 @@ export class AccountEndpoint extends BaseService {
         return res;
     }
     TfPostActivationDataEndpoint(code: string): Observable<Response> {
-        const res = this.http.post(this._tfaEnableUrl, JSON.stringify({ code: code }), this.authService.getAuthHeader(true))
+        const res = this.http.post(this._tfaEnableUrl, JSON.stringify({ code: code }), this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -182,7 +183,7 @@ export class AccountEndpoint extends BaseService {
         return res;
     }
     TfaDataEndpoint(): Observable<Response> {
-        const res = this.http.get(this._tfaUrl, this.authService.getAuthHeader(true))
+        const res = this.http.get(this._tfaUrl, this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -192,7 +193,7 @@ export class AccountEndpoint extends BaseService {
         return res;
     }
     TfGetRecoveryCodesEndpoint(): Observable<Response> {
-        const res = this.http.get(this._tfaGetRecoveryCodes, this.authService.getAuthHeader(true))
+        const res = this.http.get(this._tfaGetRecoveryCodes, this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -202,7 +203,7 @@ export class AccountEndpoint extends BaseService {
         return res;
     }
     TfDisableEndpoint(): Observable<Response> {
-        const res = this.http.post(this._tfaDisable, null, this.authService.getAuthHeader(true))
+        const res = this.http.post(this._tfaDisable, null, this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })
@@ -212,7 +213,7 @@ export class AccountEndpoint extends BaseService {
         return res;
     }
     TfResetEndpoint(): Observable<Response> {
-        const res = this.http.post(this._tfaReset, null, this.authService.getAuthHeader(true))
+        const res = this.http.post(this._tfaReset, null, this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })

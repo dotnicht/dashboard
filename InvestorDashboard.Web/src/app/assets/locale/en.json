@@ -165,8 +165,8 @@
             "Save": "Save",
             "Saving": "Saving...",
             "Address": "Address",
-            "City": "City",
-            "CountryCode": "Country",
+            "City": "City:",
+            "CountryCode": "Country:",
             "CountryCodePattern": "Code must be 3 characters with uppercase"
         },
         "register": {

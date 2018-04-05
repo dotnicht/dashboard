@@ -29,6 +29,6 @@ namespace InvestorDashboard.Api.Models
         public string Address { get; set; }
 
         public string[] Roles { get; set; }
-
+        public string Photo { get; set; }
     }
 }
