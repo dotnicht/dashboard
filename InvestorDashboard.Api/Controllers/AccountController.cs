@@ -27,6 +27,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly IMessageService _messageService;
+        private readonly IInternalUserService _internalUserService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
@@ -42,8 +43,8 @@ namespace InvestorDashboard.Api.Controllers
           SignInManager<ApplicationUser> signInManager,
           ILogger<AccountController> logger,
           IOptions<IdentityOptions> identityOptions,
-          IEmailService emailService,
           IMessageService messageService,
+          IInternalUserService internalUserService,
           IMapper mapper,
           UrlEncoder urlEncoder)
         {
@@ -53,6 +54,7 @@ namespace InvestorDashboard.Api.Controllers
             _identityOptions = identityOptions;
             _authorizationService = authorizationService;
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlEncoder = urlEncoder;
@@ -102,13 +104,19 @@ namespace InvestorDashboard.Api.Controllers
 
 
                 if (appUser == null)
+                {
                     return NotFound(appUser.Id);
+                }
+
                 _mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
 
                 var result = await _userManager.UpdateAsync(appUser);
 
-                return Ok();
-
+                if (result.Succeeded)
+                {
+                    await _internalUserService.UpdateKycTransaction(appUser);
+                    return Ok();
+                }
             }
 
             return BadRequest(ModelState);

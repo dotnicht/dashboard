@@ -12,6 +12,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class InternalUserService : ContextService, IInternalUserService
     {
+        private readonly string _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4").ToString();
         private readonly IResourceService _resourceService;
         private readonly IOptions<TokenSettings> _options;
         private readonly IRestService _restService;
@@ -49,8 +50,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             throw new InvalidOperationException($"User not found with email {record.Email}.");
                         }
 
-                        var address = user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
-                            ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
+                        CryptoAddress address = GetInternalAddress(user);
 
                         var tx = new CryptoTransaction
                         {
@@ -71,6 +71,50 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
+        }
+
+        public async Task UpdateKycTransaction(ApplicationUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var items = new[] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo };
+
+            if (items.Any(x => string.IsNullOrWhiteSpace(x)))
+            {
+                var tx = Context.CryptoTransactions.SingleOrDefault(
+                    x => x.Direction == CryptoTransactionDirection.Internal
+                    && x.CryptoAddress.Currency == Currency.Token
+                    && x.CryptoAddress.Type == CryptoAddressType.Internal
+                    && x.CryptoAddress.UserId == user.Id
+                    && x.Hash == _kycTransactionHash);
+
+                Context.CryptoTransactions.Remove(tx);
+            }
+            else if (_options.Value.Bonus.KycBonus != null)
+            {
+                var tx = new CryptoTransaction
+                {
+                    Amount = _options.Value.Bonus.KycBonus.Value.ToString(),
+                    Hash = _kycTransactionHash,
+                    CryptoAddress = GetInternalAddress(user),
+                    Direction = CryptoTransactionDirection.Internal,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                Context.CryptoTransactions.Add(tx);
+            }
+
+            await Context.SaveChangesAsync();
+            await _tokenService.RefreshTokenBalance(user.Id);
+        }
+
+        private CryptoAddress GetInternalAddress(ApplicationUser user)
+        {
+            return user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
+                ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
         }
 
         private class InternalUserDataRecord
