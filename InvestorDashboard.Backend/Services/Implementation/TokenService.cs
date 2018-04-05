@@ -183,7 +183,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             balance += user.CryptoAddresses
                 .Where(x => x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token)
                 .SelectMany(x => x.CryptoTransactions)
-                .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && x.ExternalId != null)
+                .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal)
                 .ToArray()
                 .Sum(x => long.Parse(x.Amount));
 
