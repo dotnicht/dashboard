@@ -2,12 +2,8 @@
     <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" name="userInfoForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? save() :
 
          null">
-
-        <!-- <mat-form-field> -->
-
-        <!-- </mat-form-field> -->
-        <div style="display: flex;">
-            <div style="width: 60%;">
+        <div class="wrapper">
+            <div class="left">
                 <mat-form-field *ngIf="isEditMode">
                     <input matInput attr.id="firstName-{{uniqueId}}" #firstName="ngModel" name="firstName" placeholder="Enter first name" [(ngModel)]="userEdit.firstName" />
                 </mat-form-field>
@@ -120,10 +116,10 @@
 
                 </div>
             </div>
-            <div style="width: 40%; height: auto;  margin-left: 40px; margin-bottom: 20px; ">
-                <div style="border: 1px dashed white; display: flex;">
-                    <div style="align-items: center; display: flex; margin: 0 auto;" *ngIf="isEditMode">
-                        <div style="padding: 8px;">
+            <div class="right">
+                <div class="load-photo">
+                    <div class="edit" *ngIf="isEditMode">
+                        <div>
                             <p>Fill this KYC and receive 20000 RAcoins</p>
                             <p>Maximize photo size – 1 Mb</p>
                             <p>Passport, driver licence or other governmental identity document</p>
@@ -131,12 +127,12 @@
                             <input type="file" name="photo" (change)="loadPhoto($event)" />
                         </div>
                     </div>
-                    <div *ngIf="!isEditMode">
-                        <img src="https://www.gov.hk/en/residents/immigration/images/personal.jpg" style="width: 100%;" />
+                    <div class="non-edit" *ngIf="!isEditMode">
+                        <img src="https://www.gov.hk/en/residents/immigration/images/personal.jpg" />
 
                     </div>
                 </div>
-                <div *ngIf="!isEditMode" style="padding-top: 5px; font-size: 12px;">
+                <div class="rules" *ngIf="!isEditMode">
                     <p>In case of providing false identity document the company has right to withdraw RAcoins received on airdrop or other bounty campaign</p>
                 </div>
             </div>

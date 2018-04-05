@@ -69,3 +69,35 @@ input.form-control {
         float: right;
     }
 }
+
+.wrapper {
+    display: flex;
+    .left {
+        width: 60%;
+    }
+    .right {
+        width: 40%;
+        height: auto;
+        margin-left: 40px;
+        margin-bottom: 20px;
+        .load-photo {
+            border: 1px dashed white;
+            display: flex;
+            .edit {
+                align-items: center;
+                display: flex;
+                margin: 0 auto;
+                div {
+                    padding: 8px;
+                }
+            }
+            .non-edit img {
+                width: 100%;
+            }
+        }
+        .rules {
+            padding-top: 5px;
+            font-size: 12px;
+        }
+    }
+}
