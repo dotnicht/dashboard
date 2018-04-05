@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserRegister, RegisterRules } from '../../models/user.model';
 import { Http } from '@angular/http';
@@ -183,7 +183,7 @@ export class RegisterComponent implements OnInit {
                 }
 
                 if (this.activatedRoute.snapshot.queryParams['ref']){
-                    this.registerForm.referralCode = this.activatedRoute.snapshot.queryParams['ref'];
+                    this.registerForm.referral = this.activatedRoute.snapshot.queryParams['ref'];
                     this.referralService.refLink = '';
                 }
 

@@ -113,7 +113,7 @@ namespace InvestorDashboard.Api.Controllers
                     {
                         try
                         {
-                            await _referralService.PopulateReferralData(appUser, user.ReferralCode);
+                            await _referralService.PopulateReferralData(appUser, user.Referral);
                             await _genericAddressService.CreateMissingAddresses(appUser.Id);
                         }
                         catch (Exception ex)
