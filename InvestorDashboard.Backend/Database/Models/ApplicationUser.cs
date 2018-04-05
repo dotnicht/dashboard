@@ -16,6 +16,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public string CountryCode { get; set; }
         public string Configuration { get; set; }
         public string City { get; set; }
+        public string Photo { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsEligibleForTransfer { get; set; }
         public string PhoneCode { get; set; }
