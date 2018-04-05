@@ -121,15 +121,14 @@
                     <div class="edit" *ngIf="isEditMode">
                         <div>
                             <p>Fill this KYC and receive 20000 RAcoins</p>
-                            <p>Maximize photo size – 1 Mb</p>
+                            <p class="{{errorClass}}">Maximize photo size – 1 Mb</p>
                             <p>Passport, driver licence or other governmental identity document</p>
                             <p>In case of providing false identity document the company has right to withdraw RAcoins received on airdrop or other bounty campaign</p>
                             <input type="file" name="photo" (change)="loadPhoto($event)" />
                         </div>
                     </div>
                     <div class="non-edit" *ngIf="!isEditMode">
-                        <img src="https://www.gov.hk/en/residents/immigration/images/personal.jpg" />
-
+                        <img [src]="getImage(user.photo)" />
                     </div>
                 </div>
                 <div class="rules" *ngIf="!isEditMode">

@@ -12,6 +12,7 @@ import { CountryCode, Country } from '../../models/countryCodes';
 import { Observable } from 'rxjs/Observable';
 import { AppTranslationService } from '../../services/app-translation.service';
 import { PapaParseService } from 'ngx-papaparse';
+import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
 
 
 @Component({
@@ -46,6 +47,7 @@ export class UserInfoComponent implements OnInit {
     private uniqueId: string = Utilities.uniqueId();
     private user: User = new User();
     private userEdit: UserEdit;
+    private errorClass: string;
     get selectedCountry() {
         if (this.countries.length > 0 && this.user.countryCode != undefined) {
             return this.countries.find(x => x.key == this.user.countryCode).value;
@@ -82,7 +84,9 @@ export class UserInfoComponent implements OnInit {
     constructor(private accountService: AccountService,
         private configurationService: ConfigurationService,
         private translationService: AppTranslationService,
-        private papa: PapaParseService) {
+        private papa: PapaParseService,
+        private sanitizer: DomSanitizer
+    ) {
 
     }
 
@@ -183,6 +187,9 @@ export class UserInfoComponent implements OnInit {
             subscribe(user => this.onCurrentUserDataLoadSuccessful(user), error => this.onCurrentUserDataLoadFailed(error));
     }
 
+    private getImage(base64img: string): SafeUrl {
+        return this.sanitizer.bypassSecurityTrustUrl('data:image/* ;base64,' + base64img);
+    }
 
     private onCurrentUserDataLoadSuccessful(user: User) {
         //this.alertService.stopLoadingMessage();
@@ -226,15 +233,24 @@ export class UserInfoComponent implements OnInit {
     }
 
     loadPhoto(event: any) {
-        let file = event.target.files[0];
-        let reader = new FileReader();
+        let file: File = null;
+        if (event.target.files.length > 0) {
+            file = event.target.files[0];
+            if (file.size < 1048576) {
+                this.errorClass = '';
+                let reader = new FileReader();
+                reader.onload = this.handleReaderLoaded.bind(this);
+                reader.readAsBinaryString(file);
+            }
+            else {
+                this.errorClass = 'error'
+            }
+        }
 
-        reader.onload = this._handleReaderLoaded.bind(this);
-        reader.readAsBinaryString(file);
 
     }
 
-    _handleReaderLoaded(readerEvt) {
+    private handleReaderLoaded(readerEvt) {
         var binaryString = readerEvt.target.result;
         this.userEdit.photo = btoa(binaryString);
     }
