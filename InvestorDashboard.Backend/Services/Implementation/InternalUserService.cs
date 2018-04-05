@@ -50,7 +50,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             throw new InvalidOperationException($"User not found with email {record.Email}.");
                         }
 
-                        CryptoAddress address = GetInternalAddress(user);
+                        CryptoAddress address = EnsureInternalAddress(user);
 
                         var tx = new CryptoTransaction
                         {
@@ -101,7 +101,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         Amount = _options.Value.Bonus.KycBonus.Value.ToString(),
                         Hash = _kycTransactionHash,
-                        CryptoAddress = GetInternalAddress(user),
+                        CryptoAddress = EnsureInternalAddress(user),
                         Direction = CryptoTransactionDirection.Internal,
                         Timestamp = DateTime.UtcNow
                     };
@@ -114,7 +114,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             await _tokenService.RefreshTokenBalance(user.Id);
         }
 
-        private CryptoAddress GetInternalAddress(ApplicationUser user)
+        private CryptoAddress EnsureInternalAddress(ApplicationUser user)
         {
             return Context.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.UserId == user.Id)
                 ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;

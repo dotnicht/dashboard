@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog.Web;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using System;
@@ -138,6 +137,9 @@ namespace InvestorDashboard.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddFile("Logs/ApiFull.{Date}.log");
+            loggerFactory.AddFile("Logs/ApiWarning.{Date}.log", LogLevel.Warning);
+
             var options = new RewriteOptions().AddRedirectToHttps();
 
             app.UseRewriter(options);
@@ -221,7 +223,6 @@ namespace InvestorDashboard.Api
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
-                .UseNLog()
                 .Build();
 
             host.Run();
