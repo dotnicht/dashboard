@@ -36,6 +36,7 @@ export class UserInfoComponent implements OnInit {
     private countryCodes: CountryCode[];
     private countries: Country[] = [];
     private isEditMode = false;
+    // private isEditMode = true;
     private isNewUser = false;
     private isSaving = false;
     private isChangePassword = false;

@@ -15,6 +15,7 @@ import { Utilities } from './utilities';
 import { UserLogin, User, UserRegister } from '../models/user.model';
 import { Permission, PermissionNames, PermissionValues } from '../models/permission.model';
 import { environment } from '../../environments/environment';
+import { ContentType } from '../models/content-type-enum.model';
 
 @Injectable()
 export class AuthService {
@@ -48,11 +49,15 @@ export class AuthService {
     this.router.navigate([page], navigationExtras);
   }
 
-  getAuthHeader(includeJsonContentType?: boolean): RequestOptions {
+  getAuthHeader(contentType?: number): RequestOptions {
     const headers = new Headers({ 'Authorization': 'Bearer ' + this.accessToken });
 
-    if (includeJsonContentType) {
+    if (contentType == ContentType.JSON) {
       headers.append('Content-Type', 'application/json');
+    }
+
+    if (contentType == ContentType.FORM_DATA) {
+      headers.append('Content-Type', 'multipart/form-data');
     }
 
     headers.append('Accept', `application/vnd.iman.v1+json, application/json, text/plain, */*`);
@@ -181,7 +186,7 @@ export class AuthService {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
 
-    return this.http.post(this._loginTfa, JSON.stringify({ TwoFactorCode: code }), this.getAuthHeader(true))
+    return this.http.post(this._loginTfa, JSON.stringify({ TwoFactorCode: code }), this.getAuthHeader(ContentType.JSON))
       .map((response: Response) => {
         let user = this.currentUser;
         user.twoFactorValidated = true;
@@ -196,7 +201,7 @@ export class AuthService {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
 
-    return this.http.post(this._loginWithRecoveryCode, JSON.stringify({ RecoveryCode: code }), this.getAuthHeader(true))
+    return this.http.post(this._loginWithRecoveryCode, JSON.stringify({ RecoveryCode: code }), this.getAuthHeader(ContentType.JSON))
       .map((response: Response) => {
         let user = this.currentUser;
         user.twoFactorValidated = true;
