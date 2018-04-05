@@ -104,7 +104,7 @@ export class AccountEndpoint extends BaseService {
 
     getUpdateUserEndpoint(userObject: any, userId?: string): Observable<Response> {
         const endpointUrl = this.currentUserUrl;
-        return this.http.put(endpointUrl, JSON.stringify(userObject), this.authService.getAuthHeader(ContentType.FORM_DATA))
+        return this.http.put(endpointUrl, JSON.stringify(userObject), this.authService.getAuthHeader(ContentType.JSON))
             .map((response: Response) => {
                 return response;
             })

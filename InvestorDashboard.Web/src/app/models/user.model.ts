@@ -31,6 +31,7 @@ export class User {
     public twoFactorValidated: boolean;
     public isEnabled: boolean;
     public isLockedOut: boolean;
+    public photo: string;
 
 
     // Note: Using only optional constructor properties without backing store disables typescript's type checking for the type

@@ -4,42 +4,44 @@
          null">
 
         <!-- <mat-form-field> -->
-        <input type="file" name="photo" />
+
         <!-- </mat-form-field> -->
+        <div style="display: flex;">
+            <div style="width: 60%;">
+                <mat-form-field *ngIf="isEditMode">
+                    <input matInput attr.id="firstName-{{uniqueId}}" #firstName="ngModel" name="firstName" placeholder="Enter first name" [(ngModel)]="userEdit.firstName" />
+                </mat-form-field>
 
-        <mat-form-field *ngIf="isEditMode">
-            <input matInput attr.id="firstName-{{uniqueId}}" #firstName="ngModel" name="firstName" placeholder="Enter first name" [(ngModel)]="userEdit.firstName" />
-        </mat-form-field>
-        <div class="form-group" *ngIf="!isEditMode">
-            <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="firstName-{{uniqueId}}">{{'users.editor.FirstName' | translate}}</label>
-            <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
-                <p class="form-control-static">{{user.firstName}}</p>
-            </div>
-        </div>
+                <div class="form-group" *ngIf="!isEditMode">
+                    <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="firstName-{{uniqueId}}">{{'users.editor.FirstName' | translate}}</label>
+                    <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+                        <p class="form-control-static">{{user.firstName}}</p>
+                    </div>
+                </div>
 
-        <div class="row" *ngIf="!isEditMode">
-            <div class="col-mat-12">
-                <hr [class.separator-hr]="!isEditMode" />
-            </div>
-        </div>
+                <div class="row" *ngIf="!isEditMode">
+                    <div class="col-mat-12">
+                        <hr [class.separator-hr]="!isEditMode" />
+                    </div>
+                </div>
 
-        <mat-form-field *ngIf="isEditMode">
-            <input matInput attr.id="lastName-{{uniqueId}}" #lastName="ngModel" name="lastName" placeholder="Enter last name" [(ngModel)]="userEdit.lastName" />
-        </mat-form-field>
-        <div class="form-group" *ngIf="!isEditMode">
-            <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="lastName-{{uniqueId}}">{{'users.editor.LastName' | translate}}</label>
-            <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
-                <p class="form-control-static">{{user.lastName}}</p>
-            </div>
-        </div>
+                <mat-form-field *ngIf="isEditMode">
+                    <input matInput attr.id="lastName-{{uniqueId}}" #lastName="ngModel" name="lastName" placeholder="Enter last name" [(ngModel)]="userEdit.lastName" />
+                </mat-form-field>
+                <div class="form-group" *ngIf="!isEditMode">
+                    <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="lastName-{{uniqueId}}">{{'users.editor.LastName' | translate}}</label>
+                    <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+                        <p class="form-control-static">{{user.lastName}}</p>
+                    </div>
+                </div>
 
-        <div class="row" *ngIf="!isEditMode">
-            <div class="col-mat-12">
-                <hr [class.separator-hr]="!isEditMode" />
-            </div>
-        </div>
+                <div class="row" *ngIf="!isEditMode">
+                    <div class="col-mat-12">
+                        <hr [class.separator-hr]="!isEditMode" />
+                    </div>
+                </div>
 
-        <!-- <mat-form-field *ngIf="isEditMode">
+                <!-- <mat-form-field *ngIf="isEditMode">
       <input matInput attr.id="countryCode-{{uniqueId}}" #countryCode="ngModel" name="countryCode" placeholder="Enter country code"
         [(ngModel)]="userEdit.countryCode" pattern="[A-Z]{3}"  minlength="3" maxLength="3" />
       <mat-icon *ngIf="f.submitted && countryCode.valid" matSuffix>done</mat-icon>
@@ -53,18 +55,90 @@
       </mat-error>
     </mat-form-field> -->
 
-        <mat-form-field *ngIf="isEditMode" class="phoneCode">
-            <mat-select placeholder="Choose country" name="countryCode" [(value)]="userEdit.countryCode">
-                <mat-option *ngFor="let country of countries" [value]="country.key">
-                    {{ country.value }}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+                <mat-form-field *ngIf="isEditMode" class="phoneCode">
+                    <mat-select placeholder="Choose country" name="countryCode" [(value)]="userEdit.countryCode">
+                        <mat-option *ngFor="let country of countries" [value]="country.key">
+                            {{ country.value }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
 
-        <div class="form-group" *ngIf="!isEditMode">
-            <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="countryCode-{{uniqueId}}">{{'users.editor.CountryCode' | translate}}</label>
-            <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
-                <p class="form-control-static">{{selectedCountry}}</p>
+                <div class="form-group" *ngIf="!isEditMode">
+                    <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="countryCode-{{uniqueId}}">{{'users.editor.CountryCode' | translate}}</label>
+                    <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+                        <p class="form-control-static">{{selectedCountry}}</p>
+                    </div>
+                </div>
+                <div class="row" *ngIf="!isEditMode">
+                    <div class="col-mat-12">
+                        <hr [class.separator-hr]="!isEditMode" />
+                    </div>
+                </div>
+
+                <mat-form-field *ngIf="isEditMode">
+                    <input matInput attr.id="city-{{uniqueId}}" #firstName="ngModel" name="city" placeholder="Enter city" [(ngModel)]="userEdit.city" />
+                </mat-form-field>
+
+                <div class="form-group" *ngIf="!isEditMode">
+                    <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="city-{{uniqueId}}">{{'users.editor.City' | translate}}</label>
+                    <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+                        <p class="form-control-static">{{user.city}}</p>
+                    </div>
+                </div>
+
+                <div class="row" *ngIf="!isEditMode">
+                    <div class="col-mat-12">
+                        <hr [class.separator-hr]="!isEditMode" />
+                    </div>
+                </div>
+
+                <div class="phoneBlock">
+                    <mat-form-field *ngIf="isEditMode" class="phoneCode">
+                        <mat-select placeholder="Select phone code" name="phoneCode" [(value)]="userEdit.phoneCode">
+                            <mat-option *ngFor="let code of countryCodes" [value]="code.dial_code">
+                                {{ code.dial_code }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+
+                    <mat-form-field *ngIf="isEditMode" class="phone">
+
+                        <input matInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number" [(ngModel)]="userEdit.phoneNumber" />
+                        <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
+                            <div> {{phoneNumber.errors | json}}</div>
+
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-group" *ngIf="!isEditMode">
+                    <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
+                    <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+                        <p class="form-control-static">{{user.phoneCode}} {{user.phoneNumber}}</p>
+                    </div>
+
+                </div>
+            </div>
+            <div style="width: 40%; height: auto;  margin-left: 40px; margin-bottom: 20px; ">
+                <div style="border: 1px dashed white; display: flex;">
+                    <div style="align-items: center; display: flex; margin: 0 auto;" *ngIf="isEditMode">
+                        <div style="padding: 8px;">
+                            <p>Fill this KYC and receive 20000 RAcoins</p>
+                            <p>Maximize photo size – 1 Mb</p>
+                            <p>Passport, driver licence or other governmental identity document</p>
+                            <p>In case of providing false identity document the company has right to withdraw RAcoins received on airdrop or other bounty campaign</p>
+                            <input type="file" name="photo" (change)="loadPhoto($event)" />
+                        </div>
+                    </div>
+                    <div *ngIf="!isEditMode">
+                        <img src="https://www.gov.hk/en/residents/immigration/images/personal.jpg" style="width: 100%;" />
+
+                    </div>
+                </div>
+                <div *ngIf="!isEditMode" style="padding-top: 5px; font-size: 12px;">
+                    <p>In case of providing false identity document the company has right to withdraw RAcoins received on airdrop or other bounty campaign</p>
+                </div>
             </div>
         </div>
 
@@ -72,11 +146,7 @@
 
         <!--******************************************************************************************************-->
 
-        <div class="row" *ngIf="!isEditMode">
-            <div class="col-mat-12">
-                <hr [class.separator-hr]="!isEditMode" />
-            </div>
-        </div>
+
         <!-- 
     <mat-form-field *ngIf="isEditMode">
       <input matInput attr.id="city-{{uniqueId}}" #city="ngModel" name="city" placeholder="Enter city" [(ngModel)]="userEdit.city"
@@ -91,11 +161,11 @@
       </div>
     </div> -->
 
-        <div class="row" *ngIf="!isEditMode">
+        <!-- <div class="row" *ngIf="!isEditMode">
             <div class="col-mat-12">
                 <hr [class.separator-hr]="!isEditMode" />
             </div>
-        </div>
+        </div> -->
 
         <!-- <div class="form-group has-feedback">
       <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
@@ -107,33 +177,7 @@
           [(ngModel)]="userEdit.phoneNumber" />
       </div>
     </div> -->
-        <div class="phoneBlock">
-            <mat-form-field *ngIf="isEditMode" class="phoneCode">
-                <mat-select placeholder="Select phone code" name="phoneCode" [(value)]="userEdit.phoneCode">
-                    <mat-option *ngFor="let code of countryCodes" [value]="code.dial_code">
-                        {{ code.dial_code }}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
 
-
-            <mat-form-field *ngIf="isEditMode" class="phone">
-
-                <input matInput [pattern]="pattern" attr.id="phoneNumber-{{uniqueId}}" #phoneNumber="ngModel" name="phoneNumber" placeholder="Enter phone number" [(ngModel)]="userEdit.phoneNumber" />
-                <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
-                    <div> {{phoneNumber.errors | json}}</div>
-
-                </mat-error>
-            </mat-form-field>
-        </div>
-
-        <div class="form-group" *ngIf="!isEditMode">
-            <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="phoneNumber-{{uniqueId}}">{{'users.editor.PhoneNumber' | translate}}</label>
-            <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
-                <p class="form-control-static">{{user.phoneCode}} {{user.phoneNumber}}</p>
-            </div>
-
-        </div>
 
 
         <div *ngIf="!isViewOnly" class="form-group">
