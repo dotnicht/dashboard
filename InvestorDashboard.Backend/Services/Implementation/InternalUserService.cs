@@ -82,30 +82,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var items = new[] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo };
 
-            if (items.Any(x => string.IsNullOrWhiteSpace(x)))
-            {
-                var tx = Context.CryptoTransactions.SingleOrDefault(
-                    x => x.Direction == CryptoTransactionDirection.Internal
-                    && x.CryptoAddress.Currency == Currency.Token
-                    && x.CryptoAddress.Type == CryptoAddressType.Internal
-                    && x.CryptoAddress.UserId == user.Id
-                    && x.Hash == _kycTransactionHash);
+            var tx = Context.CryptoTransactions.SingleOrDefault(
+                x => x.Direction == CryptoTransactionDirection.Internal
+                && x.CryptoAddress.Currency == Currency.Token
+                && x.CryptoAddress.Type == CryptoAddressType.Internal
+                && x.CryptoAddress.UserId == user.Id
+                && x.Hash == _kycTransactionHash);
 
-                if (tx != null)
-                {
-                    Context.CryptoTransactions.Remove(tx);
-                }
+            if (items.Any(x => string.IsNullOrWhiteSpace(x)) && tx != null)
+            {
+                Context.CryptoTransactions.Remove(tx);
             }
             else if (_options.Value.Bonus.KycBonus != null)
             {
-                var tx = new CryptoTransaction
+                if (tx == null)
                 {
-                    Amount = _options.Value.Bonus.KycBonus.Value.ToString(),
-                    Hash = _kycTransactionHash,
-                    CryptoAddress = GetInternalAddress(user),
-                    Direction = CryptoTransactionDirection.Internal,
-                    Timestamp = DateTime.UtcNow
-                };
+                    tx = new CryptoTransaction
+                    {
+                        Amount = _options.Value.Bonus.KycBonus.Value.ToString(),
+                        Hash = _kycTransactionHash,
+                        CryptoAddress = GetInternalAddress(user),
+                        Direction = CryptoTransactionDirection.Internal,
+                        Timestamp = DateTime.UtcNow
+                    };
+                }
 
                 Context.CryptoTransactions.Add(tx);
             }
@@ -116,7 +116,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private CryptoAddress GetInternalAddress(ApplicationUser user)
         {
-            return user.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal)
+            return Context.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.UserId == user.Id)
                 ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
         }
 
