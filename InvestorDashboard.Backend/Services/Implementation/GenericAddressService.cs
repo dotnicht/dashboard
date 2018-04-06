@@ -18,7 +18,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        public async Task CreateMissingAddresses(string userId = null)
+        public async Task CreateMissingAddresses(string userId = null, bool includeInternal = true)
         {
             if (userId == null)
             {
@@ -26,7 +26,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     try
                     {
-                        await CreateMissingAddressesInternal(id);
+                        await CreateMissingAddressesInternal(id, includeInternal);
                     }
                     catch (Exception ex)
                     {
@@ -36,11 +36,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
             else
             {
-                await CreateMissingAddressesInternal(userId);
+                await CreateMissingAddressesInternal(userId, includeInternal);
             }
         }
 
-        private async Task CreateMissingAddressesInternal(string userId)
+        private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)
         {
             var user = Context.Users.Include(x => x.CryptoAddresses).SingleOrDefault(x => x.Id == userId);
 
@@ -49,7 +49,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"User not found with ID {userId}.");
             }
 
-            if (!user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer && !x.IsDisabled))
+            if (includeInternal && !user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer && !x.IsDisabled))
             {
                 var address = new CryptoAddress
                 {

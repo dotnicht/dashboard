@@ -5,6 +5,6 @@ namespace InvestorDashboard.Backend.Services
 {
     public interface IGenericAddressService : IDisposable
     {
-        Task CreateMissingAddresses(string userId = null);
+        Task CreateMissingAddresses(string userId = null, bool includeInternal = true);
     }
 }

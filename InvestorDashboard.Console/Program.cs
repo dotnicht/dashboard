@@ -10,9 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
+using Serilog;
 using System;
 using System.Collections.Specialized;
 using System.IO;
@@ -86,12 +86,14 @@ namespace InvestorDashboard.Console
 
         private static void SetupLogging(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddLogging(builder =>
-            {
-                builder.AddConsole();
-                builder.SetMinimumLevel(LogLevel.Warning);
-                builder.AddNLog();
-            });
+            serviceCollection.AddSingleton(new LoggerFactory()
+                .AddConsole(LogLevel.Warning)
+                //.AddSerilog()
+                .AddDebug()
+                .AddFile("Logs/Console-Full.{Date}.log")
+                .AddFile("Logs/Console-Warning.{Date}.log", LogLevel.Warning));
+
+            serviceCollection.AddLogging();
         }
 
         private static async Task SetupScheduling(IServiceCollection serviceCollection)

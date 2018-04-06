@@ -37,9 +37,9 @@
         <PackageReference Include="Microsoft.Extensions.Dependencyinjection.Abstractions" Version="2.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
-        <PackageReference Include="NLog.Extensions.Logging" Version="1.0.0-rtm-rc2" />
-        <PackageReference Include="NLog.Schema" Version="4.4.12" />
         <PackageReference Include="Quartz" Version="3.0.0-beta1" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
+        <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
