@@ -252,13 +252,18 @@ textarea {
     }
 }
 
-.mat-drawer-content {
-    >.main-content {
-        min-height: 900px;
-    }
+// .mat-drawer-content {
+//     >.main-content {
+//         // min-height: 540px;
+//     }
+// }
+.footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
 
-@media screen and ( max-height: 815px) {
+@media ( max-width: 420px) {
     .footer {
         position: inherit;
     }
