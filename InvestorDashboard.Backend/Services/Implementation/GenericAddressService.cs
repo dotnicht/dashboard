@@ -62,13 +62,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await Context.SaveChangesAsync();
             }
 
+            var tasks = new List<Task<CryptoAddress>>();
+
             foreach (var service in _cryptoServices)
             {
                 if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled))
                 {
-                    await service.CreateCryptoAddress(user.Id);
+                    tasks.Add(service.CreateCryptoAddress(userId));
                 }
             }
+
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }

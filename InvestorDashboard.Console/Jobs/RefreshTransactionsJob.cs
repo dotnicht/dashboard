@@ -25,18 +25,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            foreach (var service in _cryptoServices)
-            {
-                try
-                {
-                    await service.RefreshInboundTransactions();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"An error occurred while refreshing inbound {service.Settings.Value.Currency} transactions.");
-                }
-            }
-
+            Task.WaitAll(_cryptoServices.Select(x => x.RefreshTransactionsFromBlockchain()).ToArray());
             await _smartContractService.RefreshOutboundTransactions();
         }
 

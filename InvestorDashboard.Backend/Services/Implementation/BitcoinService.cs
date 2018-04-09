@@ -11,15 +11,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class BitcoinService : CryptoService, IBitcoinService
     {
-        private readonly IOptions<BitcoinSettings> _bitcoinSettings;
+        private static IOptions<BitcoinSettings> _bitcoinSettings;
+        private static Lazy<ConcurrentChain> _chain = new Lazy<ConcurrentChain>(() => _node.Value.GetChain(), LazyThreadSafetyMode.ExecutionAndPublication);
+        private static Lazy<Node> _node = new Lazy<Node>(GetNode, LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private Network Network
+        private static Network Network
         {
             get
             {
@@ -39,7 +42,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ICalculationService calculationService,
             ITokenService tokenService,
             IMapper mapper,
-            IOptions<TokenSettings> tokenSettings, 
+            IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings)
             : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, bitcoinSettings)
         {
@@ -122,12 +125,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 
-                var node = Node.Connect(Network, Settings.Value.NodeAddress.ToString());
-                node.VersionHandshake();
-                node.SendMessage(new InvPayload(transaction));
-                node.SendMessage(new TxPayload(transaction));
+                _node.Value.SendMessage(new InvPayload(transaction));
+                _node.Value.SendMessage(new TxPayload(transaction));
                 await Task.Delay(TimeSpan.FromSeconds(5));
-                node.Disconnect();
 
                 return (Hash: transaction.GetHash().ToString(), AdjustedAmount: adjustedAmount.Satoshi, Success: true);
             }
@@ -138,6 +138,58 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, AdjustedAmount: 0, Success: false);
+        }
+
+        protected override Task<long> GetCurrentBlockIndex()
+        {
+            var index = _chain.Value.ToEnumerable(false).Last().Height;
+            return Task.FromResult((long)index);
+        }
+
+        protected override async Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
+        {
+            var header = _chain.Value.GetBlock((int)index);
+            var block = _node.Value.GetBlocks(new[] { header.Header.GetHash() }).Single();
+
+            foreach (var tx in block.Transactions)
+            {
+                foreach (var output in tx.Outputs)
+                {
+                    var address = addresses.SingleOrDefault(x => x.Address == output.ScriptPubKey.GetDestinationAddress(Network).ToString());
+                    if (address != null)
+                    {
+                        var transaction = new CryptoTransaction
+                        {
+                            CryptoAddressId = address.Id,
+                            Direction = CryptoTransactionDirection.Inbound,
+                            Timestamp = header.Header.BlockTime.UtcDateTime,
+                            Hash = tx.GetHash().ToString(),
+                            Amount = output.Value.Satoshi.ToString()
+                        };
+
+                        if (address.User.ReferralUserId != null)
+                        {
+                            transaction.IsReferralPaid = false;
+                        }
+
+                        await Context.CryptoTransactions.AddAsync(transaction);
+                        await Context.SaveChangesAsync();
+                    }
+                }
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _node.Value.Disconnect();
+        }
+
+        private static Node GetNode()
+        {
+            var node = Node.Connect(Network, _bitcoinSettings.Value.NodeAddress.ToString());
+            node.VersionHandshake();
+            return node;
         }
 
         private class EarnResponse

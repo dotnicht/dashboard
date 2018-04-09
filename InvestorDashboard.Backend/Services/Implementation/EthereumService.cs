@@ -130,6 +130,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
+        protected override async Task<long> GetCurrentBlockIndex()
+        {
+            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+            var result = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+            return (long)result.Value;
+        }
+
+        protected override Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
+        {
+            throw new NotImplementedException();
+        }
+
         internal class EtherscanAccountResponse
         {
             public string Status { get; set; }
