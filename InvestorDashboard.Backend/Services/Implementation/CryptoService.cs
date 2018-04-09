@@ -131,7 +131,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var index = await GetCurrentBlockIndex();
 
             var addresses = Context.CryptoAddresses
-                .Include(x => x.User)
                 .Where(
                     x => x.Currency == Settings.Value.Currency
                     && x.Type == CryptoAddressType.Investment
@@ -142,24 +141,27 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .OrderBy(x => x.Key)
                 .ToArray();
 
-            IEnumerable<CryptoAddress> lastAddresses = null;
-            long lastIndex = 0;
-
-            foreach (var item in addresses)
+            if (addresses.Any())
             {
-                lastIndex = item.Key;
-                lastAddresses = (lastAddresses ?? addresses
-                    .Where(x => x.Key < item.Key)
-                    .SelectMany(x => x))
-                    .Union(item)
-                    .Distinct();
+                IEnumerable<CryptoAddress> lastAddresses = null;
+                long lastIndex = 0;
 
-                await ProccessBlock(item.Key, lastAddresses);
-            }
+                foreach (var item in addresses)
+                {
+                    lastIndex = item.Key;
+                    lastAddresses = (lastAddresses ?? addresses
+                        .Where(x => x.Key < item.Key)
+                        .SelectMany(x => x))
+                        .Union(item)
+                        .Distinct();
 
-            for (var i = lastIndex + 1; i <= index; i++)
-            {
-                await ProccessBlock(i, lastAddresses);
+                    await ProccessBlock(item.Key, lastAddresses);
+                }
+
+                for (var i = lastIndex + 1; i <= index; i++)
+                {
+                    await ProccessBlock(i, lastAddresses);
+                }
             }
         }
 
@@ -175,7 +177,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             CryptoAddress GetInternalCryptoAddress()
             {
                 return Context.CryptoAddresses
-                    .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Settings.Value.Currency && x.UserId == Settings.Value.InternalTransferUserId)
+                    .Where(
+                        x => x.Type == CryptoAddressType.Internal 
+                        && !x.IsDisabled 
+                        && x.Currency == Settings.Value.Currency 
+                        && x.UserId == Settings.Value.InternalTransferUserId)
                     .OrderBy(x => Guid.NewGuid())
                     .FirstOrDefault();
             }

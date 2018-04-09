@@ -153,9 +153,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var tx in block.Transactions)
             {
-                foreach (var output in tx.Outputs)
+                for (var i = 0; i < tx.Outputs.Count; i++)
                 {
-                    var address = addresses.SingleOrDefault(x => x.Address == output.ScriptPubKey.GetDestinationAddress(Network).ToString());
+                    var address = addresses.SingleOrDefault(x => x.Address == tx.Outputs[i].ScriptPubKey.GetDestinationAddress(Network)?.ToString());
                     if (address != null)
                     {
                         var transaction = new CryptoTransaction
@@ -164,19 +164,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             Direction = CryptoTransactionDirection.Inbound,
                             Timestamp = header.Header.BlockTime.UtcDateTime,
                             Hash = tx.GetHash().ToString(),
-                            Amount = output.Value.Satoshi.ToString()
+                            Amount = tx.Outputs[i].Value.Satoshi.ToString(),
+                            Index = i
                         };
 
-                        if (address.User.ReferralUserId != null)
-                        {
-                            transaction.IsReferralPaid = false;
-                        }
-
                         await Context.CryptoTransactions.AddAsync(transaction);
-                        await Context.SaveChangesAsync();
                     }
                 }
             }
+
+            addresses.ToList().ForEach(x => x.LastBlockIndex = index);
+            await Context.SaveChangesAsync();
         }
 
         protected override void Dispose(bool disposing)
