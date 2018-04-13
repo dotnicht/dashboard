@@ -253,8 +253,6 @@ export class UserInfoComponent implements OnInit {
                 this.errorClass = 'error'
             }
         }
-
-
     }
 
     private handleReaderLoaded(readerEvt) {

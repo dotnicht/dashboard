@@ -1,4 +1,5 @@
 ﻿<mat-card>
+    <h3>Fill this KYC form and receive {{kycBonus}} RAcoins</h3>
     <form *ngIf="formResetToggle" [attr.autocomplete]="isGeneralEditor ? NaN : null" name="userInfoForm" #f="ngForm" novalidate (ngSubmit)="f.form.valid ? save() :
 
          null">
@@ -127,11 +128,12 @@
                             <input type="file" name="photo" (change)="loadPhoto($event)" />
                         </div>
                     </div>
-                    <div class="non-edit" *ngIf="!isEditMode">
+                    <div [ngClass]="{'non-edit-no-img': getImage(user.photo) == '', 'non-edit-img': getImage(user.photo) != '' }" *ngIf="!isEditMode">
+                        <div *ngIf="getImage(user.photo) == ''">Your Passport/Id/Driver license</div>
                         <img [src]="getImage(user.photo)" />
                     </div>
                 </div>
-                <div class="rules" *ngIf="!isEditMode">
+                <div class="rules" *ngIf="!isEditMode && getImage(user.photo) != ''">
                     <p>In case of providing false identity document the company has right to withdraw RAcoins received on airdrop or other bounty campaign</p>
                 </div>
             </div>
