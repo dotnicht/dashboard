@@ -17,7 +17,7 @@ import { ClientInfoEndpointService } from '../../services/client-info.service';
 export class ReferralComponent {
     /** referral ctor */
     confirmChangingAddressDialogRef: MatDialogRef<ConfirmChangingAddressDialogComponent> | null;
-    
+        
     config = {
         data: {},
     };

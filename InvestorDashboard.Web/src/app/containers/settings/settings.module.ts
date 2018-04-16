@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { LocalStoreManager } from '../../services/local-store-manager.service';
-import { UserInfoComponent } from '../../components/controls/user-info.component';
+import { UserInfoComponent, SuccessKycMsgDialogComponent, FailedKycMsgDialogComponent } from '../../components/controls/user-info.component';
 import { AccountService } from '../../services/account.service';
 import { AccountEndpoint } from '../../services/account-endpoint.service';
 import { CaseFormatterDirective } from '../../directives/case-formater.directive';
@@ -33,7 +33,9 @@ export const SETTINGS_ROUTES: Routes = [
         UserInfoComponent,
         CaseFormatterDirective,
         ChangePasswordComponent,
-        ChangePasswordDialogComponent
+        ChangePasswordDialogComponent,
+        SuccessKycMsgDialogComponent,
+        FailedKycMsgDialogComponent
     ],
     imports: [
         CommonModule,
@@ -57,7 +59,9 @@ export const SETTINGS_ROUTES: Routes = [
         })
     ],
     entryComponents: [
-        ChangePasswordDialogComponent
+        ChangePasswordDialogComponent,
+        SuccessKycMsgDialogComponent,
+        FailedKycMsgDialogComponent
     ],
     providers: [
         AccountService,

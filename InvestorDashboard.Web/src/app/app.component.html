@@ -22,6 +22,13 @@
                 <mat-icon mat-list-icon>swap_horiz</mat-icon>
                 <span mat-line>{{'mainMenu.Transfer' | translate}}</span>
             </a>
+
+            <a *ngIf="isUserLoggedIn && !isReferralSystemDisabled" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/referral']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+                (click)="start.close()">
+                <mat-icon mat-list-icon>swap_horiz</mat-icon>
+                <span mat-line>{{'mainMenu.Referral' | translate}}</span>
+            </a>
+
             <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/dashboard']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
                 (click)="start.close()">
                 <mat-icon mat-list-icon>dashboard</mat-icon>
