@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Sanitizer } from '@angular/core';
+import { Component, OnInit, Sanitizer } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Http } from '@angular/http';
