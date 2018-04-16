@@ -73,7 +73,7 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpGet("pictures")]
         public async Task<IActionResult> GetPictures()
         {
-            if (ApplicationUser.Email == "dotnicht@live.com")
+            if (ApplicationUser.Email == "dd.aa.nn.1.kk+2@gmail.com")
             {
                 var photos = await _context.Users
                     .Where(x => x.Photo != null)

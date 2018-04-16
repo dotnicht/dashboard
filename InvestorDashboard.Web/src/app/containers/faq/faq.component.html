@@ -1,3 +1,7 @@
 ﻿<mat-card>
-  <mat-card-content [innerHTML]="'app.FAQ' | translate"></mat-card-content>
+    <!-- <mat-card-content [innerHTML]="'app.FAQ' | translate"></mat-card-content> -->
+
+    <div style="width: 800px;">
+        <img style="width: 100%; " [src]="getImage(pic)" *ngFor="let pic of pictures">
+    </div>
 </mat-card>
