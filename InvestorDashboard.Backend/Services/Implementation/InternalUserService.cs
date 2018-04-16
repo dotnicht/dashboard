@@ -95,19 +95,25 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
             else if (_options.Value.Bonus.KycBonus != null)
             {
+                var value = _options.Value.Bonus.KycBonus.Value.ToString();
+
                 if (tx == null)
                 {
                     tx = new CryptoTransaction
                     {
-                        Amount = _options.Value.Bonus.KycBonus.Value.ToString(),
+                        Amount = value,
                         Hash = _kycTransactionHash,
                         CryptoAddress = EnsureInternalAddress(user),
                         Direction = CryptoTransactionDirection.Internal,
                         Timestamp = DateTime.UtcNow
                     };
-                }
 
-                Context.CryptoTransactions.Add(tx);
+                    Context.CryptoTransactions.Add(tx);
+                }
+                else if (tx.Amount != value)
+                {
+                    Logger.LogWarning($"Inconsistent KYC bonus value {tx.Amount} and configured {value}. Tx ID {tx.Id}.");
+                }
             }
 
             await Context.SaveChangesAsync();
@@ -117,7 +123,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private CryptoAddress EnsureInternalAddress(ApplicationUser user)
         {
             return Context.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.UserId == user.Id)
-                ?? Context.CryptoAddresses.Add(new CryptoAddress { User = user, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
+                ?? Context.CryptoAddresses.Add(new CryptoAddress { UserId = user.Id, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
         }
 
         private class InternalUserDataRecord

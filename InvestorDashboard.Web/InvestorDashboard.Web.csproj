@@ -8,16 +8,12 @@
 
   <ItemGroup>
     <Compile Remove="e2e\**" />
-    <Compile Remove="src\**" />
     <Compile Remove="wwwroot\**" />
     <Content Remove="e2e\**" />
-    <Content Remove="src\**" />
     <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="e2e\**" />
-    <EmbeddedResource Remove="src\**" />
     <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="e2e\**" />
-    <None Remove="src\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 

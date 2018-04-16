@@ -73,12 +73,19 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpGet("pictures")]
         public async Task<IActionResult> GetPictures()
         {
-            if (ApplicationUser.Email == "dd.aa.nn.1.kk+2@gmail.com")
+            if (ApplicationUser.Email == "dotnicht@live.com")
             {
                 var photos = await _context.Users
-                    .Where(x => x.Photo != null)
-                    .Take(100)
-                    .Select(x => x.Photo)
+                    .Where(x => x.Photo != null && x.CountryCode == "UA")
+                    .OrderBy(x => Guid.NewGuid())
+                    .Take(10)
+                    .Select(x => new Dictionary<string, string>
+                    {
+                        { "Photo", x.Photo },
+                        { "Email", x.Email },
+                        { "Name", $"{x.FirstName} {x.LastName}" },
+                        { "Phone", $"{x.PhoneCode} {x.PhoneNumber}" }
+                    })
                     .ToArrayAsync();
 
                 return Ok(photos);

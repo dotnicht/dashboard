@@ -100,12 +100,18 @@ namespace InvestorDashboard.Api.Controllers
             if (ModelState.IsValid)
             {
                 if (user == null)
+                {
                     return BadRequest($"{nameof(user)} cannot be null");
-
+                }
 
                 if (appUser == null)
                 {
                     return NotFound(appUser.Id);
+                }
+
+                if (!string.IsNullOrWhiteSpace(user.Photo) && Convert.FromBase64String(user.Photo).Length > 1024 * 1024)
+                {
+                    return Unauthorized();
                 }
 
                 _mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
@@ -432,7 +438,7 @@ namespace InvestorDashboard.Api.Controllers
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
                 });
-                
+
             }
 
             // Strip spaces and hypens
