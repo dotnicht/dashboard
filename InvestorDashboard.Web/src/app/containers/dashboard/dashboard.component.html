@@ -2,11 +2,11 @@
     <mat-card class="first">
         <mat-card-content>
             <h4>{{'clientInfo.Balance' | translate}}:
-
-                <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
-                <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p>
+                <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
+                <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
+                <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
             </h4>
-            <p *ngIf="dashboard.clientInfoModel.bonusBalance>0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
+            <p *ngIf="dashboard.clientInfoModel.bonusBalance > 0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
             <div>
 
             </div>
@@ -21,7 +21,7 @@
         <mat-card-content>
             <div class="right" *ngIf="false">
                 <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale starts on
-                    <div style="margin: 3px 0;"> April 16th, 2018</div>
+                    <div style="margin: 3px 0;"> April 28th, 2018</div>
                 </div>
                 <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
             </div>
