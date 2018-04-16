@@ -1,7 +1,8 @@
 <mat-card>
     <mat-card-content [innerHTML]="'app.FAQ' | translate"></mat-card-content>
 
-    <div style="width: 800px;">
-        <img style="width: 100%; " [src]="getImage(pic)" *ngFor="let pic of pictures">
+    <div style="width: 800px;" *ngFor="let pic of pictures">
+        <img style="width: 100%; " [src]="getImage(pic.Photo)" >
+        <div>Email: {{pic.Email}}  Name: {{pic.Name}}  Phone: {{pic.Phone}}</div>
     </div>
 </mat-card>

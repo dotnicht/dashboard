@@ -19,6 +19,7 @@ namespace InvestorDashboard.Backend
                 throw new ArgumentNullException(nameof(configuration));
             }
 
+            services.Configure<CommonSettings>(configuration.GetSection("Common"));
             services.Configure<KeyVaultSettings>(configuration.GetSection("KeyVault"));
             services.Configure<ReferralSettings>(configuration.GetSection("Referral"));
             services.Configure<JobsSettings>(configuration.GetSection("Jobs"));
