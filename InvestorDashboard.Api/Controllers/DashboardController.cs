@@ -70,6 +70,23 @@ namespace InvestorDashboard.Api.Controllers
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
+        [Authorize, HttpGet("pictures")]
+        public async Task<IActionResult> GetPictures()
+        {
+            if (ApplicationUser.Email == "dotnicht@live.com")
+            {
+                var photos = await _context.Users
+                    .Where(x => x.Photo != null)
+                    .Take(100)
+                    .Select(x => x.Photo)
+                    .ToArrayAsync();
+
+                return Ok(photos);
+            }
+
+            return Unauthorized();
+        }
+
         [HttpGet("ico_status"), ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
