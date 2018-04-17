@@ -178,7 +178,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _node.Value.Disconnect();
         }
 
         private static Node GetNode()
