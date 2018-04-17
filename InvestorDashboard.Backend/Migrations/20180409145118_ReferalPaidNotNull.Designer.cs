@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180409145118_ReferalPaidNotNull")]
+    partial class ReferalPaidNotNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,11 +82,7 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<bool>("IsEligibleForTransfer");
 
-                    b.Property<bool>("IsNotified");
-
                     b.Property<bool>("IsTokenSaleDisabled");
-
-                    b.Property<long?>("KycBonus");
 
                     b.Property<string>("LastName");
 

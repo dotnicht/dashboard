@@ -24,7 +24,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IResourceService ResourceService { get; }
         protected IRestService RestService { get; }
         protected ICalculationService CalculationService { get; }
-        public ITokenService TokenService { get; }
+        protected ITokenService TokenService { get; }
         protected IMapper Mapper { get; }
 
         protected CryptoService(
@@ -64,9 +64,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return null;
             }
 
-            var (address, privateKey) = GenerateKeys(password);
-
-            return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);
+            using (new ElapsedTimer(Logger, $"CreateCryptoAddress: {Settings.Value.Currency}"))
+            {
+                var (address, privateKey) = GenerateKeys(password);
+                return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);
+            }
         }
 
         public async Task RefreshInboundTransactions()
@@ -119,6 +121,50 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public async Task RefreshTransactionsFromBlockchain()
+        {
+            if (Settings.Value.IsDisabled)
+            {
+                return;
+            }
+
+            var index = await GetCurrentBlockIndex();
+
+            var addresses = Context.CryptoAddresses
+                .Where(
+                    x => x.Currency == Settings.Value.Currency
+                    && x.Type == CryptoAddressType.Investment
+                    && x.User.ExternalId == null
+                    && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions)
+                    && (x.LastBlockIndex ?? x.StartBlockIndex) < index)
+                .GroupBy(x => x.LastBlockIndex ?? x.StartBlockIndex)
+                .OrderBy(x => x.Key)
+                .ToArray();
+
+            if (addresses.Any())
+            {
+                IEnumerable<CryptoAddress> lastAddresses = null;
+                long lastIndex = 0;
+
+                foreach (var item in addresses)
+                {
+                    lastIndex = item.Key;
+                    lastAddresses = (lastAddresses ?? addresses
+                        .Where(x => x.Key < item.Key)
+                        .SelectMany(x => x))
+                        .Union(item)
+                        .Distinct();
+
+                    await ProccessBlock(item.Key, lastAddresses);
+                }
+
+                for (var i = lastIndex + 1; i <= index; i++)
+                {
+                    await ProccessBlock(i, lastAddresses);
+                }
+            }
+        }
+
         public virtual async Task TransferAvailableAssets()
         {
             if (Settings.Value.IsDisabled)
@@ -131,7 +177,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             CryptoAddress GetInternalCryptoAddress()
             {
                 return Context.CryptoAddresses
-                    .Where(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Settings.Value.Currency && x.UserId == Settings.Value.InternalTransferUserId)
+                    .Where(
+                        x => x.Type == CryptoAddressType.Internal 
+                        && !x.IsDisabled 
+                        && x.Currency == Settings.Value.Currency 
+                        && x.UserId == Settings.Value.InternalTransferUserId)
                     .OrderBy(x => Guid.NewGuid())
                     .FirstOrDefault();
             }
@@ -147,9 +197,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 foreach (var record in records)
                 {
                     if (!Context.CryptoAddresses.Any(
-                        x => x.UserId == Settings.Value.InternalTransferUserId 
-                        && x.Currency == Settings.Value.Currency 
-                        && x.Type == CryptoAddressType.Internal 
+                        x => x.UserId == Settings.Value.InternalTransferUserId
+                        && x.Currency == Settings.Value.Currency
+                        && x.Type == CryptoAddressType.Internal
                         && !x.IsDisabled && x.Address == record.Address))
                     {
                         await CreateAddressInternal(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal, record.Address);
@@ -212,6 +262,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
+        protected abstract Task<long> GetCurrentBlockIndex();
+        protected abstract Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses);
 
         private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)
         {
@@ -220,18 +272,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException($"Address already exists for user {userId} and currency {Settings.Value.Currency}.");
             }
 
-            var result = await Context.CryptoAddresses.AddAsync(new CryptoAddress
+            var entity = new CryptoAddress
             {
                 UserId = userId,
                 Currency = Settings.Value.Currency,
                 Type = addressType,
                 Address = address,
-                PrivateKey = privateKey
-            });
+                PrivateKey = privateKey,
+                StartBlockIndex = await GetCurrentBlockIndex()
+            };
 
+            await Context.CryptoAddresses.AddAsync(entity);
             await Context.SaveChangesAsync();
 
-            return result.Entity;
+            return entity;
         }
 
         private class InternalCryptoAddressDataRecord

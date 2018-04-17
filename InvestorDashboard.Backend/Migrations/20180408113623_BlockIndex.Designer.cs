@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180408113623_BlockIndex")]
+    partial class BlockIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,11 +82,7 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<bool>("IsEligibleForTransfer");
 
-                    b.Property<bool>("IsNotified");
-
                     b.Property<bool>("IsTokenSaleDisabled");
-
-                    b.Property<long?>("KycBonus");
 
                     b.Property<string>("LastName");
 
@@ -195,15 +192,11 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<string>("Hash");
 
-                    b.Property<int?>("Index");
-
                     b.Property<bool?>("IsFailed");
 
                     b.Property<bool>("IsNotified");
 
-                    b.Property<bool>("IsReferralPaid");
-
-                    b.Property<bool>("IsSpent");
+                    b.Property<bool?>("IsReferralPaid");
 
                     b.Property<DateTime>("Timestamp");
 
