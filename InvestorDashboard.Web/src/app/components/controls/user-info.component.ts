@@ -215,7 +215,14 @@ export class UserInfoComponent implements OnInit {
 
     private onCurrentUserDataLoadSuccessful(user: User) {
         //this.alertService.stopLoadingMessage();
-        this.user = user;
+        if (!user.firstName && !user.lastName && !user.countryCode && !user.city && !user.phoneCode && !user.phoneNumber && !user.photo) {
+            this.user = new User();
+            this.userEdit = new UserEdit();
+            this.isEditMode = true;
+        }
+        else {
+            this.user = user;
+        }
     }
 
     private onCurrentUserDataLoadFailed(error: any) {

@@ -98,6 +98,7 @@
     </mat-toolbar>
     <div class="main-content">
         <router-outlet></router-outlet>
+        <!-- <div class="push"></div> -->
     </div>
 
     <mat-toolbar class="footer" color="primary">
@@ -105,14 +106,14 @@
             <div class="block">
                 <div style="display: flex; align-items: center;">
                     <img class="icon " src="assets/img/logo.svg " style="width: 55px; ">
-                    <div class="copyright ">&#169; {{year}}</div>
+                    <div *ngIf="!isTab && !isMobile" class="copyright ">&#169; {{year}}</div>
                 </div>
             </div>
             <div class="block">
                 <a href="https://www.youtube.com/channel/UCtyGrvHTO7LCa4IAJyjMUdw" target="_blank" class="icon-link">
                     <img class="icon" src="assets/img/social_icons/youtube.svg">
                     <div style="padding-top: 5px;">
-                        <div>Youtube</div>
+                        <div *ngIf="!isTab && !isMobile">Youtube</div>
                     </div>
                 </a>
             </div>
@@ -121,7 +122,7 @@
                 <a href="https://www.facebook.com/RAcoin-1348409231971565/" target="_blank" class="icon-link">
                     <img class="icon" src="assets/img/social_icons/facebook.svg">
                     <div style="padding-top: 5px;">
-                        <div>Facebook</div>
+                        <div *ngIf="!isTab && !isMobile">Facebook</div>
                     </div>
                 </a>
             </div>
@@ -130,7 +131,7 @@
                 <a href="https://twitter.com/RAcoinNews" target="_blank" class="icon-link">
                     <img class="icon" src="assets/img/social_icons/twitter.svg">
                     <div style="padding-top: 5px;">
-                        <div>Twitter</div>
+                        <div *ngIf="!isTab && !isMobile">Twitter</div>
                     </div>
                 </a>
             </div>
@@ -138,7 +139,7 @@
                 <a href="https://www.reddit.com/user/RAcoinNews/" target="_blank" class="icon-link">
                     <img class="icon" src="assets/img/social_icons/reddit.svg">
                     <div style="padding-top: 5px;">
-                        <div>Reddit</div>
+                        <div *ngIf="!isTab && !isMobile">Reddit</div>
                     </div>
                 </a>
             </div>
@@ -146,7 +147,7 @@
                 <a href="https://t.me/racoinnews" target="_blank" class="icon-link">
                     <img class="icon" src="assets/img/social_icons/telegram.svg">
                     <div style="padding-top: 5px;">
-                        <div>Telegram</div>
+                        <div *ngIf="!isTab && !isMobile">Telegram</div>
                     </div>
                 </a>
             </div>

@@ -23,6 +23,7 @@ export class User {
     public city: string;
     public userName: string;
     public firstName: string;
+    public lastName: string;
     public email: string;
     public balance: number;
     public phoneCode: string;
@@ -39,7 +40,13 @@ export class User {
         id?: string,
         userName?: string,
         email?: string,
-        twofactorenabled?: string
+        twofactorenabled?: string,
+        firstName?: string,
+        lastName?: string,
+        phoneCode?: string,
+        phoneNumber?: string,
+        photo?: string,
+        countryCode?: string,
     ) {
         this.id = id;
         this.userName = userName;
@@ -47,6 +54,12 @@ export class User {
             this.twoFactorEnabled = twofactorenabled.toLowerCase() == 'true';
         }
         this.email = email;
+        this.firstName =firstName;
+        this.lastName = lastName;
+        this. phoneCode= phoneCode;
+        this. phoneNumber = phoneNumber;
+        this. photo = photo;
+        this. countryCode = countryCode;
     }
 
 
