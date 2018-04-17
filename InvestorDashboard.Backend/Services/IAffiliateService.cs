@@ -7,6 +7,6 @@ namespace InvestorDashboard.Backend.Services
     public interface IAffiliateService : IDisposable
     {
         Task NotifyTransactionsCreated();
-        Task NotifyUserRegistered(ApplicationUser user);
+        Task NotifyUserRegistered(ApplicationUser user = null);
     }
 }

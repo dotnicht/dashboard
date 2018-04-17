@@ -17,10 +17,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<TokenSettings> _options;
 
         public AffiliateService(
-            ApplicationDbContext context, 
-            ILoggerFactory loggerFactory, 
-            IRestService restService, 
-            ICalculationService calculationService, 
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IRestService restService,
+            ICalculationService calculationService,
             IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
@@ -69,11 +69,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task NotifyUserRegistered(ApplicationUser user)
+        public async Task NotifyUserRegistered(ApplicationUser user = null)
         {
             if (user == null)
             {
-                foreach (var item in Context.Users.Where(x => x.ClickId != null && !x.IsNotified))
+                foreach (var item in Context.Users.Where(x => x.ClickId != null && !x.IsNotified).ToArray())
                 {
                     try
                     {
@@ -81,7 +81,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {user.Id}.");
+                        Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {item.Id}.");
                     }
                 }
             }

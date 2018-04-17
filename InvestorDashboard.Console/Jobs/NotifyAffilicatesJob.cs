@@ -19,9 +19,10 @@ namespace InvestorDashboard.Console.Jobs
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
-        protected override async Task ExecuteInternal(IJobExecutionContext context)
+        protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            Task.WaitAll(_affiliatesService.NotifyTransactionsCreated(), _affiliatesService.NotifyUsersRegistered());
+            Task.WaitAll(_affiliatesService.NotifyTransactionsCreated(), _affiliatesService.NotifyUserRegistered());
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)
