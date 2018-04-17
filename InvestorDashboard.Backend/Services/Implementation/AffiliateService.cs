@@ -57,7 +57,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
 
                     var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&transactionid={tx.Hash}&date={date}&time={time}&currency={tx.CryptoAddress.Currency}&sum={amount}status=5";
-
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);
 
@@ -66,6 +65,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         tx.IsNotified = true;
                         await Context.SaveChangesAsync();
                     }
+                }
+            }
+        }
+
+        public async Task NotifyUsersRegistered()
+        {
+            foreach (var user in Context.Users.Where(x => x.ClickId != null && !x.IsNotified))
+            {
+                var address = $"http://offers.proffico.affise.com/postback?clickid={user.ClickId}&goal=2";
+                var uri = new Uri(address);
+                var response = await _restService.GetAsync<AffiseResponse>(uri);
+
+                if (response.Status == 1)
+                {
+                    user.IsNotified = true;
+                    await Context.SaveChangesAsync();
                 }
             }
         }

@@ -21,6 +21,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public bool IsEligibleForTransfer { get; set; }
         public string PhoneCode { get; set; }
         public string ClickId { get; set; }
+        public bool IsNotified { get; set; }
         public Guid? ExternalId { get; set; }
         public string ReferralCode { get; set; }
         public string ReferralUserId { get; set; }
