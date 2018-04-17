@@ -9,19 +9,20 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class NotifyAffilicatesTransactionsJob : JobBase
+    public class NotifyAffilicatesJob : JobBase
     {
         private readonly IAffiliateService _affiliatesService;
 
-        public NotifyAffilicatesTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
+        public NotifyAffilicatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
             : base(loggerFactory, context, options)
         {
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
 
-        protected override async Task ExecuteInternal(IJobExecutionContext context)
+        protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _affiliatesService.NotifyTransactionsCreated();
+            Task.WaitAll(_affiliatesService.NotifyTransactionsCreated(), _affiliatesService.NotifyUserRegistered());
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

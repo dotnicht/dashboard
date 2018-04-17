@@ -32,6 +32,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IOptions<ReferralSettings> _referralSettings;
+        private readonly IOptions<CommonSettings> _commonSettings;
         private readonly IMapper _mapper;
         private readonly ILogger<DashboardController> _logger;
         private readonly IEnumerable<ICryptoService> _cryptoServices;
@@ -51,6 +52,7 @@ namespace InvestorDashboard.Api.Controllers
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
             IOptions<ReferralSettings> referralSettings,
+            IOptions<CommonSettings> commonSettings,
             IEnumerable<ICryptoService> cryptoServices,
             IMapper mapper,
             ILogger<DashboardController> logger)
@@ -65,6 +67,7 @@ namespace InvestorDashboard.Api.Controllers
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _referralSettings = referralSettings ?? throw new ArgumentNullException(nameof(referralSettings));
+            _commonSettings = commonSettings ?? throw new ArgumentNullException(nameof(commonSettings));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
@@ -73,12 +76,12 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpGet("pictures")]
         public async Task<IActionResult> GetPictures()
         {
-            if (ApplicationUser.Email == "dotnicht@live.com")
+            if (ApplicationUser.Id == _commonSettings.Value.AdminUserId)
             {
                 var photos = await _context.Users
                     .Where(x => x.Photo != null && x.CountryCode == "UA")
-                    .OrderBy(x => Guid.NewGuid())
-                    .Take(10)
+                    //.OrderBy(x => Guid.NewGuid())
+                    //.Take(10)
                     .Select(x => new Dictionary<string, string>
                     {
                         { "Photo", x.Photo },
@@ -259,6 +262,11 @@ namespace InvestorDashboard.Api.Controllers
                 && !_tokenSettings.Value.IsTokenTransferDisabled
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
             user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
+
+            if (ApplicationUser.Id == _commonSettings.Value.AdminUserId)
+            {
+                user.IsTokenSaleDisabled = false;
+            }
 
             return user;
         }

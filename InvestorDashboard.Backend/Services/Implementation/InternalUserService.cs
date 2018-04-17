@@ -110,10 +110,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     Context.CryptoTransactions.Add(tx);
                 }
-                else if (tx.Amount != value)
-                {
-                    Logger.LogWarning($"Inconsistent KYC bonus value {tx.Amount} and configured {value}. Tx ID {tx.Id}.");
-                }
             }
 
             await Context.SaveChangesAsync();

@@ -17,10 +17,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<TokenSettings> _options;
 
         public AffiliateService(
-            ApplicationDbContext context, 
-            ILoggerFactory loggerFactory, 
-            IRestService restService, 
-            ICalculationService calculationService, 
+            ApplicationDbContext context,
+            ILoggerFactory loggerFactory,
+            IRestService restService,
+            ICalculationService calculationService,
             IOptions<TokenSettings> options)
             : base(context, loggerFactory)
         {
@@ -57,7 +57,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
 
                     var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&transactionid={tx.Hash}&date={date}&time={time}&currency={tx.CryptoAddress.Currency}&sum={amount}status=5";
-
                     var uri = new Uri(address);
                     var response = await _restService.GetAsync<AffiseResponse>(uri);
 
@@ -66,6 +65,44 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         tx.IsNotified = true;
                         await Context.SaveChangesAsync();
                     }
+                }
+            }
+        }
+
+        public async Task NotifyUserRegistered(ApplicationUser user = null)
+        {
+            if (user == null)
+            {
+                foreach (var item in Context.Users.Where(x => x.ClickId != null && !x.IsNotified).ToArray())
+                {
+                    try
+                    {
+                        await NotifyUserRegisteredInternal(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {item.Id}.");
+                    }
+                }
+            }
+            else
+            {
+                await NotifyUserRegisteredInternal(user);
+            }
+        }
+
+        private async Task NotifyUserRegisteredInternal(ApplicationUser user)
+        {
+            if (!string.IsNullOrWhiteSpace(user.ClickId))
+            {
+                var address = $"http://offers.proffico.affise.com/postback?clickid={user.ClickId}&goal=2";
+                var uri = new Uri(address);
+                var response = await _restService.GetAsync<AffiseResponse>(uri);
+
+                if (response.Status == 1)
+                {
+                    user.IsNotified = true;
+                    await Context.SaveChangesAsync();
                 }
             }
         }

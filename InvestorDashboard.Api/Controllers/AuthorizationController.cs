@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
@@ -49,6 +50,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IMessageService _messageService;
         private readonly IReferralService _referralService;
         private readonly IGenericAddressService _genericAddressService;
+        private readonly IAffiliateService _affiliateService;
         private readonly IRazorViewEngine _viewEngine;
         private readonly ITempDataProvider _tempDataProvider;
         private readonly IServiceProvider _serviceProvider;
@@ -65,6 +67,7 @@ namespace InvestorDashboard.Api.Controllers
             IMessageService messageService,
             IReferralService referralService,
             IGenericAddressService genericAddressService,
+            IAffiliateService affiliateService,
             IRazorViewEngine viewEngine,
             ITempDataProvider tempDataProvider,
             IServiceProvider serviceProvider)
@@ -79,6 +82,7 @@ namespace InvestorDashboard.Api.Controllers
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
+            _affiliateService = affiliateService ?? throw new ArgumentNullException(nameof(affiliateService));
             _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
             _tempDataProvider = tempDataProvider ?? throw new ArgumentNullException(nameof(tempDataProvider));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -89,16 +93,16 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
-                var client = new System.Net.WebClient();
-                var recaptchaResult = client.DownloadString($"https://www.google.com/recaptcha/api/siteverify?secret={_captchaOptions.Value.GoogleSecretKey}&response={user.ReCaptchaToken}");
+                var client = new WebClient();
+                var address = $"https://www.google.com/recaptcha/api/siteverify?secret={_captchaOptions.Value.GoogleSecretKey}&response={user.ReCaptchaToken}";
+                var recaptchaResult = client.DownloadString(address);
                 var obj = JObject.Parse(recaptchaResult);
                 var status = (bool)obj.SelectToken("success");
 
                 if (!status)
                 {
-                    recaptchaResult =
-                        client.DownloadString(
-                            $"https://dp-captcha2.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}");
+                    address = $"https://dp-captcha2.azurewebsites.net/api/CaptchaApi/IsApproved?captchaid={user.ReCaptchaToken}";
+                    recaptchaResult = client.DownloadString(address);
                     obj = JObject.Parse(recaptchaResult);
                     status = (bool)obj.SelectToken("IsApproved");
                 }
@@ -114,7 +118,6 @@ namespace InvestorDashboard.Api.Controllers
                         try
                         {
                             await _referralService.PopulateReferralData(appUser, user.Referral);
-                            await _genericAddressService.CreateMissingAddresses(appUser.Id);
                         }
                         catch (Exception ex)
                         {
@@ -123,7 +126,9 @@ namespace InvestorDashboard.Api.Controllers
                             return BadRequest("User creation failed.");
                         }
 
-                        appUser = await _userManager.FindByEmailAsync(appUser.Email);
+                        await _genericAddressService.CreateMissingAddresses(appUser.Id);
+                        await _affiliateService.NotifyUserRegistered(appUser);
+
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         code = HttpUtility.UrlEncode(code);
 

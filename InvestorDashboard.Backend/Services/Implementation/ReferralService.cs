@@ -77,10 +77,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             if (entity != null)
             {
-                entity.IsDisabled = true;
+                entity.IsDisabled = entity.Address != address;
             }
 
-            if (!string.IsNullOrWhiteSpace(address))
+            if (!string.IsNullOrWhiteSpace(address) && (entity == null || entity.IsDisabled))
             {
                 Context.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = user.Id, Address = address, Type = CryptoAddressType.Referral });
             }
