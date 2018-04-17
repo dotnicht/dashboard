@@ -260,26 +260,34 @@ export class UserInfoComponent implements OnInit {
         if (event.target.files.length > 0) {
             file = event.target.files[0];
             if (file.size <= 1024 * 1024) {
-                this.errorClass = '';
                 let reader = new FileReader();
                 reader.onload = this.handleReaderLoaded.bind(this);
                 reader.readAsBinaryString(file);
                 this.imageCorrect = true;
             }
             else {
-                this.errorClass = 'error'
                 this.imageCorrect = false;
             }
+        } 
+        
+    }
+    private isImageCorrect() {
+        if ((this.imageCorrect == undefined && this.user.photo) || this.imageCorrect) {
+            this.errorClass = '';
+            this.imageCorrect = true;
+        }
+        else {
+            this.errorClass = 'error';
+            this.imageCorrect = false;
         }
     }
-
     private handleReaderLoaded(readerEvt) {
         var binaryString = readerEvt.target.result;
         this.userEdit.photo = btoa(binaryString);
     }
 
     private save() {
-        if (this.imageCorrect || this.user.photo) {
+        if (this.isImageCorrect) {
             this.isSaving = true;
             this.userEdit.photo = this.userEdit.photo ? this.userEdit.photo : this.user.photo;
             //this.alertService.startLoadingMessage('Saving changes...');
