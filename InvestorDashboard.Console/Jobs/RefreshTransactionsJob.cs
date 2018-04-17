@@ -23,21 +23,10 @@ namespace InvestorDashboard.Console.Jobs
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
         }
 
-        protected override async Task ExecuteInternal(IJobExecutionContext context)
+        protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            foreach (var service in _cryptoServices)
-            {
-                try
-                {
-                    await service.RefreshInboundTransactions();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"An error occurred while refreshing inbound {service.Settings.Value.Currency} transactions.");
-                }
-            }
-
-            await _smartContractService.RefreshOutboundTransactions();
+            Task.WaitAll(_cryptoServices.Select(x => x.RefreshInboundTransactions()).Union(new[] { _smartContractService.RefreshOutboundTransactions() }).ToArray());
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

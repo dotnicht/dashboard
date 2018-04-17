@@ -12,5 +12,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public Uri NodeAddress { get; set; }
         public string InternalTransferUserId { get; set; }
         public byte Denomination { get; set; }
+        public bool UseDirectBlockAccess { get; set; }
     }
 }
