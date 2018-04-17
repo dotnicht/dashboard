@@ -169,12 +169,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         };
 
                         await Context.CryptoTransactions.AddAsync(transaction);
+                        await Context.SaveChangesAsync();
                     }
                 }
             }
-
-            addresses.ToList().ForEach(x => x.LastBlockIndex = index);
-            await Context.SaveChangesAsync();
         }
 
         protected override void Dispose(bool disposing)

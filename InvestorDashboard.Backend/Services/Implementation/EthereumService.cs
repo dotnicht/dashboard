@@ -137,9 +137,29 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (long)result.Value;
         }
 
-        protected override Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
+        protected override async Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
         {
-            throw new NotImplementedException();
+            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+            var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+
+            foreach (var tx in block.Transactions)
+            {
+                var address = addresses.SingleOrDefault(x => x.Address == tx.To);
+                if (address != null)
+                {
+                    var transaction = new CryptoTransaction
+                    {
+                        CryptoAddressId = address.Id,
+                        Direction = CryptoTransactionDirection.Inbound,
+                        Timestamp = DateTimeOffset.FromUnixTimeSeconds((long)block.Timestamp.Value).UtcDateTime,
+                        Hash = tx.TransactionHash,
+                        Amount = tx.Value.Value.ToString()
+                    };
+
+                    await Context.CryptoTransactions.AddAsync(transaction);
+                    await Context.SaveChangesAsync();
+                }
+            }
         }
 
         internal class EtherscanAccountResponse

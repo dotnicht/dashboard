@@ -155,12 +155,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         .Union(item)
                         .Distinct();
 
-                    await ProccessBlock(item.Key, lastAddresses);
+                    await ProccessBlockAndUpdateAddresses(item.Key, lastAddresses);
                 }
 
                 for (var i = lastIndex + 1; i <= index; i++)
                 {
-                    await ProccessBlock(i, lastAddresses);
+                    await ProccessBlockAndUpdateAddresses(i, lastAddresses);
                 }
             }
         }
@@ -264,6 +264,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
         protected abstract Task<long> GetCurrentBlockIndex();
         protected abstract Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses);
+
+        private async Task ProccessBlockAndUpdateAddresses(long index, IEnumerable<CryptoAddress> addresses)
+        {
+            await ProccessBlock(index, addresses);
+            addresses.ToList().ForEach(x => x.LastBlockIndex = index);
+            await Context.SaveChangesAsync();
+        }
 
         private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)
         {
