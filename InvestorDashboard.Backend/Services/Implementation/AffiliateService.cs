@@ -69,9 +69,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task NotifyUsersRegistered()
+        public async Task NotifyUserRegistered(ApplicationUser user)
         {
-            foreach (var user in Context.Users.Where(x => x.ClickId != null && !x.IsNotified))
+            if (user == null)
+            {
+                foreach (var item in Context.Users.Where(x => x.ClickId != null && !x.IsNotified))
+                {
+                    try
+                    {
+                        await NotifyUserRegisteredInternal(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {user.Id}.");
+                    }
+                }
+            }
+            else
+            {
+                await NotifyUserRegisteredInternal(user);
+            }
+        }
+
+        private async Task NotifyUserRegisteredInternal(ApplicationUser user)
+        {
+            if (!string.IsNullOrWhiteSpace(user.ClickId))
             {
                 var address = $"http://offers.proffico.affise.com/postback?clickid={user.ClickId}&goal=2";
                 var uri = new Uri(address);

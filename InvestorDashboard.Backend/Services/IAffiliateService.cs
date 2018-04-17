@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InvestorDashboard.Backend.Database.Models;
+using System;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
@@ -6,6 +7,6 @@ namespace InvestorDashboard.Backend.Services
     public interface IAffiliateService : IDisposable
     {
         Task NotifyTransactionsCreated();
-        Task NotifyUsersRegistered();
+        Task NotifyUserRegistered(ApplicationUser user);
     }
 }
