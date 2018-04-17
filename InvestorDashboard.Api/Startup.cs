@@ -1,6 +1,7 @@
 ﻿using AspNet.Security.OAuth.Validation;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
+using Hangfire;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
@@ -53,6 +54,8 @@ namespace InvestorDashboard.Api
                 // to replace the default OpenIddict entities.
                 options.UseOpenIddict();
             });
+
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection")));
 
             services.Configure<MvcOptions>(options =>
             {
@@ -139,6 +142,8 @@ namespace InvestorDashboard.Api
         {
             loggerFactory.AddFile("Logs/Api-Full.{Date}.log");
             loggerFactory.AddFile("Logs/Api-Warning.{Date}.log", LogLevel.Warning);
+
+            app.UseHangfireServer();
 
             var options = new RewriteOptions().AddRedirectToHttps();
 

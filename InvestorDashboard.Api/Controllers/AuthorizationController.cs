@@ -2,6 +2,7 @@ using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using AspNet.Security.OpenIdConnect.Server;
 using AutoMapper;
+using Hangfire;
 using InvestorDashboard.Api.Helpers;
 using InvestorDashboard.Api.Models;
 using InvestorDashboard.Api.Models.AccountViewModels;
@@ -126,8 +127,8 @@ namespace InvestorDashboard.Api.Controllers
                             return BadRequest("User creation failed.");
                         }
 
-                        await _genericAddressService.CreateMissingAddresses(appUser.Id);
-                        await _affiliateService.NotifyUserRegistered(appUser);
+                        BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(appUser.Id, true));
+                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser));
 
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         code = HttpUtility.UrlEncode(code);

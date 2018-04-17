@@ -40,6 +40,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public async Task CreateUserMissingAddresses(ApplicationUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            await CreateMissingAddressesInternal(user.Id, true);
+        }
+
         private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)
         {
             var user = Context.Users.Include(x => x.CryptoAddresses).SingleOrDefault(x => x.Id == userId);

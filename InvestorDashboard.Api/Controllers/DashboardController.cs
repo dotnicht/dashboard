@@ -73,30 +73,6 @@ namespace InvestorDashboard.Api.Controllers
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        [Authorize, HttpGet("pictures")]
-        public async Task<IActionResult> GetPictures()
-        {
-            if (ApplicationUser.Id == _commonSettings.Value.AdminUserId)
-            {
-                var photos = await _context.Users
-                    .Where(x => x.Photo != null && x.CountryCode == "UA")
-                    //.OrderBy(x => Guid.NewGuid())
-                    //.Take(10)
-                    .Select(x => new Dictionary<string, string>
-                    {
-                        { "Photo", x.Photo },
-                        { "Email", x.Email },
-                        { "Name", $"{x.FirstName} {x.LastName}" },
-                        { "Phone", $"{x.PhoneCode} {x.PhoneNumber}" }
-                    })
-                    .ToArrayAsync();
-
-                return Ok(photos);
-            }
-
-            return Unauthorized();
-        }
-
         [HttpGet("ico_status"), ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
@@ -263,11 +239,6 @@ namespace InvestorDashboard.Api.Controllers
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
             user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
 
-            if (ApplicationUser.Id == _commonSettings.Value.AdminUserId)
-            {
-                user.IsTokenSaleDisabled = false;
-            }
-
             return user;
         }
 
@@ -290,6 +261,11 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<List<PaymentInfoModel>> GetPaymentInfoModel()
         {
+            if (_tokenSettings.Value.IsTokenSaleDisabled)
+            {
+                return new PaymentInfoModel[0].ToList();
+            }
+
             var addresses = await ApplicationUser.CryptoAddresses
                 .ToAsyncEnumerable()
                 .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
