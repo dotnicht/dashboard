@@ -1,6 +1,6 @@
 ﻿
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
-
+import { Component, OnInit, ViewChild, Input, Inject } from '@angular/core';
+import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 import { AccountService } from '../../services/account.service';
 import { Utilities } from '../../services/utilities';
 import { User } from '../../models/user.model';
@@ -14,6 +14,9 @@ import { AppTranslationService } from '../../services/app-translation.service';
 import { PapaParseService } from 'ngx-papaparse';
 import { SafeUrl, DomSanitizer } from '@angular/platform-browser';
 import { ClientInfoEndpointService } from '../../services/client-info.service';
+import { DOCUMENT } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+
 
 
 @Component({
@@ -22,6 +25,11 @@ import { ClientInfoEndpointService } from '../../services/client-info.service';
     styleUrls: ['./user-info.component.scss']
 })
 export class UserInfoComponent implements OnInit {
+    successKycMsgDialogRef: MatDialogRef<SuccessKycMsgDialogComponent> | null;
+    failedKycMsgDialogRef: MatDialogRef<FailedKycMsgDialogComponent> | null;
+    config = {
+        data: {},
+    };
 
     public mask: (string | RegExp)[];
     public phonePattern: string;
@@ -48,6 +56,7 @@ export class UserInfoComponent implements OnInit {
     private user: User = new User();
     private userEdit: UserEdit;
     private errorClass: string;
+    private imageCorrect: boolean;
     kycBonus: number;
     get selectedCountry() {
         if (this.countries.length > 0 && this.user.countryCode != undefined) {
@@ -70,8 +79,6 @@ export class UserInfoComponent implements OnInit {
     @ViewChild('email')
     private email;
 
-
-
     @ViewChild('currentPassword')
     private currentPassword;
 
@@ -81,15 +88,23 @@ export class UserInfoComponent implements OnInit {
     @ViewChild('confirmPassword')
     private confirmPassword;
 
-
     constructor(private accountService: AccountService,
         private configurationService: ConfigurationService,
         private translationService: AppTranslationService,
         private papa: PapaParseService,
         private sanitizer: DomSanitizer,
-        private clientInfoEndpointService: ClientInfoEndpointService
+        private clientInfoEndpointService: ClientInfoEndpointService,
+        private dialog: MatDialog,
+        @Inject(DOCUMENT) doc: any
     ) {
-
+        dialog.afterOpen.subscribe(() => {
+            if (!doc.body.classList.contains('no-scroll')) {
+                doc.body.classList.add('no-scroll');
+            }
+        });
+        dialog.afterAllClosed.subscribe(() => {
+            doc.body.classList.remove('no-scroll');
+        });
     }
 
     ngOnInit() {
@@ -127,7 +142,7 @@ export class UserInfoComponent implements OnInit {
             }
         });
 
-        this.clientInfoEndpointService.icoInfo$.subscribe(data=> {
+        this.clientInfoEndpointService.icoInfo$.subscribe(data => {
             this.kycBonus = data.kycBonus;
         });
 
@@ -200,7 +215,14 @@ export class UserInfoComponent implements OnInit {
 
     private onCurrentUserDataLoadSuccessful(user: User) {
         //this.alertService.stopLoadingMessage();
-        this.user = user;
+        if (!user.firstName && !user.lastName && !user.countryCode && !user.city && !user.phoneCode && !user.phoneNumber && !user.photo) {
+            this.user = new User();
+            this.userEdit = new UserEdit();
+            this.isEditMode = true;
+        }
+        else {
+            this.user = user;
+        }
     }
 
     private onCurrentUserDataLoadFailed(error: any) {
@@ -211,15 +233,9 @@ export class UserInfoComponent implements OnInit {
         this.user = new User();
     }
 
-
-
     private showErrorAlert(caption: string, message: string) {
         //this.alertService.showMessage(caption, message, MessageSeverity.error);
     }
-
-
-
-
 
     private edit() {
         // if (!this.isGeneralEditor) {
@@ -243,79 +259,98 @@ export class UserInfoComponent implements OnInit {
         let file: File = null;
         if (event.target.files.length > 0) {
             file = event.target.files[0];
-            if (file.size < 1048576) {
-                this.errorClass = '';
+            if (file.size <= 1024 * 1024) {
                 let reader = new FileReader();
                 reader.onload = this.handleReaderLoaded.bind(this);
                 reader.readAsBinaryString(file);
+                this.imageCorrect = true;
             }
             else {
-                this.errorClass = 'error'
+                this.imageCorrect = false;
             }
+        } 
+        
+    }
+    private isImageCorrect() {
+        if ((this.imageCorrect == undefined && this.user.photo) || this.imageCorrect) {
+            this.errorClass = '';
+            this.imageCorrect = true;
+        }
+        else {
+            this.errorClass = 'error';
+            this.imageCorrect = false;
         }
     }
-
     private handleReaderLoaded(readerEvt) {
         var binaryString = readerEvt.target.result;
         this.userEdit.photo = btoa(binaryString);
     }
 
     private save() {
-        this.isSaving = true;
-        //this.alertService.startLoadingMessage('Saving changes...');
-
-        this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
+        if (this.isImageCorrect) {
+            this.isSaving = true;
+            this.userEdit.photo = this.userEdit.photo ? this.userEdit.photo : this.user.photo;
+            //this.alertService.startLoadingMessage('Saving changes...');
+            this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
+        }
     }
-
 
     private saveSuccessHelper(user?: User) {
+        this.config.data = { kycBonus: this.kycBonus }
+        this.successKycMsgDialogRef = this.dialog.open(SuccessKycMsgDialogComponent, this.config);
+        this.successKycMsgDialogRef.afterClosed().subscribe((result) => {
+            if (result == true) {
 
-        if (user)
-            Object.assign(this.userEdit, user);
+                if (user)
+                    Object.assign(this.userEdit, user);
 
-        this.isSaving = false;
-        //this.alertService.stopLoadingMessage();
-        this.isChangePassword = false;
-        this.showValidationErrors = false;
+                this.isSaving = false;
+                //this.alertService.stopLoadingMessage();
+                this.isChangePassword = false;
+                this.showValidationErrors = false;
 
-        this.deletePasswordFromUser(this.userEdit);
-        Object.assign(this.user, this.userEdit);
-        this.userEdit = new UserEdit();
-        this.resetForm();
-
-
-        // if (this.isGeneralEditor) {
-        //     if (this.isNewUser)
-        //         this.alertService.showMessage('Success', `User \"${this.user.userName}\" was created successfully`, MessageSeverity.success);
-        //     else if (!this.isEditingSelf)
-        //         this.alertService.showMessage('Success', `Changes to user \"${this.user.userName}\" was saved successfully`, MessageSeverity.success);
-        // }
-
-        if (this.isEditingSelf) {
-            //this.alertService.showMessage('Success', 'Changes to your User Profile was saved successfully', MessageSeverity.success);
-            this.refreshLoggedInUser();
-        }
-
-        this.isEditMode = false;
+                this.deletePasswordFromUser(this.userEdit);
+                Object.assign(this.user, this.userEdit);
+                this.userEdit = new UserEdit();
+                this.resetForm();
 
 
-        if (this.changesSavedCallback)
-            this.changesSavedCallback();
+                // if (this.isGeneralEditor) {
+                //     if (this.isNewUser)
+                //         this.alertService.showMessage('Success', `User \"${this.user.userName}\" was created successfully`, MessageSeverity.success);
+                //     else if (!this.isEditingSelf)
+                //         this.alertService.showMessage('Success', `Changes to user \"${this.user.userName}\" was saved successfully`, MessageSeverity.success);
+                // }
+
+                if (this.isEditingSelf) {
+                    //this.alertService.showMessage('Success', 'Changes to your User Profile was saved successfully', MessageSeverity.success);
+                    this.refreshLoggedInUser();
+                }
+
+                this.isEditMode = false;
+
+
+                if (this.changesSavedCallback)
+                    this.changesSavedCallback();
+            }
+        });
     }
 
-
     private saveFailedHelper(error: any) {
+        // this.failedKycMsgDialogRef = this.dialog.open(FailedKycMsgDialogComponent, this.config);
+        // this.failedKycMsgDialogRef.afterClosed().subscribe((result) => {
+        // console.log(result)
         this.isSaving = false;
+        if (this.changesFailedCallback)
+            this.changesFailedCallback();
+        // });
+
+
         // this.alertService.stopLoadingMessage();
         // this.alertService.showStickyMessage('Save Error', 'The below errors occured whilst saving your changes:', MessageSeverity.error, error);
         // this.alertService.showStickyMessage(error, null, MessageSeverity.error);
 
-        if (this.changesFailedCallback)
-            this.changesFailedCallback();
     }
-
-
-
 
 
     private cancel() {
@@ -338,8 +373,6 @@ export class UserInfoComponent implements OnInit {
         }
     }
 
-
-
     private refreshLoggedInUser() {
         this.accountService.refreshLoggedInUser()
             .subscribe(user => {
@@ -351,9 +384,49 @@ export class UserInfoComponent implements OnInit {
                 });
     }
 
-
     private changePassword() {
         this.isChangePassword = true;
     }
 
+}
+
+
+@Component({
+    selector: 'success-kyc-msg-dialog',
+    templateUrl: './success-kyc-msg-dialog.component.html'
+})
+export class SuccessKycMsgDialogComponent {
+    public info: any;
+
+    constructor(
+        public dialogRef: MatDialogRef<SuccessKycMsgDialogComponent>,
+        private router: Router,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.info = data;
+    }
+
+    close() {
+        this.dialogRef.close();
+    }
+}
+
+
+
+@Component({
+    selector: 'failed-kyc-msg-dialog',
+    templateUrl: './failed-kyc-msg-dialog.component.html'
+})
+export class FailedKycMsgDialogComponent {
+    public info: any;
+
+    constructor(
+        public dialogRef: MatDialogRef<SuccessKycMsgDialogComponent>,
+        private router: Router,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.info = data;
+    }
+
+    close() {
+        this.dialogRef.close();
+    }
 }
