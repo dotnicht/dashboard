@@ -279,8 +279,9 @@ export class UserInfoComponent implements OnInit {
     }
 
     private save() {
-        if (this.imageCorrect) {
+        if (this.imageCorrect || this.user.photo) {
             this.isSaving = true;
+            this.userEdit.photo = this.userEdit.photo ? this.userEdit.photo : this.user.photo;
             //this.alertService.startLoadingMessage('Saving changes...');
             this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
         }
