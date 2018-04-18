@@ -1,26 +1,27 @@
 <mat-card>
-  <mat-card-header>
-    <img mat-card-avatar src="assets/img/people.svg" />
-    <mat-card-title>{{userName}}</mat-card-title>
-    <mat-card-subtitle>{{'clientInfo.Balance' | translate}}: {{clientInfo.summary}} {{currency}}</mat-card-subtitle>
-  </mat-card-header>
+    <mat-card-header>
+        <img mat-card-avatar src="assets/img/people.svg" />
+        <mat-card-title>{{userName}}</mat-card-title>
+        <mat-card-subtitle>{{'clientInfo.Balance' | translate}}: {{clientInfo.balance + clientInfo.bonusBalance}} {{currency}}</mat-card-subtitle>
+        <!-- <mat-card-subtitle>{{'clientInfo.Balance' | translate}}: {{clientInfo.summary}} {{currency}}</mat-card-subtitle> -->
+    </mat-card-header>
 </mat-card>
 <hr>
 <div *ngIf="isTab">
-    <a mat-list-item  [routerLink]="['/settings']" >
-      <mat-icon mat-list-icon class="mat-24">settings_applications</mat-icon><span  mat-line>{{'mainMenu.Settings' | translate}}</span>
+    <a mat-list-item [routerLink]="['/settings']">
+        <mat-icon mat-list-icon class="mat-24">settings_applications</mat-icon><span mat-line>{{'mainMenu.Settings' | translate}}</span>
     </a>
-    <a mat-list-item (click)="logout()" >
-      <mat-icon mat-list-icon class="mat-24">exit_to_app</mat-icon><span mat-line>{{'mainMenu.Logout' | translate}}</span>
+    <a mat-list-item (click)="logout()">
+        <mat-icon mat-list-icon class="mat-24">exit_to_app</mat-icon><span mat-line>{{'mainMenu.Logout' | translate}}</span>
     </a>
 
 </div>
 <div *ngIf="!isTab">
-  
-  <button mat-menu-item [routerLink]="['/settings']">
+
+    <button mat-menu-item [routerLink]="['/settings']">
       <mat-icon>settings_applications</mat-icon><span>{{'mainMenu.Settings' | translate}}</span>
     </button>
-  <button mat-menu-item (click)="logout()">
+    <button mat-menu-item (click)="logout()">
       <mat-icon>exit_to_app</mat-icon><span>{{'mainMenu.Logout' | translate}}</span>
     </button>
 </div>
