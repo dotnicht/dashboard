@@ -20,13 +20,10 @@ namespace InvestorDashboard.Api.Models
         public string PhoneCode { get; set; }
         public string PhoneNumber { get; set; }
 
-        public string Configuration { get; set; }
         public string City { get; set; }
 
         [MaxLength(3)]
         public string CountryCode { get; set; }
-
-        public string Address { get; set; }
 
         public string[] Roles { get; set; }
         public string Photo { get; set; }

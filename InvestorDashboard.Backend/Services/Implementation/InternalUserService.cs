@@ -89,27 +89,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 && x.CryptoAddress.UserId == user.Id
                 && x.Hash == _kycTransactionHash);
 
-            if (items.Any(x => string.IsNullOrWhiteSpace(x)) && tx != null)
+            var filled = !items.Any(x => string.IsNullOrWhiteSpace(x));
+
+            if (!filled && tx != null)
             {
                 Context.CryptoTransactions.Remove(tx);
             }
-            else if (_options.Value.Bonus.KycBonus != null)
+            else if (filled && tx == null && _options.Value.Bonus.KycBonus != null)
             {
-                var value = _options.Value.Bonus.KycBonus.Value.ToString();
-
-                if (tx == null)
+                tx = new CryptoTransaction
                 {
-                    tx = new CryptoTransaction
-                    {
-                        Amount = value,
-                        Hash = _kycTransactionHash,
-                        CryptoAddress = EnsureInternalAddress(user),
-                        Direction = CryptoTransactionDirection.Internal,
-                        Timestamp = DateTime.UtcNow
-                    };
+                    Amount = (user.KycBonus ?? (user.KycBonus = _options.Value.Bonus.KycBonus)).ToString(),
+                    Hash = _kycTransactionHash,
+                    CryptoAddress = EnsureInternalAddress(user),
+                    Direction = CryptoTransactionDirection.Internal,
+                    Timestamp = DateTime.UtcNow
+                };
 
-                    Context.CryptoTransactions.Add(tx);
-                }
+                Context.CryptoTransactions.Add(tx);
+            }
+            else if (tx != null && user.KycBonus == null)
+            {
+                user.KycBonus = long.Parse(tx.Amount);
             }
 
             await Context.SaveChangesAsync();

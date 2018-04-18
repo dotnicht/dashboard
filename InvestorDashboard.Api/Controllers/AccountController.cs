@@ -69,18 +69,24 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
-                ApplicationUser appUser = await _userManager.FindByNameAsync(this.User.Identity.Name);
+                ApplicationUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
                 if (appUser == null)
-                    return NotFound(this.User.Identity.Name);
+                {
+                    return NotFound(User.Identity.Name);
+                }
 
                 var userVM = _mapper.Map<UserViewModel>(appUser);
                 userVM.Roles = new string[0];
 
                 if (userVM != null)
+                {
                     return Ok(userVM);
+                }
                 else
+                {
                     return NotFound(appUser.Id);
+                }
             }
             catch (Exception ex)
             {
@@ -97,32 +103,35 @@ namespace InvestorDashboard.Api.Controllers
         {
             ApplicationUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
-            if (ModelState.IsValid)
+            if (user == null)
             {
-                if (user == null)
-                {
-                    return BadRequest($"{nameof(user)} cannot be null");
-                }
+                return BadRequest($"{nameof(user)} cannot be null");
+            }
 
-                if (appUser == null)
-                {
-                    return NotFound(appUser.Id);
-                }
+            if (appUser == null)
+            {
+                return NotFound(appUser.Id);
+            }
 
-                if (!string.IsNullOrWhiteSpace(user.Photo) && Convert.FromBase64String(user.Photo).Length > 1024 * 1024)
-                {
-                    return Unauthorized();
-                }
+            if (!string.IsNullOrWhiteSpace(user.Photo) && Convert.FromBase64String(user.Photo).Length > 1024 * 1024)
+            {
+                return Unauthorized();
+            }
 
-                _mapper.Map<UserViewModel, ApplicationUser>(user, appUser);
+            appUser.FirstName = user.FirstName;
+            appUser.LastName = user.LastName;
+            appUser.City = user.City;
+            appUser.CountryCode = user.CountryCode;
+            appUser.PhoneCode = user.PhoneCode;
+            appUser.PhoneNumber = user.PhoneNumber;
+            appUser.Photo = user.Photo;
 
-                var result = await _userManager.UpdateAsync(appUser);
+            var result = await _userManager.UpdateAsync(appUser);
 
-                if (result.Succeeded)
-                {
-                    await _internalUserService.UpdateKycTransaction(appUser);
-                    return Ok();
-                }
+            if (result.Succeeded)
+            {
+                await _internalUserService.UpdateKycTransaction(appUser);
+                return Ok();
             }
 
             return BadRequest(ModelState);
