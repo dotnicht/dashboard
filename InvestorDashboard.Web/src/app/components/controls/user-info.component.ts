@@ -330,7 +330,7 @@ export class UserInfoComponent implements OnInit {
     }
     private saveSuccessHelper(user?: User) {
         this.config.data = { kycBonus: this.kycBonus }
-        if (user.firstName || user.lastName || user.countryCode || user.city || user.phoneCode || user.phoneNumber || user.photo) {
+        if (this.user && (this.user.firstName || this.user.lastName || this.user.countryCode || this.user.city || this.user.phoneCode || this.user.phoneNumber || this.user.photo)) {
             this.afterSuccessSaving(user);
         }
         else {
@@ -340,6 +340,7 @@ export class UserInfoComponent implements OnInit {
                     this.afterSuccessSaving(user);
                 }
             });
+
         }
 
     }
