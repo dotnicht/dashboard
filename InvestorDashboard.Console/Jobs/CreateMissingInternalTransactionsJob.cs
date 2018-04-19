@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
@@ -21,10 +22,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            foreach (var user in Context.Users)
-            {
-                await _internalUserService.UpdateKycTransaction(user);
-            }
+            await _internalUserService.UpdateKycTransaction();
         }
 
         protected override void Dispose(bool disposing)

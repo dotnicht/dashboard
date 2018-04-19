@@ -7,6 +7,7 @@ namespace InvestorDashboard.Backend.Services
     public interface IInternalUserService : IDisposable
     {
         Task SynchronizeInternalUsersData();
-        Task UpdateKycTransaction(ApplicationUser user);
+        Task UpdateKycTransaction(string userId = null);
+        bool IsKycDataFilled(ApplicationUser user);
     }
 }

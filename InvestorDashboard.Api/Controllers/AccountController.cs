@@ -130,7 +130,7 @@ namespace InvestorDashboard.Api.Controllers
 
             if (result.Succeeded)
             {
-                await _internalUserService.UpdateKycTransaction(appUser);
+                await _internalUserService.UpdateKycTransaction(appUser.Id);
                 return Ok();
             }
 

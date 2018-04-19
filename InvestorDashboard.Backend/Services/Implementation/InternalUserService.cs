@@ -73,14 +73,57 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task UpdateKycTransaction(ApplicationUser user)
+        public async Task UpdateKycTransaction(string userId = null)
+        {
+            if (userId == null)
+            {
+                var ids = Context.Users
+                    .Where(x => x.ExternalId == null && x.EmailConfirmed)
+                    .Select(x => x.Id)
+                    .ToArray();
+
+                foreach (var id in ids)
+                {
+                    try
+                    {
+                        await UpdateKycTransactionInternal(id);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while updating KYC transaction for user {id}.");
+                    }
+                }
+            }
+            else
+            {
+                await UpdateKycTransactionInternal(userId);
+            }
+        }
+
+        public bool IsKycDataFilled(ApplicationUser user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var items = new[] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo };
+            return new [] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo }
+                .All(x => !string.IsNullOrWhiteSpace(x));
+        }
+
+        private async Task UpdateKycTransactionInternal(string userId)
+        {
+            if (userId == null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            var user = Context.Users.SingleOrDefault(x => x.Id == userId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException($"User not found with ID {userId}.");
+            }
 
             var tx = Context.CryptoTransactions.SingleOrDefault(
                 x => x.Direction == CryptoTransactionDirection.Internal
@@ -89,7 +132,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 && x.CryptoAddress.UserId == user.Id
                 && x.Hash == _kycTransactionHash);
 
-            var filled = !items.Any(x => string.IsNullOrWhiteSpace(x));
+            var filled = IsKycDataFilled(user);
 
             if (!filled && tx != null)
             {
