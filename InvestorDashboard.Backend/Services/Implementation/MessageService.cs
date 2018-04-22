@@ -19,12 +19,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public MessageService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IDashboardHistoryService dashboardHistoryService,
             IEmailService emailService,
             ITelegramService telegramService,
             IOptions<TelegramSettings> options)
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));

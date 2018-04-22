@@ -1,5 +1,6 @@
 ﻿using System;
 using InvestorDashboard.Backend.Database;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -9,11 +10,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private bool isDisposed;
 
         protected ApplicationDbContext Context { get; }
+        protected IServiceProvider ServiceProvider { get; }
         protected ILogger Logger { get; }
 
-        protected ContextService(ApplicationDbContext context, ILoggerFactory loggerFactory)
+        protected ContextService(ApplicationDbContext context, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
@@ -33,6 +36,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 isDisposed = true;
             }
+        }
+
+        protected ApplicationDbContext CreateContext()
+        {
+            return ServiceProvider.GetRequiredService<ApplicationDbContext>();
         }
     }
 }

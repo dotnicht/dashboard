@@ -98,8 +98,10 @@ namespace InvestorDashboard.Console
 
         private static async Task SetupScheduling(IServiceCollection serviceCollection)
         {
-            var settings = serviceCollection
-                .BuildServiceProvider()
+            var serviceProvider = serviceCollection
+                .BuildServiceProvider();
+
+            var settings = serviceProvider
                 .GetRequiredService<IOptions<JobsSettings>>()
                 .Value;
 
@@ -140,6 +142,10 @@ namespace InvestorDashboard.Console
                         }
 
                         await scheduler.ScheduleJob(job, builder.Build());
+
+                        serviceProvider
+                            .GetRequiredService<ILogger<JobFactory>>()
+                            .LogInformation($"Job {x} execution scheduled.");
                     }
                 });
 

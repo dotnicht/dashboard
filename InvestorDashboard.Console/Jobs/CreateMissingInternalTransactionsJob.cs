@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs

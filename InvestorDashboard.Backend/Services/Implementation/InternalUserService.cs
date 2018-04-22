@@ -20,12 +20,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public InternalUserService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IResourceService resourceService,
             IRestService restService,
             ITokenService tokenService,
             IOptions<TokenSettings> options)
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -50,13 +51,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             throw new InvalidOperationException($"User not found with email {record.Email}.");
                         }
 
-                        CryptoAddress address = EnsureInternalAddress(user);
-
                         var tx = new CryptoTransaction
                         {
                             Amount = record.Tokens.ToString(),
                             ExternalId = record.Guid,
-                            CryptoAddress = address,
+                            CryptoAddressId = EnsureInternalAddress(user, Context).Id,
                             Direction = CryptoTransactionDirection.Internal,
                             Timestamp = DateTime.UtcNow
                         };
@@ -118,52 +117,55 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            var user = Context.Users.SingleOrDefault(x => x.Id == userId);
-
-            if (user == null)
+            using (var ctx = CreateContext())
             {
-                throw new InvalidOperationException($"User not found with ID {userId}.");
-            }
+                var user = ctx.Users.SingleOrDefault(x => x.Id == userId);
 
-            var tx = Context.CryptoTransactions.SingleOrDefault(
-                x => x.Direction == CryptoTransactionDirection.Internal
-                && x.CryptoAddress.Currency == Currency.Token
-                && x.CryptoAddress.Type == CryptoAddressType.Internal
-                && x.CryptoAddress.UserId == user.Id
-                && x.Hash == _kycTransactionHash);
-
-            var filled = IsKycDataFilled(user);
-
-            if (!filled && tx != null)
-            {
-                Context.CryptoTransactions.Remove(tx);
-            }
-            else if (filled && tx == null && _options.Value.Bonus.KycBonus != null)
-            {
-                tx = new CryptoTransaction
+                if (user == null)
                 {
-                    Amount = (user.KycBonus ?? (user.KycBonus = _options.Value.Bonus.KycBonus)).ToString(),
-                    Hash = _kycTransactionHash,
-                    CryptoAddress = EnsureInternalAddress(user),
-                    Direction = CryptoTransactionDirection.Internal,
-                    Timestamp = DateTime.UtcNow
-                };
+                    throw new InvalidOperationException($"User not found with ID {userId}.");
+                }
 
-                Context.CryptoTransactions.Add(tx);
-            }
-            else if (tx != null && user.KycBonus == null)
-            {
-                user.KycBonus = long.Parse(tx.Amount);
-            }
+                var tx = ctx.CryptoTransactions.SingleOrDefault(
+                    x => x.Direction == CryptoTransactionDirection.Internal
+                    && x.CryptoAddress.Currency == Currency.Token
+                    && x.CryptoAddress.Type == CryptoAddressType.Internal
+                    && x.CryptoAddress.UserId == user.Id
+                    && x.Hash == _kycTransactionHash);
 
-            await Context.SaveChangesAsync();
-            await _tokenService.RefreshTokenBalance(user.Id);
+                var filled = IsKycDataFilled(user);
+
+                if (!filled && tx != null)
+                {
+                    ctx.CryptoTransactions.Remove(tx);
+                }
+                else if (filled && tx == null && _options.Value.Bonus.KycBonus != null)
+                {
+                    tx = new CryptoTransaction
+                    {
+                        Amount = (user.KycBonus ?? (user.KycBonus = _options.Value.Bonus.KycBonus)).ToString(),
+                        Hash = _kycTransactionHash,
+                        CryptoAddressId = EnsureInternalAddress(user, ctx).Id,
+                        Direction = CryptoTransactionDirection.Internal,
+                        Timestamp = DateTime.UtcNow
+                    };
+
+                    ctx.CryptoTransactions.Add(tx);
+                }
+                else if (tx != null && user.KycBonus == null)
+                {
+                    user.KycBonus = long.Parse(tx.Amount);
+                }
+
+                await ctx.SaveChangesAsync();
+                await _tokenService.RefreshTokenBalance(user.Id);
+            }
         }
 
-        private CryptoAddress EnsureInternalAddress(ApplicationUser user)
+        private CryptoAddress EnsureInternalAddress(ApplicationUser user, ApplicationDbContext context)
         {
-            return Context.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.UserId == user.Id)
-                ?? Context.CryptoAddresses.Add(new CryptoAddress { UserId = user.Id, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
+            return context.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.UserId == user.Id)
+                ?? context.CryptoAddresses.Add(new CryptoAddress { UserId = user.Id, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
         }
 
         private class InternalUserDataRecord

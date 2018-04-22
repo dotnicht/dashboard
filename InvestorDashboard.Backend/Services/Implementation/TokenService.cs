@@ -19,12 +19,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public TokenService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             ISmartContractService smartContractService,
             IExchangeRateService exchangeRateService,
             ICalculationService calculationService,
             IOptions<TokenSettings> options)
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
@@ -139,110 +140,113 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task RefreshTokenBalanceInternal(string userId)
         {
-            var user = Context.Users
-                .Include(x => x.CryptoAddresses)
-                .ThenInclude(x => x.CryptoTransactions)
-                .SingleOrDefault(x => x.Id == userId);
-
-            if (user == null)
+            using (var ctx = CreateContext())
             {
-                throw new InvalidOperationException($"User not found with ID {userId}.");
-            }
+                var user = ctx.Users
+                    .Include(x => x.CryptoAddresses)
+                    .ThenInclude(x => x.CryptoTransactions)
+                    .SingleOrDefault(x => x.Id == userId);
 
-            var inboundTx = user.CryptoAddresses.Where(x => x.Type == CryptoAddressType.Investment && x.Currency != Currency.Token)
-                .SelectMany(x => x.CryptoTransactions)
-                .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
-                .ToArray();
-
-            var balance = 0L;
-
-            foreach (var tx in inboundTx)
-            {
-                var ex = await _exchangeRateService.GetExchangeRate(tx.CryptoAddress.Currency, _options.Value.Currency, tx.Timestamp);
-                balance += (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
-            }
-
-            var bonus = 0L;
-
-            if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
-            {
-                // TODO: reimplement schedule bonus system.
-            }
-            else if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Percentage)
-            {
-                foreach (var item in _options.Value.Bonus.Percentage)
+                if (user == null)
                 {
-                    if ((item.Lower == null || balance >= item.Lower) && (item.Upper == null || balance < item.Upper))
+                    throw new InvalidOperationException($"User not found with ID {userId}.");
+                }
+
+                var inboundTx = user.CryptoAddresses.Where(x => x.Type == CryptoAddressType.Investment && x.Currency != Currency.Token)
+                    .SelectMany(x => x.CryptoTransactions)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
+                    .ToArray();
+
+                var balance = 0L;
+
+                foreach (var tx in inboundTx)
+                {
+                    var ex = await _exchangeRateService.GetExchangeRate(tx.CryptoAddress.Currency, _options.Value.Currency, tx.Timestamp);
+                    balance += (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
+                }
+
+                var bonus = 0L;
+
+                if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
+                {
+                    // TODO: reimplement schedule bonus system.
+                }
+                else if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Percentage)
+                {
+                    foreach (var item in _options.Value.Bonus.Percentage)
                     {
-                        bonus = (long)Math.Ceiling(balance * item.Amount);
-                        break;
+                        if ((item.Lower == null || balance >= item.Lower) && (item.Upper == null || balance < item.Upper))
+                        {
+                            bonus = (long)Math.Ceiling(balance * item.Amount);
+                            break;
+                        }
                     }
                 }
-            }
 
-            bonus += user.CryptoAddresses
-                .Where(x => x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token)
-                .SelectMany(x => x.CryptoTransactions)
-                .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal)
-                .ToArray()
-                .Sum(x => long.Parse(x.Amount));
+                bonus += user.CryptoAddresses
+                    .Where(x => x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token)
+                    .SelectMany(x => x.CryptoTransactions)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal)
+                    .ToArray()
+                    .Sum(x => long.Parse(x.Amount));
 
-            var outbound = user.CryptoAddresses
-                    .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer)
-                    ?.CryptoTransactions
-                    ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && x.IsFailed == false)
-                    ?.ToArray()
-                    ?.Sum(x => long.Parse(x.Amount))
-                ?? 0;
+                var outbound = user.CryptoAddresses
+                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer)
+                        ?.CryptoTransactions
+                        ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && x.IsFailed == false)
+                        ?.ToArray()
+                        ?.Sum(x => long.Parse(x.Amount))
+                    ?? 0;
 
-            var tempBalance = balance;
-            var tempBonus = bonus;
+                var tempBalance = balance;
+                var tempBonus = bonus;
 
-            if (balance < outbound)
-            {
-                bonus -= outbound - balance;
-                balance = 0;
-
-                if (bonus < 0)
+                if (balance < outbound)
                 {
-                    bonus = 0;
-                    Logger.LogError($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
+                    bonus -= outbound - balance;
+                    balance = 0;
+
+                    if (bonus < 0)
+                    {
+                        bonus = 0;
+                        Logger.LogError($"Inconsistent balance detected for user {userId}. Balance: {tempBalance}. Bonus: {tempBonus}. Total: {tempBalance + tempBonus}. Outbound: {outbound}.");
+                    }
                 }
-            }
-            else
-            {
-                balance -= outbound;
-            }
-
-            if (user.Balance != balance || user.BonusBalance != bonus)
-            {
-                user.Balance = balance;
-                user.BonusBalance = bonus;
-
-                // TODO: balance and bonus balance change notification.
-
-                await Context.SaveChangesAsync();
-            }
-
-            if (_options.Value.AutomaticallyEnableTokenTransfer)
-            {
-                var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
-                var updated = user.Balance + user.BonusBalance;
-                var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
-
-                if (external != 0)
+                else
                 {
-                    if (updated != external && user.ExternalId == null)
-                    {
-                        Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
-                        user.IsEligibleForTransfer = false;
-                    }
-                    else if (!user.IsEligibleForTransfer)
-                    {
-                        user.IsEligibleForTransfer = true;
-                    }
+                    balance -= outbound;
+                }
 
-                    await Context.SaveChangesAsync();
+                if (user.Balance != balance || user.BonusBalance != bonus)
+                {
+                    user.Balance = balance;
+                    user.BonusBalance = bonus;
+
+                    // TODO: balance and bonus balance change notification.
+
+                    await ctx.SaveChangesAsync();
+                }
+
+                if (_options.Value.AutomaticallyEnableTokenTransfer)
+                {
+                    var address = user.CryptoAddresses.Single(x => x.Currency == Currency.ETH && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
+                    var updated = user.Balance + user.BonusBalance;
+                    var external = await _smartContractService.CallSmartContractBalanceOfFunction(address.Address);
+
+                    if (external != 0)
+                    {
+                        if (updated != external && user.ExternalId == null)
+                        {
+                            Logger.LogError($"Balance at smart contract is incosistent with database for user {userId}. Smart contract balance: {external}. Database balance: {updated}.");
+                            user.IsEligibleForTransfer = false;
+                        }
+                        else if (!user.IsEligibleForTransfer)
+                        {
+                            user.IsEligibleForTransfer = true;
+                        }
+
+                        await ctx.SaveChangesAsync();
+                    }
                 }
             }
         }

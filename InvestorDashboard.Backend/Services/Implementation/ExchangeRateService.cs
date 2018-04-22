@@ -16,8 +16,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<ExchangeRateSettings> _options;
         private readonly IRestService _restService;
 
-        public ExchangeRateService(ApplicationDbContext context, ILoggerFactory loggerFactory, IOptions<ExchangeRateSettings> options, IRestService restService)
-            : base(context, loggerFactory)
+        public ExchangeRateService(ApplicationDbContext context, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IOptions<ExchangeRateSettings> options, IRestService restService)
+            : base(context, serviceProvider, loggerFactory)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));

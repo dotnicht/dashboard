@@ -18,11 +18,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public AffiliateService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IRestService restService,
             ICalculationService calculationService,
             IOptions<TokenSettings> options)
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             _restService = restService ?? throw new ArgumentNullException(nameof(restService));
             _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));

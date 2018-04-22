@@ -21,12 +21,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<EthereumSettings> _ethereumSettings;
 
         public SmartContractService(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory, 
             IKeyVaultService keyVaultService, 
             IResourceService resourceService, 
             IOptions<EthereumSettings> ethereumSettings) 
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));

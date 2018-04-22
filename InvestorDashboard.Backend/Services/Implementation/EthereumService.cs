@@ -24,6 +24,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public EthereumService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
@@ -34,7 +35,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings)
-            : base(context, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, ethereumSettings)
+            : base(context, serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, ethereumSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
         }

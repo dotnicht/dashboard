@@ -29,6 +29,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected CryptoService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
             IKeyVaultService keyVaultService,
@@ -39,7 +40,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             KeyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
@@ -64,7 +65,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return null;
             }
 
-            using (new ElapsedTimer(Logger, $"CreateCryptoAddress: {Settings.Value.Currency}"))
+            using (new ElapsedTimer(Logger, $"CreateCryptoAddress: {Settings.Value.Currency}. User: {userId}."))
             {
                 var (address, privateKey) = GenerateKeys(password);
                 return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);

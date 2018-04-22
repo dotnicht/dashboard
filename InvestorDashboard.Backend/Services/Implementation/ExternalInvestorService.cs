@@ -24,6 +24,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public ExternalInvestorService(
             ApplicationDbContext context,
+            IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             UserManager<ApplicationUser> userManager,
             IExchangeRateService exchangeRateService,
@@ -33,7 +34,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ITokenService tokenService,
             IGenericAddressService genericAddressService,
             IOptions<TokenSettings> tokenSettings)
-            : base(context, loggerFactory)
+            : base(context, serviceProvider, loggerFactory)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
