@@ -340,9 +340,7 @@ export class UserInfoComponent implements OnInit {
                     this.afterSuccessSaving(user);
                 }
             });
-
         }
-
     }
 
     private saveFailedHelper(error: any) {

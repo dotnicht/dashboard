@@ -95,13 +95,13 @@ export class RegisterComponent implements OnInit {
 
     /** Called by Angular after register component initialized */
     ngOnInit(): void {
-        if (this.referralService.refLink) {
-            this.queryParams = {ref: this.referralService.refLink};
+        if (Object.keys(this.referralService.queryParams).length != 0) {
+            this.queryParams = this.referralService.queryParams;
         }
         
         if (this.authService.isLoggedIn) {
-            if (this.referralService.refLink) {
-                this.router.navigate(['/login'], { queryParams: { ref: this.referralService.refLink } });
+            if (Object.keys(this.referralService.queryParams).length != 0) {
+                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams  });
             }
             else {
                 this.router.navigate(['/login']);
@@ -184,8 +184,18 @@ export class RegisterComponent implements OnInit {
 
                 if (this.activatedRoute.snapshot.queryParams['ref']){
                     this.registerForm.referral = this.activatedRoute.snapshot.queryParams['ref'];
-                    this.referralService.refLink = '';
                 }
+
+                if (this.activatedRoute.snapshot.queryParams['utm_source']){
+                    this.registerForm.utmSource = this.activatedRoute.snapshot.queryParams['utm_source'];
+                }
+
+                if (this.referralService.startUrl) {
+                    this.registerForm.startUrl = this.referralService.startUrl;
+                }
+                
+                this.referralService.startUrl = '';
+                this.referralService.queryParams = {};
 
                 // this.alertService.startLoadingMessage();
                 this.authService.register(this.registerForm).subscribe(responce => {

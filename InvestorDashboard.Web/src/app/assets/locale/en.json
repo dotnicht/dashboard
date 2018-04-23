@@ -167,7 +167,8 @@
             "Address": "Address",
             "City": "City:",
             "CountryCode": "Country:",
-            "CountryCodePattern": "Code must be 3 characters with uppercase"
+            "CountryCodePattern": "Code must be 3 characters with uppercase",
+            "TelegramUsername": "Telegram Username:"
         },
         "register": {
             "rules": {

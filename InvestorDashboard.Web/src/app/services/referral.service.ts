@@ -12,7 +12,9 @@ import { Subject } from "rxjs";
 
 @Injectable()
 export class ReferralService {
-    refLink: string = '';
+    queryParams = {};
+    startUrl: string = '';
+
     private referralInfoUrl = environment.host + '/dashboard/referral'
 
     constructor(private http: HttpClient, private authService: AuthService) {

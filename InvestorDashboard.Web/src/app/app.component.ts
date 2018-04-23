@@ -12,6 +12,8 @@ import { AccountService } from './services/account.service';
 import { OtherService } from './services/other.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ReferralService } from './services/referral.service';
+import { Observable } from 'rxjs/Observable';
+import { Utilities } from './services/utilities';
 
 @Component({
   selector: 'app-root',
@@ -59,16 +61,13 @@ export class AppComponent implements OnInit {
 
     translationService.addLanguages(['en', 'ru']);
     translationService.setDefaultLanguage('en');
+    this.referralService.startUrl = window.location.href;
 
     this.activatedRoute.queryParams.subscribe(params => {
-      if (params['ref']) {
-        this.referralService.refLink = params['ref'];
-        this.queryParams = {ref: params['ref']}
-      }
-      else {
-        if (this.referralService.refLink) {
-          this.location.replaceState(window.location.pathname, `ref=${this.referralService.refLink}`)
-        }
+      this.referralService.queryParams = params;
+      this.queryParams = params;
+      if (Object.keys(params).length != 0) {
+        this.location.replaceState(window.location.pathname, Utilities.serialize(params));
       }
     });
   }
