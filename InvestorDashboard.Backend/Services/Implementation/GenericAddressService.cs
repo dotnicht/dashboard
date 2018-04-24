@@ -53,37 +53,40 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)
         {
-            var user = Context.Users.Include(x => x.CryptoAddresses).SingleOrDefault(x => x.Id == userId);
-
-            if (user == null)
+            using (var ctx = CreateContext())
             {
-                throw new InvalidOperationException($"User not found with ID {userId}.");
-            }
+                var user = ctx.Users.Include(x => x.CryptoAddresses).SingleOrDefault(x => x.Id == userId);
 
-            if (includeInternal && !user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer && !x.IsDisabled))
-            {
-                var address = new CryptoAddress
+                if (user == null)
                 {
-                    Currency = Currency.Token,
-                    UserId = user.Id,
-                    Type = CryptoAddressType.Transfer
-                };
-
-                await Context.CryptoAddresses.AddAsync(address);
-                await Context.SaveChangesAsync();
-            }
-
-            var tasks = new List<Task<CryptoAddress>>();
-
-            foreach (var service in _cryptoServices)
-            {
-                if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled))
-                {
-                    tasks.Add(service.CreateCryptoAddress(userId));
+                    throw new InvalidOperationException($"User not found with ID {userId}.");
                 }
-            }
 
-            Task.WaitAll(tasks.ToArray());
+                if (includeInternal && !user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer && !x.IsDisabled))
+                {
+                    var address = new CryptoAddress
+                    {
+                        Currency = Currency.Token,
+                        UserId = user.Id,
+                        Type = CryptoAddressType.Transfer
+                    };
+
+                    await ctx.CryptoAddresses.AddAsync(address);
+                    await ctx.SaveChangesAsync();
+                }
+
+                var tasks = new List<Task<CryptoAddress>>();
+
+                foreach (var service in _cryptoServices)
+                {
+                    if (!user.CryptoAddresses.Any(x => x.Currency == service.Settings.Value.Currency && x.Type == CryptoAddressType.Investment && !x.IsDisabled))
+                    {
+                        tasks.Add(service.CreateCryptoAddress(userId));
+                    }
+                }
+
+                Task.WaitAll(tasks.ToArray());
+            }
         }
     }
 }
