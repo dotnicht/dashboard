@@ -30,13 +30,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        if (this.referralService.refLink) {
-            this.queryParams = {ref: this.referralService.refLink};
+        if (Object.keys(this.referralService.queryParams).length != 0) {
+            this.queryParams = this.referralService.queryParams;
         }
         
         if (this.authService.isLoggedIn) {
-            if (this.referralService.refLink) {
-                this.router.navigate(['/login'], { queryParams: { ref: this.referralService.refLink } });
+            if (Object.keys(this.referralService.queryParams).length != 0) {
+                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams  });
             }
             else {
                 this.router.navigate(['/login']);

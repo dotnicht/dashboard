@@ -33,7 +33,7 @@ export class User {
     public isEnabled: boolean;
     public isLockedOut: boolean;
     public photo: string;
-
+    public telegramUsername: string;
 
     // Note: Using only optional constructor properties without backing store disables typescript's type checking for the type
     constructor(
@@ -77,7 +77,9 @@ export class UserRegister {
     clickId: string;
     reCaptchaToken: String;
     referral: string;
-
+    utmSource: string;
+    startUrl: string;
+    
     constructor(email?: string, password?: string, confirmPassword?: string) {
         this.email = email;
         this.password = password;

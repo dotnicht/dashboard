@@ -27,5 +27,6 @@ namespace InvestorDashboard.Api.Models
 
         public string[] Roles { get; set; }
         public string Photo { get; set; }
+        public string TelegramUsername { get; set; }
     }
 }

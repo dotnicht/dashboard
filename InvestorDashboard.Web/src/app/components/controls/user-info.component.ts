@@ -268,8 +268,8 @@ export class UserInfoComponent implements OnInit {
             else {
                 this.imageCorrect = false;
             }
-        } 
-        
+        }
+
     }
     private isImageCorrect() {
         if ((this.imageCorrect == undefined && this.user.photo) || this.imageCorrect) {
@@ -295,45 +295,52 @@ export class UserInfoComponent implements OnInit {
         }
     }
 
+    private afterSuccessSaving(user: User) {
+        if (user)
+            Object.assign(this.userEdit, user);
+
+        this.isSaving = false;
+        //this.alertService.stopLoadingMessage();
+        this.isChangePassword = false;
+        this.showValidationErrors = false;
+
+        this.deletePasswordFromUser(this.userEdit);
+        Object.assign(this.user, this.userEdit);
+        this.userEdit = new UserEdit();
+        this.resetForm();
+
+
+        // if (this.isGeneralEditor) {
+        //     if (this.isNewUser)
+        //         this.alertService.showMessage('Success', `User \"${this.user.userName}\" was created successfully`, MessageSeverity.success);
+        //     else if (!this.isEditingSelf)
+        //         this.alertService.showMessage('Success', `Changes to user \"${this.user.userName}\" was saved successfully`, MessageSeverity.success);
+        // }
+
+        if (this.isEditingSelf) {
+            //this.alertService.showMessage('Success', 'Changes to your User Profile was saved successfully', MessageSeverity.success);
+            this.refreshLoggedInUser();
+        }
+
+        this.isEditMode = false;
+
+
+        if (this.changesSavedCallback)
+            this.changesSavedCallback();
+    }
     private saveSuccessHelper(user?: User) {
         this.config.data = { kycBonus: this.kycBonus }
-        this.successKycMsgDialogRef = this.dialog.open(SuccessKycMsgDialogComponent, this.config);
-        this.successKycMsgDialogRef.afterClosed().subscribe((result) => {
-            if (result == true) {
-
-                if (user)
-                    Object.assign(this.userEdit, user);
-
-                this.isSaving = false;
-                //this.alertService.stopLoadingMessage();
-                this.isChangePassword = false;
-                this.showValidationErrors = false;
-
-                this.deletePasswordFromUser(this.userEdit);
-                Object.assign(this.user, this.userEdit);
-                this.userEdit = new UserEdit();
-                this.resetForm();
-
-
-                // if (this.isGeneralEditor) {
-                //     if (this.isNewUser)
-                //         this.alertService.showMessage('Success', `User \"${this.user.userName}\" was created successfully`, MessageSeverity.success);
-                //     else if (!this.isEditingSelf)
-                //         this.alertService.showMessage('Success', `Changes to user \"${this.user.userName}\" was saved successfully`, MessageSeverity.success);
-                // }
-
-                if (this.isEditingSelf) {
-                    //this.alertService.showMessage('Success', 'Changes to your User Profile was saved successfully', MessageSeverity.success);
-                    this.refreshLoggedInUser();
+        if (this.user && (this.user.firstName || this.user.lastName || this.user.countryCode || this.user.city || this.user.phoneCode || this.user.phoneNumber || this.user.photo)) {
+            this.afterSuccessSaving(user);
+        }
+        else {
+            this.successKycMsgDialogRef = this.dialog.open(SuccessKycMsgDialogComponent, this.config);
+            this.successKycMsgDialogRef.afterClosed().subscribe((result) => {
+                if (result == true) {
+                    this.afterSuccessSaving(user);
                 }
-
-                this.isEditMode = false;
-
-
-                if (this.changesSavedCallback)
-                    this.changesSavedCallback();
-            }
-        });
+            });
+        }
     }
 
     private saveFailedHelper(error: any) {

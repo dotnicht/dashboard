@@ -116,6 +116,27 @@
                     </div>
 
                 </div>
+
+                <div class="row" *ngIf="!isEditMode">
+                    <div class="col-mat-12">
+                        <hr [class.separator-hr]="!isEditMode" />
+                    </div>
+                </div>
+
+                <mat-form-field *ngIf="isEditMode">
+                    <input matInput attr.id="telegramUsername-{{uniqueId}}" #telegramUsername="ngModel" name="telegramUsername" placeholder="Enter @username" [(ngModel)]="userEdit.telegramUsername" />
+                </mat-form-field>
+
+                <div class="form-group" *ngIf="!isEditMode">
+                    <label [class.col-mat-3]="isViewOnly" [class.col-mat-2]="!isViewOnly" class="control-label" for="telegramUsername-{{uniqueId}}">{{'users.editor.TelegramUsername' | translate}}</label>
+                    <div [class.col-mat-9]="isViewOnly" [class.col-mat-10]="!isViewOnly">
+                        <p class="form-control-static">{{user.telegramUsername}}</p>
+                    </div>
+                </div>
+
+
+
+
             </div>
             <div class="right">
                 <div class="load-photo">
