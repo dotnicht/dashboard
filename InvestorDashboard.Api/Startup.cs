@@ -53,7 +53,7 @@ namespace InvestorDashboard.Api
                 // Note: use the generic overload if you need
                 // to replace the default OpenIddict entities.
                 options.UseOpenIddict();
-            });
+            }, ServiceLifetime.Transient);
 
             services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection")));
 

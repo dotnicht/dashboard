@@ -56,7 +56,6 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ITempDataProvider _tempDataProvider;
         private readonly IServiceProvider _serviceProvider;
 
-
         public AuthorizationController(
             OpenIddictApplicationManager<OpenIddictApplication> applicationManager,
             IOptions<IdentityOptions> identityOptions,
@@ -128,13 +127,10 @@ namespace InvestorDashboard.Api.Controllers
                         }
 
                         BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(appUser.Id, true));
-                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser));
+                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
 
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                        code = HttpUtility.UrlEncode(code);
-
-                        var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
-
+                        var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");
                         await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
                         return Ok();
@@ -171,8 +167,7 @@ namespace InvestorDashboard.Api.Controllers
                 if (appUser != null)
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                    code = HttpUtility.UrlEncode(code);
-                    var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={code}");
+                    var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");
                     await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
 
                     return Ok();

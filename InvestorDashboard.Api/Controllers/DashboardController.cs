@@ -237,6 +237,7 @@ namespace InvestorDashboard.Api.Controllers
             user.IsEligibleForTransfer = ApplicationUser.IsEligibleForTransfer
                 && !_tokenSettings.Value.IsTokenTransferDisabled
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
+
             user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
 
             return user;
@@ -245,6 +246,7 @@ namespace InvestorDashboard.Api.Controllers
         private async Task<IcoInfoModel> GetIcoStatusModel()
         {
             var result = _mapper.Map<IcoInfoModel>(_tokenSettings.Value);
+
             var items = await _dashboardHistoryService.GetHistoryItems();
 
             result.TotalCoinsBought = items.First().Value.TotalCoinsBoughts;
@@ -259,11 +261,11 @@ namespace InvestorDashboard.Api.Controllers
             return result;
         }
 
-        private async Task<List<PaymentInfoModel>> GetPaymentInfoModel()
+        private async Task<PaymentInfoModel[]> GetPaymentInfoModel()
         {
-            if (_tokenSettings.Value.IsTokenSaleDisabled)
+            if (ApplicationUser.IsTokenSaleDisabled || (_tokenSettings.Value.IsTokenSaleDisabled && ApplicationUser.Id != _commonSettings.Value.AdminUserId))
             {
-                return new PaymentInfoModel[0].ToList();
+                return new PaymentInfoModel[0];
             }
 
             var addresses = await ApplicationUser.CryptoAddresses
@@ -281,7 +283,7 @@ namespace InvestorDashboard.Api.Controllers
                     Confirmations = x.Settings.Value.Confirmations
                 })
                 .Select(m => m.Result)
-                .ToList();
+                .ToArray();
 
             return paymentInfo;
         }

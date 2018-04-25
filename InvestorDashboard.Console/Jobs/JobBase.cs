@@ -10,8 +10,6 @@ namespace InvestorDashboard.Console.Jobs
 {
     public abstract class JobBase : IJob
     {
-        private bool isDisposed;
-
         protected IOptions<JobsSettings> Options { get; }
         protected ILogger Logger { get; }
 

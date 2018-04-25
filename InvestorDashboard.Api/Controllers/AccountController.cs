@@ -31,13 +31,11 @@ namespace InvestorDashboard.Api.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
-        private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
         private readonly UrlEncoder _urlEncoder;
 
         public AccountController(
-          ApplicationDbContext context,
           UserManager<ApplicationUser> userManager,
           IAuthorizationService authorizationService,
           SignInManager<ApplicationUser> signInManager,
@@ -55,7 +53,6 @@ namespace InvestorDashboard.Api.Controllers
             _authorizationService = authorizationService;
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
-            _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlEncoder = urlEncoder;
         }

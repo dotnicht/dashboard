@@ -1,5 +1,4 @@
-﻿using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Database.Models;
+﻿using InvestorDashboard.Backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -42,16 +41,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 await CreateMissingAddressesInternal(userId, includeInternal);
             }
-        }
-
-        public async Task CreateUserMissingAddresses(ApplicationUser user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            await CreateMissingAddressesInternal(user.Id, true);
         }
 
         private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)

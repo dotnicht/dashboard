@@ -72,43 +72,53 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task NotifyUserRegistered(ApplicationUser user = null)
+        public async Task NotifyUserRegistered(string userId = null)
         {
             using (var ctx = CreateContext())
             {
-                if (user == null)
+                if (userId == null)
                 {
-                    foreach (var item in ctx.Users.Where(x => x.ClickId != null && !x.IsNotified).ToArray())
+                    var ids = ctx.Users
+                        .Where(x => x.ClickId != null && !x.IsNotified)
+                        .Select(x => x.Id)
+                        .ToArray();
+
+                    foreach (var id in ids)
                     {
                         try
                         {
-                            await NotifyUserRegisteredInternal(item, ctx);
+                            await NotifyUserRegisteredInternal(id);
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {item.Id}.");
+                            Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {id}.");
                         }
                     }
                 }
                 else
                 {
-                    await NotifyUserRegisteredInternal(user, ctx);
+                    await NotifyUserRegisteredInternal(userId);
                 }
             }
         }
 
-        private async Task NotifyUserRegisteredInternal(ApplicationUser user, ApplicationDbContext context)
+        private async Task NotifyUserRegisteredInternal(string userId)
         {
-            if (!string.IsNullOrWhiteSpace(user.ClickId))
+            using (var ctx = CreateContext())
             {
-                var address = $"http://offers.proffico.affise.com/postback?clickid={user.ClickId}&goal=2";
-                var uri = new Uri(address);
-                var response = await _restService.GetAsync<AffiseResponse>(uri);
+                var user = ctx.Users.Single(x => x.Id == userId);
 
-                if (response.Status == 1)
+                if (!string.IsNullOrWhiteSpace(user.ClickId))
                 {
-                    user.IsNotified = true;
-                    await context.SaveChangesAsync();
+                    var address = $"http://offers.proffico.affise.com/postback?clickid={user.ClickId}&goal=2";
+                    var uri = new Uri(address);
+                    var response = await _restService.GetAsync<AffiseResponse>(uri);
+
+                    if (response.Status == 1)
+                    {
+                        user.IsNotified = true;
+                        await ctx.SaveChangesAsync();
+                    }
                 }
             }
         }

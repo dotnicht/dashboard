@@ -280,9 +280,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task ProccessBlockAndUpdateAddresses(long index, IEnumerable<CryptoAddress> addresses, ApplicationDbContext context)
         {
-            await ProccessBlock(index, addresses);
-            addresses.ToList().ForEach(x => x.LastBlockIndex = index);
-            await context.SaveChangesAsync();
+            using (new ElapsedTimer(Logger, $"ProccessBlockAndUpdateAddresses. Currency: {Settings.Value.Currency}. Block: {index}. Addresses: {addresses.Count()}"))
+            {
+                await ProccessBlock(index, addresses);
+                addresses.ToList().ForEach(x => x.LastBlockIndex = index);
+                await context.SaveChangesAsync();
+            }
         }
 
         private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)
