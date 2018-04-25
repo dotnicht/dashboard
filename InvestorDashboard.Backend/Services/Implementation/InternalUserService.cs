@@ -19,14 +19,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly ITokenService _tokenService;
 
         public InternalUserService(
-            ApplicationDbContext context,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IResourceService resourceService,
             IRestService restService,
             ITokenService tokenService,
             IOptions<TokenSettings> options)
-            : base(context, serviceProvider, loggerFactory)
+            : base(serviceProvider, loggerFactory)
         {
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _options = options ?? throw new ArgumentNullException(nameof(options));

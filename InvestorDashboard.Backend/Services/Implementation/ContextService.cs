@@ -7,12 +7,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal abstract class ContextService
     {
-        private bool isDisposed;
-
         protected IServiceProvider ServiceProvider { get; }
         protected ILogger Logger { get; }
 
-        protected ContextService(ApplicationDbContext context, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+        protected ContextService(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
             ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));

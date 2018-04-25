@@ -33,7 +33,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         }
 
         public BitcoinService(
-            ApplicationDbContext context,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
@@ -45,7 +44,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<BitcoinSettings> bitcoinSettings)
-            : base(context, serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, bitcoinSettings)
+            : base(serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, bitcoinSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
         }

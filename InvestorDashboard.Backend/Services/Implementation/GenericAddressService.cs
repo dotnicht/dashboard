@@ -13,8 +13,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public GenericAddressService(ApplicationDbContext context, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IEnumerable<ICryptoService> cryptoServices) 
-            : base(context, serviceProvider, loggerFactory)
+        public GenericAddressService(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IEnumerable<ICryptoService> cryptoServices) 
+            : base(serviceProvider, loggerFactory)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }

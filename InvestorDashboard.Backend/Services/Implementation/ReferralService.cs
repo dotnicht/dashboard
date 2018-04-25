@@ -17,8 +17,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly ICalculationService _calculationService;
         private readonly IOptions<ReferralSettings> _options;
 
-        public ReferralService(ApplicationDbContext context, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ICalculationService calculationService, IOptions<ReferralSettings> options)
-            : base(context, serviceProvider, loggerFactory)
+        public ReferralService(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ICalculationService calculationService, IOptions<ReferralSettings> options)
+            : base(serviceProvider, loggerFactory)
         {
             _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
             _options = options ?? throw new ArgumentNullException(nameof(options));

@@ -28,7 +28,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected IMapper Mapper { get; }
 
         protected CryptoService(
-            ApplicationDbContext context,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IExchangeRateService exchangeRateService,
@@ -40,7 +39,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
             IOptions<CryptoSettings> cryptoSettings)
-            : base(context, serviceProvider, loggerFactory)
+            : base(serviceProvider, loggerFactory)
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
             KeyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));

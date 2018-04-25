@@ -18,14 +18,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<TokenSettings> _options;
 
         public TokenService(
-            ApplicationDbContext context,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             ISmartContractService smartContractService,
             IExchangeRateService exchangeRateService,
             ICalculationService calculationService,
             IOptions<TokenSettings> options)
-            : base(context, serviceProvider, loggerFactory)
+            : base(serviceProvider, loggerFactory)
         {
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));

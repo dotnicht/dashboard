@@ -20,13 +20,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly ICalculationService _calculationService;
 
         public DashboardHistoryService(
-            ApplicationDbContext context,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IOptions<TokenSettings> options,
             IMapper mapper,
             ICalculationService calculationService)
-            : base(context, serviceProvider, loggerFactory)
+            : base(serviceProvider, loggerFactory)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

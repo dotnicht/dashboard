@@ -18,14 +18,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IOptions<TelegramSettings> _options;
 
         public MessageService(
-            ApplicationDbContext context,
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             IDashboardHistoryService dashboardHistoryService,
             IEmailService emailService,
             ITelegramService telegramService,
             IOptions<TelegramSettings> options)
-            : base(context, serviceProvider, loggerFactory)
+            : base(serviceProvider, loggerFactory)
         {
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
