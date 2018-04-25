@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface ITokenService : IDisposable
+    public interface ITokenService
     {
         Task RefreshTokenBalance(string userId = null);
         Task<bool> IsUserEligibleForTransfer(string userId);

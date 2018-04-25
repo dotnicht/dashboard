@@ -86,25 +86,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshOutboundTransactions()
         {
-            var transactions = Context.CryptoTransactions
-                .Where(
-                    x => x.Direction == CryptoTransactionDirection.Outbound
-                    && x.IsFailed == null
-                    && x.ExternalId == null
-                    && x.CryptoAddress.Address == null
-                    && x.CryptoAddress.Currency == Currency.Token
-                    && x.CryptoAddress.Type == CryptoAddressType.Transfer)
-                .ToArray();
-
-            foreach (var tx in transactions)
+            using (var ctx = CreateContext())
             {
-                var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-                var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+                var transactions = ctx.CryptoTransactions
+                    .Where(
+                        x => x.Direction == CryptoTransactionDirection.Outbound
+                        && x.IsFailed == null
+                        && x.ExternalId == null
+                        && x.CryptoAddress.Address == null
+                        && x.CryptoAddress.Currency == Currency.Token
+                        && x.CryptoAddress.Type == CryptoAddressType.Transfer)
+                    .ToArray();
 
-                if (receipt != null)
+                foreach (var tx in transactions)
                 {
-                    tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
-                    await Context.SaveChangesAsync();
+                    var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+                    var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+
+                    if (receipt != null)
+                    {
+                        tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
+                        await ctx.SaveChangesAsync();
+                    }
                 }
             }
         }

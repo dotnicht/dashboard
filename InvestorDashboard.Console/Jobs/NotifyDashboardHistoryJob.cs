@@ -13,8 +13,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IMessageService _messageService;
 
-        public NotifyDashboardHistoryJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IMessageService messageService) 
-            : base(loggerFactory, context, options)
+        public NotifyDashboardHistoryJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IMessageService messageService) 
+            : base(loggerFactory, options)
         {
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         }
@@ -22,12 +22,6 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _messageService.SendDashboardHistoryMessage();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _messageService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

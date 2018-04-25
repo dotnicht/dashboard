@@ -2,7 +2,6 @@
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -56,49 +55,49 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var record in records)
             {
-                var user = Context.Users
-                    .Include(x => x.CryptoAddresses)
-                    .ThenInclude(x => x.CryptoTransactions)
-                    .SingleOrDefault(x => x.ExternalId == record.Id);
-
-                if (user == null)
+                using (var ctx = CreateContext())
                 {
-                    user = new ApplicationUser
-                    {
-                        Email = $"{record.Id}@{record.Id}.com",
-                        UserName = record.Id.ToString(),
-                        ExternalId = record.Id
-                    };
+                    var user = ctx.Users.SingleOrDefault(x => x.ExternalId == record.Id);
 
-                    var result = await _userManager.CreateAsync(user, "QAZwsxedc123");
-
-                    if (result.Succeeded)
+                    if (user == null)
                     {
-                        try
+                        user = new ApplicationUser
                         {
-                            await _userManager.ConfirmEmailAsync(user, await _userManager.GenerateEmailConfirmationTokenAsync(user));
-                            await _genericAddressService.CreateMissingAddresses(user.Id, false);
+                            Email = $"{record.Id}@{record.Id}.com",
+                            UserName = record.Id.ToString(),
+                            ExternalId = record.Id
+                        };
 
-                            var address = Context.CryptoAddresses.Single(x => x.UserId == user.Id && !x.IsDisabled && x.Currency == record.Currency);
-                            var value = _calculationService.ToStringValue(record.Value, record.Currency);
+                        var result = await _userManager.CreateAsync(user, "QAZwsxedc123");
 
-                            var transaction = new CryptoTransaction
+                        if (result.Succeeded)
+                        {
+                            try
                             {
-                                Amount = value,
-                                Direction = CryptoTransactionDirection.Inbound,
-                                CryptoAddressId = address.Id,
-                                Timestamp = record.DateTime
-                            };
+                                await _userManager.ConfirmEmailAsync(user, await _userManager.GenerateEmailConfirmationTokenAsync(user));
+                                await _genericAddressService.CreateMissingAddresses(user.Id, false);
 
-                            await Context.CryptoTransactions.AddAsync(transaction);
-                            await Context.SaveChangesAsync();
+                                var address = ctx.CryptoAddresses.Single(x => x.UserId == user.Id && !x.IsDisabled && x.Currency == record.Currency);
+                                var value = _calculationService.ToStringValue(record.Value, record.Currency);
 
-                            await _tokenService.RefreshTokenBalance(user.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError(ex, $"An error occurred while creating external investor.");
-                            await _userManager.DeleteAsync(user);
+                                var transaction = new CryptoTransaction
+                                {
+                                    Amount = value,
+                                    Direction = CryptoTransactionDirection.Inbound,
+                                    CryptoAddressId = address.Id,
+                                    Timestamp = record.DateTime
+                                };
+
+                                await ctx.CryptoTransactions.AddAsync(transaction);
+                                await ctx.SaveChangesAsync();
+
+                                await _tokenService.RefreshTokenBalance(user.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError(ex, $"An error occurred while creating external investor.");
+                                await _userManager.DeleteAsync(user);
+                            }
                         }
                     }
                 }

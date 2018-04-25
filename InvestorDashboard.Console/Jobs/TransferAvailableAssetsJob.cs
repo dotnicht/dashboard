@@ -15,8 +15,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IEnumerable<ICryptoService> _cryptoServices;
 
-        public TransferAvailableAssetsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
-            : base(loggerFactory, context, options)
+        public TransferAvailableAssetsJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices)
+            : base(loggerFactory, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
@@ -34,12 +34,6 @@ namespace InvestorDashboard.Console.Jobs
                     Logger.LogError(ex, $"An error occurred while transfering {service.Settings.Value.Currency} assets.");
                 }
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _cryptoServices.ToList().ForEach(x => x.Dispose());
-            base.Dispose(disposing);
         }
     }
 }

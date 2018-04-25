@@ -13,8 +13,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IExternalInvestorService _investorsService;
 
-        public SynchronizeExternalInvestorsDataJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IExternalInvestorService investorsService)
-            : base(loggerFactory, context, options)
+        public SynchronizeExternalInvestorsDataJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IExternalInvestorService investorsService)
+            : base(loggerFactory, options)
         {
             _investorsService = investorsService ?? throw new ArgumentNullException(nameof(investorsService));
         }
@@ -22,12 +22,6 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _investorsService.SynchronizeInvestorsData();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _investorsService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

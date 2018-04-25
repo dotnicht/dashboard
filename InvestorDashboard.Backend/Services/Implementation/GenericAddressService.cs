@@ -23,15 +23,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (userId == null)
             {
-                foreach (var id in Context.Users.Select(x => x.Id).ToArray())
+                using (var ctx = CreateContext())
                 {
-                    try
+                    foreach (var id in ctx.Users.Select(x => x.Id).ToArray())
                     {
-                        await CreateMissingAddressesInternal(id, includeInternal);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                        try
+                        {
+                            await CreateMissingAddressesInternal(id, includeInternal);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                        }
                     }
                 }
             }

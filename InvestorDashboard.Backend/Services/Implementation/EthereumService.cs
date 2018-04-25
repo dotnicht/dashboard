@@ -157,8 +157,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Amount = tx.Value.Value.ToString()
                     };
 
-                    await Context.CryptoTransactions.AddAsync(transaction);
-                    await Context.SaveChangesAsync();
+                    using (var ctx = CreateContext())
+                    {
+                        await ctx.CryptoTransactions.AddAsync(transaction);
+                        await ctx.SaveChangesAsync();
+                    }
                 }
             }
         }

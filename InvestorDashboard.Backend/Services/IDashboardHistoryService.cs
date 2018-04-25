@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IDashboardHistoryService : IDisposable
+    public interface IDashboardHistoryService
     {
         Task RefreshHistory();
         Task<IDictionary<Currency, DashboardHistoryItem>> GetHistoryItems(DateTime? dateTime = null);

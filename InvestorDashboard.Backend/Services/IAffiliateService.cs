@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IAffiliateService : IDisposable
+    public interface IAffiliateService
     {
         Task NotifyTransactionsCreated();
         Task NotifyUserRegistered(ApplicationUser user = null);

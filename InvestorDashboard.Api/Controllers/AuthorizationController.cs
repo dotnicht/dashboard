@@ -118,7 +118,7 @@ namespace InvestorDashboard.Api.Controllers
                     {
                         try
                         {
-                            await _referralService.PopulateReferralData(appUser, user.Referral);
+                            await _referralService.PopulateReferralData(appUser.Id, user.Referral);
                         }
                         catch (Exception ex)
                         {

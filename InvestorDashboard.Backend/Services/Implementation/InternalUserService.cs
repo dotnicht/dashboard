@@ -36,37 +36,41 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task SynchronizeInternalUsersData()
         {
-            foreach (var record in _resourceService.GetCsvRecords<InternalUserDataRecord>("InternalUserData.csv"))
+            using (var ctx = CreateContext())
             {
-                if (!Context.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
+                foreach (var record in _resourceService.GetCsvRecords<InternalUserDataRecord>("InternalUserData.csv"))
                 {
-                    try
+                    if (!ctx.CryptoTransactions.Any(x => x.ExternalId == record.Guid))
                     {
-                        var user = Context.Users
-                            .Include(x => x.CryptoAddresses)
-                            .SingleOrDefault(x => x.Email == record.Email);
-
-                        if (user == null)
+                        try
                         {
-                            throw new InvalidOperationException($"User not found with email {record.Email}.");
+                            var user = ctx.Users
+                                .Include(x => x.CryptoAddresses)
+                                .SingleOrDefault(x => x.Email == record.Email);
+
+                            if (user == null)
+                            {
+                                throw new InvalidOperationException($"User not found with email {record.Email}.");
+                            }
+
+                            var tx = new CryptoTransaction
+                            {
+                                Amount = record.Tokens.ToString(),
+                                ExternalId = record.Guid,
+                                CryptoAddressId = EnsureInternalAddress(user, ctx).Id,
+                                Direction = CryptoTransactionDirection.Internal,
+                                Timestamp = DateTime.UtcNow
+                            };
+
+                            await ctx.CryptoTransactions.AddAsync(tx);
+                            await ctx.SaveChangesAsync();
+
+                            await _tokenService.RefreshTokenBalance(user.Id);
                         }
-
-                        var tx = new CryptoTransaction
+                        catch (Exception ex)
                         {
-                            Amount = record.Tokens.ToString(),
-                            ExternalId = record.Guid,
-                            CryptoAddressId = EnsureInternalAddress(user, Context).Id,
-                            Direction = CryptoTransactionDirection.Internal,
-                            Timestamp = DateTime.UtcNow
-                        };
-
-                        await Context.CryptoTransactions.AddAsync(tx);
-                        await Context.SaveChangesAsync();
-                        await _tokenService.RefreshTokenBalance(user.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"An error occurred while processing record {record.Guid}.");
+                            Logger.LogError(ex, $"An error occurred while processing record {record.Guid}.");
+                        }
                     }
                 }
             }
@@ -76,20 +80,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (userId == null)
             {
-                var ids = Context.Users
-                    .Where(x => x.ExternalId == null && x.EmailConfirmed)
-                    .Select(x => x.Id)
-                    .ToArray();
-
-                foreach (var id in ids)
+                using (var ctx = CreateContext())
                 {
-                    try
+                    var ids = ctx.Users
+                        .Where(x => x.ExternalId == null && x.EmailConfirmed)
+                        .Select(x => x.Id)
+                        .ToArray();
+
+                    foreach (var id in ids)
                     {
-                        await UpdateKycTransactionInternal(id);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"An error occurred while updating KYC transaction for user {id}.");
+                        try
+                        {
+                            await UpdateKycTransactionInternal(id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, $"An error occurred while updating KYC transaction for user {id}.");
+                        }
                     }
                 }
             }

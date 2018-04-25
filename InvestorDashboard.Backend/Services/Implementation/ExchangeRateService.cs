@@ -30,41 +30,44 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return await RefreshExchangeRate(baseCurrency, quoteCurrency);
             }
 
-            if (!Context.ExchangeRates.Any(x => x.Base == baseCurrency && x.Quote == quoteCurrency))
+            using (var ctx = CreateContext())
             {
-                await RefreshExchangeRate(baseCurrency, quoteCurrency, dateTime);
-            }
-
-            var ex = Context.ExchangeRates
-                .Where(x => x.Base == baseCurrency && x.Quote == quoteCurrency)
-                .OrderByDescending(x => x.Created);
-
-            if (dateTime == null)
-            {
-                return ex.First().Rate;
-            }
-
-            var lower = dateTime.Value - _options.Value.LookupWindow;
-            var upper = dateTime.Value + _options.Value.LookupWindow;
-
-            var filtered = ex
-                .Where(x => x.Created >= lower && x.Created <= upper)
-                .ToArray();
-
-            if (filtered.Any())
-            {
-                var diff = filtered.Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
-
-                var rate = filtered
-                    .Where(x => Math.Abs((x.Created - dateTime.Value).Ticks) == diff)
-                    .FirstOrDefault();
-
-                if (rate == null)
+                if (!ctx.ExchangeRates.Any(x => x.Base == baseCurrency && x.Quote == quoteCurrency))
                 {
-                    throw new InvalidOperationException($"Couldn't find exchange rate for {baseCurrency}/{quoteCurrency} at {dateTime.Value}");
+                    await RefreshExchangeRate(baseCurrency, quoteCurrency, dateTime);
                 }
 
-                return rate.Rate;
+                var ex = ctx.ExchangeRates
+                    .Where(x => x.Base == baseCurrency && x.Quote == quoteCurrency)
+                    .OrderByDescending(x => x.Created);
+
+                if (dateTime == null)
+                {
+                    return ex.First().Rate;
+                }
+
+                var lower = dateTime.Value - _options.Value.LookupWindow;
+                var upper = dateTime.Value + _options.Value.LookupWindow;
+
+                var filtered = ex
+                    .Where(x => x.Created >= lower && x.Created <= upper)
+                    .ToArray();
+
+                if (filtered.Any())
+                {
+                    var diff = filtered.Min(x => Math.Abs((x.Created - dateTime.Value).Ticks));
+
+                    var rate = filtered
+                        .Where(x => Math.Abs((x.Created - dateTime.Value).Ticks) == diff)
+                        .FirstOrDefault();
+
+                    if (rate == null)
+                    {
+                        throw new InvalidOperationException($"Couldn't find exchange rate for {baseCurrency}/{quoteCurrency} at {dateTime.Value}");
+                    }
+
+                    return rate.Rate;
+                }
             }
 
             return await RefreshExchangeRate(baseCurrency, quoteCurrency, dateTime);
@@ -103,8 +106,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     ex = response.Data.Single(x => x.Time == adjusted).Close;
                 }
 
-                await Context.ExchangeRates.AddAsync(new ExchangeRate { Base = baseCurrency, Quote = quoteCurrency, Rate = ex });
-                await Context.SaveChangesAsync();
+                using (var ctx = CreateContext())
+                {
+                    await ctx.ExchangeRates.AddAsync(new ExchangeRate { Base = baseCurrency, Quote = quoteCurrency, Rate = ex });
+                    await ctx.SaveChangesAsync();
+                }
+
                 return ex;
             }
         }

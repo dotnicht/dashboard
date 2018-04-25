@@ -13,8 +13,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IInternalUserService _internalUserService;
 
-        public SynchronizeInternalUsersDataJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IInternalUserService internalUserService)
-            : base(loggerFactory, context, options)
+        public SynchronizeInternalUsersDataJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IInternalUserService internalUserService)
+            : base(loggerFactory, options)
         {
             _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
         }
@@ -22,12 +22,6 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _internalUserService.SynchronizeInternalUsersData();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _internalUserService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

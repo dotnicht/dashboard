@@ -32,39 +32,42 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task NotifyTransactionsCreated()
         {
-            var transactions = Context.Users
-                .Where(x => x.ClickId != null)
-                .SelectMany(x => x.CryptoAddresses)
-                .Where(x => x.Type == CryptoAddressType.Investment && x.Address != null && x.PrivateKey != null)
-                .SelectMany(x => x.CryptoTransactions)
-                .Where(x => !x.IsNotified && x.ExternalId == null && x.Hash != null)
-                .ToArray();
-
-            foreach (var tx in transactions)
+            using (var ctx = CreateContext())
             {
-                var clickId = Context.CryptoTransactions
-                    .Include(x => x.CryptoAddress)
-                    .ThenInclude(x => x.User)
-                    .SingleOrDefault(x => x.Id == tx.Id)
-                    ?.CryptoAddress
-                    ?.User
-                    ?.ClickId;
+                var transactions = ctx.Users
+                    .Where(x => x.ClickId != null)
+                    .SelectMany(x => x.CryptoAddresses)
+                    .Where(x => x.Type == CryptoAddressType.Investment && x.Address != null && x.PrivateKey != null)
+                    .SelectMany(x => x.CryptoTransactions)
+                    .Where(x => !x.IsNotified && x.ExternalId == null && x.Hash != null)
+                    .ToArray();
 
-                if (!string.IsNullOrWhiteSpace(clickId))
+                foreach (var tx in transactions)
                 {
-                    var date = tx.Timestamp.ToShortDateString();
-                    var time = tx.Timestamp.ToShortTimeString();
+                    var clickId = ctx.CryptoTransactions
+                        .Include(x => x.CryptoAddress)
+                        .ThenInclude(x => x.User)
+                        .SingleOrDefault(x => x.Id == tx.Id)
+                        ?.CryptoAddress
+                        ?.User
+                        ?.ClickId;
 
-                    var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
-
-                    var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&transactionid={tx.Hash}&date={date}&time={time}&currency={tx.CryptoAddress.Currency}&sum={amount}status=5";
-                    var uri = new Uri(address);
-                    var response = await _restService.GetAsync<AffiseResponse>(uri);
-
-                    if (response.Status == 1)
+                    if (!string.IsNullOrWhiteSpace(clickId))
                     {
-                        tx.IsNotified = true;
-                        await Context.SaveChangesAsync();
+                        var date = tx.Timestamp.ToShortDateString();
+                        var time = tx.Timestamp.ToShortTimeString();
+
+                        var amount = _calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency);
+
+                        var address = $"http://offers.proffico.affise.com/postback?clickid={clickId}&transactionid={tx.Hash}&date={date}&time={time}&currency={tx.CryptoAddress.Currency}&sum={amount}status=5";
+                        var uri = new Uri(address);
+                        var response = await _restService.GetAsync<AffiseResponse>(uri);
+
+                        if (response.Status == 1)
+                        {
+                            tx.IsNotified = true;
+                            await ctx.SaveChangesAsync();
+                        }
                     }
                 }
             }
@@ -72,27 +75,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task NotifyUserRegistered(ApplicationUser user = null)
         {
-            if (user == null)
+            using (var ctx = CreateContext())
             {
-                foreach (var item in Context.Users.Where(x => x.ClickId != null && !x.IsNotified).ToArray())
+                if (user == null)
                 {
-                    try
+                    foreach (var item in ctx.Users.Where(x => x.ClickId != null && !x.IsNotified).ToArray())
                     {
-                        await NotifyUserRegisteredInternal(item);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {item.Id}.");
+                        try
+                        {
+                            await NotifyUserRegisteredInternal(item, ctx);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, $"An error occurred while notifying affiliate user registration. User: {item.Id}.");
+                        }
                     }
                 }
-            }
-            else
-            {
-                await NotifyUserRegisteredInternal(user);
+                else
+                {
+                    await NotifyUserRegisteredInternal(user, ctx);
+                }
             }
         }
 
-        private async Task NotifyUserRegisteredInternal(ApplicationUser user)
+        private async Task NotifyUserRegisteredInternal(ApplicationUser user, ApplicationDbContext context)
         {
             if (!string.IsNullOrWhiteSpace(user.ClickId))
             {
@@ -103,7 +109,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 if (response.Status == 1)
                 {
                     user.IsNotified = true;
-                    await Context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                 }
             }
         }

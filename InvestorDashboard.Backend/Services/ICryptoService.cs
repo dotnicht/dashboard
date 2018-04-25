@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface ICryptoService : IDisposable
+    public interface ICryptoService
     {
         IOptions<CryptoSettings> Settings { get; }
         Task<CryptoAddress> CreateCryptoAddress(string userId, string password = null);

@@ -13,8 +13,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IAffiliateService _affiliatesService;
 
-        public NotifyAffilicatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
-            : base(loggerFactory, context, options)
+        public NotifyAffilicatesJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IAffiliateService affiliatesService)
+            : base(loggerFactory, options)
         {
             _affiliatesService = affiliatesService ?? throw new ArgumentNullException(nameof(affiliatesService));
         }
@@ -23,12 +23,6 @@ namespace InvestorDashboard.Console.Jobs
         {
             Task.WaitAll(_affiliatesService.NotifyTransactionsCreated(), _affiliatesService.NotifyUserRegistered());
             return Task.CompletedTask;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _affiliatesService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

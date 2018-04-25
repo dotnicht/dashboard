@@ -169,16 +169,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             Index = i
                         };
 
-                        await Context.CryptoTransactions.AddAsync(transaction);
-                        await Context.SaveChangesAsync();
+                        using (var ctx = CreateContext())
+                        {
+                            await ctx.CryptoTransactions.AddAsync(transaction);
+                            await ctx.SaveChangesAsync();
+                        }
                     }
                 }
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
         }
 
         private static Node GetNode()

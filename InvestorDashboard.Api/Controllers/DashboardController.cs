@@ -226,7 +226,7 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             var currency = (Currency)Enum.Parse(typeof(Currency), referralInfoUpdateModel.Currency);
-            await _referralService.UpdateReferralAddress(ApplicationUser, currency, referralInfoUpdateModel.Address);
+            await _referralService.UpdateReferralAddress(ApplicationUser.Id, currency, referralInfoUpdateModel.Address);
             return Ok();
         }
 

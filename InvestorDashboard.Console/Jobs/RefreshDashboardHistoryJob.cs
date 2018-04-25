@@ -13,8 +13,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IDashboardHistoryService _dashboardHistoryService;
 
-        public RefreshDashboardHistoryJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IDashboardHistoryService dashboardHistoryService)
-            : base(loggerFactory, context, options)
+        public RefreshDashboardHistoryJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IDashboardHistoryService dashboardHistoryService)
+            : base(loggerFactory, options)
         {
             _dashboardHistoryService = dashboardHistoryService ?? throw new ArgumentNullException(nameof(dashboardHistoryService));
         }
@@ -22,12 +22,6 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _dashboardHistoryService.RefreshHistory();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _dashboardHistoryService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

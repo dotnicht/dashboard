@@ -31,61 +31,78 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            var referral = Context.CryptoTransactions
-                .Where(x => x.Direction == CryptoTransactionDirection.Referral && x.CryptoAddress.Currency == currency && x.CryptoAddress.UserId == userId)
-                .ToDictionaryAsync(x => x.Hash, x => _calculationService.ToDecimalValue(x.Amount, currency));
+            using (var ctx = CreateContext())
+            {
+                var referral = ctx.CryptoTransactions
+                    .Where(x => x.Direction == CryptoTransactionDirection.Referral && x.CryptoAddress.Currency == currency && x.CryptoAddress.UserId == userId)
+                    .ToDictionaryAsync(x => x.Hash, x => _calculationService.ToDecimalValue(x.Amount, currency));
 
-            var tx = Context.CryptoTransactions
-                .Where(x => x.CryptoAddress.Currency == currency && x.CryptoAddress.User.ReferralUserId == userId);
+                var tx = ctx.CryptoTransactions
+                    .Where(x => x.CryptoAddress.Currency == currency && x.CryptoAddress.User.ReferralUserId == userId);
 
-            var pending = await tx.Where(x => x.IsReferralPaid == false)
-                .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
-                .SumAsync();
+                var pending = await tx.Where(x => x.IsReferralPaid == false)
+                    .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
+                    .SumAsync();
 
-            var balance = await tx
-                .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
-                .SumAsync();
+                var balance = await tx
+                    .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
+                    .SumAsync();
 
-            return (Transactions: await referral, Pending: pending * _options.Value.Reward, Balance: balance * _options.Value.Reward);
+                return (Transactions: await referral, Pending: pending * _options.Value.Reward, Balance: balance * _options.Value.Reward);
+            }
         }
 
-        public async Task PopulateReferralData(ApplicationUser user, string referralCode)
+        public async Task PopulateReferralData(string userId, string referralCode)
         {
-            if (user == null)
+            if (userId == null)
             {
-                throw new ArgumentNullException(nameof(user));
+                throw new ArgumentNullException(nameof(userId));
             }
 
-            user.ReferralCode = ShortGuid.NewGuid().ToString();
-
-            if (!string.IsNullOrWhiteSpace(referralCode))
+            using (var ctx = CreateContext())
             {
-                user.ReferralUserId = Context.Users.SingleOrDefault(x => x.ReferralCode == referralCode)?.Id;
-            }
+                var user = ctx.Users
+                    .SingleOrDefault(x => x.Id == userId);
 
-            await Context.SaveChangesAsync();
+                if (user == null)
+                {
+                    throw new InvalidOperationException($"User not found with ID {userId}.");
+                }
+
+                user.ReferralCode = ShortGuid.NewGuid().ToString();
+
+                if (!string.IsNullOrWhiteSpace(referralCode))
+                {
+                    user.ReferralUserId = ctx.Users.SingleOrDefault(x => x.ReferralCode == referralCode)?.Id;
+                }
+
+                await ctx.SaveChangesAsync();
+            }
         }
 
-        public async Task UpdateReferralAddress(ApplicationUser user, Currency currency, string address)
+        public async Task UpdateReferralAddress(string userId, Currency currency, string address)
         {
-            if (user == null)
+            if (userId == null)
             {
-                throw new ArgumentNullException(nameof(user));
+                throw new ArgumentNullException(nameof(userId));
             }
 
-            var entity = user.CryptoAddresses.SingleOrDefault(x => x.Currency == currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled);
-
-            if (entity != null)
+            using (var ctx = CreateContext())
             {
-                entity.IsDisabled = entity.Address != address;
-            }
+                var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled && x.UserId == userId);
 
-            if (!string.IsNullOrWhiteSpace(address) && (entity == null || entity.IsDisabled))
-            {
-                Context.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = user.Id, Address = address, Type = CryptoAddressType.Referral });
-            }
+                if (entity != null)
+                {
+                    entity.IsDisabled = entity.Address != address;
+                }
 
-            await Context.SaveChangesAsync();
+                if (!string.IsNullOrWhiteSpace(address) && (entity == null || entity.IsDisabled))
+                {
+                    ctx.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = userId, Address = address, Type = CryptoAddressType.Referral });
+                }
+
+                await ctx.SaveChangesAsync();
+            }
         }
     }
 }

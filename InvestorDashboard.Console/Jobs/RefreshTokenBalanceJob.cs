@@ -13,21 +13,15 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly ITokenService _tokenService;
 
-        public RefreshTokenBalanceJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, ITokenService tokenService)
-            : base(loggerFactory, context, options)
+        public RefreshTokenBalanceJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, ITokenService tokenService)
+            : base(loggerFactory, options)
         {
-            this._tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _tokenService.RefreshTokenBalance();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _tokenService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
-using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,8 +12,8 @@ namespace InvestorDashboard.Console.Jobs
     {
         private readonly IGenericAddressService _genericAddressService;
 
-        public CreateMissingAddressesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IGenericAddressService genericAddressService)
-            : base(loggerFactory, context, options)
+        public CreateMissingAddressesJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IGenericAddressService genericAddressService)
+            : base(loggerFactory, options)
         {
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
         }
@@ -22,12 +21,6 @@ namespace InvestorDashboard.Console.Jobs
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
             await _genericAddressService.CreateMissingAddresses();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _genericAddressService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IMessageService : IDisposable
+    public interface IMessageService
     {
         Task HandleIncomingMessage(string externalUserName, string message, int chatId);
         Task SendRegistrationConfirmationRequiredMessage(string userId, string message);

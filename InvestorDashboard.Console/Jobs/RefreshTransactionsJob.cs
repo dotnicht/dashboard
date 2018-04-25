@@ -16,8 +16,8 @@ namespace InvestorDashboard.Console.Jobs
         private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly ISmartContractService _smartContractService;
 
-        public RefreshTransactionsJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices, ISmartContractService smartContractService)
-            : base(loggerFactory, context, options)
+        public RefreshTransactionsJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IEnumerable<ICryptoService> cryptoServices, ISmartContractService smartContractService)
+            : base(loggerFactory, options)
         {
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
@@ -30,12 +30,6 @@ namespace InvestorDashboard.Console.Jobs
                 .Union(new[] { _smartContractService.RefreshOutboundTransactions() })
                 .ToArray());
             return Task.CompletedTask;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _cryptoServices.ToList().ForEach(x => x.Dispose());
-            base.Dispose(disposing);
         }
     }
 }

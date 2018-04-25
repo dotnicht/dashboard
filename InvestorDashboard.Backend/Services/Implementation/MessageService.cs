@@ -77,8 +77,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var user = Context.Users.Single(x => x.Id == userId);
-            await _emailService.SendEmailAsync(user.Email, "Confirm Your Email", message);
+            using (var ctx = CreateContext())
+            {
+                var user = ctx.Users.Single(x => x.Id == userId);
+                await _emailService.SendEmailAsync(user.Email, "Confirm Your Email", message);
+            }
         }
 
         public async Task SendPasswordResetMessage(string userId, string message)
@@ -93,8 +96,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var user = Context.Users.Single(x => x.Id == userId);
-            await _emailService.SendEmailAsync(user.Email, "Reset Password", message);
+            using (var ctx = CreateContext())
+            {
+                var user = ctx.Users.Single(x => x.Id == userId);
+                await _emailService.SendEmailAsync(user.Email, "Reset Password", message);
+            }
         }
 
         public Task SendDashboardHistoryMessage()

@@ -15,8 +15,8 @@ namespace InvestorDashboard.Console.Jobs
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IExchangeRateService _exchangeRateService;
 
-        public RefreshExchangeRatesJob(ILoggerFactory loggerFactory, ApplicationDbContext context, IOptions<JobsSettings> options, IOptions<TokenSettings> tokenSettings, IExchangeRateService exchangeRateService) 
-            : base(loggerFactory, context, options)
+        public RefreshExchangeRatesJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IOptions<TokenSettings> tokenSettings, IExchangeRateService exchangeRateService) 
+            : base(loggerFactory, options)
         {
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
@@ -36,12 +36,6 @@ namespace InvestorDashboard.Console.Jobs
                     Logger.LogError(ex, $"An error occurred while refreshing {currency} exchange rate.");
                 }
             }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            _exchangeRateService.Dispose();
-            base.Dispose(disposing);
         }
     }
 }

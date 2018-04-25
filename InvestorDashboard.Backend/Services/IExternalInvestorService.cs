@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IExternalInvestorService : IDisposable
+    public interface IExternalInvestorService
     {
         Task SynchronizeInvestorsData();
     }

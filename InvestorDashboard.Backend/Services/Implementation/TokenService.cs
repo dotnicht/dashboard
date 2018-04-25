@@ -37,20 +37,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (userId == null)
             {
-                var ids = Context.Users
-                    .Where(x => x.ExternalId == null && x.EmailConfirmed)
-                    .Select(x => x.Id)
-                    .ToArray();
-
-                foreach (var id in ids)
+                using (var ctx = CreateContext())
                 {
-                    try
+                    var ids = ctx.Users
+                        .Where(x => x.ExternalId == null && x.EmailConfirmed)
+                        .Select(x => x.Id)
+                        .ToArray();
+
+                    foreach (var id in ids)
                     {
-                        await RefreshTokenBalanceInternal(id);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                        try
+                        {
+                            await RefreshTokenBalanceInternal(id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                        }
                     }
                 }
             }
@@ -67,11 +70,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            var count = await Context.CryptoTransactions
-                .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token)
-                .CountAsync();
+            using (var ctx = CreateContext())
+            {
+                var count = await ctx.CryptoTransactions
+                    .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token)
+                    .CountAsync();
 
-            return count < _options.Value.OutboundTransactionsLimit;
+                return count < _options.Value.OutboundTransactionsLimit;
+            }
         }
 
         public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, long amount)
@@ -93,46 +99,51 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return (Hash: null, Success: false);
             }
 
-            var user = Context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
-
-            var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-            var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.Token);
-
-            if (ethAddress == null || tokenAddress == null)
+            using (var ctx = CreateContext())
             {
-                Logger.LogError($"User {userId} has missing required addresses.");
-                return (Hash: null, Success: false);
-            }
+                var user = ctx.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
 
-            if (user.Balance + user.BonusBalance < amount)
-            {
-                throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
-            }
+                var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
+                var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.Token);
 
-            var balance = await _smartContractService.CallSmartContractBalanceOfFunction(ethAddress.Address);
-
-            if (balance < amount)
-            {
-                throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
-            }
-
-            var result = await _smartContractService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
-
-            if (result.Success)
-            {
-                await Context.CryptoTransactions.AddAsync(new CryptoTransaction
+                if (ethAddress == null || tokenAddress == null)
                 {
-                    CryptoAddressId = tokenAddress.Id,
-                    Amount = amount.ToString(),
-                    Timestamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Outbound,
-                    Hash = result.Hash
-                });
+                    Logger.LogError($"User {userId} has missing required addresses.");
+                    return (Hash: null, Success: false);
+                }
 
-                await Context.SaveChangesAsync();
-                await RefreshTokenBalanceInternal(userId);
+                if (user.Balance + user.BonusBalance < amount)
+                {
+                    throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
+                }
 
-                return result;
+                var balance = await _smartContractService.CallSmartContractBalanceOfFunction(ethAddress.Address);
+
+                if (balance < amount)
+                {
+                    throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
+                }
+
+                var result = await _smartContractService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
+
+                if (result.Success)
+                {
+                    var tx = new CryptoTransaction
+                    {
+                        CryptoAddressId = tokenAddress.Id,
+                        Amount = amount.ToString(),
+                        Timestamp = DateTime.UtcNow,
+                        Direction = CryptoTransactionDirection.Outbound,
+                        Hash = result.Hash
+                    };
+
+                    await ctx.CryptoTransactions.AddAsync(tx);
+                    await ctx.SaveChangesAsync();
+
+                    await RefreshTokenBalanceInternal(userId);
+
+                    return result;
+                }
             }
 
             return (Hash: null, Success: false);

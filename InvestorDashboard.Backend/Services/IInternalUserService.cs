@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
-    public interface IInternalUserService : IDisposable
+    public interface IInternalUserService
     {
         Task SynchronizeInternalUsersData();
         Task UpdateKycTransaction(string userId = null);
