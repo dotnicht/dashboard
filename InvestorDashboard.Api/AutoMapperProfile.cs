@@ -12,13 +12,16 @@ namespace InvestorDashboard.Api
     {
         public AutoMapperProfile()
         {
-            CreateMap<RegisterViewModel, ApplicationUser>();
+            CreateMap<RegisterViewModel, ApplicationUser>()
+                .ForMember(x => x.RegistrationUri, x => x.MapFrom(y => y.StartUrl));
 
             CreateMap<ApplicationUser, UserViewModel>()
                    .ForMember(d => d.Roles, map => map.Ignore());
+
             CreateMap<UserViewModel, ApplicationUser>();
 
             CreateMap<ApplicationUser, UserEditViewModel>();
+
             CreateMap<UserEditViewModel, ApplicationUser>();
 
             CreateMap<ApplicationUser, UserPatchViewModel>()
@@ -30,6 +33,7 @@ namespace InvestorDashboard.Api
                 .ReverseMap();
 
             CreateMap<DashboardHistoryItem, IcoInfoModel>();
+
             CreateMap<TokenSettings, IcoInfoModel>()
                 .ForMember(x => x.TokenPrice, x => x.MapFrom(y => y.Price))
                 .ForMember(x => x.TokenName, x => x.MapFrom(y => y.Name));

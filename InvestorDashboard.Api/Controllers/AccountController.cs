@@ -125,6 +125,7 @@ namespace InvestorDashboard.Api.Controllers
             appUser.PhoneCode = user.PhoneCode;
             appUser.PhoneNumber = user.PhoneNumber;
             appUser.Photo = user.Photo;
+            appUser.TelegramUsername = user.TelegramUsername;
 
             var result = await _userManager.UpdateAsync(appUser);
 
