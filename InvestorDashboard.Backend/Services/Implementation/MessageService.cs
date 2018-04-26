@@ -127,6 +127,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             await _telegramService.SendMessage(sb.ToString(), chatId ?? _options.Value.BusinessNotificationChatId);
+
+            sb.Clear();
+
+            // TODO: add detailed technical info for dev chat.
         }
     }
 }

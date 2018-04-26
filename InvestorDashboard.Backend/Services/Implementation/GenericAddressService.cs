@@ -24,7 +24,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 using (var ctx = CreateContext())
                 {
-                    foreach (var id in ctx.Users.Select(x => x.Id).ToArray())
+                    var ids = ctx.Users
+                        .Where(x => x.EmailConfirmed)
+                        .Select(x => x.Id).ToArray();
+
+                    foreach (var id in ids)
                     {
                         try
                         {
@@ -32,7 +36,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogError(ex, $"An error occurred while refreshing balance for user {id}.");
+                            Logger.LogError(ex, $"An error occurred while creating missing addresses for user {id}.");
                         }
                     }
                 }

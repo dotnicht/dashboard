@@ -292,12 +292,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             using (var ctx = CreateContext())
             {
-                if (ctx.CryptoAddresses.Any(x => x.Currency == Settings.Value.Currency && x.Type == addressType && x.UserId == userId && !x.IsDisabled))
+                var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == Settings.Value.Currency && x.Type == addressType && x.UserId == userId && !x.IsDisabled);
+
+                if (entity != null)
                 {
-                    throw new InvalidOperationException($"Address already exists for user {userId} and currency {Settings.Value.Currency}.");
+                    Logger.LogWarning($"Address already exists for user {userId} and currency {Settings.Value.Currency}.");
+                    return entity;
                 }
 
-                var entity = new CryptoAddress
+                entity = new CryptoAddress
                 {
                     UserId = userId,
                     Currency = Settings.Value.Currency,
