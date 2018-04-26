@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180426181254_UserProfile")]
+    partial class UserProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -292,6 +293,8 @@ namespace InvestorDashboard.Backend.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("City");
+
+                    b.Property<string>("Configuration");
 
                     b.Property<string>("CountryCode")
                         .HasMaxLength(3);

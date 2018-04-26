@@ -17,6 +17,7 @@ namespace InvestorDashboard.Backend.Database
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
         public DbSet<DashboardHistoryItem> DashboardHistoryItems { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

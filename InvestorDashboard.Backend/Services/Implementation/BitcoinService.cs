@@ -152,25 +152,29 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var tx in block.Transactions)
             {
+                var hash = tx.GetHash().ToString();
                 for (var i = 0; i < tx.Outputs.Count; i++)
                 {
                     var address = addresses.SingleOrDefault(x => x.Address == tx.Outputs[i].ScriptPubKey.GetDestinationAddress(Network)?.ToString());
                     if (address != null)
                     {
-                        var transaction = new CryptoTransaction
-                        {
-                            CryptoAddressId = address.Id,
-                            Direction = CryptoTransactionDirection.Inbound,
-                            Timestamp = header.Header.BlockTime.UtcDateTime,
-                            Hash = tx.GetHash().ToString(),
-                            Amount = tx.Outputs[i].Value.Satoshi.ToString(),
-                            Index = i
-                        };
-
                         using (var ctx = CreateContext())
                         {
-                            await ctx.CryptoTransactions.AddAsync(transaction);
-                            await ctx.SaveChangesAsync();
+                            if (ctx.CryptoTransactions.SingleOrDefault(x => x.Hash == hash && x.Index == i) == null)
+                            {
+                                var transaction = new CryptoTransaction
+                                {
+                                    CryptoAddressId = address.Id,
+                                    Direction = CryptoTransactionDirection.Inbound,
+                                    Timestamp = header.Header.BlockTime.UtcDateTime,
+                                    Hash = hash,
+                                    Amount = tx.Outputs[i].Value.Satoshi.ToString(),
+                                    Index = i
+                                };
+
+                                await ctx.CryptoTransactions.AddAsync(transaction);
+                                await ctx.SaveChangesAsync();
+                            }
                         }
                     }
                 }

@@ -39,6 +39,8 @@ namespace InvestorDashboard.Api
                 .ForMember(x => x.TokenName, x => x.MapFrom(y => y.Name));
 
             CreateMap<ApplicationUser, ClientInfoModel>();
+
+            CreateMap<ApplicationUser, UserProfile>();
         }
     }
 }

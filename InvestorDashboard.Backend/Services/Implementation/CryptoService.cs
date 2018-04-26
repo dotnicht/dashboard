@@ -154,9 +154,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     foreach (var item in addresses)
                     {
                         lastIndex = item.Key;
-                        lastAddresses = (lastAddresses ?? addresses
-                            .Where(x => x.Key < item.Key)
-                            .SelectMany(x => x))
+                        lastAddresses = (lastAddresses ?? addresses.Where(x => x.Key < item.Key).SelectMany(x => x))
                             .Union(item)
                             .Distinct();
 

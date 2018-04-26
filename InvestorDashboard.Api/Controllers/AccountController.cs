@@ -28,6 +28,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly IMessageService _messageService;
         private readonly IInternalUserService _internalUserService;
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger _logger;
@@ -36,16 +37,18 @@ namespace InvestorDashboard.Api.Controllers
         private readonly UrlEncoder _urlEncoder;
 
         public AccountController(
-          UserManager<ApplicationUser> userManager,
-          IAuthorizationService authorizationService,
-          SignInManager<ApplicationUser> signInManager,
-          ILogger<AccountController> logger,
-          IOptions<IdentityOptions> identityOptions,
-          IMessageService messageService,
-          IInternalUserService internalUserService,
-          IMapper mapper,
-          UrlEncoder urlEncoder)
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            IAuthorizationService authorizationService,
+            SignInManager<ApplicationUser> signInManager,
+            ILogger<AccountController> logger,
+            IOptions<IdentityOptions> identityOptions,
+            IMessageService messageService,
+            IInternalUserService internalUserService,
+            IMapper mapper,
+            UrlEncoder urlEncoder)
         {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
@@ -96,7 +99,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [HttpPut("users/me")]
-        public async Task<IActionResult> UpdateCurrentUser([FromBody] UserEditViewModel user)
+        public async Task<IActionResult> UpdateCurrentUser([FromBody]UserEditViewModel user)
         {
             ApplicationUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
@@ -114,6 +117,11 @@ namespace InvestorDashboard.Api.Controllers
             {
                 return Unauthorized();
             }
+
+            var profile = _mapper.Map<UserProfile>(appUser);
+            profile.UserId = appUser.Id;
+            _context.UserProfiles.Add(profile);
+            _context.SaveChanges();
 
             appUser.FirstName = user.FirstName;
             appUser.LastName = user.LastName;

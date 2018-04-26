@@ -147,19 +147,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var address = addresses.SingleOrDefault(x => x.Address == tx.To);
                 if (address != null)
                 {
-                    var transaction = new CryptoTransaction
-                    {
-                        CryptoAddressId = address.Id,
-                        Direction = CryptoTransactionDirection.Inbound,
-                        Timestamp = DateTimeOffset.FromUnixTimeSeconds((long)block.Timestamp.Value).UtcDateTime,
-                        Hash = tx.TransactionHash,
-                        Amount = tx.Value.Value.ToString()
-                    };
-
                     using (var ctx = CreateContext())
                     {
-                        await ctx.CryptoTransactions.AddAsync(transaction);
-                        await ctx.SaveChangesAsync();
+                        if (ctx.CryptoTransactions.SingleOrDefault(x => x.Hash == tx.TransactionHash) == null)
+                        {
+                            var transaction = new CryptoTransaction
+                            {
+                                CryptoAddressId = address.Id,
+                                Direction = CryptoTransactionDirection.Inbound,
+                                Timestamp = DateTimeOffset.FromUnixTimeSeconds((long)block.Timestamp.Value).UtcDateTime,
+                                Hash = tx.TransactionHash,
+                                Amount = tx.Value.Value.ToString()
+                            };
+
+                            await ctx.CryptoTransactions.AddAsync(transaction);
+                            await ctx.SaveChangesAsync();
+                        }
                     }
                 }
             }
