@@ -40,7 +40,8 @@ namespace InvestorDashboard.Api
 
             CreateMap<ApplicationUser, ClientInfoModel>();
 
-            CreateMap<ApplicationUser, UserProfile>();
+            CreateMap<ApplicationUser, UserProfile>()
+                .ForMember(x => x.Id, x => x.Ignore());
         }
     }
 }

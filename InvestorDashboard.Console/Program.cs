@@ -14,6 +14,7 @@ using Quartz;
 using Quartz.Impl;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace InvestorDashboard.Console
             Configuration.Configure(serviceCollection, configuration);
             DependencyInjection.Configure(serviceCollection);
 
-            SetupLogging(serviceCollection);
+            serviceCollection.AddSingleton(new LoggerFactory().Initialize());
 
             SetupIdentity(serviceCollection);
 
@@ -82,18 +83,6 @@ namespace InvestorDashboard.Console
                 options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
                 options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
             });
-        }
-
-        private static void SetupLogging(IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddSingleton(new LoggerFactory()
-                .AddConsole(LogLevel.Warning)
-                //.AddSerilog()
-                .AddDebug()
-                .AddFile("Logs/Console-Full.{Date}.log")
-                .AddFile("Logs/Console-Warning.{Date}.log", LogLevel.Warning));
-
-            serviceCollection.AddLogging();
         }
 
         private static async Task SetupScheduling(IServiceCollection serviceCollection)

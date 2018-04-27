@@ -17,7 +17,9 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -128,7 +130,7 @@ namespace InvestorDashboard.Api
             });
 
             services
-                .AddAuthentication(options => options.DefaultAuthenticateScheme = options.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme)
+                .AddAuthentication(x => x.DefaultAuthenticateScheme = x.DefaultChallengeScheme = OAuthValidationDefaults.AuthenticationScheme)
                 .AddOAuthValidation();
 
             services.AddMvc();
@@ -140,8 +142,7 @@ namespace InvestorDashboard.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddFile("Logs/Api-Full.{Date}.log");
-            loggerFactory.AddFile("Logs/Api-Warning.{Date}.log", LogLevel.Warning);
+            loggerFactory.Initialize();
 
             app.UseHangfireServer();
 
@@ -150,9 +151,9 @@ namespace InvestorDashboard.Api
             app.UseRewriter(options);
 
             app.UseCors(builder => builder
-              .AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod());
 
             app.UseStaticFiles();
 
@@ -163,12 +164,7 @@ namespace InvestorDashboard.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
+            app.UseMvc(r => r.MapRoute(name: "default", template: "{controller=Home}/{action=Index}/{id?}"));
 
             // Seed the database with the sample applications.
             // Note: in a real world application, this step should be part of a setup script.

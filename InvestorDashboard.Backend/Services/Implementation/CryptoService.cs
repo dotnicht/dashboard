@@ -140,6 +140,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         x => x.Currency == Settings.Value.Currency
                         && x.Type == CryptoAddressType.Investment
                         && x.User.ExternalId == null
+                        && x.User.EmailConfirmed
                         && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions)
                         && (x.LastBlockIndex ?? x.StartBlockIndex) < index)
                     .GroupBy(x => x.LastBlockIndex ?? x.StartBlockIndex)
