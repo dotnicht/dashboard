@@ -26,7 +26,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public bool Equals(CryptoAddress other)
         {
             return other != null 
-                && other.Address == Address 
+                && other.Address == Address
                 && other.UserId == UserId 
                 && other.IsDisabled == IsDisabled 
                 && other.Type == Type 

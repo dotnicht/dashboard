@@ -126,9 +126,6 @@ namespace InvestorDashboard.Api.Controllers
                             return BadRequest("User creation failed.");
                         }
 
-                        BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(appUser.Id, true));
-                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
-
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");
                         await _messageService.SendRegistrationConfirmationRequiredMessage(appUser.Id, emailBody);
@@ -615,6 +612,7 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             identity.AddClaim(CustomClaimTypes.TwoFactorEnabled, user.TwoFactorEnabled.ToString().ToLower(), OpenIdConnectConstants.Destinations.IdentityToken);
+
             if (user.TwoFactorEnabled)
             {
                 var b = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -654,6 +652,9 @@ namespace InvestorDashboard.Api.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
+                BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(user.Id, true));
+                BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(user.Id));
+
                 Response.Cookies.Append("confirm_status", "success", options);
                 return RedirectPermanent("/email_confirmed");
             }
@@ -666,7 +667,6 @@ namespace InvestorDashboard.Api.Controllers
                 }
                 Response.Cookies.Append("confirm_status", errors, options);
                 return RedirectPermanent("/email_confirmed");
-
             }
         }
 

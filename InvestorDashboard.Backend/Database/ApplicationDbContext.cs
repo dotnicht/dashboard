@@ -39,7 +39,7 @@ namespace InvestorDashboard.Backend.Database
                 .IsUnique();
 
             builder.Entity<CryptoAddress>()
-                .HasIndex(x => x.Address)
+                .HasIndex(x => new { x.Currency, x.Type, x.IsDisabled, x.UserId })
                 .IsUnique();
 
             builder.Entity<DashboardHistoryItem>()
