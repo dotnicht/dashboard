@@ -69,10 +69,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Currency = item.Key,
                         TotalUsers = ctx.Users.Count(),
                         TotalInvestors = item.Select(x => x.CryptoAddress.UserId).Distinct().Count(),
-                        TotalCoinsBoughts = ctx.Users.Sum(x => x.Balance + x.BonusBalance),
+                        TotalCoinsBoughts = ctx.Users.Sum(x => x.Balance),
                         TotalNonInternalUsers = ctx.Users.Count(x => x.ExternalId == null),
                         TotalNonInternalInvestors = item.Where(x => x.CryptoAddress.User.ExternalId == null).Select(x => x.CryptoAddress.UserId).Distinct().Count(),
-                        TotalNonInternalCoinsBoughts = ctx.Users.Where(x => x.ExternalId == null).Sum(x => x.Balance + x.BonusBalance)
+                        TotalNonInternalCoinsBoughts = ctx.Users.Where(x => x.ExternalId == null).Sum(x => x.Balance)
                     };
 
                     var total = BigInteger.Zero;

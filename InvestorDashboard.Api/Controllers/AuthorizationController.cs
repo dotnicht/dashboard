@@ -117,6 +117,8 @@ namespace InvestorDashboard.Api.Controllers
                     {
                         try
                         {
+                            BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(user.Id, true));
+                            BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(user.Id));
                             await _referralService.PopulateReferralData(appUser.Id, user.Referral);
                         }
                         catch (Exception ex)
@@ -652,9 +654,7 @@ namespace InvestorDashboard.Api.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(user.Id, true));
-                BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(user.Id));
-
+                await _genericAddressService.UpdateLastBlockIndex(user.Id);
                 Response.Cookies.Append("confirm_status", "success", options);
                 return RedirectPermanent("/email_confirmed");
             }

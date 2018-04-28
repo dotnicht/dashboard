@@ -78,37 +78,38 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return;
             }
 
+            CryptoAddress[] addresses = null;
+
             using (var ctx = CreateContext())
             {
-                var addresses = ctx.CryptoAddresses
+                addresses = ctx.CryptoAddresses
                     .Include(x => x.User)
                     .Where(
                         x => x.Currency == Settings.Value.Currency
                         && x.Type == CryptoAddressType.Investment
                         && x.User.ExternalId == null
+                        && x.User.EmailConfirmed
                         && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
                     .ToArray();
+            }
 
-                const string addressKey = "address";
+            const string addressKey = "address";
 
-                var policy = Policy
-                    .Handle<Exception>()
-                    .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: {Settings.Value.Currency}. Address: {c[addressKey]}. Retry attempt: {i}."));
+            var policy = Policy
+                .Handle<Exception>()
+                .Retry(10, (e, i, c) => Logger.LogError(e, $"Transaction list retrieve failed. Currency: {Settings.Value.Currency}. Address: {c[addressKey]}. Retry attempt: {i}."));
 
-                foreach (var address in addresses)
+            foreach (var address in addresses)
+            {
+                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
                 {
-                    foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
-                    {
-                        Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
+                    Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
 
+                    using (var ctx = CreateContext())
+                    {
                         if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
                         {
                             transaction.CryptoAddressId = address.Id;
-
-                            if (address.User.ReferralUserId != null)
-                            {
-                                transaction.IsReferralPaid = false;
-                            }
 
                             await ctx.CryptoTransactions.AddAsync(transaction);
                             await ctx.SaveChangesAsync();
@@ -118,9 +119,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             await TokenService.RefreshTokenBalance(address.UserId);
                         }
                     }
-
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
                 }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
             }
         }
 
