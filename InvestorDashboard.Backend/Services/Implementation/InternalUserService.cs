@@ -194,16 +194,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"User not found with ID {userId}.");
                 }
 
-                if (user.IgnoreDuplicateKycData)
+                if (new[] { user.FirstName, user.LastName, user.CountryCode }.All(x => !string.IsNullOrWhiteSpace(x)))
                 {
-                    user.HasDuplicateKycData = false;
-                }
-                else if (ctx.Users.Any(x => x.FirstName == user.FirstName && x.LastName == user.LastName && x.CountryCode == user.CountryCode && x.Id != user.Id))
-                {
-                    user.HasDuplicateKycData = true;
-                }
+                    if (user.IgnoreDuplicateKycData)
+                    {
+                        user.HasDuplicateKycData = false;
+                    }
+                    else if (ctx.Users.Any(x => x.FirstName == user.FirstName && x.LastName == user.LastName && x.CountryCode == user.CountryCode && x.Id != user.Id))
+                    {
+                        user.HasDuplicateKycData = true;
+                    }
 
-                await ctx.SaveChangesAsync();
+                    await ctx.SaveChangesAsync();
+                }
             }
         }
 
