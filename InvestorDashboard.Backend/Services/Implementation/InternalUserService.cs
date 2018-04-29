@@ -105,24 +105,38 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public bool IsKycDataFilled(ApplicationUser user)
+        public async Task DetectDuplicateKycData(string userId = null)
         {
-            if (user == null)
+            if (userId == null)
             {
-                throw new ArgumentNullException(nameof(user));
-            }
+                using (var ctx = CreateContext())
+                {
+                    var ids = ctx.Users
+                        .Where(x => x.ExternalId == null && x.EmailConfirmed && (!x.HasDuplicateKycData || x.IgnoreDuplicateKycData))
+                        .Select(x => x.Id)
+                        .ToArray();
 
-            return new [] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo }
-                .All(x => !string.IsNullOrWhiteSpace(x));
+                    foreach (var id in ids)
+                    {
+                        try
+                        {
+                            await DetectDuplicateKycDataInternal(id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, $"An error occurred while detecting duplicate KYC data for user {id}.");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                await DetectDuplicateKycDataInternal(userId);
+            }
         }
 
         private async Task UpdateKycTransactionInternal(string userId)
         {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
             using (var ctx = CreateContext())
             {
                 var user = ctx.Users.SingleOrDefault(x => x.Id == userId);
@@ -139,7 +153,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     && x.CryptoAddress.UserId == user.Id
                     && x.Hash == _kycTransactionHash);
 
-                var filled = IsKycDataFilled(user);
+                var filled = new[] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo }
+                    .All(x => !string.IsNullOrWhiteSpace(x));
 
                 if (!filled && tx != null)
                 {
@@ -165,6 +180,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 await ctx.SaveChangesAsync();
                 await _tokenService.RefreshTokenBalance(user.Id);
+            }
+        }
+
+        private async Task DetectDuplicateKycDataInternal(string userId)
+        {
+            using (var ctx = CreateContext())
+            {
+                var user = ctx.Users.SingleOrDefault(x => x.Id == userId);
+
+                if (user == null)
+                {
+                    throw new InvalidOperationException($"User not found with ID {userId}.");
+                }
+
+                if (user.IgnoreDuplicateKycData)
+                {
+                    user.HasDuplicateKycData = false;
+                }
+                else if (ctx.Users.Any(x => x.FirstName == user.FirstName && x.LastName == user.LastName && x.CountryCode == user.CountryCode && x.Id != user.Id))
+                {
+                    user.HasDuplicateKycData = true;
+                }
+
+                await ctx.SaveChangesAsync();
             }
         }
 

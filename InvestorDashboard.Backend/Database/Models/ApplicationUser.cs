@@ -22,6 +22,8 @@ namespace InvestorDashboard.Backend.Database.Models
         public long? KycBonus { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsEligibleForTransfer { get; set; }
+        public bool HasDuplicateKycData { get; set; }
+        public bool IgnoreDuplicateKycData { get; set; }
         public string ClickId { get; set; }
         public string UtmSource { get; set; }
         public string RegistrationUri { get; set; }

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using InvestorDashboard.Backend.ConfigurationSections;
-using InvestorDashboard.Backend.Database;
+﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
+using System;
+using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {

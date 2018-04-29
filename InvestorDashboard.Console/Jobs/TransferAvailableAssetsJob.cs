@@ -1,5 +1,4 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
-using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,19 +20,10 @@ namespace InvestorDashboard.Console.Jobs
             _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
-        protected override async Task ExecuteInternal(IJobExecutionContext context)
+        protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            foreach (var service in _cryptoServices)
-            {
-                try
-                {
-                    await service.TransferAvailableAssets();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"An error occurred while transfering {service.Settings.Value.Currency} assets.");
-                }
-            }
+            Task.WaitAll(_cryptoServices.Select(x => x.TransferAvailableAssets()).ToArray());
+            return Task.CompletedTask;
         }
     }
 }

@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace InvestorDashboard.Console.Jobs
 {
-    public class NotifyDashboardHistoryJob : JobBase
+    public class DetectDuplicateKycJob : JobBase
     {
-        private readonly IMessageService _messageService;
+        private readonly IInternalUserService _internalUserService;
 
-        public NotifyDashboardHistoryJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IMessageService messageService) 
+        public DetectDuplicateKycJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IInternalUserService internalUserService)
             : base(loggerFactory, options)
         {
-            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _messageService.SendDashboardHistoryMessage();
+            await _internalUserService.DetectDuplicateKycData();
         }
     }
 }

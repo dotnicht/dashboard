@@ -1,6 +1,4 @@
-﻿using InvestorDashboard.Backend.Database.Models;
-using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services
 {
@@ -8,6 +6,6 @@ namespace InvestorDashboard.Backend.Services
     {
         Task SynchronizeInternalUsersData();
         Task UpdateKycTransaction(string userId = null);
-        bool IsKycDataFilled(ApplicationUser user);
+        Task DetectDuplicateKycData(string userId = null);
     }
 }
