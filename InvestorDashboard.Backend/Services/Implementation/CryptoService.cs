@@ -108,7 +108,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         using (var ctx = CreateContext())
                         {
-                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
+                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash && x.CryptoAddressId == address.Id))
                             {
                                 transaction.CryptoAddressId = address.Id;
 
@@ -120,14 +120,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 await TokenService.RefreshTokenBalance(address.UserId);
                             }
                         }
-                    }
-
-                    using (var ctx = CreateContext())
-                    {
-                        ctx.Attach(address);
-                        address.LastBlockIndex = await GetCurrentBlockIndex();
-                        address.LastUpdated = DateTime.UtcNow;
-                        ctx.SaveChanges();
                     }
                 }
 

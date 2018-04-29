@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
-using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
