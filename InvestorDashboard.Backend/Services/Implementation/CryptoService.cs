@@ -64,7 +64,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return null;
             }
 
-            using (new ElapsedTimer(Logger, $"CreateCryptoAddress: {Settings.Value.Currency}. User: {userId}."))
+            using (new ElapsedTimer(Logger, $"CreateCryptoAddress. Currency: {Settings.Value.Currency}. User: {userId}."))
             {
                 var (address, privateKey) = GenerateKeys(password);
                 return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);
@@ -83,7 +83,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (var ctx = CreateContext())
             {
                 addresses = ctx.CryptoAddresses
-                    .Include(x => x.User)
                     .Where(
                         x => x.Currency == Settings.Value.Currency
                         && x.Type == CryptoAddressType.Investment
@@ -101,27 +100,41 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var address in addresses)
             {
-                foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
+                using (new ElapsedTimer(Logger, $"GetTransactionsFromBlockchain. Currency: {Settings.Value.Currency}. Address: {address.Address}."))
                 {
-                    Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
+                    foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
+                    {
+                        Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
+
+                        using (var ctx = CreateContext())
+                        {
+                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
+                            {
+                                transaction.CryptoAddressId = address.Id;
+
+                                await ctx.CryptoTransactions.AddAsync(transaction);
+                                await ctx.SaveChangesAsync();
+
+                                // TODO: send transaction received message.
+
+                                await TokenService.RefreshTokenBalance(address.UserId);
+                            }
+                        }
+                    }
 
                     using (var ctx = CreateContext())
                     {
-                        if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash))
-                        {
-                            transaction.CryptoAddressId = address.Id;
-
-                            await ctx.CryptoTransactions.AddAsync(transaction);
-                            await ctx.SaveChangesAsync();
-
-                            // TODO: send transaction received message.
-
-                            await TokenService.RefreshTokenBalance(address.UserId);
-                        }
+                        address.LastBlockIndex = await GetCurrentBlockIndex();
+                        address.LastUpdated = DateTime.UtcNow;
+                        ctx.Attach(address);
+                        ctx.SaveChanges();
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromMilliseconds(500));
+                if (Settings.Value.LegacyTransactionRefreshTimeout != null)
+                {
+                    await Task.Delay(Settings.Value.LegacyTransactionRefreshTimeout.Value);
+                }
             }
         }
 

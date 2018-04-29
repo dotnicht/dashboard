@@ -25,8 +25,7 @@ namespace InvestorDashboard.Backend
             services.Configure<JobsSettings>(configuration.GetSection("Jobs"));
             services.Configure<TokenSettings>(configuration.GetSection("Token"));
             services.Configure<ExchangeRateSettings>(configuration.GetSection("ExchangeRate"));
-            services.Configure<SendGridEmailSettings>(configuration.GetSection("SendGridEmail"));
-            services.Configure<AmazonEmailSettings>(configuration.GetSection("AmazonEmail"));
+            services.Configure<EmailSettings>(configuration.GetSection("Email"));
             services.Configure<TelegramSettings>(configuration.GetSection("Telegram"));
             services.Configure<CaptchaSettings>(configuration.GetSection("Captcha"));
             services.Configure<EthereumSettings>(configuration.GetSection("Ethereum"));

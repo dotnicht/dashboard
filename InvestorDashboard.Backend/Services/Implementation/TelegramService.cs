@@ -29,7 +29,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var client = new TelegramBotClient(_options.Value.Token);
             var chat = new ChatId(chatId);
 
-            await client.SetWebhookAsync(_options.Value.WebhookUri);
+            try
+            {
+                await client.SetWebhookAsync(_options.Value.WebhookUri);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while setting telegram webhook address.");
+            }
+
             await client.SendTextMessageAsync(chat, message);
         }
     }

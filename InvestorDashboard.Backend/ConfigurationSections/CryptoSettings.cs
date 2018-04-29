@@ -13,5 +13,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public string InternalTransferUserId { get; set; }
         public byte Denomination { get; set; }
         public bool UseDirectBlockAccess { get; set; }
+        public TimeSpan? LegacyTransactionRefreshTimeout { get; set; }
     }
 }

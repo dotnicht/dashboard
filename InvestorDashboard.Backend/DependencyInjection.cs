@@ -14,7 +14,7 @@ namespace InvestorDashboard.Backend
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddTransient<IEmailService, AmazonEmailService>();
+            services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IResourceService, ResourceService>();
             services.AddTransient<IRestService, RestService>();
             services.AddTransient<ICalculationService, CalculationService>();

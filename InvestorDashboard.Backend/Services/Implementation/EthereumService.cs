@@ -68,9 +68,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     var result = await RestService.GetAsync<EtherscanAccountResponse>(uri);
 
-                    if (result == null)
+                    if (result == null || result.Result == null)
                     {
-                        throw new InvalidOperationException($"An error occurred while processing URL {uri}.");
+                        throw new InvalidOperationException($"An error occurred while processing URL {uri}. Madnatory data missing.");
                     }
 
                     var confirmed = result.Result
@@ -95,7 +95,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, $"An error occurred while accessing URI {uri}.");
-                    throw;
                 }
             }
 
