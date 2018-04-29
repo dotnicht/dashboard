@@ -124,9 +124,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     using (var ctx = CreateContext())
                     {
+                        ctx.Attach(address);
                         address.LastBlockIndex = await GetCurrentBlockIndex();
                         address.LastUpdated = DateTime.UtcNow;
-                        ctx.Attach(address);
                         ctx.SaveChanges();
                     }
                 }
