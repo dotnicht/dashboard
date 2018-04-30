@@ -155,7 +155,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var hash = tx.GetHash().ToString();
                 for (var i = 0; i < tx.Outputs.Count; i++)
                 {
-                    var address = addresses.SingleOrDefault(x => x.Address == tx.Outputs[i].ScriptPubKey.GetDestinationAddress(Network)?.ToString());
+                    var destination = tx.Outputs[i].ScriptPubKey.GetDestinationAddress(Network)?.ToString();
+                    var address = addresses.SingleOrDefault(x => x.Address == destination);
                     if (address != null)
                     {
                         using (var ctx = CreateContext())

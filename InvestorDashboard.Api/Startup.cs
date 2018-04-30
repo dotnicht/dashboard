@@ -17,9 +17,7 @@ using Microsoft.Extensions.Logging;
 using OpenIddict.Core;
 using OpenIddict.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,16 +46,20 @@ namespace InvestorDashboard.Api
 
             services.AddAutoMapper(typeof(DependencyInjection), GetType());
 
+            var connection = Configuration.GetConnectionString("DefaultConnection");
+
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("InvestorDashboard.Backend"));
+                options.UseSqlServer(connection, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
                 // Register the entity sets needed by OpenIddict.
                 // Note: use the generic overload if you need
                 // to replace the default OpenIddict entities.
                 options.UseOpenIddict();
             }, ServiceLifetime.Transient);
 
-            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection")));
+            services.BuildServiceProvider().GetRequiredService<ApplicationDbContext>().Database.Migrate();
+
+            services.AddHangfire(x => x.UseSqlServerStorage(connection));
 
             services.Configure<MvcOptions>(options =>
             {
@@ -176,9 +178,6 @@ namespace InvestorDashboard.Api
             // Create a new service scope to ensure the database context is correctly disposed when this methods returns.
             using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await context.Database.MigrateAsync();
-
                 var manager = scope.ServiceProvider.GetRequiredService<OpenIddictApplicationManager<OpenIddictApplication>>();
 
                 if (await manager.FindByClientIdAsync("ID", cancellationToken) == null)
