@@ -2,6 +2,7 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace InvestorDashboard.Backend.Database
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-        public string CurrentUserId { get; set; }
+        public const string DefaultConnectionStringName = "DefaultConnection";
 
         public DbSet<CryptoTransaction> CryptoTransactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
@@ -22,6 +23,27 @@ namespace InvestorDashboard.Backend.Database
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+        }
+
+        public static void Initialize(IServiceCollection serviceCollection, IConfigurationRoot configuration)
+        {
+            if (serviceCollection == null)
+            {
+                throw new ArgumentNullException(nameof(serviceCollection));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            serviceCollection.AddDbContext<ApplicationDbContext>(x =>
+            {
+                x.UseSqlServer(configuration.GetConnectionString(DefaultConnectionStringName), y => y.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name));
+                x.UseOpenIddict();
+            }, ServiceLifetime.Transient);
+
+            serviceCollection.BuildServiceProvider().GetRequiredService<ApplicationDbContext>().Database.Migrate();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

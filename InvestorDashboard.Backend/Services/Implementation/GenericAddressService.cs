@@ -47,25 +47,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task UpdateLastBlockIndex(string userId)
-        {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
-            using (var ctx = CreateContext())
-            {
-                foreach (var currency in _cryptoServices.Select(x => x.Settings.Value.Currency))
-                {
-                    var address = ctx.CryptoAddresses.Single(x => x.Currency == currency && x.UserId == userId && x.Type == CryptoAddressType.Investment && !x.IsDisabled);
-                    var index = ctx.CryptoAddresses.Where(x => x.Currency == currency).Max(x => x.LastBlockIndex ?? x.StartBlockIndex);
-                    address.LastBlockIndex = index;
-                    await ctx.SaveChangesAsync();
-                }
-            }
-        }
-
         private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)
         {
             using (var ctx = CreateContext())

@@ -48,11 +48,9 @@ namespace InvestorDashboard.Console
 
             serviceCollection.AddSingleton(new LoggerFactory().Initialize());
 
-            SetupIdentity(serviceCollection);
+            ApplicationDbContext.Initialize(serviceCollection, configuration);
 
-            serviceCollection.AddDbContext<ApplicationDbContext>(
-                x => x.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), y => y.MigrationsAssembly("InvestorDashboard.Backend")),
-                ServiceLifetime.Transient);
+            SetupIdentity(serviceCollection);
 
             await SetupScheduling(serviceCollection);
         }
