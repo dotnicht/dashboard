@@ -277,11 +277,44 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return result;
         }
 
+        public async Task RefreshTransactionsByBalance()
+        {
+            using (var ctx = CreateContext())
+            {
+                var addresses = ctx.CryptoAddresses
+                    .Where(
+                        x => x.Currency == Settings.Value.Currency
+                        && x.Type == CryptoAddressType.Investment
+                        && x.User.ExternalId == null
+                        && x.User.EmailConfirmed
+                        && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
+                    .ToArray();
+
+                foreach (var address in addresses)
+                {
+                    try
+                    {
+                        var balance = (await GetBalance(address)).ToString();
+                        if (address.Balance != balance)
+                        {
+                            address.Balance = balance;
+                            await ctx.SaveChangesAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while checking {Settings.Value.Currency} balance for address {address.Address}.");
+                    }
+                }
+            }
+        }
+
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
         protected abstract Task<long> GetCurrentBlockIndex();
         protected abstract Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses);
+        protected abstract Task<BigInteger> GetBalance(CryptoAddress address);
 
         private async Task ProccessBlockAndUpdateAddresses(long index, IEnumerable<CryptoAddress> addresses, ApplicationDbContext context)
         {

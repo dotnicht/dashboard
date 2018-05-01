@@ -43,10 +43,11 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.17.0" />
-    <PackageReference Include="NBitcoin" Version="4.0.0.38" />
+    <PackageReference Include="NBitcoin" Version="4.1.1.3" />
     <PackageReference Include="Nethereum.Web3" Version="2.2.3" />
     <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="2.0.0-rc1-0719" />
     <PackageReference Include="polly" Version="5.5.0" />
+    <PackageReference Include="QBitNinja.Client" Version="1.0.3.47" />
     <PackageReference Include="Sendgrid" Version="9.9.0" />
     <PackageReference Include="serilog.extensions.logging.file" Version="1.1.0" />
     <PackageReference Include="telegram.bot" Version="13.2.1" />

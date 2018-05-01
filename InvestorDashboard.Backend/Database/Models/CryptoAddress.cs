@@ -21,6 +21,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public bool IsDisabled { get; set; }
         public long StartBlockIndex { get; set; }
         public long? LastBlockIndex { get; set; }
+        public string Balance { get; set; }
         public virtual ICollection<CryptoTransaction> CryptoTransactions { get; set; }
 
         public bool Equals(CryptoAddress other)

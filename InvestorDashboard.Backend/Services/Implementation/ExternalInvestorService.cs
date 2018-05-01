@@ -76,7 +76,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 await _userManager.ConfirmEmailAsync(user, await _userManager.GenerateEmailConfirmationTokenAsync(user));
                                 await _genericAddressService.CreateMissingAddresses(user.Id, false);
 
-                                var address = ctx.CryptoAddresses.Single(x => x.UserId == user.Id && !x.IsDisabled && x.Currency == record.Currency);
+                                var address = ctx.CryptoAddresses.SingleOrDefault(x => x.UserId == user.Id && !x.IsDisabled && x.Currency == record.Currency);
+
+                                if (address == null)
+                                {
+                                    Logger.LogWarning($"User {user.Id} doesn't have required {record.Currency} address.");
+                                    await _userManager.DeleteAsync(user);
+                                    return;
+                                }
+
                                 var value = _calculationService.ToStringValue(record.Value, record.Currency);
 
                                 var transaction = new CryptoTransaction

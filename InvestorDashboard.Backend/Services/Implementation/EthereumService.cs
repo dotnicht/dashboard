@@ -166,6 +166,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        protected override async Task<BigInteger> GetBalance(CryptoAddress address)
+        {
+            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
+            var balance = await web3.Eth.GetBalance.SendRequestAsync(address.Address);
+            return balance.Value;
+        }
+
         internal class EtherscanAccountResponse
         {
             public string Status { get; set; }

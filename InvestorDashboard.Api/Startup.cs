@@ -46,28 +46,15 @@ namespace InvestorDashboard.Api
 
             services.AddAutoMapper(typeof(DependencyInjection), GetType());
 
-            var connection = Configuration.GetConnectionString("DefaultConnection");
+            ApplicationDbContext.Initialize(services, Configuration);
 
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(connection, b => b.MigrationsAssembly("InvestorDashboard.Backend"));
-                // Register the entity sets needed by OpenIddict.
-                // Note: use the generic overload if you need
-                // to replace the default OpenIddict entities.
-                options.UseOpenIddict();
-            }, ServiceLifetime.Transient);
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString(ApplicationDbContext.DefaultConnectionStringName)));
 
-            services.BuildServiceProvider().GetRequiredService<ApplicationDbContext>().Database.Migrate();
-
-            services.AddHangfire(x => x.UseSqlServerStorage(connection));
-
-            services.Configure<MvcOptions>(options =>
-            {
-                options.Filters.Add(new RequireHttpsAttribute());
-            });
+            services.Configure<MvcOptions>(options => options.Filters.Add(new RequireHttpsAttribute()));
 
             // add identity
-            services.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
+            services
+                .AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
