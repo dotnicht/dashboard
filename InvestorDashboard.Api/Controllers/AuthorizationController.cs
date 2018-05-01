@@ -654,7 +654,6 @@ namespace InvestorDashboard.Api.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                await _genericAddressService.UpdateLastBlockIndex(user.Id);
                 Response.Cookies.Append("confirm_status", "success", options);
                 return RedirectPermanent("/email_confirmed");
             }
