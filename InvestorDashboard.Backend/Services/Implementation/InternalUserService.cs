@@ -13,6 +13,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class InternalUserService : ContextService, IInternalUserService
     {
         private readonly string _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4").ToString();
+
         private readonly IResourceService _resourceService;
         private readonly IOptions<TokenSettings> _options;
         private readonly IRestService _restService;
@@ -75,7 +76,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task UpdateKycTransaction(string userId = null)
+        public async Task UpdateKycTransactions(string userId = null)
         {
             if (userId == null)
             {

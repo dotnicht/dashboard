@@ -18,10 +18,26 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 
         public class BonusSettings
         {
-            public long? KycBonus { get; set; }
+            public KycBonusItem[] KycBonuses { get; set; }
             public BonusSystem System { get; set; }
             public ScheduleItem[] Schedule { get; set; }
             public PercentageItem[] Percentage { get; set; }
+
+            public class KycBonusItem
+            {
+                public BonusCriterion Criterion { get; set; }
+                public Guid TransationHash { get; set; }
+                public long Value { get; set; }
+
+                public enum BonusCriterion
+                {
+                    Registration,
+                    Referral,
+                    Telegram,
+                    Photo,
+                    Profile
+                }
+            }
 
             public enum BonusSystem
             {

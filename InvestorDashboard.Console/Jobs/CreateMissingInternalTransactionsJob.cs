@@ -20,7 +20,7 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _internalUserService.UpdateKycTransaction();
+            await _internalUserService.UpdateKycTransactions();
         }
     }
 }

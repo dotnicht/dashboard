@@ -24,12 +24,10 @@ namespace InvestorDashboard.Console.Jobs
 
         protected override Task ExecuteInternal(IJobExecutionContext context)
         {
-            Task.WaitAll(_cryptoServices.Select(x => x.RefreshTransactionsByBalance()).ToArray());
-
-            //Task.WaitAll(_cryptoServices
-            //    .Select(x => x.Settings.Value.UseDirectBlockAccess ? x.RefreshTransactionsFromBlockchain() : x.RefreshInboundTransactions())
-            //    .Union(new[] { _smartContractService.RefreshOutboundTransactions() })
-            //    .ToArray());
+            Task.WaitAll(_cryptoServices
+                .Select(x => x.Settings.Value.UseDirectBlockAccess ? x.RefreshTransactionsFromBlockchain() : x.RefreshInboundTransactions())
+                .Union(new[] { _smartContractService.RefreshOutboundTransactions() })
+                .ToArray());
             return Task.CompletedTask;
         }
     }
