@@ -110,7 +110,8 @@ namespace InvestorDashboard.Api.Controllers
                 if (status)
                 {
                     user.UserName = user.Email;
-                    ApplicationUser appUser = _mapper.Map<ApplicationUser>(user);
+                    var appUser = _mapper.Map<ApplicationUser>(user);
+                    appUser.UseNewBonusSystem = true;
                     var result = await _userManager.CreateAsync(appUser, user.Password);
 
                     if (result.Succeeded)

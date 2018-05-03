@@ -3,6 +3,7 @@ using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -193,15 +194,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (!user.UseNewBonusSystem && user.KycBonus != null)
                 {
-                    var tx = (await GetKycTransactions(userId, _kycTransactionHash)).SingleOrDefault()
-                        ?? await AddBonusTransaction(ctx, user, user.KycBonus.Value, _kycTransactionHash);
-
-                    if (ctx.Entry(tx).State != Microsoft.EntityFrameworkCore.EntityState.Added)
-                    {
-                        ctx.Attach(tx);
-                    }
-
-                    tx.IsInactive = !IsUserLegacyProfileFilled(user);
+                    await EnsureInternalTransaction(ctx, user, new KycBonusItem { Hash = _kycTransactionHash, Amount = user.KycBonus.Value }, !IsUserLegacyProfileFilled(user));
                 }
                 else
                 {
@@ -209,10 +202,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     foreach (var item in _bonusMapping)
                     {
-                        var tx = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[item.Key].Hash)).SingleOrDefault()
-                            ?? await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key].Amount, _options.Value.Bonus.KycBonuses[item.Key].Hash);
-
-                        ctx.Attach(tx).Entity.IsInactive = _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user)));
+                        await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user))));
                     }
 
                     if ((await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash)).SingleOrDefault() == null)
@@ -232,6 +222,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 await ctx.SaveChangesAsync();
                 await _tokenService.RefreshTokenBalance(user.Id);
             }
+        }
+
+        private async Task EnsureInternalTransaction(ApplicationDbContext ctx, ApplicationUser user, KycBonusItem kycBonusItem, bool isInactive)
+        {
+            var tx = (await GetKycTransactions(user.Id, kycBonusItem.Hash)).SingleOrDefault()
+                ?? await AddBonusTransaction(ctx, user, kycBonusItem.Amount, kycBonusItem.Hash);
+
+            if (ctx.Entry(tx).State != EntityState.Added)
+            {
+                ctx.Attach(tx);
+            }
+
+            tx.IsInactive = isInactive;
         }
 
         private async Task<CryptoTransaction> AddBonusTransaction(ApplicationDbContext ctx, ApplicationUser user, long amount, Guid hash)
