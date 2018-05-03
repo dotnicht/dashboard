@@ -138,7 +138,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var existing = await _userManager.FindByIdAsync(user.Id);
+                var existing = ctx.Users.Single(x => x.Id == user.Id);
 
                 if (_bonusMapping.SelectMany(x => x.Value).Any(x => !string.IsNullOrWhiteSpace(x(existing))))
                 {
@@ -148,7 +148,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     ctx.SaveChanges();
                 }
 
-                var status = await _userManager.UpdateAsync(_mapper.Map(user, existing));
+                var status = await _userManager.UpdateAsync(user);
 
                 if (!status.Succeeded)
                 {
@@ -172,18 +172,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private Dictionary<BonusCriterion, (bool Status, long Amount)> GetUserKycDataStatusInternal(ApplicationUser user)
         {
-            if (user.KycBonus != null)
-            {
-                return new Dictionary<BonusCriterion, (bool Status, long Amount)>
-                    {
-                        {
-                            BonusCriterion.Legacy,
-                            (Status: _bonusMapping.Where(x => x.Key != BonusCriterion.Telegram).SelectMany(x => x.Value).All(x => !string.IsNullOrWhiteSpace(x(user))), Amount: user.KycBonus.Value )
-                        }
-                    };
-            }
+            return user.UseNewBonusSystem
+                ? _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount))
+                : new Dictionary<BonusCriterion, (bool Status, long Amount)> { { BonusCriterion.Legacy, (Status: IsUserLegacyProfileFilled(user), Amount: user.KycBonus.Value) } };
+        }
 
-            return _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount));
+        private bool IsUserLegacyProfileFilled(ApplicationUser user)
+        {
+            return _bonusMapping
+                .Where(x => x.Key != BonusCriterion.Telegram)
+                .SelectMany(x => x.Value)
+                .All(x => !string.IsNullOrWhiteSpace(x(user)));
         }
 
         private async Task UpdateKycTransactionInternal(string userId)
@@ -192,28 +191,28 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var user = EnsureUser(userId, ctx);
 
-                var legacyTx = (await GetKycTransactions(userId, _kycTransactionHash)).SingleOrDefault();
-
-                var filled = new[] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo }
-                    .All(x => !string.IsNullOrWhiteSpace(x));
-
-                if (legacyTx != null)
+                if (!user.UseNewBonusSystem && user.KycBonus != null)
                 {
-                    legacyTx.IsInactive = !filled;
-                }
-                else if (user.KycBonus != null)
-                {
-                    var tx = await AddBonusTransaction(ctx, user, user.KycBonus.Value, _kycTransactionHash);
-                    tx.IsInactive = !filled;
+                    var tx = (await GetKycTransactions(userId, _kycTransactionHash)).SingleOrDefault()
+                        ?? await AddBonusTransaction(ctx, user, user.KycBonus.Value, _kycTransactionHash);
+
+                    if (ctx.Entry(tx).State != Microsoft.EntityFrameworkCore.EntityState.Added)
+                    {
+                        ctx.Attach(tx);
+                    }
+
+                    tx.IsInactive = !IsUserLegacyProfileFilled(user);
                 }
                 else
                 {
+                    user.UseNewBonusSystem = true;
+
                     foreach (var item in _bonusMapping)
                     {
                         var tx = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[item.Key].Hash)).SingleOrDefault()
                             ?? await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key].Amount, _options.Value.Bonus.KycBonuses[item.Key].Hash);
 
-                        tx.IsInactive = _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user)));
+                        ctx.Attach(tx).Entity.IsInactive = _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user)));
                     }
 
                     if ((await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash)).SingleOrDefault() == null)

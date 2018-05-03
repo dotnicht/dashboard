@@ -30,9 +30,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     return result;
                 }
             }
-            catch (Exception ex)
+            catch (ReaderException ex)
             {
-                throw new InvalidOperationException($"An error occurred while parsing CSV file.", ex);
+                throw new InvalidOperationException($"An error occurred while parsing CSV file. Row: {ex.ReadingContext.Row}. Record: {ex.ReadingContext.RawRecord}.", ex);
             }
         }
 

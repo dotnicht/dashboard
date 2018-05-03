@@ -364,7 +364,7 @@ namespace InvestorDashboard.Api.Controllers
                 }
 
                 var result = new StringBuilder();
-                int currentPosition = 0;
+                var currentPosition = 0;
                 while (currentPosition + 4 < unformattedKey.Length)
                 {
                     result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
@@ -427,7 +427,6 @@ namespace InvestorDashboard.Api.Controllers
                     Error = OpenIdConnectConstants.Errors.ServerError,
                     ErrorDescription = $"Unable to load user with ID '{_userManager.GetUserId(User)}'."
                 });
-
             }
 
             // Strip spaces and hypens
@@ -476,24 +475,6 @@ namespace InvestorDashboard.Api.Controllers
 
 
             return Ok(model);
-        }
-
-        private string FormatKey(string unformattedKey)
-        {
-            var result = new StringBuilder();
-            int currentPosition = 0;
-            while (currentPosition + 4 < unformattedKey.Length)
-            {
-                result.Append(unformattedKey.Substring(currentPosition, 4)).Append(" ");
-                currentPosition += 4;
-            }
-
-            if (currentPosition < unformattedKey.Length)
-            {
-                result.Append(unformattedKey.Substring(currentPosition));
-            }
-
-            return result.ToString().ToLowerInvariant();
         }
     }
 }
