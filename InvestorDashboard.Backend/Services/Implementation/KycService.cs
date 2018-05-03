@@ -205,14 +205,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<CryptoTransaction> AddBonusTransaction(ApplicationDbContext ctx, ApplicationUser user, long amount, Guid hash)
         {
-            return ctx.CryptoTransactions.Add(new CryptoTransaction
+            var address = await _genericAddressService.EnsureInternalAddress(user);
+            var tx = new CryptoTransaction
             {
-                CryptoAddress = await _genericAddressService.EnsureInternalAddress(user),
+                CryptoAddressId = address.Id,
                 Amount = amount.ToString(),
                 Hash = hash.ToString(),
                 Direction = CryptoTransactionDirection.Internal,
                 Timestamp = DateTime.UtcNow
-            }).Entity;
+            };
+            return ctx.CryptoTransactions.Add(tx).Entity;
         }
 
         private async Task DetectDuplicateKycDataInternal(string userId)
