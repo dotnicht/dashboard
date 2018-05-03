@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using static InvestorDashboard.Backend.ConfigurationSections.TokenSettings.BonusSettings;
 
 namespace InvestorDashboard.Api.Models
 {
@@ -28,5 +30,7 @@ namespace InvestorDashboard.Api.Models
         public string[] Roles { get; set; }
         public string Photo { get; set; }
         public string TelegramUsername { get; set; }
+
+        public Dictionary<BonusCriterion, (bool Status, long Amount)> KycStatus { get; set; }
     }
 }

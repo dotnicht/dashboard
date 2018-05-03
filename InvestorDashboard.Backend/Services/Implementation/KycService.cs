@@ -155,19 +155,35 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"An error occurred while updating user KYC data. {string.Join(". ", status.Errors.Select(x => x.Description))}");
                 }
 
-                if (existing.KycBonus != null)
-                {
-                    return new Dictionary<BonusCriterion, (bool Status, long Amount)>
+                return GetUserKycDataStatusInternal(existing);
+            }
+        }
+
+        public async Task<Dictionary<BonusCriterion, (bool Status, long Amount)>> GetUserKycDataStatus(string userId)
+        {
+            if (userId == null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            return GetUserKycDataStatusInternal(user);
+        }
+
+        private Dictionary<BonusCriterion, (bool Status, long Amount)> GetUserKycDataStatusInternal(ApplicationUser user)
+        {
+            if (user.KycBonus != null)
+            {
+                return new Dictionary<BonusCriterion, (bool Status, long Amount)>
                     {
                         {
                             BonusCriterion.Legacy,
-                            (Status: _bonusMapping.Where(x => x.Key != BonusCriterion.Telegram).SelectMany(x => x.Value).All(x => !string.IsNullOrWhiteSpace(x(existing))), Amount: existing.KycBonus.Value )
+                            (Status: _bonusMapping.Where(x => x.Key != BonusCriterion.Telegram).SelectMany(x => x.Value).All(x => !string.IsNullOrWhiteSpace(x(user))), Amount: user.KycBonus.Value )
                         }
                     };
-                }
-
-                return _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount));
             }
+
+            return _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount));
         }
 
         private async Task UpdateKycTransactionInternal(string userId)

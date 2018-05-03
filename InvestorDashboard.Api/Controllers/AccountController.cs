@@ -76,17 +76,10 @@ namespace InvestorDashboard.Api.Controllers
                     return NotFound(User.Identity.Name);
                 }
 
-                var userVM = _mapper.Map<UserViewModel>(appUser);
-                userVM.Roles = new string[0];
-
-                if (userVM != null)
-                {
-                    return Ok(userVM);
-                }
-                else
-                {
-                    return NotFound(appUser.Id);
-                }
+                var user = _mapper.Map<UserViewModel>(appUser);
+                user.Roles = new string[0];
+                user.KycStatus = await _kycService.GetUserKycDataStatus(user.Id);
+                return Ok(user);
             }
             catch (Exception ex)
             {
