@@ -34,7 +34,6 @@ export class DashboardEndpoint extends BaseService {
         // return dashboard;
         let res = this.http.get(this._dashboard, this.authService.getAuthHeader())
             .map((response: Response) => {
-                console.log('getDashboard()', response.json().headers);
                 return response;
             })
             .catch(error => {

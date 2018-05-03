@@ -395,6 +395,22 @@ export class UserInfoComponent implements OnInit {
         this.isChangePassword = true;
     }
 
+    private getKycStatuses(response: any) {
+        let value = 0;
+        let result: string[] = [];
+        let statuses = {
+            1: `You were credited with ${value} RACs for providing your telegram username.`,
+            2: `You have removed you telegram username, ${value} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`,
+            3: `You were credited with ${value} RACs for providing your personal data.`,
+            4: `You have removed some your personal details, ${value} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`,
+            5: `You were credited with ${value} RACs for providing your personal document. Please note, in case of providing false identity document the company has right to withdraw this airdrop tokens.`,
+            6: `You have removed you personal document, ${value} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
+        }
+
+        for (let status in response) {
+        }
+
+    }
 }
 
 
