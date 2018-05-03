@@ -2,6 +2,8 @@
 {
     public class ReferralInfoModel
     {
+        public int Count { get; set; }
+        public long Tokens { get; set; }
         public string Link { get; set; }
         public ReferralCurrencyItem[] Items { get; set; }
 

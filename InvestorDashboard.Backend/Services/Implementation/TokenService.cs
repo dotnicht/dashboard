@@ -196,7 +196,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 bonus += user.CryptoAddresses
                     .Where(x => x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token)
                     .SelectMany(x => x.CryptoTransactions)
-                    .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Internal && x.CryptoAddress.Type == CryptoAddressType.Internal && !x.IsInactive)
                     .ToArray()
                     .Sum(x => long.Parse(x.Amount));
 

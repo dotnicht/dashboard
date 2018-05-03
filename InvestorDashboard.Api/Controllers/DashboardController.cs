@@ -203,8 +203,19 @@ namespace InvestorDashboard.Api.Controllers
                 result.Add(item);
             }
 
+            var hash = _tokenSettings.Value.Bonus.KycBonuses.Single(x => x.Criterion == TokenSettings.BonusSettings.KycBonusItem.BonusCriterion.Referral).ToString();
+            var tx = _context.CryptoTransactions.Where(
+                x => !x.IsInactive
+                && x.Hash == hash
+                && x.Direction == CryptoTransactionDirection.Internal
+                && x.CryptoAddress.Currency == Currency.Token
+                && x.CryptoAddress.Type == CryptoAddressType.Internal
+                && x.CryptoAddress.UserId == ApplicationUser.Id);
+
             var model = new ReferralInfoModel
             {
+                Count = tx.Count(),
+                Tokens = tx.Sum(x => long.Parse(x.Amount)),
                 Items = result.ToArray(),
                 Link = string.Format(_referralSettings.Value.UriMask, ApplicationUser.ReferralCode)
             };
@@ -256,7 +267,6 @@ namespace InvestorDashboard.Api.Controllers
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
             result.IsReferralSystemDisabled = _referralSettings.Value.IsDisabled;
-            result.KycBonus = _tokenSettings.Value.Bonus.KycBonus;
 
             return result;
         }

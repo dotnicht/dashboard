@@ -5,14 +5,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+using static InvestorDashboard.Backend.ConfigurationSections.TokenSettings.BonusSettings.KycBonusItem;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class InternalUserService : ContextService, IInternalUserService
     {
-        private readonly string _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4").ToString();
+        private readonly Guid _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4");
+
+        private readonly Dictionary<BonusCriterion, Predicate<ApplicationUser>> _bonusMapping = new Dictionary<BonusCriterion, Predicate<ApplicationUser>>
+        {
+            { BonusCriterion.Photo, x => !string.IsNullOrWhiteSpace(x.Photo) },
+            { BonusCriterion.Telegram, x => !string.IsNullOrWhiteSpace(x.TelegramUsername) },
+            { BonusCriterion.Profile, x => new[] { x.FirstName, x.LastName, x.CountryCode, x.City, x.PhoneCode, x.PhoneNumber }.All(y => !string.IsNullOrWhiteSpace(y)) },
+            { BonusCriterion.Registration, x => true }
+        };
 
         private readonly IResourceService _resourceService;
         private readonly IOptions<TokenSettings> _options;
@@ -147,41 +158,74 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"User not found with ID {userId}.");
                 }
 
-                var tx = ctx.CryptoTransactions.SingleOrDefault(
+                var legacyTx = ctx.CryptoTransactions.SingleOrDefault(
                     x => x.Direction == CryptoTransactionDirection.Internal
                     && x.CryptoAddress.Currency == Currency.Token
                     && x.CryptoAddress.Type == CryptoAddressType.Internal
                     && x.CryptoAddress.UserId == user.Id
-                    && x.Hash == _kycTransactionHash);
+                    && x.Hash == _kycTransactionHash.ToString());
 
                 var filled = new[] { user.FirstName, user.LastName, user.CountryCode, user.City, user.PhoneCode, user.PhoneNumber, user.Photo }
                     .All(x => !string.IsNullOrWhiteSpace(x));
 
-                if (!filled && tx != null)
+                if (legacyTx != null)
                 {
-                    ctx.CryptoTransactions.Remove(tx);
+                    legacyTx.IsInactive = !filled;
                 }
-                else if (filled && tx == null && _options.Value.Bonus.KycBonus != null)
+                else if (user.KycBonus != null)
                 {
-                    tx = new CryptoTransaction
+                    AddBonusTransaction(ctx, user, user.KycBonus.Value, _kycTransactionHash).IsInactive = !filled;
+                }
+                else
+                {
+                    foreach (var item in _bonusMapping)
                     {
-                        Amount = (user.KycBonus ?? (user.KycBonus = _options.Value.Bonus.KycBonus)).ToString(),
-                        Hash = _kycTransactionHash,
-                        CryptoAddressId = EnsureInternalAddress(user, ctx).Id,
-                        Direction = CryptoTransactionDirection.Internal,
-                        Timestamp = DateTime.UtcNow
-                    };
+                        var bonus = _options.Value.Bonus.KycBonuses.Single(y => y.Criterion == item.Key);
 
-                    ctx.CryptoTransactions.Add(tx);
-                }
-                else if (tx != null && user.KycBonus == null)
-                {
-                    user.KycBonus = long.Parse(tx.Amount);
+                        var tx = ctx.CryptoTransactions.SingleOrDefault(
+                                x => x.Direction == CryptoTransactionDirection.Internal
+                                && x.CryptoAddress.Currency == Currency.Token
+                                && x.CryptoAddress.Type == CryptoAddressType.Internal
+                                && x.CryptoAddress.UserId == user.Id
+                                && x.Hash == bonus.TransationHash.ToString())
+                            ?? AddBonusTransaction(ctx, user, bonus.Value, bonus.TransationHash);
+
+                        tx.IsInactive = !_bonusMapping[item.Key](user);
+                    }
+
+                    var referralBonus = _options.Value.Bonus.KycBonuses.Single(x => x.Criterion == BonusCriterion.Referral);
+
+                    var txCount = ctx.CryptoTransactions.Count(
+                        x => x.Direction == CryptoTransactionDirection.Internal
+                        && x.CryptoAddress.Currency == Currency.Token
+                        && x.CryptoAddress.Type == CryptoAddressType.Internal
+                        && x.CryptoAddress.UserId == user.Id
+                        && x.Hash == referralBonus.TransationHash.ToString()
+                        && !x.IsInactive);
+
+                    var referralsCount = ctx.Users.Count(x => x.EmailConfirmed && x.ReferralUserId == user.Id);
+
+                    for (var i = 0; i < referralsCount - txCount; i++)
+                    {
+                        AddBonusTransaction(ctx, user, referralBonus.Value, referralBonus.TransationHash);
+                    }
                 }
 
                 await ctx.SaveChangesAsync();
                 await _tokenService.RefreshTokenBalance(user.Id);
             }
+        }
+
+        private CryptoTransaction AddBonusTransaction(ApplicationDbContext ctx, ApplicationUser user, long amount, Guid hash)
+        {
+            return ctx.CryptoTransactions.Add(new CryptoTransaction
+            {
+                CryptoAddress = EnsureInternalAddress(user, ctx),
+                Amount = amount.ToString(),
+                Hash = hash.ToString(),
+                Direction = CryptoTransactionDirection.Internal,
+                Timestamp = DateTime.UtcNow
+            }).Entity;
         }
 
         private async Task DetectDuplicateKycDataInternal(string userId)

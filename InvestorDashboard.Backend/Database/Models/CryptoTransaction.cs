@@ -22,5 +22,6 @@ namespace InvestorDashboard.Backend.Database.Models
         public bool IsReferralPaid { get; set; }
         public int? Index { get; set; }
         public bool IsSpent { get; set; }
+        public bool IsInactive { get; set; }
     }
 }
