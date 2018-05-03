@@ -141,15 +141,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var existing = ctx.Users.Single(x => x.Id == user.Id);
                 var profile = _mapper.Map<UserProfile>(existing);
                 ctx.UserProfiles.Add(profile);
-                await ctx.SaveChangesAsync();
+                ctx.SaveChanges();
+                user = _mapper.Map<ApplicationUser>(user);
+                var status = await _userManager.UpdateAsync(user);
 
-                var result = new Dictionary<BonusCriterion, (bool Status, long Amount)>();
+                if (!status.Succeeded)
+                {
+                    throw new InvalidOperationException($"An error occurred while updating user KYC data. {string.Join(". ", status.Errors.Select(x => x.Description))}");
+                }
 
-                
-
-                await _userManager.UpdateAsync(user);
-
-                return result;
+                return _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount));
             }
         }
 
@@ -177,23 +178,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     foreach (var item in _bonusMapping)
                     {
-                        var tx = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[item.Key].TransationHash)).SingleOrDefault()
-                            ?? await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key].Value, _options.Value.Bonus.KycBonuses[item.Key].TransationHash);
+                        var tx = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[item.Key].Hash)).SingleOrDefault()
+                            ?? await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key].Amount, _options.Value.Bonus.KycBonuses[item.Key].Hash);
 
                         tx.IsInactive = _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user)));
                     }
 
-                    if ((await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].TransationHash)).SingleOrDefault() == null)
+                    if ((await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash)).SingleOrDefault() == null)
                     {
-                        await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Value, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].TransationHash);
+                        await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
                     }
 
-                    var txCount = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].TransationHash)).Count();
+                    var txCount = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash)).Count();
                     var referralsCount = ctx.Users.Count(x => x.EmailConfirmed && x.ReferralUserId == user.Id);
 
                     for (var i = 0; i < referralsCount - txCount; i++)
                     {
-                        await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Value, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].TransationHash);
+                        await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
                     }
                 }
 

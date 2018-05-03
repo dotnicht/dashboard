@@ -35,8 +35,8 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 
             public class KycBonusItem
             {
-                public Guid TransationHash { get; set; }
-                public long Value { get; set; }
+                public Guid Hash { get; set; }
+                public long Amount { get; set; }
             }
 
             public enum BonusSystem

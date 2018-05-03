@@ -206,7 +206,7 @@ namespace InvestorDashboard.Api.Controllers
                 result.Add(item);
             }
 
-            var tx = await _kycService.GetKycTransactions(ApplicationUser.Id, _tokenSettings.Value.Bonus.KycBonuses[TokenSettings.BonusSettings.BonusCriterion.Referral].TransationHash);
+            var tx = await _kycService.GetKycTransactions(ApplicationUser.Id, _tokenSettings.Value.Bonus.KycBonuses[TokenSettings.BonusSettings.BonusCriterion.Referral].Hash);
 
             var model = new ReferralInfoModel
             {

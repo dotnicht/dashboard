@@ -19,6 +19,9 @@ namespace InvestorDashboard.Backend
 
             CreateMap<ApplicationUser, UserProfile>()
                 .ForMember(x => x.Id, x => x.Ignore());
+
+            CreateMap<ApplicationUser, ApplicationUser>()
+                .ForMember(x => x.Id, x => x.Ignore());
         }
     }
 }
