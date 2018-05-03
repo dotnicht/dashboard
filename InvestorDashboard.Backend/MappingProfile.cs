@@ -16,6 +16,12 @@ namespace InvestorDashboard.Backend
 
             CreateMap<Transaction, CryptoTransaction>()
                 .ForMember(x => x.Timestamp, x => x.MapFrom(y => y.Time));
+
+            CreateMap<ApplicationUser, UserProfile>()
+                .ForMember(x => x.Id, x => x.Ignore());
+
+            CreateMap<ApplicationUser, ApplicationUser>()
+                .ForMember(x => x.Id, x => x.Ignore());
         }
     }
 }

@@ -10,17 +10,17 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class DetectDuplicateKycJob : JobBase
     {
-        private readonly IInternalUserService _internalUserService;
+        private readonly IKycService _kycService;
 
-        public DetectDuplicateKycJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IInternalUserService internalUserService)
+        public DetectDuplicateKycJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, IKycService kycService)
             : base(loggerFactory, options)
         {
-            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
+            _kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _internalUserService.DetectDuplicateKycData();
+            await _kycService.DetectDuplicateKycData();
         }
     }
 }

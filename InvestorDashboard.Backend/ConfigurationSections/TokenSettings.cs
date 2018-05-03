@@ -1,5 +1,6 @@
 ﻿using InvestorDashboard.Backend.Database.Models;
 using System;
+using System.Collections.Generic;
 
 namespace InvestorDashboard.Backend.ConfigurationSections
 {
@@ -18,25 +19,24 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 
         public class BonusSettings
         {
-            public KycBonusItem[] KycBonuses { get; set; }
+            public Dictionary<BonusCriterion, KycBonusItem> KycBonuses { get; set; }
             public BonusSystem System { get; set; }
             public ScheduleItem[] Schedule { get; set; }
             public PercentageItem[] Percentage { get; set; }
 
+            public enum BonusCriterion
+            {
+                Registration,
+                Referral,
+                Telegram,
+                Photo,
+                Profile
+            }
+
             public class KycBonusItem
             {
-                public BonusCriterion Criterion { get; set; }
-                public Guid TransationHash { get; set; }
-                public long Value { get; set; }
-
-                public enum BonusCriterion
-                {
-                    Registration,
-                    Referral,
-                    Telegram,
-                    Photo,
-                    Profile
-                }
+                public Guid Hash { get; set; }
+                public long Amount { get; set; }
             }
 
             public enum BonusSystem

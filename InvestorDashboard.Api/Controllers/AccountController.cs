@@ -69,7 +69,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             try
             {
-                ApplicationUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                var appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
                 if (appUser == null)
                 {
@@ -101,7 +101,7 @@ namespace InvestorDashboard.Api.Controllers
         [HttpPut("users/me")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody]UserEditViewModel user)
         {
-            ApplicationUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            var appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
             if (user == null)
             {
@@ -118,29 +118,9 @@ namespace InvestorDashboard.Api.Controllers
                 return Unauthorized();
             }
 
-            var profile = _mapper.Map<UserProfile>(appUser);
-            profile.UserId = appUser.Id;
-            _context.UserProfiles.Add(profile);
-            _context.SaveChanges();
-
-            appUser.FirstName = user.FirstName;
-            appUser.LastName = user.LastName;
-            appUser.City = user.City;
-            appUser.CountryCode = user.CountryCode;
-            appUser.PhoneCode = user.PhoneCode;
-            appUser.PhoneNumber = user.PhoneNumber;
-            appUser.Photo = user.Photo;
-            appUser.TelegramUsername = user.TelegramUsername;
-
-            var result = await _userManager.UpdateAsync(appUser);
-
-            if (result.Succeeded)
-            {
-                await _kycService.UpdateKycTransactions(appUser.Id);
-                return Ok();
-            }
-
-            return BadRequest(ModelState);
+            var result = _kycService.UpdateUserKycData(appUser);
+            await _kycService.UpdateKycTransactions(appUser.Id);
+            return Ok(result);
         }
 
         [HttpPost("forgot_password"), Produces("application/json")]
