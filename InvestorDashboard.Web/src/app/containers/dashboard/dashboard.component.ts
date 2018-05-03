@@ -150,6 +150,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     element.image = `assets/img/${element.currency}.svg`;
                     element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
                     element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
+                    element.minimum = this.translationService.getTranslation(`dashboard.MIN_${element.currency}`);
                 });
 
                 db.icoInfoModel.currencies.forEach(element => {

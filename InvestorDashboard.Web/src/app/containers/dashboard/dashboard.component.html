@@ -2,11 +2,11 @@
     <mat-card class="first">
         <mat-card-content>
             <h4>{{'clientInfo.Balance' | translate}}:
-                <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance + dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}}</p>
-                <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
-                <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
+                <!-- <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance + dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
+                <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
+                <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p>
             </h4>
-            <!-- <p *ngIf="dashboard.clientInfoModel.bonusBalance > 0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p> -->
+            <p *ngIf="dashboard.clientInfoModel.bonusBalance > 0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
             <div>
 
             </div>
@@ -215,6 +215,7 @@
                     <div class="header">Payment method:
                         <b>{{selectedPaymentType.currency}}</b>
                     </div>
+                    <div class="header"><b>{{selectedPaymentType.minimum}}</b></div>
                     <div class="header">How to use:</div>
                     <div [innerHTML]="selectedPaymentType.faq"></div>
                 </div>

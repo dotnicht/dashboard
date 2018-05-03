@@ -6,6 +6,7 @@ export class PaymentType {
     address: string;
     rate: number;
     faq: string;
+    minimum: string;
 }
 
 export class IcoInfo {
