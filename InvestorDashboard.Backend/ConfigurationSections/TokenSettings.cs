@@ -30,7 +30,8 @@ namespace InvestorDashboard.Backend.ConfigurationSections
                 Referral,
                 Telegram,
                 Photo,
-                Profile
+                Profile,
+                Legacy
             }
 
             public class KycBonusItem

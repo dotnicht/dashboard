@@ -138,16 +138,32 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var existing = ctx.Users.Single(x => x.Id == user.Id);
-                var profile = _mapper.Map<UserProfile>(existing);
-                ctx.UserProfiles.Add(profile);
-                ctx.SaveChanges();
-                user = _mapper.Map<ApplicationUser>(user);
-                var status = await _userManager.UpdateAsync(user);
+                var existing = await _userManager.FindByIdAsync(user.Id);
+
+                if (_bonusMapping.SelectMany(x => x.Value).Any(x => !string.IsNullOrWhiteSpace(x(existing))))
+                {
+                    var profile = _mapper.Map<UserProfile>(existing);
+                    profile.UserId = existing.Id;
+                    ctx.UserProfiles.Add(profile);
+                    ctx.SaveChanges();
+                }
+
+                var status = await _userManager.UpdateAsync(_mapper.Map(user, existing));
 
                 if (!status.Succeeded)
                 {
                     throw new InvalidOperationException($"An error occurred while updating user KYC data. {string.Join(". ", status.Errors.Select(x => x.Description))}");
+                }
+
+                if (existing.KycBonus != null)
+                {
+                    return new Dictionary<BonusCriterion, (bool Status, long Amount)>
+                    {
+                        {
+                            BonusCriterion.Legacy,
+                            (Status: _bonusMapping.Where(x => x.Key != BonusCriterion.Telegram).SelectMany(x => x.Value).All(x => !string.IsNullOrWhiteSpace(x(existing))), Amount: existing.KycBonus.Value )
+                        }
+                    };
                 }
 
                 return _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount));

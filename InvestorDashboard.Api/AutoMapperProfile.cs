@@ -21,11 +21,7 @@ namespace InvestorDashboard.Api
             CreateMap<UserViewModel, ApplicationUser>();
 
             CreateMap<ApplicationUser, UserEditViewModel>();
-
             CreateMap<UserEditViewModel, ApplicationUser>();
-
-            CreateMap<ApplicationUser, UserPatchViewModel>()
-                .ReverseMap();
 
             CreateMap<IdentityRoleClaim<string>, ClaimViewModel>()
                 .ForMember(d => d.Type, map => map.MapFrom(s => s.ClaimType))
@@ -39,9 +35,7 @@ namespace InvestorDashboard.Api
                 .ForMember(x => x.TokenName, x => x.MapFrom(y => y.Name));
 
             CreateMap<ApplicationUser, ClientInfoModel>();
-
-            CreateMap<ApplicationUser, UserProfile>()
-                .ForMember(x => x.Id, x => x.Ignore());
+            CreateMap<UserProfileViewModel, ApplicationUser>();
         }
     }
 }

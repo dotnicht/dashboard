@@ -99,7 +99,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [HttpPut("users/me")]
-        public async Task<IActionResult> UpdateCurrentUser([FromBody]UserEditViewModel user)
+        public async Task<IActionResult> UpdateCurrentUser([FromBody]UserProfileViewModel user)
         {
             var appUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
@@ -118,7 +118,8 @@ namespace InvestorDashboard.Api.Controllers
                 return Unauthorized();
             }
 
-            var result = _kycService.UpdateUserKycData(appUser);
+            _mapper.Map(user, appUser);
+            var result = await _kycService.UpdateUserKycData(appUser);
             await _kycService.UpdateKycTransactions(appUser.Id);
             return Ok(result);
         }
