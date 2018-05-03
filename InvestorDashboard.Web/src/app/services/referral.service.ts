@@ -44,7 +44,9 @@ export class ReferralService {
 
             return new ReferralInfo(
                 response['link'],
-                items
+                items,
+                response['count'],
+                response['tokens'],
             );
         });
     }
