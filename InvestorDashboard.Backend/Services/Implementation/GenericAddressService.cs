@@ -47,6 +47,22 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public async Task<CryptoAddress> EnsureInternalAddress(ApplicationUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            using (var ctx = CreateContext())
+            {
+                var address = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == Currency.Token && !x.IsDisabled && x.Type == CryptoAddressType.Internal && x.UserId == user.Id)
+                    ?? ctx.CryptoAddresses.Add(new CryptoAddress { UserId = user.Id, Currency = Currency.Token, Type = CryptoAddressType.Internal }).Entity;
+                await ctx.SaveChangesAsync();
+                return address;
+            }
+        }
+
         private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)
         {
             using (var ctx = CreateContext())

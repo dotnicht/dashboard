@@ -28,14 +28,15 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IMessageService _messageService;
         private readonly ITokenService _tokenService;
         private readonly IReferralService _referralService;
+        private readonly IKycService _kycService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
         private readonly IOptions<ReferralSettings> _referralSettings;
         private readonly IOptions<CommonSettings> _commonSettings;
+        private readonly IEnumerable<ICryptoService> _cryptoServices;
         private readonly IMapper _mapper;
         private readonly ILogger<DashboardController> _logger;
-        private readonly IEnumerable<ICryptoService> _cryptoServices;
 
         private ApplicationUser ApplicationUser => _context.Users
                 .Include(x => x.CryptoAddresses)
@@ -48,6 +49,7 @@ namespace InvestorDashboard.Api.Controllers
             IMessageService messageService,
             ITokenService tokenService,
             IReferralService referralService,
+            IKycService kycService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
@@ -63,14 +65,15 @@ namespace InvestorDashboard.Api.Controllers
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
+            this._kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
             _referralSettings = referralSettings ?? throw new ArgumentNullException(nameof(referralSettings));
             _commonSettings = commonSettings ?? throw new ArgumentNullException(nameof(commonSettings));
+            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _cryptoServices = cryptoServices ?? throw new ArgumentNullException(nameof(cryptoServices));
         }
 
         [HttpGet("ico_status"), ResponseCache(Duration = 30)]
@@ -203,14 +206,8 @@ namespace InvestorDashboard.Api.Controllers
                 result.Add(item);
             }
 
-            var hash = _tokenSettings.Value.Bonus.KycBonuses.Single(x => x.Criterion == TokenSettings.BonusSettings.KycBonusItem.BonusCriterion.Referral).ToString();
-            var tx = _context.CryptoTransactions.Where(
-                x => !x.IsInactive
-                && x.Hash == hash
-                && x.Direction == CryptoTransactionDirection.Internal
-                && x.CryptoAddress.Currency == Currency.Token
-                && x.CryptoAddress.Type == CryptoAddressType.Internal
-                && x.CryptoAddress.UserId == ApplicationUser.Id);
+            var hash = _tokenSettings.Value.Bonus.KycBonuses.Single(x => x.Criterion == TokenSettings.BonusSettings.KycBonusItem.BonusCriterion.Referral).TransationHash;
+            var tx = await _kycService.GetKycTransactions(ApplicationUser.Id, hash);
 
             var model = new ReferralInfoModel
             {

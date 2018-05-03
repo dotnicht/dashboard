@@ -27,7 +27,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IOptions<IdentityOptions> _identityOptions;
         private readonly IMessageService _messageService;
-        private readonly IInternalUserService _internalUserService;
+        private readonly IKycService _kycService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -44,7 +44,7 @@ namespace InvestorDashboard.Api.Controllers
             ILogger<AccountController> logger,
             IOptions<IdentityOptions> identityOptions,
             IMessageService messageService,
-            IInternalUserService internalUserService,
+            IKycService kycService,
             IMapper mapper,
             UrlEncoder urlEncoder)
         {
@@ -55,7 +55,7 @@ namespace InvestorDashboard.Api.Controllers
             _identityOptions = identityOptions;
             _authorizationService = authorizationService;
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
+            _kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _urlEncoder = urlEncoder;
         }
@@ -136,7 +136,7 @@ namespace InvestorDashboard.Api.Controllers
 
             if (result.Succeeded)
             {
-                await _internalUserService.UpdateKycTransactions(appUser.Id);
+                await _kycService.UpdateKycTransactions(appUser.Id);
                 return Ok();
             }
 
