@@ -20,9 +20,6 @@ namespace InvestorDashboard.Api
 
             CreateMap<UserViewModel, ApplicationUser>();
 
-            CreateMap<ApplicationUser, UserEditViewModel>();
-            CreateMap<UserEditViewModel, ApplicationUser>();
-
             CreateMap<IdentityRoleClaim<string>, ClaimViewModel>()
                 .ForMember(d => d.Type, map => map.MapFrom(s => s.ClaimType))
                 .ForMember(d => d.Value, map => map.MapFrom(s => s.ClaimValue))

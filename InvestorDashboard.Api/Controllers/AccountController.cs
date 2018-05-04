@@ -79,9 +79,8 @@ namespace InvestorDashboard.Api.Controllers
 
                 var user = _mapper.Map<UserViewModel>(appUser);
                 user.Roles = new string[0];
-
-                user.KycStatus = (await _kycService.GetUserKycDataStatus(user.Id)).ToDictionary(x => x.Key, x => new BonusItem { Status = x.Value.Status, Amount = x.Value.Amount });
-
+                user.KycStatus = (await _kycService.GetUserKycDataStatus(user.Id))
+                    .ToDictionary(x => x.Key, x => new BonusItem { Status = x.Value.Status, Amount = x.Value.Amount });
                 return Ok(user);
             }
             catch (Exception ex)
@@ -115,7 +114,8 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             _mapper.Map(user, appUser);
-            var result = await _kycService.UpdateUserKycData(appUser);
+            var result = (await _kycService.UpdateUserKycData(appUser))
+                .ToDictionary(x => x.Key, x => new BonusItem { Status = x.Value.Status, Amount = x.Value.Amount });
             await _kycService.UpdateKycTransactions(appUser.Id);
             return Ok(result);
         }

@@ -54,9 +54,10 @@ namespace InvestorDashboard.Console
 
         private static void SetupIdentity(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
-              .AddEntityFrameworkStores<ApplicationDbContext>()
-              .AddDefaultTokenProviders();
+            serviceCollection
+                .AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             serviceCollection.Configure<IdentityOptions>(options =>
             {
