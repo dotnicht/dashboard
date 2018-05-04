@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
+using static InvestorDashboard.Api.Models.UserViewModel;
 
 namespace InvestorDashboard.Api.Controllers
 {
@@ -78,7 +79,9 @@ namespace InvestorDashboard.Api.Controllers
 
                 var user = _mapper.Map<UserViewModel>(appUser);
                 user.Roles = new string[0];
-                user.KycStatus = await _kycService.GetUserKycDataStatus(user.Id);
+
+                user.KycStatus = (await _kycService.GetUserKycDataStatus(user.Id)).ToDictionary(x => x.Key, x => new BonusItem { Status = x.Value.Status, Amount = x.Value.Amount });
+
                 return Ok(user);
             }
             catch (Exception ex)
@@ -472,7 +475,6 @@ namespace InvestorDashboard.Api.Controllers
 
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
             var model = new GenerateRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
-
 
             return Ok(model);
         }

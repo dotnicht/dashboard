@@ -670,7 +670,7 @@ namespace InvestorDashboard.Api.Controllers
             }
         }
 
-        public string Render<TModel>(string name, TModel model)
+        private string Render<TModel>(string name, TModel model)
         {
             var httpContext = new DefaultHttpContext
             {

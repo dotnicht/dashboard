@@ -198,8 +198,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 }
                 else
                 {
-                    user.UseNewBonusSystem = true;
-
                     foreach (var item in _bonusMapping)
                     {
                         await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user))));

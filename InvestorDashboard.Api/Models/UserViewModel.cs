@@ -9,7 +9,8 @@ namespace InvestorDashboard.Api.Models
         public string Id { get; set; }
 
         [Required(ErrorMessage = "Username is required"),
-         StringLength(200, MinimumLength = 2, ErrorMessage = "Username must be between 2 and 200 characters")]
+         StringLength(200, MinimumLength = 2, 
+         ErrorMessage = "Username must be between 2 and 200 characters")]
         public string UserName { get; set; }
 
         public string FirstName { get; set; }
@@ -28,9 +29,16 @@ namespace InvestorDashboard.Api.Models
         public string CountryCode { get; set; }
 
         public string[] Roles { get; set; }
+
         public string Photo { get; set; }
         public string TelegramUsername { get; set; }
 
-        public Dictionary<BonusCriterion, (bool Status, long Amount)> KycStatus { get; set; }
+        public Dictionary<BonusCriterion, BonusItem> KycStatus { get; set; }
+
+        public class BonusItem
+        {
+            public bool Status { get; set;}
+            public long Amount { get; set; }
+        }
     }
 }
