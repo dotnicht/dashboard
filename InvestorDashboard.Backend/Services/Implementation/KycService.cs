@@ -156,7 +156,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"An error occurred while updating user KYC data. {string.Join(". ", status.Errors.Select(x => x.Description))}");
                 }
 
-                return GetUserKycDataStatusInternal(existing);
+                return GetUserKycDataStatusInternal(user);
             }
         }
 

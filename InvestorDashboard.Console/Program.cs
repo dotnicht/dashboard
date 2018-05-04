@@ -1,5 +1,6 @@
 ﻿using AspNet.Security.OpenIdConnect.Primitives;
 using AutoMapper;
+using Hangfire;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;

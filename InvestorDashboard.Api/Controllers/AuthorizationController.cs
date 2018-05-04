@@ -116,18 +116,9 @@ namespace InvestorDashboard.Api.Controllers
 
                     if (result.Succeeded)
                     {
-                        try
-                        {
-                            BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(user.Id, true));
-                            BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(user.Id));
-                            await _referralService.PopulateReferralData(appUser.Id, user.Referral);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"An error occurred while generating crypto address keys.");
-                            await _userManager.DeleteAsync(appUser);
-                            return BadRequest("User creation failed.");
-                        }
+                        BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));
+                        BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(appUser.Id, true));
+                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
 
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");

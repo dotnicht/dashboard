@@ -344,9 +344,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     Currency = Settings.Value.Currency,
                     Type = addressType,
                     Address = address,
-                    PrivateKey = privateKey,
-                    StartBlockIndex = await GetCurrentBlockIndex()
+                    PrivateKey = privateKey
                 };
+
+                if (addressType == CryptoAddressType.Investment)
+                {
+                    entity.StartBlockIndex = await GetCurrentBlockIndex();
+                }
 
                 await ctx.CryptoAddresses.AddAsync(entity);
                 await ctx.SaveChangesAsync();
