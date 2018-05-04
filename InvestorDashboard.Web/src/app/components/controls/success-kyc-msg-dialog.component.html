@@ -1,7 +1,11 @@
 <div>
-    <div>
+    <!-- <div>
         Thank you for filling KYC form, you have received {{info.kycBonus}} RAC tokens. You will be able to withdraw via transfer them after the end of the token sale (after May 29th) if you are a member of the <a href='https://t.me/racoinnews'>official telegram chat</a>.
         Invite friends to RAcoin token sale via <a href='https://dashboard.racoin.io/referral'>referral link</a> and receive 5% of their deposits in original cryptocurrency (BTC or ETH).
+    </div> -->
+
+    <div *ngFor="let status of kycStatuses">
+        {{status}}
     </div>
     <button style="margin: 7px;" (click)="dialogRef.close(true)" mat-raised-button tabindex="-1">
     <span>OK</span>

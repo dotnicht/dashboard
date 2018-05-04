@@ -57,7 +57,7 @@ export class UserInfoComponent implements OnInit {
     private userEdit: UserEdit;
     private errorClass: string;
     private imageCorrect: boolean;
-    kycBonus: number;
+    
     get selectedCountry() {
         if (this.countries.length > 0 && this.user.countryCode != undefined) {
             return this.countries.find(x => x.key == this.user.countryCode).value;
@@ -141,18 +141,16 @@ export class UserInfoComponent implements OnInit {
                 this.countries.push(country);
             }
         });
-
-        this.clientInfoEndpointService.icoInfo$.subscribe(data => {
-            this.kycBonus = data.kycBonus;
-        });
-
     }
+
     getCountryCode() {
         return Observable.of(require('../../assets/json/countryCodes.json'));
     }
+
     getCountryList(lang: string = 'en') {
         return Observable.of(require(`../../assets/json/country-list/country_${lang}.json`));
     }
+
     resetForm(replace = false) {
         this.isChangePassword = false;
 
@@ -167,7 +165,6 @@ export class UserInfoComponent implements OnInit {
             });
         }
     }
-
 
     editUser(user: User) {
         this.isNewUser = false;
@@ -184,9 +181,7 @@ export class UserInfoComponent implements OnInit {
 
     }
 
-
     displayUser(user: User) {
-
         this.user = new User();
         Object.assign(this.user, user);
         this.deletePasswordFromUser(this.user);
@@ -291,8 +286,12 @@ export class UserInfoComponent implements OnInit {
             this.isSaving = true;
             this.userEdit.photo = this.userEdit.photo ? this.userEdit.photo : this.user.photo;
             //this.alertService.startLoadingMessage('Saving changes...');
-            this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(), error => this.saveFailedHelper(error));
+            this.accountService.updateUser(this.userEdit).subscribe(response => this.saveSuccessHelper(undefined, response), error => this.saveFailedHelper(error));
         }
+    }
+
+    private trimWhitespaces() {
+
     }
 
     private afterSuccessSaving(user: User) {
@@ -328,8 +327,9 @@ export class UserInfoComponent implements OnInit {
         if (this.changesSavedCallback)
             this.changesSavedCallback();
     }
-    private saveSuccessHelper(user?: User) {
-        this.config.data = { kycBonus: this.kycBonus }
+    private saveSuccessHelper(user?: User, response?: any) {
+        let kycStatuses = this.getKycStatuses(response.json());
+        this.config.data = { kycStatuses: kycStatuses };
         if (this.user && (this.user.firstName || this.user.lastName || this.user.countryCode || this.user.city || this.user.phoneCode || this.user.phoneNumber || this.user.photo)) {
             this.afterSuccessSaving(user);
         }
@@ -394,22 +394,39 @@ export class UserInfoComponent implements OnInit {
     private changePassword() {
         this.isChangePassword = true;
     }
+    private getKycStatusMessage(field: string, status: string, amount: number) {
+        let kycStatuses = {
+            Telegram: {
+                true: `You were credited with ${amount} RACs for providing your telegram username.`,
+                false: `You have removed you telegram username, ${amount} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
+            },
+            Profile: {
+                true: `You were credited with ${amount} RACs for providing your personal data.`,
+                false: `You have removed some your personal details, ${amount} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
+            },
+            Photo: {
+                true: `You were credited with ${amount} RACs for providing your personal document. Please note, in case of providing false identity document the company has right to withdraw this airdrop tokens.`,
+                false: `You have removed you personal document, ${amount} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
+            }
+        };
 
-    private getKycStatuses(response: any) {
-        let value = 0;
-        let result: string[] = [];
-        let statuses = {
-            1: `You were credited with ${value} RACs for providing your telegram username.`,
-            2: `You have removed you telegram username, ${value} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`,
-            3: `You were credited with ${value} RACs for providing your personal data.`,
-            4: `You have removed some your personal details, ${value} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`,
-            5: `You were credited with ${value} RACs for providing your personal document. Please note, in case of providing false identity document the company has right to withdraw this airdrop tokens.`,
-            6: `You have removed you personal document, ${value} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
+        return kycStatuses[field][status];
+
+    }
+    private getKycStatuses(responseStatuses: any) {
+        let messages: string[] = [];
+        console.log('responseStatuses', responseStatuses)
+        console.log('this.userEdit.kycStatus', this.userEdit.kycStatus)
+        console.log('this.user.kycStatus', this.user.kycStatus)
+        for (let field in responseStatuses) {
+            if (responseStatuses[field].status != this.userEdit.kycStatus[field].status) {
+                let message = this.getKycStatusMessage(field, responseStatuses[field].status.toString(), responseStatuses[field].amount);
+                console.log('-->',message);
+                messages.push(message);
+            }
         }
 
-        for (let status in response) {
-        }
-
+        return messages;
     }
 }
 
@@ -419,13 +436,14 @@ export class UserInfoComponent implements OnInit {
     templateUrl: './success-kyc-msg-dialog.component.html'
 })
 export class SuccessKycMsgDialogComponent {
-    public info: any;
+    public kycStatuses: any;
 
     constructor(
         public dialogRef: MatDialogRef<SuccessKycMsgDialogComponent>,
         private router: Router,
         @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.info = data;
+        this.kycStatuses = data;
+        console.log('DIALOG', data)
     }
 
     close() {
