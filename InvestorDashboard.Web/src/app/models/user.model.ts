@@ -34,6 +34,7 @@ export class User {
     public isLockedOut: boolean;
     public photo: string;
     public telegramUsername: string;
+    public kycStatus: any;
 
     // Note: Using only optional constructor properties without backing store disables typescript's type checking for the type
     constructor(
