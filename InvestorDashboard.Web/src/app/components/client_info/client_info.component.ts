@@ -62,6 +62,6 @@ export class ClientInfoComponent implements OnDestroy, OnInit, AfterViewInit {
         }
     }
     private subscribeToClientInfoData(): void {
-        this.clientInfoSubscription = setInterval(() => { this.refreshData(); }, 30000);
+        //this.clientInfoSubscription = setInterval(() => { this.refreshData(); }, 30000);
     }
 }
