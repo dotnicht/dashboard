@@ -10,7 +10,7 @@ namespace InvestorDashboard.Backend.Services
     {
         Task UpdateKycTransactions(string userId = null);
         Task DetectDuplicateKycData(string userId = null);
-        Task<CryptoTransaction[]> GetKycTransactions(string userId, Guid hash);
+        Task<CryptoTransaction[]> GetKycTransactions(string userId, params Guid[] hash);
         Task<Dictionary<BonusCriterion, (bool Status, long Amount)>> UpdateUserKycData(ApplicationUser user);
         Task<Dictionary<BonusCriterion, (bool Status, long Amount)>> GetUserKycDataStatus(string userId);
     }

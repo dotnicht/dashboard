@@ -16,9 +16,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class KycService : ContextService, IKycService
     {
-        private readonly Guid _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4");
-
-        private readonly Dictionary<BonusCriterion, Func<ApplicationUser, string>[]> _bonusMapping
+        private static readonly Guid _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4");
+        private static readonly Dictionary<BonusCriterion, Func<ApplicationUser, string>[]> _bonusMapping
             = new Dictionary<BonusCriterion, Func<ApplicationUser, string>[]>
         {
                 { BonusCriterion.Photo, new Func<ApplicationUser, string>[] { x => x.Photo } },
@@ -109,24 +108,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<CryptoTransaction[]> GetKycTransactions(string userId, Guid hash)
+        public async Task<CryptoTransaction[]> GetKycTransactions(string userId, params Guid[] hash)
         {
             if (userId == null)
             {
                 throw new ArgumentNullException(nameof(userId));
             }
 
+            if (hash == null)
+            {
+                throw new ArgumentNullException(nameof(hash));
+            }
+
             using (var ctx = CreateContext())
             {
-                return await ctx.CryptoTransactions
-                    .Where(
-                        x => x.Direction == CryptoTransactionDirection.Internal
-                        && x.CryptoAddress.Currency == Currency.Token
-                        && x.CryptoAddress.Type == CryptoAddressType.Internal
-                        && x.CryptoAddress.UserId == userId
-                        && x.Hash == hash.ToString())
-                    .ToAsyncEnumerable()
-                    .ToArray();
+                return await GetKycTransactionsInternal(userId, ctx, hash);
             }
         }
 
@@ -171,44 +167,43 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return GetUserKycDataStatusInternal(user);
         }
 
-        private Dictionary<BonusCriterion, (bool Status, long Amount)> GetUserKycDataStatusInternal(ApplicationUser user)
-        {
-            return user.UseNewBonusSystem
-                ? _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount))
-                : new Dictionary<BonusCriterion, (bool Status, long Amount)> { { BonusCriterion.Legacy, (Status: IsUserLegacyProfileFilled(user), Amount: user.KycBonus.Value) } };
-        }
-
-        private bool IsUserLegacyProfileFilled(ApplicationUser user)
-        {
-            return _bonusMapping
-                .Where(x => x.Key != BonusCriterion.Telegram)
-                .SelectMany(x => x.Value)
-                .All(x => !string.IsNullOrWhiteSpace(x(user)));
-        }
-
         private async Task UpdateKycTransactionInternal(string userId)
         {
             using (var ctx = CreateContext())
             {
                 var user = EnsureUser(userId, ctx);
 
-                if (!user.UseNewBonusSystem && user.KycBonus != null)
+                if (!user.UseNewBonusSystem)
                 {
-                    await EnsureInternalTransaction(ctx, user, new KycBonusItem { Hash = _kycTransactionHash, Amount = user.KycBonus.Value }, !IsUserLegacyProfileFilled(user));
+                    if (user.KycBonus != null)
+                    {
+                        await EnsureInternalTransaction(ctx, user, new KycBonusItem { Hash = _kycTransactionHash, Amount = user.KycBonus.Value }, !IsUserLegacyProfileFilled(user));
+                    }
+
+                    var hash = _options.Value.Bonus.KycBonuses.Select(x => x.Value.Hash).ToArray();
+                    foreach (var tx in await GetKycTransactionsInternal(userId, ctx, hash))
+                    {
+                        tx.IsInactive = true;
+                    }
                 }
                 else
                 {
+                    foreach (var tx in await GetKycTransactionsInternal(userId, ctx, _kycTransactionHash))
+                    {
+                        tx.IsInactive = true;
+                    }
+
                     foreach (var item in _bonusMapping)
                     {
                         await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user))));
                     }
 
-                    if ((await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash)).SingleOrDefault() == null)
+                    if ((await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash)).SingleOrDefault() == null)
                     {
                         await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
                     }
 
-                    var txCount = (await GetKycTransactions(userId, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash)).Count();
+                    var txCount = (await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash)).Count();
                     var referralsCount = ctx.Users.Count(x => x.EmailConfirmed && x.ReferralUserId == user.Id);
 
                     for (var i = 0; i < referralsCount - txCount; i++)
@@ -224,7 +219,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task EnsureInternalTransaction(ApplicationDbContext ctx, ApplicationUser user, KycBonusItem kycBonusItem, bool isInactive)
         {
-            var tx = (await GetKycTransactions(user.Id, kycBonusItem.Hash)).SingleOrDefault()
+            var tx = (await GetKycTransactionsInternal(user.Id, ctx, kycBonusItem.Hash)).SingleOrDefault()
                 ?? await AddBonusTransaction(ctx, user, kycBonusItem.Amount, kycBonusItem.Hash);
 
             if (ctx.Entry(tx).State != EntityState.Added)
@@ -233,20 +228,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             tx.IsInactive = isInactive;
-        }
-
-        private async Task<CryptoTransaction> AddBonusTransaction(ApplicationDbContext ctx, ApplicationUser user, long amount, Guid hash)
-        {
-            var address = await _genericAddressService.EnsureInternalAddress(user);
-            var tx = new CryptoTransaction
-            {
-                CryptoAddressId = address.Id,
-                Amount = amount.ToString(),
-                Hash = hash.ToString(),
-                Direction = CryptoTransactionDirection.Internal,
-                Timestamp = DateTime.UtcNow
-            };
-            return ctx.CryptoTransactions.Add(tx).Entity;
         }
 
         private async Task DetectDuplicateKycDataInternal(string userId)
@@ -271,7 +252,37 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        private ApplicationUser EnsureUser(string userId, ApplicationDbContext context)
+        private async Task<CryptoTransaction> AddBonusTransaction(ApplicationDbContext ctx, ApplicationUser user, long amount, Guid hash)
+        {
+            var address = await _genericAddressService.EnsureInternalAddress(user);
+            var tx = new CryptoTransaction
+            {
+                CryptoAddressId = address.Id,
+                Amount = amount.ToString(),
+                Hash = hash.ToString(),
+                Direction = CryptoTransactionDirection.Internal,
+                Timestamp = DateTime.UtcNow
+            };
+
+            return ctx.CryptoTransactions.Add(tx).Entity;
+        }
+
+        private Dictionary<BonusCriterion, (bool Status, long Amount)> GetUserKycDataStatusInternal(ApplicationUser user)
+        {
+            return user.UseNewBonusSystem
+                ? _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount))
+                : new Dictionary<BonusCriterion, (bool Status, long Amount)> { { BonusCriterion.Legacy, (Status: IsUserLegacyProfileFilled(user), Amount: user.KycBonus.Value) } };
+        }
+
+        private static bool IsUserLegacyProfileFilled(ApplicationUser user)
+        {
+            return _bonusMapping
+                .Where(x => x.Key != BonusCriterion.Telegram)
+                .SelectMany(x => x.Value)
+                .All(x => !string.IsNullOrWhiteSpace(x(user)));
+        }
+
+        private static ApplicationUser EnsureUser(string userId, ApplicationDbContext context)
         {
             if (userId == null)
             {
@@ -279,6 +290,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return context.Users.SingleOrDefault(x => x.Id == userId) ?? throw new InvalidOperationException($"User not found with ID {userId}.");
+        }
+
+        private static async Task<CryptoTransaction[]> GetKycTransactionsInternal(string userId, ApplicationDbContext ctx, params Guid[] hash)
+        {
+            return await ctx.CryptoTransactions
+                .Where(
+                    x => x.Direction == CryptoTransactionDirection.Internal
+                    && x.CryptoAddress.Currency == Currency.Token
+                    && x.CryptoAddress.Type == CryptoAddressType.Internal
+                    && x.CryptoAddress.UserId == userId
+                    && hash.Select(y => y.ToString()).Contains(x.Hash))
+                .ToAsyncEnumerable()
+                .ToArray();
         }
     }
 }
