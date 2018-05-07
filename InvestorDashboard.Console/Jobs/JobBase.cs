@@ -27,7 +27,7 @@ namespace InvestorDashboard.Console.Jobs
             }
 
             var sw = Stopwatch.StartNew();
-            Logger.LogInformation($"Job {GetType()} execution statrted.");
+            Logger.LogInformation($"Job {GetType()} execution started.");
 
             try
             {

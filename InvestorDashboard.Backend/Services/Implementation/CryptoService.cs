@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -279,33 +280,51 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task RefreshTransactionsByBalance()
         {
+            CryptoAddress[] addresses = null;
+
             using (var ctx = CreateContext())
             {
-                var addresses = ctx.CryptoAddresses
+                addresses = await ctx.CryptoAddresses
                     .Where(
                         x => x.Currency == Settings.Value.Currency
                         && x.Type == CryptoAddressType.Investment
                         && x.User.ExternalId == null
                         && x.User.EmailConfirmed
                         && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
-                    .ToArray();
+                    .ToArrayAsync();
+            }
 
-                foreach (var address in addresses)
+            var index = 0;
+
+            using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
+            {
+                Parallel.ForEach(addresses, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async x =>
                 {
                     try
                     {
-                        var balance = (await GetBalance(address)).ToString();
-                        if (address.Balance != balance)
+                        var balance = (await GetBalance(x)).ToString();
+                        if (x.Balance != balance)
                         {
-                            address.Balance = balance;
-                            await ctx.SaveChangesAsync();
+                            using (var ctx = CreateContext())
+                            {
+                                ctx.Attach(x);
+                                x.Balance = balance;
+                                await ctx.SaveChangesAsync();
+                            }
+                        }
+
+                        Interlocked.Increment(ref index);
+
+                        if (index % 1000 == 0)
+                        {
+                            Logger.LogInformation($"Proccessing {index} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, $"An error occurred while checking {Settings.Value.Currency} balance for address {address.Address}.");
+                        Logger.LogError(ex, $"An error occurred while checking {Settings.Value.Currency} balance for address {x.Address}.");
                     }
-                }
+                });
             }
         }
 

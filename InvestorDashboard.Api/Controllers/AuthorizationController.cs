@@ -51,6 +51,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IMessageService _messageService;
         private readonly IReferralService _referralService;
         private readonly IGenericAddressService _genericAddressService;
+        private readonly IKycService _kycService;
         private readonly IAffiliateService _affiliateService;
         private readonly IRazorViewEngine _viewEngine;
         private readonly ITempDataProvider _tempDataProvider;
@@ -67,6 +68,7 @@ namespace InvestorDashboard.Api.Controllers
             IMessageService messageService,
             IReferralService referralService,
             IGenericAddressService genericAddressService,
+            IKycService kycService,
             IAffiliateService affiliateService,
             IRazorViewEngine viewEngine,
             ITempDataProvider tempDataProvider,
@@ -82,6 +84,7 @@ namespace InvestorDashboard.Api.Controllers
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
+            _kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
             _affiliateService = affiliateService ?? throw new ArgumentNullException(nameof(affiliateService));
             _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
             _tempDataProvider = tempDataProvider ?? throw new ArgumentNullException(nameof(tempDataProvider));
@@ -119,6 +122,7 @@ namespace InvestorDashboard.Api.Controllers
                         BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));
                         BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(appUser.Id, true));
                         BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
+                        BackgroundJob.Enqueue(() => _kycService.UpdateKycTransactions(appUser.Id));
 
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");
