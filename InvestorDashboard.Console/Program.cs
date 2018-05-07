@@ -31,59 +31,23 @@ namespace InvestorDashboard.Console
         private static async Task Run()
         {
             var serviceCollection = new ServiceCollection()
-              .AddAutoMapper(typeof(DependencyInjection));
+              .AddAutoMapper(typeof(Configuration));
 
             var configurationBuilder = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", false, true)
-              .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", false, true)
-              .AddEnvironmentVariables();
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", false, true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", false, true)
+                .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
 
             Configuration.Configure(serviceCollection, configuration);
-            DependencyInjection.Configure(serviceCollection);
 
             serviceCollection.AddSingleton(new LoggerFactory().Initialize());
 
             ApplicationDbContext.Initialize(serviceCollection, configuration);
 
-            SetupIdentity(serviceCollection);
 
-            await SetupScheduling(serviceCollection);
-        }
-
-        private static void SetupIdentity(IServiceCollection serviceCollection)
-        {
-            serviceCollection
-                .AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            serviceCollection.Configure<IdentityOptions>(options =>
-            {
-                // User settings
-                options.User.RequireUniqueEmail = true;
-
-                // Password settings
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 8;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = false;
-
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
-                options.Lockout.MaxFailedAccessAttempts = 10;
-
-                options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
-                options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
-                options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
-            });
-        }
-
-        private static async Task SetupScheduling(IServiceCollection serviceCollection)
-        {
             var serviceProvider = serviceCollection
                 .BuildServiceProvider();
 

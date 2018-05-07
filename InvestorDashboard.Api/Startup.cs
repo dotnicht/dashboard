@@ -42,43 +42,14 @@ namespace InvestorDashboard.Api
         public void ConfigureServices(IServiceCollection services)
         {
             Backend.Configuration.Configure(services, Configuration);
-            DependencyInjection.Configure(services);
 
-            services.AddAutoMapper(typeof(DependencyInjection), GetType());
+            services.AddAutoMapper(typeof(Configuration), GetType());
 
             ApplicationDbContext.Initialize(services, Configuration);
 
             services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString(ApplicationDbContext.DefaultConnectionStringName)));
 
             services.Configure<MvcOptions>(options => options.Filters.Add(new RequireHttpsAttribute()));
-
-            // add identity
-            services
-                .AddIdentity<ApplicationUser, ApplicationRole>(config => config.SignIn.RequireConfirmedEmail = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            // Configure Identity options and password complexity here
-            services.Configure<IdentityOptions>(options =>
-            {
-                // User settings
-                options.User.RequireUniqueEmail = true;
-
-                // Password settings
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 8;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = false;
-
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
-                options.Lockout.MaxFailedAccessAttempts = 10;
-
-                options.ClaimsIdentity.UserNameClaimType = OpenIdConnectConstants.Claims.Name;
-                options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
-                options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
-            });
 
             // Register the OpenIddict services.
             services.AddOpenIddict(options =>
