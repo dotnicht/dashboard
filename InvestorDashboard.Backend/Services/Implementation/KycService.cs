@@ -271,7 +271,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             return user.UseNewBonusSystem
                 ? _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount))
-                : new Dictionary<BonusCriterion, (bool Status, long Amount)> { { BonusCriterion.Legacy, (Status: IsUserLegacyProfileFilled(user), Amount: user.KycBonus.Value) } };
+                : new Dictionary<BonusCriterion, (bool Status, long Amount)>
+                {
+                    { BonusCriterion.Legacy, (Status: IsUserLegacyProfileFilled(user), Amount: user.KycBonus ?? throw new InvalidOperationException($"Invalid KYC data detacted for user {user.Id}.")) }
+                };
         }
 
         private static bool IsUserLegacyProfileFilled(ApplicationUser user)

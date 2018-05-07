@@ -14,5 +14,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public byte Denomination { get; set; }
         public bool UseDirectBlockAccess { get; set; }
         public TimeSpan? LegacyTransactionRefreshTimeout { get; set; }
+        public int MaxDegreeOfParallelism { get; set; }
     }
 }
