@@ -63,8 +63,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     ngOnInit(): void {
         this.loadData();
         this.chooseVideo();
-
-        this.subscribeToData();
+        this.loadData();
+        //this.subscribeToData();
     }
 
     public ngOnDestroy(): void {
@@ -84,16 +84,16 @@ export class DashboardComponent implements OnDestroy, OnInit {
     }
     qrInitialize(data: string) {
         if (document.getElementById('qrCode')) {
-        document.getElementById('qrCode').innerHTML = '';
-        let qrCode = new QRCode(document.getElementById('qrCode'), {
-            text: data,
-            width: 150,
-            height: 150
-        });
-        document.getElementById('qrCode').getElementsByTagName('img')[0].style.display = 'none';
-        document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
+            document.getElementById('qrCode').innerHTML = '';
+            let qrCode = new QRCode(document.getElementById('qrCode'), {
+                text: data,
+                width: 150,
+                height: 150
+            });
+            document.getElementById('qrCode').getElementsByTagName('img')[0].style.display = 'none';
+            document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
 
-    }
+        }
     }
 
     chooseVideo() {
@@ -172,6 +172,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         }
         // this.subscribeToData();
     }
+    
     private subscribeToData(): void {
         this.subscription = setInterval(() => { this.loadData(); }, 30000);
     }

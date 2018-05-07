@@ -57,7 +57,8 @@ export class UserInfoComponent implements OnInit {
     private userEdit: UserEdit;
     private errorClass: string;
     private imageCorrect: boolean;
-    
+    kycBonus: number;
+
     get selectedCountry() {
         if (this.countries.length > 0 && this.user.countryCode != undefined) {
             return this.countries.find(x => x.key == this.user.countryCode).value;
@@ -141,6 +142,11 @@ export class UserInfoComponent implements OnInit {
                 this.countries.push(country);
             }
         });
+
+        this.clientInfoEndpointService.icoInfo$.subscribe(data => {
+            this.kycBonus = data.kycBonus;
+        });
+
     }
 
     getCountryCode() {
@@ -330,16 +336,17 @@ export class UserInfoComponent implements OnInit {
     private saveSuccessHelper(user?: User, response?: any) {
         let kycStatuses = this.getKycStatuses(response.json());
         this.config.data = { kycStatuses: kycStatuses };
-        if (this.user && (this.user.firstName || this.user.lastName || this.user.countryCode || this.user.city || this.user.phoneCode || this.user.phoneNumber || this.user.photo)) {
-            this.afterSuccessSaving(user);
-        }
-        else {
+
+        if (kycStatuses.length > 0) {
             this.successKycMsgDialogRef = this.dialog.open(SuccessKycMsgDialogComponent, this.config);
             this.successKycMsgDialogRef.afterClosed().subscribe((result) => {
                 if (result == true) {
                     this.afterSuccessSaving(user);
                 }
             });
+        }
+        else {
+            this.afterSuccessSaving(user);
         }
     }
 
@@ -415,13 +422,9 @@ export class UserInfoComponent implements OnInit {
     }
     private getKycStatuses(responseStatuses: any) {
         let messages: string[] = [];
-        console.log('responseStatuses', responseStatuses)
-        console.log('this.userEdit.kycStatus', this.userEdit.kycStatus)
-        console.log('this.user.kycStatus', this.user.kycStatus)
         for (let field in responseStatuses) {
-            if (responseStatuses[field].status != this.userEdit.kycStatus[field].status) {
+            if (responseStatuses[field].status != this.user.kycStatus[field].status) {
                 let message = this.getKycStatusMessage(field, responseStatuses[field].status.toString(), responseStatuses[field].amount);
-                console.log('-->',message);
                 messages.push(message);
             }
         }
@@ -442,7 +445,7 @@ export class SuccessKycMsgDialogComponent {
         public dialogRef: MatDialogRef<SuccessKycMsgDialogComponent>,
         private router: Router,
         @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.kycStatuses = data;
+        this.kycStatuses = data.kycStatuses;
         console.log('DIALOG', data)
     }
 
