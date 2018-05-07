@@ -215,7 +215,8 @@
                     <div class="header">Payment method:
                         <b>{{selectedPaymentType.currency}}</b>
                     </div>
-                    <div class="header"><b>{{selectedPaymentType.minimum}}</b></div>
+                    <div class="header"><b>{{selectedPaymentType.minimum}} <b *ngIf="selectedPaymentType.currency == 'BTC'">{{selectedPaymentType.eth_to_btc}} {{selectedPaymentType.currency}}</b></b>
+                    </div>
                     <div class="header">How to use:</div>
                     <div [innerHTML]="selectedPaymentType.faq"></div>
                 </div>
