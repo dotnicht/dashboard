@@ -57,7 +57,6 @@ export class ClientInfoComponent implements OnDestroy, OnInit, AfterViewInit {
     }
     private refreshData() {
         if (this.authService.isLoggedIn && !this.authService.isSessionExpired) {
-            //    console.log(this.clientInfo);
             this.clientInfoService.updateClientInfo();
         }
     }

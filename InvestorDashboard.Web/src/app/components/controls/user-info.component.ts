@@ -42,7 +42,8 @@ export class UserInfoComponent implements OnInit {
 
     @Input()
     isViewOnly: boolean;
-
+    isLoading = true;
+    
     private countryCodes: CountryCode[];
     private countries: Country[] = [];
     private isEditMode = false;
@@ -216,7 +217,7 @@ export class UserInfoComponent implements OnInit {
 
     private onCurrentUserDataLoadSuccessful(user: User) {
         //this.alertService.stopLoadingMessage();
-        if (!user.firstName && !user.lastName && !user.countryCode && !user.city && !user.phoneCode && !user.phoneNumber && !user.photo) {
+        if (!user.firstName && !user.lastName && !user.countryCode && !user.city && !user.phoneCode && !user.phoneNumber && !user.photo && !user.telegramUsername) {
             this.user = new User();
             this.userEdit = new UserEdit();
             this.isEditMode = true;
@@ -224,6 +225,8 @@ export class UserInfoComponent implements OnInit {
         else {
             this.user = user;
         }
+
+        this.isLoading = false;
     }
 
     private onCurrentUserDataLoadFailed(error: any) {
@@ -342,18 +345,20 @@ export class UserInfoComponent implements OnInit {
             this.successKycMsgDialogRef.afterClosed().subscribe((result) => {
                 if (result == true) {
                     this.afterSuccessSaving(user);
+
                 }
             });
         }
         else {
             this.afterSuccessSaving(user);
         }
+        this.config.data = { kycStatuses: [] };
     }
 
     private saveFailedHelper(error: any) {
         // this.failedKycMsgDialogRef = this.dialog.open(FailedKycMsgDialogComponent, this.config);
         // this.failedKycMsgDialogRef.afterClosed().subscribe((result) => {
-        // console.log(result)
+
         this.isSaving = false;
         if (this.changesFailedCallback)
             this.changesFailedCallback();
@@ -414,21 +419,45 @@ export class UserInfoComponent implements OnInit {
             Photo: {
                 true: `You were credited with ${amount} RACs for providing your personal document. Please note, in case of providing false identity document the company has right to withdraw this airdrop tokens.`,
                 false: `You have removed you personal document, ${amount} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
+            },
+            Legacy: {
+                true: `You were credited with ${amount} RACs for providing your personal data.`,
+                false: `You have removed some your personal details, ${amount} RACs were withdrawn from your airdrop bonus account. It doesn’t effect your main account.`
             }
         };
 
-        return kycStatuses[field][status];
-
+        if ((!('kycStatus' in this.user) && status == 'true') || (field == 'Legacy' && amount != null && 'kycStatus' in this.user) || 'kycStatus' in this.user) {
+            this.updateUserKyc(field, status, amount);
+            return kycStatuses[field][status];
+        }
+        return null;
     }
+
+    private updateUserKyc(field: string, kycStatus: string, amount: number) {
+        let status = kycStatus == 'true';
+
+        if ('kycStatus' in this.user) {
+            this.user.kycStatus[field].status = status;
+            this.user.kycStatus[field].amount = amount;
+        }
+        else {
+            this.user['kycStatus'] = {};
+            this.user['kycStatus'][field] = {};
+            this.user['kycStatus'][field][status.toString()] = status;
+            this.user['kycStatus'][field]['amount'] = amount;
+        }
+    }
+
     private getKycStatuses(responseStatuses: any) {
         let messages: string[] = [];
         for (let field in responseStatuses) {
-            if (responseStatuses[field].status != this.user.kycStatus[field].status) {
+            if (!('kycStatus' in this.user) || responseStatuses[field].status != this.user.kycStatus[field].status) {
                 let message = this.getKycStatusMessage(field, responseStatuses[field].status.toString(), responseStatuses[field].amount);
-                messages.push(message);
+                if (message) { 
+                    messages.push(message); 
+                }
             }
         }
-
         return messages;
     }
 }
@@ -446,7 +475,6 @@ export class SuccessKycMsgDialogComponent {
         private router: Router,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.kycStatuses = data.kycStatuses;
-        console.log('DIALOG', data)
     }
 
     close() {

@@ -7,6 +7,7 @@ export class PaymentType {
     rate: number;
     faq: string;
     minimum: string;
+    eth_to_btc: number;
 }
 
 export class IcoInfo {
