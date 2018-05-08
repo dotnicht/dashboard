@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Protocol;
 using QBitNinja.Client;
+using QBitNinja.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -186,9 +187,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected override async Task<BigInteger> GetBalance(CryptoAddress address)
         {
             var client = new QBitNinjaClient(Network);
-            var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
-            var balance = await client.GetBalance(secret.GetAddress());
-            return new BigInteger(balance.Operations.Sum(x => x.Amount.Satoshi));
+            var script = new BitcoinPubKeyAddress(address.Address, Network);
+            var balance = await client.GetBalance(script);
+            return new BigInteger(balance.Operations.Sum(x => x.Amount));
+            //var balance = await client.GetBalanceSummary(script);
+            //return new BigInteger(balance.Confirmed.Amount.Satoshi);
         }
 
         private static Node GetNode()

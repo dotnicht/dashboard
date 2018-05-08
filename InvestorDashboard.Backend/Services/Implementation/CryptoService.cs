@@ -298,7 +298,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
             {
-                Parallel.ForEach(addresses, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async x =>
+                Parallel.ForEach(addresses, new ParallelOptions { MaxDegreeOfParallelism = Settings.Value.MaxDegreeOfParallelism }, async x =>
                 {
                     try
                     {
