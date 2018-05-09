@@ -1,6 +1,5 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.CSharpVitamins;
-using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -73,7 +72,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (!string.IsNullOrWhiteSpace(referralCode))
                 {
-                    user.ReferralUserId = ctx.Users.SingleOrDefault(x => x.ReferralCode == referralCode)?.Id;
+                    user.ReferralUserId = ctx.Users
+                        .SingleOrDefault(x => x.ReferralCode == referralCode)
+                        ?.Id;
                 }
 
                 await ctx.SaveChangesAsync();
@@ -89,7 +90,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled && x.UserId == userId);
+                var entity = ctx.CryptoAddresses
+                    .SingleOrDefault(x => x.Currency == currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled && x.UserId == userId);
 
                 if (entity != null)
                 {

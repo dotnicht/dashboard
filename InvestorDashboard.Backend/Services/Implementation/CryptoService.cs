@@ -20,7 +20,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal abstract class CryptoService : ContextService, ICryptoService
     {
         public IOptions<CryptoSettings> Settings { get; }
-
+        public IOptions<ReferralSettings> ReferralSettings { get; }
         protected IOptions<TokenSettings> TokenSettings { get; }
         protected IExchangeRateService ExchangeRateService { get; }
         protected IKeyVaultService KeyVaultService { get; }
@@ -50,7 +50,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
-            IOptions<CryptoSettings> cryptoSettings)
+            IOptions<CryptoSettings> cryptoSettings,
+            IOptions<ReferralSettings> referralSettings)
             : base(serviceProvider, loggerFactory)
         {
             ExchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
@@ -58,6 +59,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             Mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             TokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             Settings = cryptoSettings ?? throw new ArgumentNullException(nameof(cryptoSettings));
+            ReferralSettings = referralSettings ?? throw new ArgumentNullException(nameof(referralSettings));
             ResourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             RestService = restService ?? throw new ArgumentNullException(nameof(restService));
             CalculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
@@ -161,49 +163,34 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return;
             }
 
-            // TODO: implement referral payments.
-
             using (var ctx = CreateContext())
             {
-                CryptoAddress GetInternalCryptoAddress()
+                Func<CryptoAddress, bool> selector = x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled;
+
+                var transactions = ctx.CryptoTransactions
+                    .Include(x => x.CryptoAddress)
+                    .ThenInclude(x => x.User)
+                    .ThenInclude(x => x.ReferralUser)
+                    .ThenInclude(x => x.CryptoAddresses)
+                    .Where(
+                        x => !x.IsReferralPaid
+                        && x.Direction == CryptoTransactionDirection.Inbound
+                        && x.CryptoAddress.Currency == Settings.Value.Currency
+                        && x.CryptoAddress.Type == CryptoAddressType.Investment
+                        && x.CryptoAddress.User.ExternalId == null
+                        && x.CryptoAddress.User.ReferralUserId != null
+                        && x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(selector))
+                    .ToArray();
+
+                foreach (var tx in transactions)
                 {
-                    return ctx.CryptoAddresses
-                        .Where(
-                            x => x.Type == CryptoAddressType.Internal
-                            && !x.IsDisabled
-                            && x.Currency == Settings.Value.Currency
-                            && x.UserId == Settings.Value.InternalTransferUserId)
-                        .OrderBy(x => Guid.NewGuid())
-                        .FirstOrDefault();
+                    var referral = tx.CryptoAddress.User.ReferralUser.CryptoAddresses.Single(selector);
+                    var balance = await GetBalance(tx.CryptoAddress);
+                    var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
+                    await PublishTransaction(tx.CryptoAddress, referral.Address, value);
                 }
 
-                var destination = GetInternalCryptoAddress();
-
-                if (destination == null)
-                {
-                    var records = ResourceService
-                        .GetCsvRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
-                        .Where(x => x.Currency == Settings.Value.Currency);
-
-                    foreach (var record in records)
-                    {
-                        if (!ctx.CryptoAddresses.Any(
-                            x => x.UserId == Settings.Value.InternalTransferUserId
-                            && x.Currency == Settings.Value.Currency
-                            && x.Type == CryptoAddressType.Internal
-                            && !x.IsDisabled && x.Address == record.Address))
-                        {
-                            await CreateAddressInternal(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal, record.Address);
-                        }
-                    }
-                }
-
-                destination = GetInternalCryptoAddress();
-
-                if (destination == null)
-                {
-                    throw new InvalidOperationException("Internal transfer addresses are not available.");
-                }
+                var destination = await EnsureInternalDestinationAddress(ctx);
 
                 var sourceAddresses = ctx.CryptoAddresses
                     .Where(
@@ -305,6 +292,51 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 await RefreshTransactionsFromBlockchainInternal(result.ToArray(), ctx);
             }
+        }
+
+        protected async Task<CryptoAddress> EnsureInternalDestinationAddress(ApplicationDbContext ctx)
+        {
+            CryptoAddress GetInternalCryptoAddress()
+            {
+                return ctx.CryptoAddresses
+                    .Where(
+                        x => x.Type == CryptoAddressType.Internal
+                        && !x.IsDisabled
+                        && x.Currency == Settings.Value.Currency
+                        && x.UserId == Settings.Value.InternalTransferUserId)
+                    .OrderBy(x => Guid.NewGuid())
+                    .FirstOrDefault();
+            }
+
+            var destination = GetInternalCryptoAddress();
+
+            if (destination == null)
+            {
+                var records = ResourceService
+                    .GetCsvRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
+                    .Where(x => x.Currency == Settings.Value.Currency);
+
+                foreach (var record in records)
+                {
+                    if (!ctx.CryptoAddresses.Any(
+                        x => x.UserId == Settings.Value.InternalTransferUserId
+                        && x.Currency == Settings.Value.Currency
+                        && x.Type == CryptoAddressType.Internal
+                        && !x.IsDisabled && x.Address == record.Address))
+                    {
+                        await CreateAddressInternal(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal, record.Address);
+                    }
+                }
+            }
+
+            destination = GetInternalCryptoAddress();
+
+            if (destination == null)
+            {
+                throw new InvalidOperationException("Internal transfer addresses are not available.");
+            }
+
+            return destination;
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
