@@ -7,8 +7,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +29,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected ICalculationService CalculationService { get; }
         protected ITokenService TokenService { get; }
         protected IMapper Mapper { get; }
+
+        private Expression<Func<CryptoAddress, bool>> InboundAddressSelector
+        {
+            get => x => x.Currency == Settings.Value.Currency
+                && x.Type == CryptoAddressType.Investment
+                && x.User.ExternalId == null
+                && x.User.EmailConfirmed
+                && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions);
+        }
 
         protected CryptoService(
             IServiceProvider serviceProvider,
@@ -84,12 +95,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (var ctx = CreateContext())
             {
                 addresses = ctx.CryptoAddresses
-                    .Where(
-                        x => x.Currency == Settings.Value.Currency
-                        && x.Type == CryptoAddressType.Investment
-                        && x.User.ExternalId == null
-                        && x.User.EmailConfirmed
-                        && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
+                    .Where(InboundAddressSelector)
                     .ToArray();
             }
 
@@ -138,42 +144,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 return;
             }
 
-            var index = await GetCurrentBlockIndex();
-
             using (var ctx = CreateContext())
             {
                 var addresses = ctx.CryptoAddresses
-                    .Where(
-                        x => x.Currency == Settings.Value.Currency
-                        && x.Type == CryptoAddressType.Investment
-                        && x.User.ExternalId == null
-                        && x.User.EmailConfirmed
-                        && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions)
-                        && (x.LastBlockIndex ?? x.StartBlockIndex) < index)
-                    .GroupBy(x => x.LastBlockIndex ?? x.StartBlockIndex)
-                    .OrderBy(x => x.Key)
+                    .Where(InboundAddressSelector)
                     .ToArray();
 
-                if (addresses.Any())
-                {
-                    IEnumerable<CryptoAddress> lastAddresses = null;
-                    long lastIndex = 0;
-
-                    foreach (var item in addresses)
-                    {
-                        lastIndex = item.Key;
-                        lastAddresses = (lastAddresses ?? addresses.Where(x => x.Key < item.Key).SelectMany(x => x))
-                            .Union(item)
-                            .Distinct();
-
-                        await ProccessBlockAndUpdateAddresses(item.Key, lastAddresses, ctx);
-                    }
-
-                    for (var i = lastIndex + 1; i <= index; i++)
-                    {
-                        await ProccessBlockAndUpdateAddresses(i, lastAddresses, ctx);
-                    }
-                }
+                await RefreshTransactionsFromBlockchainInternal(addresses, ctx);
             }
         }
 
@@ -285,16 +262,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (var ctx = CreateContext())
             {
                 addresses = await ctx.CryptoAddresses
-                    .Where(
-                        x => x.Currency == Settings.Value.Currency
-                        && x.Type == CryptoAddressType.Investment
-                        && x.User.ExternalId == null
-                        && x.User.EmailConfirmed
-                        && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions))
+                    .Where(InboundAddressSelector)
                     .ToArrayAsync();
             }
 
             var index = 0;
+            var result = new ConcurrentQueue<CryptoAddress>();
 
             using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
             {
@@ -310,6 +283,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 ctx.Attach(x);
                                 x.Balance = balance;
                                 await ctx.SaveChangesAsync();
+                                result.Enqueue(x);
                             }
                         }
 
@@ -326,6 +300,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 });
             }
+
+            using (var ctx = CreateContext())
+            {
+                await RefreshTransactionsFromBlockchainInternal(result.ToArray(), ctx);
+            }
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
@@ -334,6 +313,38 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected abstract Task<long> GetCurrentBlockIndex();
         protected abstract Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses);
         protected abstract Task<BigInteger> GetBalance(CryptoAddress address);
+
+        private async Task RefreshTransactionsFromBlockchainInternal(CryptoAddress[] cryptoAddresses, ApplicationDbContext ctx)
+        {
+            if (cryptoAddresses.Any())
+            {
+                var index = await GetCurrentBlockIndex();
+
+                var addresses = cryptoAddresses
+                    .Where(x => (x.LastBlockIndex ?? x.StartBlockIndex) < index)
+                    .GroupBy(x => x.LastBlockIndex ?? x.StartBlockIndex)
+                    .OrderBy(x => x.Key)
+                    .ToArray();
+
+                IEnumerable<CryptoAddress> lastAddresses = null;
+                long lastIndex = 0;
+
+                foreach (var item in addresses)
+                {
+                    lastIndex = item.Key;
+                    lastAddresses = (lastAddresses ?? addresses.Where(x => x.Key < item.Key).SelectMany(x => x))
+                        .Union(item)
+                        .Distinct();
+
+                    await ProccessBlockAndUpdateAddresses(item.Key, lastAddresses, ctx);
+                }
+
+                for (var i = lastIndex + 1; i <= index; i++)
+                {
+                    await ProccessBlockAndUpdateAddresses(i, lastAddresses, ctx);
+                }
+            }
+        }
 
         private async Task ProccessBlockAndUpdateAddresses(long index, IEnumerable<CryptoAddress> addresses, ApplicationDbContext context)
         {
