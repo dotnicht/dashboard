@@ -3,5 +3,6 @@
     public class BitcoinSettings : CryptoSettings
     {
         public bool IsTestNet { get; set; }
+        public bool UseSingleTransferTransaction { get; set; }
     }
 }

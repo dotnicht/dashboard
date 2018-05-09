@@ -32,8 +32,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
-            IOptions<EthereumSettings> ethereumSettings)
-            : base(serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, ethereumSettings)
+            IOptions<EthereumSettings> ethereumSettings,
+            IOptions<ReferralSettings> referralSettings)
+            : base(serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, ethereumSettings, referralSettings)
         {
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
         }

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Protocol;
 using QBitNinja.Client;
-using QBitNinja.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,10 +43,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ITokenService tokenService,
             IMapper mapper,
             IOptions<TokenSettings> tokenSettings,
-            IOptions<BitcoinSettings> bitcoinSettings)
-            : base(serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, bitcoinSettings)
+            IOptions<BitcoinSettings> bitcoinSettings,
+            IOptions<ReferralSettings> referralSettings)
+            : base(serviceProvider, loggerFactory, exchangeRateService, keyVaultService, resourceService, restService, calculationService, tokenService, mapper, tokenSettings, bitcoinSettings, referralSettings)
         {
             _bitcoinSettings = bitcoinSettings ?? throw new ArgumentNullException(nameof(bitcoinSettings));
+        }
+
+        public override async Task TransferAvailableAssets()
+        {
+            if (_bitcoinSettings.Value.UseSingleTransferTransaction)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                await base.TransferAvailableAssets();
+            }
         }
 
         protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
@@ -71,12 +83,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
                 {
-                    result.Amount = tx.Outputs.Where(x => x.Address != address).Sum(x => x.Value.Satoshis).ToString();
+                    result.Amount = tx.Outputs
+                        .Where(x => x.Address != address)
+                        .Sum(x => x.Value.Satoshis).ToString();
                     result.Direction = CryptoTransactionDirection.Internal;
                 }
                 else
                 {
-                    result.Amount = tx.Outputs.Where(x => x.Address == address).Sum(x => x.Value.Satoshis).ToString();
+                    result.Amount = tx.Outputs
+                        .Where(x => x.Address == address)
+                        .Sum(x => x.Value.Satoshis).ToString();
                     result.Direction = CryptoTransactionDirection.Inbound;
                 }
             }
@@ -122,7 +138,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var adjustedAmount = value - fee;
                 transaction.Outputs.Single().Value = adjustedAmount;
+#pragma warning disable CS0618 // Type or member is obsolete
                 transaction.Sign(secret, false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 

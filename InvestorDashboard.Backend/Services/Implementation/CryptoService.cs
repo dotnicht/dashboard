@@ -190,6 +190,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     var balance = await GetBalance(address);
                     var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
                     await PublishTransaction(address, referral.Address, value);
+
+                    transactions
+                        .SelectMany(x => x)
+                        .ToList()
+                        .ForEach(x => x.IsReferralPaid = true);
                 }
 
                 var destination = await EnsureInternalDestinationAddress(ctx);
@@ -198,7 +203,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .Where(
                         x => x.Currency == Settings.Value.Currency
                         && x.Type == CryptoAddressType.Investment
-                        && x.CryptoTransactions.Any()
+                        && x.CryptoTransactions.Any(y => !y.IsSpent)
                         && x.User.ExternalId == null)
                     .ToArray();
 
@@ -206,6 +211,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     await PublishTransaction(address, destination.Address);
                 }
+
+                sourceAddresses
+                    .SelectMany(x => x.CryptoTransactions)
+                    .ToList()
+                    .ForEach(x => x.IsSpent = true);
             }
         }
 
