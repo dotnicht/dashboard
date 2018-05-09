@@ -180,14 +180,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         && x.CryptoAddress.User.ExternalId == null
                         && x.CryptoAddress.User.ReferralUserId != null
                         && x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(selector))
+                    .GroupBy(x => x.CryptoAddress.UserId)
                     .ToArray();
 
                 foreach (var tx in transactions)
                 {
-                    var referral = tx.CryptoAddress.User.ReferralUser.CryptoAddresses.Single(selector);
-                    var balance = await GetBalance(tx.CryptoAddress);
+                    var address = tx.First().CryptoAddress;
+                    var referral = address.User.ReferralUser.CryptoAddresses.Single(selector);
+                    var balance = await GetBalance(address);
                     var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
-                    await PublishTransaction(tx.CryptoAddress, referral.Address, value);
+                    await PublishTransaction(address, referral.Address, value);
                 }
 
                 var destination = await EnsureInternalDestinationAddress(ctx);
