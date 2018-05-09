@@ -170,20 +170,23 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var transactions = GetReferralTransferAddresses(ctx);
-
-                foreach (var tx in transactions)
+                if (!ReferralSettings.Value.IsDisabled)
                 {
-                    var address = tx.First().CryptoAddress;
-                    var referral = address.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector);
-                    var balance = await GetBalance(address);
-                    var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
-                    await PublishTransaction(address, referral.Address, value);
+                    var transactions = GetReferralTransferAddresses(ctx);
 
-                    transactions
-                        .SelectMany(x => x)
-                        .ToList()
-                        .ForEach(x => x.IsReferralPaid = true);
+                    foreach (var tx in transactions)
+                    {
+                        var address = tx.First().CryptoAddress;
+                        var referral = address.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector);
+                        var balance = await GetBalance(address);
+                        var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
+                        await PublishTransaction(address, referral.Address, value);
+
+                        transactions
+                            .SelectMany(x => x)
+                            .ToList()
+                            .ForEach(x => x.IsReferralPaid = true);
+                    }
                 }
 
                 var destination = await EnsureInternalDestinationAddress(ctx);
