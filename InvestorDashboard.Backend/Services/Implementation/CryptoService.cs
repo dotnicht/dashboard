@@ -39,6 +39,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions);
         }
 
+        private Func<CryptoAddress, bool> ReferralTransferAddressSelector
+        {
+            get => x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled;
+        }
+
         protected CryptoService(
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
@@ -165,28 +170,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                Func<CryptoAddress, bool> selector = x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled;
-
-                var transactions = ctx.CryptoTransactions
-                    .Include(x => x.CryptoAddress)
-                    .ThenInclude(x => x.User)
-                    .ThenInclude(x => x.ReferralUser)
-                    .ThenInclude(x => x.CryptoAddresses)
-                    .Where(
-                        x => !x.IsReferralPaid
-                        && x.Direction == CryptoTransactionDirection.Inbound
-                        && x.CryptoAddress.Currency == Settings.Value.Currency
-                        && x.CryptoAddress.Type == CryptoAddressType.Investment
-                        && x.CryptoAddress.User.ExternalId == null
-                        && x.CryptoAddress.User.ReferralUserId != null
-                        && x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(selector))
-                    .GroupBy(x => x.CryptoAddress.UserId)
-                    .ToArray();
+                var transactions = GetReferralTransferAddresses(ctx);
 
                 foreach (var tx in transactions)
                 {
                     var address = tx.First().CryptoAddress;
-                    var referral = address.User.ReferralUser.CryptoAddresses.Single(selector);
+                    var referral = address.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector);
                     var balance = await GetBalance(address);
                     var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
                     await PublishTransaction(address, referral.Address, value);
@@ -349,6 +338,25 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return destination;
+        }
+
+        protected IGrouping<string, CryptoTransaction>[] GetReferralTransferAddresses(ApplicationDbContext ctx)
+        {
+            return ctx.CryptoTransactions
+                .Include(x => x.CryptoAddress)
+                .ThenInclude(x => x.User)
+                .ThenInclude(x => x.ReferralUser)
+                .ThenInclude(x => x.CryptoAddresses)
+                .Where(
+                    x => !x.IsReferralPaid
+                    && x.Direction == CryptoTransactionDirection.Inbound
+                    && x.CryptoAddress.Currency == Settings.Value.Currency
+                    && x.CryptoAddress.Type == CryptoAddressType.Investment
+                    && x.CryptoAddress.User.ExternalId == null
+                    && x.CryptoAddress.User.ReferralUserId != null
+                    && x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(ReferralTransferAddressSelector))
+                .GroupBy(x => x.CryptoAddress.UserId)
+                .ToArray();
         }
 
         protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
