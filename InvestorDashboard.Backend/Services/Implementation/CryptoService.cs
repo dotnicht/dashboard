@@ -78,7 +78,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (Settings.Value.IsDisabled)
+            if (Settings.Value.IsDisabled && Settings.Value.SkipAddressCreationOnDisabled)
             {
                 return null;
             }
