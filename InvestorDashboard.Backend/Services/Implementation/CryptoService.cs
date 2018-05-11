@@ -356,8 +356,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     && x.CryptoAddress.Currency == Settings.Value.Currency
                     && x.CryptoAddress.Type == CryptoAddressType.Investment
                     && x.CryptoAddress.User.ExternalId == null
-                    && x.CryptoAddress.User.ReferralUserId != null
-                    && x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(ReferralTransferAddressSelector))
+                    && x.CryptoAddress.User.ReferralUserId != null)
+                .ToArray()
+                .Where(x => x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(ReferralTransferAddressSelector))
                 .GroupBy(x => x.CryptoAddress.UserId)
                 .ToArray();
         }

@@ -195,18 +195,21 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     foreach (var item in _bonusMapping)
                     {
-                        await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], _bonusMapping[item.Key].Any(x => string.IsNullOrWhiteSpace(x(user))));
+                        var status = item.Value.Any(x => string.IsNullOrWhiteSpace(x(user)));
+                        await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], status);
                     }
 
-                    if ((await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash)).SingleOrDefault() == null)
+                    var registration = await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
+
+                    if (registration.SingleOrDefault() == null)
                     {
                         await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
                     }
 
-                    var txCount = (await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash)).Count();
+                    var referrals = await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
                     var referralsCount = ctx.Users.Count(x => x.EmailConfirmed && x.ReferralUserId == user.Id);
 
-                    for (var i = 0; i < referralsCount - txCount; i++)
+                    for (var i = 0; i < referralsCount - referrals.Count(); i++)
                     {
                         await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
                     }
@@ -255,6 +258,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task<CryptoTransaction> AddBonusTransaction(ApplicationDbContext ctx, ApplicationUser user, long amount, Guid hash)
         {
             var address = await _genericAddressService.EnsureInternalAddress(user);
+
             var tx = new CryptoTransaction
             {
                 CryptoAddressId = address.Id,
@@ -297,13 +301,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private static async Task<CryptoTransaction[]> GetKycTransactionsInternal(string userId, ApplicationDbContext ctx, params Guid[] hash)
         {
+            var hashes = hash.Select(y => y.ToString());
             return await ctx.CryptoTransactions
                 .Where(
                     x => x.Direction == CryptoTransactionDirection.Internal
                     && x.CryptoAddress.Currency == Currency.Token
                     && x.CryptoAddress.Type == CryptoAddressType.Internal
                     && x.CryptoAddress.UserId == userId
-                    && hash.Select(y => y.ToString()).Contains(x.Hash))
+                    && hashes.Contains(x.Hash))
                 .ToAsyncEnumerable()
                 .ToArray();
         }
