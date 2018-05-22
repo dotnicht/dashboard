@@ -60,7 +60,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     if (!ReferralSettings.Value.IsDisabled)
                     {
                         var inbound = GetReferralTransferAddresses(ctx);
-                        
+
                     }
                 }
             }
@@ -82,7 +82,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             var client = new QBitNinjaClient(Network);
             var script = new BitcoinPubKeyAddress(address, Network);
-            var balance = await client.GetBalance(script);
+            var balance = await client.GetBalance(script, true);
             var result = new List<CryptoTransaction>();
 
             foreach (var op in balance.Operations)
@@ -114,45 +114,35 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             // TODO: implement custom amount transfer.
 
-            var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
-            var response = await RestService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
-
             var transaction = new Transaction();
-
+            var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
             var client = new QBitNinjaClient(Network);
-            var balance = 0m;
+            var balance = await client.GetBalance(secret, true);
 
-            /*
-            foreach (var tx in (await new BlockExplorer().GetBase58AddressAsync(address.Address)).Transactions)
+            var coins = balance.Operations
+                .SelectMany(x => x.ReceivedCoins)
+                .ToArray();
+
+            var value = Money.Zero;
+            foreach (var coin in coins)
             {
-                for (var i = 0; i < tx.Outputs.Count; i++)
-                {
-                    if (tx.Outputs[i].Address == address.Address && !tx.Outputs[i].Spent)
-                    {
-                        balance += tx.Outputs[i].Value.GetBtc();
-                        transaction.AddInput(new TxIn
-                        {
-                            PrevOut = new OutPoint(new uint256(tx.Hash), i),
-                            ScriptSig = secret.GetAddress().ScriptPubKey
-                        });
-                    }
-                }
+                transaction.AddInput(new TxIn(coin.Outpoint, secret.GetAddress().ScriptPubKey));
+                value += coin.Amount as Money;
             }
-            */
 
             transaction.AddOutput(new TxOut
             {
                 ScriptPubKey = BitcoinAddress.Create(destinationAddress, Network).ScriptPubKey
             });
 
+            var response = await RestService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
             var fee = Money.Satoshis(response.FastestFee * transaction.GetVirtualSize());
-            var value = Money.Coins(balance);
 
             if (value > fee)
             {
                 var adjustedAmount = value - fee;
                 transaction.Outputs.Single().Value = adjustedAmount;
-                //transaction.Sign(secret, transaction.Inputs.Select(x => new Coin()));
+                transaction.Sign(secret, coins);
 
                 Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 
