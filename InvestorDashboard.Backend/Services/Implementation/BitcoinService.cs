@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using Info.Blockchain.API.BlockExplorer;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
@@ -54,7 +54,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (_bitcoinSettings.Value.UseSingleTransferTransaction)
             {
-                throw new NotImplementedException();
+                var transaction = new Transaction();
+                using (var ctx = CreateContext())
+                {
+                    if (!ReferralSettings.Value.IsDisabled)
+                    {
+                        var inbound = GetReferralTransferAddresses(ctx);
+                        
+                    }
+                }
             }
             else
             {
@@ -72,32 +80,34 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address)
         {
-            var be = new BlockExplorer();
-            var addr = await be.GetBase58AddressAsync(address);
+            var client = new QBitNinjaClient(Network);
+            var script = new BitcoinPubKeyAddress(address, Network);
+            var balance = await client.GetBalance(script);
+            var result = new List<CryptoTransaction>();
 
-            var mapped = Mapper.Map<List<CryptoTransaction>>(addr.Transactions);
-
-            foreach (var tx in addr.Transactions)
+            foreach (var op in balance.Operations)
             {
-                var result = mapped.Single(x => x.Hash == tx.Hash);
+                var tx = await client.GetTransaction(op.TransactionId);
+                for (var i = 0; i < tx.ReceivedCoins.Count; i++)
+                {
+                    var addr = tx.ReceivedCoins[i].TxOut.ScriptPubKey.GetDestinationAddress(Network)?.ToString();
+                    if (addr == address)
+                    {
+                        var transaction = new CryptoTransaction
+                        {
+                            Direction = CryptoTransactionDirection.Inbound,
+                            Hash = tx.TransactionId.ToString(),
+                            Index = i,
+                            Timestamp = tx.FirstSeen.UtcDateTime,
+                            Amount = (tx.ReceivedCoins[i].Amount as Money)?.Satoshi.ToString(),
+                        };
 
-                if (tx.Inputs.All(x => x.PreviousOutput.Address == address))
-                {
-                    result.Amount = tx.Outputs
-                        .Where(x => x.Address != address)
-                        .Sum(x => x.Value.Satoshis).ToString();
-                    result.Direction = CryptoTransactionDirection.Internal;
-                }
-                else
-                {
-                    result.Amount = tx.Outputs
-                        .Where(x => x.Address == address)
-                        .Sum(x => x.Value.Satoshis).ToString();
-                    result.Direction = CryptoTransactionDirection.Inbound;
+                        result.Add(transaction);
+                    }
                 }
             }
 
-            return mapped;
+            return result;
         }
 
         protected override async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress address, string destinationAddress, BigInteger? amount = null)
@@ -107,9 +117,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var secret = new BitcoinEncryptedSecretNoEC(address.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
             var response = await RestService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
 
-            var balance = 0m;
             var transaction = new Transaction();
 
+            var client = new QBitNinjaClient(Network);
+            var balance = 0m;
+
+            /*
             foreach (var tx in (await new BlockExplorer().GetBase58AddressAsync(address.Address)).Transactions)
             {
                 for (var i = 0; i < tx.Outputs.Count; i++)
@@ -125,6 +138,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
+            */
 
             transaction.AddOutput(new TxOut
             {
@@ -138,9 +152,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var adjustedAmount = value - fee;
                 transaction.Outputs.Single().Value = adjustedAmount;
-#pragma warning disable CS0618 // Type or member is obsolete
-                transaction.Sign(secret, false);
-#pragma warning restore CS0618 // Type or member is obsolete
+                //transaction.Sign(secret, transaction.Inputs.Select(x => new Coin()));
 
                 Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
 

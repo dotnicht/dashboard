@@ -122,7 +122,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         using (var ctx = CreateContext())
                         {
-                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash && x.CryptoAddressId == address.Id))
+                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash && x.CryptoAddressId == address.Id && x.Index == transaction.Index))
                             {
                                 transaction.CryptoAddressId = address.Id;
 
@@ -176,38 +176,41 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     foreach (var tx in transactions)
                     {
-                        var address = tx.First().CryptoAddress;
-                        var referral = address.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector);
-                        var balance = await GetBalance(address);
+                        var inbound = tx.First().CryptoAddress;
+                        var referral = inbound.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector);
+                        var balance = await GetBalance(inbound);
                         var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
-                        await PublishTransaction(address, referral.Address, value);
 
-                        transactions
-                            .SelectMany(x => x)
-                            .ToList()
-                            .ForEach(x => x.IsReferralPaid = true);
+                        var (hash, adjustedAmount, success) = await PublishTransaction(inbound, referral.Address, value);
+                        if (success)
+                        {
+                            tx.ToList().ForEach(x => x.IsReferralPaid = true);
+                            await ctx.SaveChangesAsync();
+                        }
+
+                        var destination = await EnsureInternalDestinationAddress(ctx);
+
+                        (hash, adjustedAmount, success) = await PublishTransaction(inbound, destination.Address, balance - value);
+                        if (success)
+                        {
+                            tx.ToList().ForEach(x => x.IsSpent = true);
+                            await ctx.SaveChangesAsync();
+                        }
                     }
                 }
 
-                var destination = await EnsureInternalDestinationAddress(ctx);
+                var address = await EnsureInternalDestinationAddress(ctx);
+                var source = GetTransferTransactions(ctx);
 
-                var sourceAddresses = ctx.CryptoAddresses
-                    .Where(
-                        x => x.Currency == Settings.Value.Currency
-                        && x.Type == CryptoAddressType.Investment
-                        && x.CryptoTransactions.Any(y => !y.IsSpent)
-                        && x.User.ExternalId == null)
-                    .ToArray();
-
-                foreach (var address in sourceAddresses)
+                foreach (var tx in source)
                 {
-                    await PublishTransaction(address, destination.Address);
+                    var (hash, adjustedAmount, success) = await PublishTransaction(tx.CryptoAddress, address.Address);
+                    if (success)
+                    {
+                        tx.IsSpent = true;
+                        await ctx.SaveChangesAsync();
+                    }
                 }
-
-                sourceAddresses
-                    .SelectMany(x => x.CryptoTransactions)
-                    .ToList()
-                    .ForEach(x => x.IsSpent = true);
             }
         }
 
@@ -345,6 +348,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected IGrouping<string, CryptoTransaction>[] GetReferralTransferAddresses(ApplicationDbContext ctx)
         {
+            if (ctx == null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+
             return ctx.CryptoTransactions
                 .Include(x => x.CryptoAddress)
                 .ThenInclude(x => x.User)
@@ -360,6 +368,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToArray()
                 .Where(x => x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(ReferralTransferAddressSelector))
                 .GroupBy(x => x.CryptoAddress.UserId)
+                .ToArray();
+        }
+
+        protected CryptoTransaction[] GetTransferTransactions(ApplicationDbContext ctx)
+        {
+            if (ctx == null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+
+            return ctx.CryptoTransactions
+                .Include(x => x.CryptoAddress)
+                .Where(
+                    x => !x.IsSpent
+                    && x.ExternalId == null
+                    && x.Direction == CryptoTransactionDirection.Inbound
+                    && x.CryptoAddress.Currency == Settings.Value.Currency
+                    && !x.CryptoAddress.IsDisabled
+                    && x.CryptoAddress.Type == CryptoAddressType.Investment
+                    && x.CryptoAddress.User.ExternalId == null)
                 .ToArray();
         }
 
