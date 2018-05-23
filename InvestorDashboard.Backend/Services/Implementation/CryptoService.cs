@@ -181,7 +181,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         var balance = await GetBalance(inbound);
                         var value = balance * new BigInteger(ReferralSettings.Value.Reward * 100) / 100;
 
-                        var (hash, adjustedAmount, success) = await PublishTransaction(inbound, referral.Address, value);
+                        var (hash, adjustedAmount, success) = await PublishTransaction(inbound, referral.Address, value, CryptoTransactionDirection.Referral);
                         if (success)
                         {
                             tx.ToList().ForEach(x => x.IsReferralPaid = true);
@@ -214,7 +214,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null)
+        public async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null, CryptoTransactionDirection direction = CryptoTransactionDirection.Internal)
         {
             if (sourceAddress == null)
             {
@@ -235,7 +235,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     Hash = result.Hash,
                     Amount = result.AdjustedAmount.ToString(),
                     Timestamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Internal,
+                    Direction = direction,
                     CryptoAddressId = sourceAddress.Id
                 };
 

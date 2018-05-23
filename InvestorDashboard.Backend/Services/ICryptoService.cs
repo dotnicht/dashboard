@@ -14,6 +14,6 @@ namespace InvestorDashboard.Backend.Services
         Task RefreshTransactionsFromBlockchain();
         Task RefreshTransactionsByBalance();
         Task TransferAvailableAssets();
-        Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
+        Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransaction(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null, CryptoTransactionDirection direction = CryptoTransactionDirection.Internal);
     }
 }
