@@ -5,16 +5,16 @@
         font-weight: 600;
         color: white;
     }
-    .mat-button {
-        height: 50px;
-        border-radius: 0;
-        &.active {
-            background-color: black;
-            border-left: 3px solid #fd850f;
-            .mat-icon {
-                color: #fd850f;
-            }
-            color: white;
-        }
-    }
+    // .mat-button {
+    //     height: 50px;
+    //     border-radius: 0;
+    //     &.active {
+    //         background-color: black;
+    //         border-left: 3px solid #fd850f;
+    //         .mat-icon {
+    //             color: #fd850f;
+    //         }
+    //         color: white;
+    //     }
+    // }
 }

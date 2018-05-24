@@ -1,0 +1,47 @@
+﻿<mat-card>
+    <div class="wrapper">
+        <div class="find-user">
+            <mat-form-field>
+                <input matInput [(ngModel)]="email" type="text" placeholder="Enter user email">
+            </mat-form-field>
+            <button [color]="'primary'" class="copy-btn" mat-raised-button (click)="findEmail()">{{"users.management.Find" | translate}}</button>
+            <ng-container></ng-container>
+        </div>
+
+        <div class="user-details">
+            <div class="info-block">
+                <div class="info-label">Current balance</div>
+                <div class="info-value"><span class="green-highlight">{{currentBalance}}</span> Tokens</div>
+                <!-- <div class="info-description"></div> -->
+            </div>
+
+            <div class="info-block">
+                <div class="info-label">Current bonus</div>
+                <div class="info-value"><span class="green-highlight">{{currentBonuce}}</span> Tokens</div>
+                <!-- <div class="info-description"></div> -->
+            </div>
+
+
+
+            <div class="info-block">
+                <div class="info-label">Tokens to</div>
+                <div class="info-label">{{email}}</div>
+            </div>
+
+            <div class="info-block">
+                <div class="toggle-tokens">
+                    <div class="toggle-label">ADD</div>
+                    <mat-slide-toggle (change)="toggleTokens($event)"></mat-slide-toggle>
+                    <div class="toggle-label">SUBTRACT</div>
+                    <!--Extract-->
+                </div>
+
+                <mat-form-field>
+                    <input matInput [(ngModel)]="extraTokens" type="number" placeholder="Enter number of tokens">
+                </mat-form-field>
+                <button [color]="'primary'" class="copy-btn" mat-raised-button (click)="enterTokens()">{{"users.management.Find" | translate}}</button>
+            </div>
+
+        </div>
+    </div>
+</mat-card>

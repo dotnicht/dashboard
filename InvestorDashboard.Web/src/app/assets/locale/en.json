@@ -129,6 +129,7 @@
             "NewUser": "New User",
             "Edit": "Edit",
             "Delete": "Delete",
+            "Find": "Find",
             "EditUser": "Edit User \"{{name}}\"",
             "Title": "Title",
             "UserName": "User Name",

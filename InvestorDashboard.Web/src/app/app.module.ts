@@ -33,6 +33,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { ReferralModule } from './containers/referral/referral.module';
 import { HttpClientModule } from '@angular/common/http';
+import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
+import { AdminPanelModule } from './components/admin-panel/admin-panel.module';
 
 
 @NgModule({
@@ -57,6 +59,7 @@ import { HttpClientModule } from '@angular/common/http';
     UserManageModule,
     DashboardModule,
     ReferralModule,
+    AdminPanelModule,
     //environment.production ? ServiceWorkerModule.register('/ngsw-worker.js') : [],
     TranslateModule.forRoot({
       loader: {

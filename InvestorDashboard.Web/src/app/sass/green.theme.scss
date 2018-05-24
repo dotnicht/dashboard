@@ -135,57 +135,57 @@
         font-feature-settings: 'liga';
     }
     
-    .black-gold-theme {
-        @include angular-material-theme($dark-theme);
-        .mat-drawer-container {
-            background: none;
-            background-image: url('/assets/img/main-background.jpg');
-        }
-        .mat-card {
-            background-color: #2b2b2b;
-        }
-        .mat-toolbar-row,
-        .mat-toolbar-single-row {
-            height: auto;
-        }
-        .mat-menu-content {
-            padding-top: 0px;
-            padding-bottom: 8px;
-        }
-        .mat-raised-button {
-            // &.btn-danger {
-            //     color: #fff;
-            //     background-color: #ac2925;
-            //     border-color: #761c19;
-            // }
-            background-color: #fd850f !important;
-            color: white !important;
-        }
-        .mat-checkbox-checked.mat-primary .mat-checkbox-background {
-            background-color: #fd850f !important;
-        }
-        .black-gold-theme .mat-progress-bar-fill::after {
-            background-color: #fd850f !important;
-        }
-        .btn-danger {
-            background-color: #222 !important;
-        }
-        .mat-input-element {
-            caret-color: rgba(255, 255, 255, 0.7) !important;
-        }
-        .mat-form-field-invalid .mat-input-element {
-            caret-color: #ff5722 !important;
-        }
-        .mat-form-field-label {
-            color: rgba(255, 255, 255, 0.7) !important;
-        }
-        .mat-form-field-invalid .mat-form-field-label {
-            color: #ff5722 !important;
-        }
-        .mat-form-field-ripple {
-            background-color: rgba(255, 255, 255, 0.7) !important;
-        }
-        .mat-form-field-invalid .mat-form-field-ripple {
-            background-color: #ff5722 !important;
-        }
-    }
+    // .black-gold-theme {
+    //     @include angular-material-theme($dark-theme);
+    //     .mat-drawer-container {
+    //         background: none;
+    //         background-image: url('/assets/img/main-background.jpg');
+    //     }
+    //     .mat-card {
+    //         background-color: #2b2b2b;
+    //     }
+    //     .mat-toolbar-row,
+    //     .mat-toolbar-single-row {
+    //         height: auto;
+    //     }
+    //     .mat-menu-content {
+    //         padding-top: 0px;
+    //         padding-bottom: 8px;
+    //     }
+    //     .mat-raised-button {
+    //         // &.btn-danger {
+    //         //     color: #fff;
+    //         //     background-color: #ac2925;
+    //         //     border-color: #761c19;
+    //         // }
+    //         background-color: #fd850f !important;
+    //         color: white !important;
+    //     }
+    //     .mat-checkbox-checked.mat-primary .mat-checkbox-background {
+    //         background-color: #fd850f !important;
+    //     }
+    //     .black-gold-theme .mat-progress-bar-fill::after {
+    //         background-color: #fd850f !important;
+    //     }
+    //     .btn-danger {
+    //         background-color: #222 !important;
+    //     }
+    //     .mat-input-element {
+    //         caret-color: rgba(255, 255, 255, 0.7) !important;
+    //     }
+    //     .mat-form-field-invalid .mat-input-element {
+    //         caret-color: #ff5722 !important;
+    //     }
+    //     .mat-form-field-label {
+    //         color: rgba(255, 255, 255, 0.7) !important;
+    //     }
+    //     .mat-form-field-invalid .mat-form-field-label {
+    //         color: #ff5722 !important;
+    //     }
+    //     .mat-form-field-ripple {
+    //         background-color: rgba(255, 255, 255, 0.7) !important;
+    //     }
+    //     .mat-form-field-invalid .mat-form-field-ripple {
+    //         background-color: #ff5722 !important;
+    //     }
+    // }

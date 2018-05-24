@@ -15,7 +15,8 @@ $icon-font-path: '../../../node_modules/bootstrap-sass/assets/fonts/bootstrap/';
 */
 
 @import "~bootstrap-sass/assets/stylesheets/bootstrap";
-@import 'green.theme.scss';
+// @import 'green.theme.scss';
+@import 'crystals.theme.scss';
 app-tf-settings {
     .mat-tab-body-content {
         overflow: hidden !important;

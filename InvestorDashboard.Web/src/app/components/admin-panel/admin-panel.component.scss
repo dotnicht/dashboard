@@ -1,0 +1,40 @@
+﻿.wrapper {
+    width: 100%;
+    .find-user {
+        margin: 0 auto;
+    }
+    .user-details {
+        .info-block {
+            display: flex;
+            line-height: 2.5em;
+            align-items: center;
+            .info-label {
+                width: 115px;
+                align-items: center;
+                display: flex;
+            }
+            .info-value {
+                // font-weight: 600;
+                margin-right: 7px;
+                & .transaction {
+                    width: 100%;
+                }
+                .green-highlight {
+                    color: green;
+                }
+            }
+            .info-description {}
+            .toggle-tokens {
+                display: inline-flex;
+                align-items: center;
+                .toggle-label {
+                    margin: 0 5px;
+                    align-items: center;
+                    display: flex;
+                    font-weight: 500;
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,16 @@
+<!-- <div *ngIf="info.remove">
+    <p>Are you sure you want to subtract <b>{{info.newAddress}}</b> <b>{{info.newAddress}}</b> ?</p>
+</div>
+
+<div *ngIf="!info.remove">
+    <p>Are you sure you want to add <b>{{info.previousAddress}}</b> to <b>{{info.newAddress}}</b> ?</p>
+</div> -->
+
+
+<button (click)="dialogRef.close(true)" mat-raised-button tabindex="-1">
+            <span>Yes</span>
+        </button>
+
+<button (click)="dialogRef.close(false)" mat-button tabindex="-1">
+          <span>No</span>
+    </button>

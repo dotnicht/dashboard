@@ -18,6 +18,7 @@ import { TransferComponent } from './components/transfer/transfer.component';
 import { LoginWithRecoveryCodeComponent } from './components/tfa/login-with-recovery-code/login-with-recovery-code.component';
 import { ResendEmailConfirmCodeComponent } from './components/controls/resend-email-confirm-code/resend-email-confirm-code.component';
 import { ReferralComponent } from './containers/referral/referral.component';
+import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
 
 export const routingComponents = [
     NotFoundComponent
@@ -48,6 +49,7 @@ const routes: Routes = [
         loadChildren: 'app/containers/settings/settings.module#SettingsModule'
     },
     { path: 'referral', component: ReferralComponent, canActivate: [AuthGuard]},
+    { path: 'admin-panel', component: AdminPanelComponent, canActivate: [AuthGuard]},
     {
         path: 'faq', component: FaqComponent,
         data: {
