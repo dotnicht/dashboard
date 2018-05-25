@@ -2,7 +2,7 @@
 
 <div style="height: 300px;overflow-y: auto;padding: 0 24px;">
   <p *ngFor="let option of _acceptRules">
-    <mat-checkbox [(ngModel)]="option.checked" name="rule" color="primary">
+    <mat-checkbox [(ngModel)]="option.checked" name="rule" >
       <div [innerHTML]="option.name"></div>
 
     </mat-checkbox>
