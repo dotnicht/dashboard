@@ -1,21 +1,20 @@
 .main-toolbar {
-    .logo {
-        display: flex;
-        align-items: center;
-        font-weight: 400;
-        color: #19181e;
-        ;
-    }
-    // .mat-button {
-    //     height: 50px;
-    //     border-radius: 0;
-    //     &.active {
-    //         background-color: black;
-    //         border-left: 3px solid #fd850f;
-    //         .mat-icon {
-    //             color: #fd850f;
-    //         }
-    //         color: white;
-    //     }
-    // }
+  .logo {
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    color: #19181e;
+  } 
+  .mat-button {
+    //   height: 50px;
+    //   border-radius: 0;
+      &.active {
+        //   background-color: black;
+        //   border-left: 3px solid #fd850f;
+        //   .mat-icon {
+        //       color: #fd850f;
+        //   }
+          color: #fc537f;
+      }
+  }
 }
