@@ -8,6 +8,5 @@ namespace InvestorDashboard.Backend.Services
     {
         Task<(Dictionary<string, decimal> Transactions, decimal Pending, decimal Balance)> GetRererralData(string userId, Currency currency);
         Task PopulateReferralData(string userId, string referralCode);
-        Task UpdateReferralAddress(string userId, Currency currency, string address);
     }
 }

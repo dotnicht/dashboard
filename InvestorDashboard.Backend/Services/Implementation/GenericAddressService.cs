@@ -63,6 +63,37 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
+        public async Task UpdateAddress(string userId, Currency currency, CryptoAddressType cryptoAddressType, string address)
+        {
+            if (userId == null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            if (cryptoAddressType == CryptoAddressType.Investment)
+            {
+                throw new NotSupportedException();
+            }
+
+            using (var ctx = CreateContext())
+            {
+                var entity = ctx.CryptoAddresses
+                    .SingleOrDefault(x => x.Currency == currency && x.Type == cryptoAddressType && !x.IsDisabled && x.UserId == userId);
+
+                if (entity != null)
+                {
+                    entity.IsDisabled = entity.Address != address;
+                }
+
+                if (!string.IsNullOrWhiteSpace(address) && (entity == null || entity.IsDisabled))
+                {
+                    ctx.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = userId, Address = address, Type = cryptoAddressType });
+                }
+
+                await ctx.SaveChangesAsync();
+            }
+        }
+
         private async Task CreateMissingAddressesInternal(string userId, bool includeInternal)
         {
             using (var ctx = CreateContext())
