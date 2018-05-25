@@ -39,15 +39,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var tx = ctx.CryptoTransactions
                     .Where(x => x.CryptoAddress.Currency == currency && x.CryptoAddress.User.ReferralUserId == userId);
 
-                var pending = await tx.Where(x => x.IsReferralPaid == false)
+                var pending = tx.Where(x => x.IsReferralPaid == false)
                     .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
                     .SumAsync();
 
-                var balance = await tx
+                var balance = tx
                     .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
                     .SumAsync();
 
-                return (Transactions: await referral, Pending: pending * _options.Value.Reward, Balance: balance * _options.Value.Reward);
+                return (Transactions: await referral, Pending: await pending * _options.Value.Reward, Balance: await balance * _options.Value.Reward);
             }
         }
 
@@ -75,32 +75,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     user.ReferralUserId = ctx.Users
                         .SingleOrDefault(x => x.ReferralCode == referralCode)
                         ?.Id;
-                }
-
-                await ctx.SaveChangesAsync();
-            }
-        }
-
-        public async Task UpdateReferralAddress(string userId, Currency currency, string address)
-        {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-
-            using (var ctx = CreateContext())
-            {
-                var entity = ctx.CryptoAddresses
-                    .SingleOrDefault(x => x.Currency == currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled && x.UserId == userId);
-
-                if (entity != null)
-                {
-                    entity.IsDisabled = entity.Address != address;
-                }
-
-                if (!string.IsNullOrWhiteSpace(address) && (entity == null || entity.IsDisabled))
-                {
-                    ctx.CryptoAddresses.Add(new CryptoAddress { Currency = currency, UserId = userId, Address = address, Type = CryptoAddressType.Referral });
                 }
 
                 await ctx.SaveChangesAsync();
