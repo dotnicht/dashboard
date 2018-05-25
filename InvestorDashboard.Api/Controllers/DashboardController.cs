@@ -30,6 +30,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly IReferralService _referralService;
         private readonly IKycService _kycService;
         private readonly IInternalUserService _internalUserService;
+        private readonly IGenericAddressService _genericAddressService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
@@ -54,6 +55,7 @@ namespace InvestorDashboard.Api.Controllers
             IReferralService referralService,
             IKycService kycService,
             IInternalUserService internalUserService,
+            IGenericAddressService genericAddressService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
@@ -71,6 +73,7 @@ namespace InvestorDashboard.Api.Controllers
             _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
             _kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
             _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
+            _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
@@ -84,8 +87,7 @@ namespace InvestorDashboard.Api.Controllers
         [HttpGet("ico_status"), ResponseCache(Duration = 30)]
         public async Task<IActionResult> GetIcoStatus()
         {
-            var status = await GetIcoStatusModel();
-            return Ok(status);
+            return Ok(await GetIcoStatusModel());
         }
 
         [HttpPost("webhook")]
@@ -238,8 +240,31 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             var currency = (Currency)Enum.Parse(typeof(Currency), referralInfoUpdateModel.Currency);
-            await _referralService.UpdateReferralAddress(ApplicationUser.Id, currency, referralInfoUpdateModel.Address);
+            await _genericAddressService.UpdateAddress(ApplicationUser.Id, currency, CryptoAddressType.Referral, referralInfoUpdateModel.Address);
             return Ok();
+        }
+
+        [Authorize, HttpGet("token"), Produces("application/json")]
+        public async Task<IActionResult> GetTokenAddressData()
+        {
+            if (ApplicationUser != null)
+            {
+                return Ok(await GetTokenAddress());
+            }
+
+            return Unauthorized();
+        }
+
+        [Authorize, HttpPost("token"), Produces("application/json")]
+        public async Task<IActionResult> PostTokenAddressData(string address)
+        {
+            if (ApplicationUser != null)
+            {
+                await _genericAddressService.UpdateAddress(ApplicationUser.Id, Currency.ETH, CryptoAddressType.Token, address);
+                return Ok(await GetTokenAddress());
+            }
+
+            return Unauthorized();
         }
 
         [Authorize, HttpGet("management"), Produces("application/json")]
@@ -272,7 +297,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("management"), Produces("application/json")]
-        public async Task<IActionResult> PostManagementData(ManagementUpdateModel updateModel)
+        public async Task<IActionResult> PostManagementData([FromBody]ManagementUpdateModel updateModel)
         {
             if (updateModel == null)
             {
@@ -358,6 +383,13 @@ namespace InvestorDashboard.Api.Controllers
                 .ToArray();
 
             return paymentInfo;
+        }
+
+        private async Task<string> GetTokenAddress()
+        {
+            return (await ApplicationUser.CryptoAddresses.ToAsyncEnumerable()
+                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Token))
+                ?.Address;
         }
     }
 }

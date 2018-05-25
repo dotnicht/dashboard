@@ -7,5 +7,6 @@ namespace InvestorDashboard.Backend.Services
     {
         Task CreateMissingAddresses(string userId = null, bool includeInternal = true);
         Task<CryptoAddress> EnsureInternalAddress(ApplicationUser user);
+        Task UpdateAddress(string userId, Currency currency, CryptoAddressType cryptoAddressType, string address);
     }
 }
