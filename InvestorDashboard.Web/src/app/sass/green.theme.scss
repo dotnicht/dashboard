@@ -91,50 +91,48 @@
     //     color: $main-color;
     //   }
     // }
-    @import '~@angular/material/theming';
-    @include mat-core();
-    $light-primary-text: #9d9d9d;
-    $mat-black: ( 50: #fafafa, 100: #f5f5f5, 200: #eeeeee, 300: #e0e0e0, 400: #bdbdbd, 500: #222, 600: #757575, 700: #616161, 800: #424242, 900: #212121, A100: #ffffff, A200: #eeeeee, A400: #bdbdbd, A700: #616161, contrast: ( 50: $dark-primary-text, 100: $dark-primary-text, 200: $dark-primary-text, 300: $light-primary-text, 400: $light-primary-text, 500: $light-primary-text, 600: $light-primary-text, 700: $light-primary-text, 800: $light-primary-text, 900: $light-primary-text, A100: $dark-primary-text, A200: $light-primary-text, A400: $light-primary-text, A700: $light-primary-text, ));
-    // Define an alternate dark theme.
-    $dark-primary: mat-palette($mat-black);
-    $dark-accent: mat-palette($mat-amber, A200, A100, A300);
-    $dark-warn: mat-palette($mat-deep-orange);
-    $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
-    // Include the alternative theme styles inside of a block with a CSS class. You can make this
-    // CSS class whatever you want. In this example, any component inside of an element with
-    // `.unicorn-dark-theme` will be affected by this alternate dark theme instead of the default theme.
-    @font-face {
-        font-family: 'Material Icons';
-        font-style: normal;
-        font-weight: 400;
-        src: url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.eot);
-        /* For IE6-8 */
-        src: local('Material Icons'), local('MaterialIcons-Regular'), url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2) format('woff2'), url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff) format('woff'), url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.ttf) format('truetype');
-    }
-    
-    .material-icons {
-        font-family: 'Material Icons';
-        font-weight: normal;
-        font-style: normal;
-        font-size: 24px;
-        /* Preferred icon size */
-        display: inline-block;
-        line-height: 1;
-        text-transform: none;
-        letter-spacing: normal;
-        word-wrap: normal;
-        white-space: nowrap;
-        direction: ltr;
-        /* Support for all WebKit browsers. */
-        -webkit-font-smoothing: antialiased;
-        /* Support for Safari and Chrome. */
-        text-rendering: optimizeLegibility;
-        /* Support for Firefox. */
-        -moz-osx-font-smoothing: grayscale;
-        /* Support for IE. */
-        font-feature-settings: 'liga';
-    }
-    
+    // @import '~@angular/material/theming';
+    // @include mat-core();
+    // $light-primary-text: #9d9d9d;
+    // $mat-black: ( 50: #fafafa, 100: #f5f5f5, 200: #eeeeee, 300: #e0e0e0, 400: #bdbdbd, 500: #222, 600: #757575, 700: #616161, 800: #424242, 900: #212121, A100: #ffffff, A200: #eeeeee, A400: #bdbdbd, A700: #616161, contrast: ( 50: $dark-primary-text, 100: $dark-primary-text, 200: $dark-primary-text, 300: $light-primary-text, 400: $light-primary-text, 500: $light-primary-text, 600: $light-primary-text, 700: $light-primary-text, 800: $light-primary-text, 900: $light-primary-text, A100: $dark-primary-text, A200: $light-primary-text, A400: $light-primary-text, A700: $light-primary-text, ));
+    // // Define an alternate dark theme.
+    // $dark-primary: mat-palette($mat-black);
+    // $dark-accent: mat-palette($mat-amber, A200, A100, A300);
+    // $dark-warn: mat-palette($mat-deep-orange);
+    // $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
+    // // Include the alternative theme styles inside of a block with a CSS class. You can make this
+    // // CSS class whatever you want. In this example, any component inside of an element with
+    // // `.unicorn-dark-theme` will be affected by this alternate dark theme instead of the default theme.
+    // @font-face {
+    //     font-family: 'Material Icons';
+    //     font-style: normal;
+    //     font-weight: 400;
+    //     src: url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.eot);
+    //     /* For IE6-8 */
+    //     src: local('Material Icons'), local('MaterialIcons-Regular'), url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2) format('woff2'), url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff) format('woff'), url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.ttf) format('truetype');
+    // }
+    // .material-icons {
+    //     font-family: 'Material Icons';
+    //     font-weight: normal;
+    //     font-style: normal;
+    //     font-size: 24px;
+    //     /* Preferred icon size */
+    //     display: inline-block;
+    //     line-height: 1;
+    //     text-transform: none;
+    //     letter-spacing: normal;
+    //     word-wrap: normal;
+    //     white-space: nowrap;
+    //     direction: ltr;
+    //     /* Support for all WebKit browsers. */
+    //     -webkit-font-smoothing: antialiased;
+    //     /* Support for Safari and Chrome. */
+    //     text-rendering: optimizeLegibility;
+    //     /* Support for Firefox. */
+    //     -moz-osx-font-smoothing: grayscale;
+    //     /* Support for IE. */
+    //     font-feature-settings: 'liga';
+    // }
     // .black-gold-theme {
     //     @include angular-material-theme($dark-theme);
     //     .mat-drawer-container {
