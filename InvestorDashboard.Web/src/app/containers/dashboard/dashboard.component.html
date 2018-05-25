@@ -1,12 +1,14 @@
 <div>
     <mat-card class="first">
         <mat-card-content>
+            <!-- <div class="block"> -->
+            <!-- <div class="left"> -->
             <h4>{{'clientInfo.Balance' | translate}}:
-                <!-- <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance + dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
-                <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p>
-                <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p>
+                <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance + dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}}</p>
+                <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
+                <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
             </h4>
-            <p *ngIf="dashboard.clientInfoModel.bonusBalance > 0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p>
+            <!-- <p *ngIf="dashboard.clientInfoModel.bonusBalance > 0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p> -->
             <div>
 
             </div>
@@ -15,6 +17,18 @@
                 {{dashboard.icoInfoModel.contractAddress}} -->
                 <!-- 0x049a5bf874f241d94232137ef728a9c7dd0d7550 -->
             </div>
+
+            <div>
+                Presale progress: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}}%
+                <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
+                </mat-progress-bar>
+            </div>
+            <!-- </div> -->
+            <!-- <div class="right">
+                    we pay BTC for referrals BUTTON TO REF PAGE. JUST REDIRECT
+                </div>
+            </div> -->
+
         </mat-card-content>
     </mat-card>
     <mat-card class="second">
@@ -56,10 +70,7 @@
                         <div class="title">{{currency.value}}</div>
                     </div>
                 </div>
-                <!-- <div>
-          <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
-          </mat-progress-bar>
-        </div> -->
+
             </div>
         </mat-card-content>
     </mat-card>
@@ -159,38 +170,40 @@
                                 </div>
                             </div>
 
-                            <!-- <div *ngIf="dashboard.paymentInfoList">
-                  <div class="token_calculator">
-                    <table cellspacing="0" style="width: 100%">
-                      <tbody>
-  
-                        <tr>
-                          <td>
-                            <div class="form-field">
-                              <div class="input-field">
-                                <input [(ngModel)]="calculateValue" pattern="\d*" type="number" min="1">
-                              </div>
-                              <span>{{calculatorFromBtc?selectedPaymentType.currency:'USD'}}</span>
-                            </div>
-                          </td>
-                          <td style="text-align: center;">
-                            <button (click)="toogleCalculator()" mat-icon-button>
+                            <div *ngIf="dashboard.paymentInfoList">
+
+                                <div class="token_calculator">
+                                    Calculate your purchase:
+                                    <table cellspacing="0" style="width: 100%">
+                                        <tbody>
+
+                                            <tr>
+                                                <td>
+                                                    <div class="form-field">
+                                                        <div class="input-field">
+                                                            <input [(ngModel)]="calculateValue" pattern="\d*" type="number" min="1">
+                                                        </div>
+                                                        <span>{{calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
+                                                    </div>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <button (click)="toogleCalculator()" mat-icon-button>
                               <mat-icon>swap_horiz</mat-icon>
                             </button>
-                          </td>
-                          <td>
-                            <div class="form-field result">
-                              <div class="input-field">
-                                <input disabled [(ngModel)]="calculatorFromBtc?selectedPaymentType.rate*calculateValue:calculateValue/selectedPaymentType.rate">
-                              </div>
-                              <span>{{!calculatorFromBtc?selectedPaymentType.currency:'USD'}}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="form-field">
+                                                        <div class="input-field">
+                                                            <input disabled [(ngModel)]="calculatorFromBtc?selectedPaymentType.rate*calculateValue:calculateValue/selectedPaymentType.rate">
+                                                        </div>
+                                                        <span>{{!calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div> -->
                         </div>
                         <div *ngIf="!selectedPaymentType">
                             <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>

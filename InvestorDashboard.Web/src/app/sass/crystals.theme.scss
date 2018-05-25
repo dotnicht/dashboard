@@ -1,7 +1,8 @@
 @import '~@angular/material/theming';
 @include mat-core();
-$light-primary-text: #fafafa;
-$mat-black: ( 50: #fafafa, 100: #f5f5f5, 200: #f1f3ff, 300: #e0e0e0, 400: #fafafa, 500: #fd6592, 600: #f1f3ff, 700: #f1f3ff, 800: #f1f3ff, 900: #606eac, A100: #f1f3ff, A200: #f1f3ff, A400: #f1f3ff, A700: #f1f3ff, contrast: ( 50: $dark-primary-text, 100: $dark-primary-text, 200: $dark-primary-text, 300: $light-primary-text, 400: $light-primary-text, 500: $light-primary-text, 600: $light-primary-text, 700: $light-primary-text, 800: $light-primary-text, 900: $light-primary-text, A100: $dark-primary-text, A200: $light-primary-text, A400: $light-primary-text, A700: $light-primary-text, ));
+$light-primary-text: #19181e;
+// $mat-black: ( 50: #fafafa, 100: #f5f5f5, 200: #f1f3ff, 300: #e0e0e0, 400: #fafafa, 500: #fd6592, 600: #f1f3ff, 700: #f1f3ff, 800: #f1f3ff, 900: #606eac, A100: #f1f3ff, A200: #f1f3ff, A400: #f1f3ff, A700: #f1f3ff, contrast: ( 50: $dark-primary-text, 100: $dark-primary-text, 200: $dark-primary-text, 300: $light-primary-text, 400: $light-primary-text, 500: $light-primary-text, 600: $light-primary-text, 700: $light-primary-text, 800: $light-primary-text, 900: $light-primary-text, A100: $dark-primary-text, A200: $light-primary-text, A400: $light-primary-text, A700: $light-primary-text, ));
+$mat-black: ( 50: #f1f3ff, 100: #f1f3ff, 200: #f1f3ff, 300: #e0e0e0, 400: #f1f3ff, 500: #e5dcfa, 600: #f1f3ff, 700: #f1f3ff, 800: #f1f3ff, 900: #606eac, A100: #f1f3ff, A200: #f1f3ff, A400: #f1f3ff, A700: #fafafa, contrast: ( 50: $dark-primary-text, 100: $dark-primary-text, 200: $dark-primary-text, 300: $light-primary-text, 400: $light-primary-text, 500: $light-primary-text, 600: $light-primary-text, 700: $light-primary-text, 800: $light-primary-text, 900: $light-primary-text, A100: $dark-primary-text, A200: $light-primary-text, A400: $light-primary-text, A700: $light-primary-text, ));
 // Define an alternate dark theme.
 $dark-primary: mat-palette($mat-black);
 $dark-accent: mat-palette($mat-amber, A200, A100, A300);
@@ -45,11 +46,14 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 .crystals-theme {
     @include angular-material-theme($dark-theme);
     .mat-drawer-container {
-        background: white;
-        // background-color: #303030 // background-image: url('/assets/img/main-background.jpg');
+        background: #f1f3ff;
+        background-position-y: bottom;
+        background-image: url('/assets/img/3.svg');
+        background-repeat: no-repeat;
     }
     .mat-card {
-        background-color: #f1f3ff //#2b2b2b;
+        background-color: #fafafa; //#2b2b2b;
+        color: #19181e !important;
     }
     .mat-toolbar-row,
     .mat-toolbar-single-row {
@@ -74,25 +78,42 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
     .black-gold-theme .mat-progress-bar-fill::after {
         background-color: #fc537f !important;
     }
-    // .btn-danger {
-    //     background-color: #222 !important;
-    // }
-    // .mat-input-element {
-    //     caret-color: rgba(255, 255, 255, 0.7) !important;
-    // }
-    // .mat-form-field-invalid .mat-input-element {
-    //     caret-color: #ff5722 !important;
-    // }
-    // .mat-form-field-label {
-    //     color: rgba(255, 255, 255, 0.7) !important;
-    // }
-    // .mat-form-field-invalid .mat-form-field-label {
-    //     color: #ff5722 !important;
-    // }
-    // .mat-form-field-ripple {
-    //     background-color: rgba(255, 255, 255, 0.7) !important;
-    // }
-    // .mat-form-field-invalid .mat-form-field-ripple {
-    //     background-color: #ff5722 !important;
-    // }
+    .mat-toolbar a {
+        color: #19181e !important;
+    }
+    .crystals-theme .mat-button .active {
+        color: red;
+    }
+    .btn-danger {
+        background-color: #222 !important;
+    }
+    .mat-input-element {
+        // caret-color: rgba(255, 255, 255, 0.7) !important;
+        caret-color: #e5dcfa !important;
+    }
+    .mat-form-field-invalid .mat-input-element {
+        caret-color: #ff5722 !important;
+    }
+    .mat-form-field-label {
+        color: #e5dcfa !important;
+    }
+    .mat-form-field-invalid .mat-form-field-label {
+        color: #ff5722 !important;
+    }
+    .mat-form-field-ripple {
+        background-color: #e5dcfa !important;
+    }
+    .mat-form-field-invalid .mat-form-field-ripple {
+        background-color: #ff5722 !important;
+    }
+    .mat-form-field-underline {
+        background-color: #e5dcfa !important;
+    }
+    .mat-menu-item {
+        background-color: #e5dcfa !important;
+        color: #19181e !important;
+    }
+    .mat-menu-panel {
+        background-color: #e5dcfa !important;
+    }
 }
