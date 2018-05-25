@@ -11,6 +11,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
         public decimal TokenPrice { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsReferralSystemDisabled { get; set; }
+        public bool IsKycSystemDisabled { get; set; }
         public long? KycBonus { get; set; }
         public List<CurrencyValue> Currencies { get; set; }
 
