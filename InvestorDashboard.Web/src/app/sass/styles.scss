@@ -180,7 +180,7 @@ app-register_presale {
 .mat-drawer-content {
     >.main-content {
         // min-height: 540px;
-        min-height: calc(100% - 70px - 50px); // footer height, header height
+        min-height: calc(100% - 70px - 64px); // footer height, header height
     }
 }
 
