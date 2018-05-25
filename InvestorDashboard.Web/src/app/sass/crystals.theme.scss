@@ -51,6 +51,10 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
     background-image: url('/assets/img/3.svg');
     background-repeat: no-repeat;
   }
+  .mat-dialog-container {
+    background: #ebeeff;
+    color: black;
+  }
   .mat-card {
     background-color: #fafafa; //#2b2b2b;
     color: #19181e;
@@ -62,15 +66,6 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
     padding-top: 0px;
     padding-bottom: 8px;
   }
-  .mat-raised-button {
-    // &.btn-danger {
-    //     color: #fff;
-    //     background-color: #ac2925;
-    //     border-color: #761c19;
-    // }
-    background-color: #fc537f ;
-    color: white ;
-  }
   .mat-checkbox-checked.mat-primary .mat-checkbox-background {
     background-color: #fc537f;
   }
@@ -78,13 +73,13 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
     background-color: #fc537f;
   }
   .mat-toolbar a {
-    color: #19181e ;
+    color: #19181e;
   }
   .crystals-theme .mat-button .active {
     color: red;
   }
   .btn-danger {
-    background-color: #222 ;
+    background-color: #222;
   }
   .mat-input-element {
     // caret-color: rgba(255, 255, 255, 0.7) ;
@@ -94,25 +89,55 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
     // caret-color: #ff5722 ;
   }
   .mat-form-field-label {
-    color: #e5dcfa ;
+    color: #e5dcfa;
   }
   .mat-form-field-invalid .mat-form-field-label {
-    color: #ff5722 ;
+    color: #ff5722;
   }
   .mat-form-field-ripple {
-    background-color: #e5dcfa ;
+    background-color: #e5dcfa;
   }
   .mat-form-field-invalid .mat-form-field-ripple {
-    background-color: #ff5722 ;
+    background-color: #ff5722;
   }
   .mat-form-field-underline {
-    background-color: #e5dcfa ;
+    background-color: #e5dcfa;
   }
   .mat-menu-item {
-    background-color: #e5dcfa ;
-    color: #19181e ;
+    background-color: #e5dcfa;
+    color: #19181e;
   }
   .mat-menu-panel {
-    background-color: #e5dcfa ;
+    background-color: #e5dcfa;
+  }
+  .mat-raised-button.mat-primary[disabled],
+  .mat-raised-button.mat-accent[disabled],
+  .mat-raised-button.mat-warn[disabled],
+  .mat-raised-button[disabled][disabled],
+  .mat-fab.mat-primary[disabled],
+  .mat-fab.mat-accent[disabled],
+  .mat-fab.mat-warn[disabled],
+  .mat-fab[disabled][disabled],
+  .mat-mini-fab.mat-primary[disabled],
+  .mat-mini-fab.mat-accent[disabled],
+  .mat-mini-fab.mat-warn[disabled],
+  .mat-mini-fab[disabled][disabled] {
+    background-color: #fc537f;
+  }
+  .mat-raised-button,
+  .mat-fab,
+  .mat-mini-fab {
+    &.mat-primary {
+      color: white;
+      background-color: #fc537f;
+    }
+    color: white;
+    background-color: #fc537f;
+  }
+  .mat-checkbox-frame {
+    border-color: #fc537f;
+  }
+  .mat-checkbox-checkmark-path {
+    stroke: white !important;
   }
 }
