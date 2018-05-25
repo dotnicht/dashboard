@@ -293,7 +293,6 @@ export class AuthService {
   private processLoginResponse(response: Response, rememberMe: boolean, tfValidate: boolean = false) {
 
     const response_token = response.json();
-    console.log("OPpp",response )
     const accessToken = response_token.access_token;
 
     if (accessToken == null) {
