@@ -12,6 +12,7 @@ import { ClientInfoEndpointService } from './client-info.service';
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     private isReferralSystemDisabled: boolean;
+    private isAdmin: boolean;
 
     constructor(
         private authService: AuthService,
@@ -22,6 +23,9 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
         this.clientInfoEndpointService.icoInfo$.subscribe(data => {
             this.isReferralSystemDisabled = data.isReferralSystemDisabled;
         })
+        this.clientInfoEndpointService.clientInfo$.subscribe(data => {
+            this.isAdmin = data.isAdmin;
+           });
     }
 
 
@@ -43,6 +47,11 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     checkLogin(url: string): boolean {
         if (this.authService.isLoggedIn) {
             if (url == '/referral' && this.isReferralSystemDisabled) {
+                this.router.navigate(['/dashboard']);
+                return false;
+            }
+
+            if (url == '/admin-panel' && !this.isAdmin) {
                 this.router.navigate(['/dashboard']);
                 return false;
             }

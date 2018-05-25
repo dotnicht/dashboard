@@ -29,6 +29,7 @@ export class AppComponent implements OnInit {
   isAppLoaded: boolean;
   isUserLoggedIn: boolean;
   isReferralSystemDisabled = true;
+  isAdmin = false;
   queryParams: any = null;
 
   public year: number;
@@ -87,8 +88,12 @@ export class AppComponent implements OnInit {
 
     this.clientInfoEndpointService.icoInfo$.subscribe(data => {
       this.isReferralSystemDisabled = data.isReferralSystemDisabled;
+      
     });
 
+    this.clientInfoEndpointService.clientInfo$.subscribe(data => {
+     this.isAdmin = data.isAdmin;
+    });
 
     this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
       this.isUserLoggedIn = isLoggedIn;
