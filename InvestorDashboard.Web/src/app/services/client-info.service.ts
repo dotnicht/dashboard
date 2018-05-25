@@ -21,6 +21,8 @@ export class ClientInfoEndpointService extends BaseService implements OnInit {
     public clientInfo: ClientInfo = new ClientInfo();
     public icoInfo$ = new BehaviorSubject(new IcoInfo());
 
+    public clientInfo$ = new BehaviorSubject(new ClientInfo());
+
 
     private readonly _clientInfoUrl: string = environment.host + '/dashboard/client_info';
 
@@ -43,6 +45,7 @@ export class ClientInfoEndpointService extends BaseService implements OnInit {
             model.bonusBalance = Math.round(model.bonusBalance * 100) / 100;
             model.summary = Math.round((model.balance + model.bonusBalance) * 100) / 100;
             this.clientInfo = model;
+            this.clientInfo$.next(model);
 
         });
         this.dashboardEndpoint.getIcoInfo().subscribe(data => {

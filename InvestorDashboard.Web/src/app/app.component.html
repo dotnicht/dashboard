@@ -28,7 +28,11 @@
                 <mat-icon mat-list-icon>swap_horiz</mat-icon>
                 <span mat-line>{{'mainMenu.Referral' | translate}}</span>
             </a>
-
+            <a *ngIf="isUserLoggedIn && isAdmin" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/admin-panel']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+                (click)="start.close()">
+                <mat-icon mat-list-icon>control_point_duplicate</mat-icon>
+                <span mat-line>Admin Panel</span>
+            </a>
             <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/dashboard']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
                 (click)="start.close()">
                 <mat-icon mat-list-icon>dashboard</mat-icon>
@@ -80,7 +84,7 @@
                     <mat-icon>help</mat-icon>
                     <span>{{'mainMenu.Faq' | translate}}</span>
                   </button>
-                <button [routerLink]="['/admin-panel']" *ngIf="isUserLoggedIn" mat-button>
+                <button [routerLink]="['/admin-panel']" *ngIf="isUserLoggedIn && isAdmin" mat-button>
                         <mat-icon>control_point_duplicate</mat-icon>
                         <span>Admin Panel</span>
                       </button>

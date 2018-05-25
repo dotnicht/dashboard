@@ -4,12 +4,14 @@
         margin: 0 auto;
     }
     .user-details {
+        margin-top: 10px;
+        margin-bottom: 10px;
         .info-block {
             display: flex;
             line-height: 2.5em;
             align-items: center;
             .info-label {
-                width: 115px;
+                width: 300px;
                 align-items: center;
                 display: flex;
             }
