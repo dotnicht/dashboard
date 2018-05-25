@@ -8,5 +8,6 @@
         public bool ThresholdExceeded { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsEligibleForTransfer { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

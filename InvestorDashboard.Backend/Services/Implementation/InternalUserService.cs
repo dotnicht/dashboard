@@ -1,4 +1,5 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class InternalUserService : ContextService, IInternalUserService
     {
+        private static readonly Guid _internalTransactionHash = Guid.Parse("55D46758-F52B-4E11-A757-299365320EB6");
+        private static readonly Guid _managementTransactionHash = Guid.Parse("00278F09-3292-4BA1-A7B5-1C8F6F1024A5");
+
         private readonly IResourceService _resourceService;
         private readonly ITokenService _tokenService;
         private readonly IGenericAddressService _genericAddressService;
@@ -32,6 +36,63 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
         }
 
+        public async Task<(Guid Id, CryptoTransaction[] Transactions)?> GetManagementTransactions(string email)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
+            using (var ctx = CreateContext())
+            {
+                var user = await ctx.Users
+                    .Include(x => x.CryptoAddresses)
+                    .ThenInclude(x => x.CryptoTransactions)
+                    .SingleOrDefaultAsync(x => x.Email == email.Trim());
+
+                if (user == null)
+                {
+                    Logger.LogError($"User not found. Email: {email}.");
+                    return null;
+                }
+
+                return GetManagementTransactionsInternal(user);
+            }
+        }
+
+        public async Task<(Guid Id, CryptoTransaction[] Transactions)?> GetManagementTransactions(Guid userId)
+        {
+            using (var ctx = CreateContext())
+            {
+                var user = await ctx.Users
+                    .Include(x => x.CryptoAddresses)
+                    .ThenInclude(x => x.CryptoTransactions)
+                    .SingleOrDefaultAsync(x => x.Id == userId.ToString());
+
+                if (user == null)
+                {
+                    Logger.LogError($"User not found. ID: {userId}.");
+                    return null;
+                }
+
+                return GetManagementTransactionsInternal(user);
+            }
+        }
+
+        public async Task AddManagementTransaction(Guid userId, long amount)
+        {
+            using (var ctx = CreateContext())
+            {
+                var user = ctx.Users.SingleOrDefault(x => x.Id == userId.ToString());
+                if (user == null)
+                {
+                    throw new InvalidOperationException($"User not found. ID: {userId}.");
+                }
+
+                await CreateInternalTransaction(amount, Guid.NewGuid(), _managementTransactionHash, ctx, user);
+            }
+        }
+
         public async Task SynchronizeInternalUsersData()
         {
             using (var ctx = CreateContext())
@@ -48,24 +109,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                             if (user == null)
                             {
-                                throw new InvalidOperationException($"User not found with email {record.Email}.");
+                                throw new InvalidOperationException($"User not found. Email: {record.Email}.");
                             }
 
-                            var address = await _genericAddressService.EnsureInternalAddress(user);
-
-                            var tx = new CryptoTransaction
-                            {
-                                Amount = record.Tokens.ToString(),
-                                ExternalId = record.Guid,
-                                CryptoAddressId = address.Id,
-                                Direction = CryptoTransactionDirection.Internal,
-                                Timestamp = DateTime.UtcNow
-                            };
-
-                            await ctx.CryptoTransactions.AddAsync(tx);
-                            await ctx.SaveChangesAsync();
-
-                            await _tokenService.RefreshTokenBalance(user.Id);
+                            await CreateInternalTransaction(record.Tokens, record.Guid, _internalTransactionHash, ctx, user);
                         }
                         catch (Exception ex)
                         {
@@ -74,6 +121,37 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
+        }
+
+        private static (Guid Id, CryptoTransaction[] Transactions) GetManagementTransactionsInternal(ApplicationUser user)
+        {
+            var transactions = user.CryptoAddresses
+                .SingleOrDefault(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal && !x.IsDisabled)
+                ?.CryptoTransactions
+                .Where(x => x.Hash == _managementTransactionHash.ToString())
+                .ToArray();
+
+            return (Id: Guid.Parse(user.Id), Transactions: transactions);
+        }
+
+        private async Task CreateInternalTransaction(long amount, Guid externalId, Guid hash, ApplicationDbContext ctx, ApplicationUser user)
+        {
+            var address = await _genericAddressService.EnsureInternalAddress(user);
+
+            var tx = new CryptoTransaction
+            {
+                Amount = amount.ToString(),
+                ExternalId = externalId,
+                CryptoAddressId = address.Id,
+                Direction = CryptoTransactionDirection.Internal,
+                Timestamp = DateTime.UtcNow,
+                Hash = hash.ToString()
+            };
+
+            await ctx.CryptoTransactions.AddAsync(tx);
+            await ctx.SaveChangesAsync();
+
+            await _tokenService.RefreshTokenBalance(user.Id);
         }
 
         private class InternalUserDataRecord

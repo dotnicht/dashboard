@@ -53,8 +53,8 @@ namespace InvestorDashboard.Backend.Database
             builder.UseOpenIddict();
 
             builder.Entity<CryptoTransaction>()
-                .HasIndex(x => x.Hash)
-                .IsUnique(false);
+                .HasIndex(x => new { x.Hash, x.Direction })
+                .IsUnique(true);
 
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.ExternalId)

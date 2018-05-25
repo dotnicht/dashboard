@@ -1,7 +1,9 @@
-﻿namespace InvestorDashboard.Backend.ConfigurationSections
+﻿using System;
+
+namespace InvestorDashboard.Backend.ConfigurationSections
 {
     public class CommonSettings
     {
-        public string AdminUserId { get; set; }
+        public Guid AdminUserId { get; set; }
     }
 }

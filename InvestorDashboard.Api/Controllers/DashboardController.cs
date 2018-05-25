@@ -29,6 +29,7 @@ namespace InvestorDashboard.Api.Controllers
         private readonly ITokenService _tokenService;
         private readonly IReferralService _referralService;
         private readonly IKycService _kycService;
+        private readonly IInternalUserService _internalUserService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<TokenSettings> _tokenSettings;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
@@ -42,6 +43,8 @@ namespace InvestorDashboard.Api.Controllers
                 .Include(x => x.CryptoAddresses)
                 .SingleOrDefault(x => x.UserName == User.Identity.Name);
 
+        private bool IsAdmin => _commonSettings.Value.AdminUserId == Guid.Parse(ApplicationUser.Id);
+
         public DashboardController(
             ApplicationDbContext context,
             IExchangeRateService exchangeRateService,
@@ -50,6 +53,7 @@ namespace InvestorDashboard.Api.Controllers
             ITokenService tokenService,
             IReferralService referralService,
             IKycService kycService,
+            IInternalUserService internalUserService,
             UserManager<ApplicationUser> userManager,
             IOptions<TokenSettings> tokenSettings,
             IOptions<EthereumSettings> ethereumSettings,
@@ -65,7 +69,8 @@ namespace InvestorDashboard.Api.Controllers
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _referralService = referralService ?? throw new ArgumentNullException(nameof(referralService));
-            this._kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
+            _kycService = kycService ?? throw new ArgumentNullException(nameof(kycService));
+            _internalUserService = internalUserService ?? throw new ArgumentNullException(nameof(internalUserService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _tokenSettings = tokenSettings ?? throw new ArgumentNullException(nameof(tokenSettings));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
@@ -237,6 +242,65 @@ namespace InvestorDashboard.Api.Controllers
             return Ok();
         }
 
+        [Authorize, HttpGet("management"), Produces("application/json")]
+        public async Task<IActionResult> GetManagementData(string email)
+        {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
+            if (!IsAdmin)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _internalUserService.GetManagementTransactions(email);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            var model = new ManagementModel
+            {
+                Id = result.Value.Id,
+                Transactions = _mapper.Map<ManagementModel.ManagementTransaction[]>(result.Value.Transactions)
+            };
+
+            return Ok(model);
+        }
+
+        [Authorize, HttpPost("management"), Produces("application/json")]
+        public async Task<IActionResult> PostManagementData(ManagementUpdateModel updateModel)
+        {
+            if (updateModel == null)
+            {
+                throw new ArgumentNullException(nameof(updateModel));
+            }
+
+            if (!IsAdmin)
+            {
+                return Unauthorized();
+            }
+
+            await _internalUserService.AddManagementTransaction(updateModel.Id, updateModel.Amount);
+            var result = await _internalUserService.GetManagementTransactions(updateModel.Id);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            var model = new ManagementModel
+            {
+                Id = result.Value.Id,
+                Transactions = _mapper.Map<ManagementModel.ManagementTransaction[]>(result.Value.Transactions)
+            };
+
+            return Ok(model);
+        }
+
         private async Task<ClientInfoModel> GetClientInfoModel()
         {
             var user = _mapper.Map<ClientInfoModel>(ApplicationUser);
@@ -246,6 +310,8 @@ namespace InvestorDashboard.Api.Controllers
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
 
             user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
+
+            user.IsAdmin = IsAdmin;
 
             return user;
         }
@@ -269,7 +335,7 @@ namespace InvestorDashboard.Api.Controllers
 
         private async Task<PaymentInfoModel[]> GetPaymentInfoModel()
         {
-            if (ApplicationUser.IsTokenSaleDisabled || (_tokenSettings.Value.IsTokenSaleDisabled && ApplicationUser.Id != _commonSettings.Value.AdminUserId))
+            if (ApplicationUser.IsTokenSaleDisabled || (_tokenSettings.Value.IsTokenSaleDisabled && !IsAdmin))
             {
                 return new PaymentInfoModel[0];
             }
