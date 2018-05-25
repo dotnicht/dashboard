@@ -80,6 +80,10 @@
                     <mat-icon>help</mat-icon>
                     <span>{{'mainMenu.Faq' | translate}}</span>
                   </button>
+                <button [routerLink]="['/admin-panel']" *ngIf="isUserLoggedIn" mat-button>
+                        <mat-icon>control_point_duplicate</mat-icon>
+                        <span>Admin Panel</span>
+                      </button>
                 <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
                     <mat-icon>account_circle</mat-icon>
                     <span>{{userName}}</span>

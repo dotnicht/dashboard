@@ -7,6 +7,9 @@ import { FormsModule } from "@angular/forms";
 import { HttpClientModule } from "@angular/common/http";
 import { TranslateModule, TranslateLoader } from "@ngx-translate/core";
 import { TranslateLanguageLoader, AppTranslationService } from "../../services/app-translation.service";
+import { AdminPanelService } from "../../services/admin-panel.service";
+import { AuthService } from "../../services/auth.service";
+import { HttpModule } from "@angular/http";
 
 @NgModule({
     declarations: [
@@ -18,7 +21,6 @@ import { TranslateLanguageLoader, AppTranslationService } from "../../services/a
         MaterialModule,
         RouterModule,
         FormsModule,
-        HttpClientModule,
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
@@ -28,8 +30,8 @@ import { TranslateLanguageLoader, AppTranslationService } from "../../services/a
     ],
     providers: [
         AppTranslationService,
-        // ClientInfoEndpointService,
-        // DashboardEndpoint
+        AdminPanelService,
+        AuthService
     ],
     entryComponents: [
         ConfirmExtraTokensDialogComponent

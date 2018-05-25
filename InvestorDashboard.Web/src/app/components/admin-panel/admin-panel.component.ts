@@ -1,6 +1,7 @@
 ﻿import { Component, Inject } from '@angular/core';
 import { MatSlideToggleChange, MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { DOCUMENT } from '@angular/platform-browser';
+import { AdminPanelService } from '../../services/admin-panel.service';
 
 @Component({
     selector: 'app-admin-panel',
@@ -12,10 +13,13 @@ export class AdminPanelComponent {
     /** adminPanel ctor */
     confirmExtraTokensDialogRef: MatDialogRef<ConfirmExtraTokensDialogComponent> | null;
     email: string;
-    currentBalance: number = 100500;
-    currentBonuce: number = 100600;
     extraTokens: number;
+    private userGuid: string;
+    userTransactions: any[];
+    showUserTransactions: boolean;
+
     constructor(private dialog: MatDialog,
+        private adminService: AdminPanelService,
         @Inject(DOCUMENT) doc: any) {
 
         dialog.afterOpen.subscribe(() => {
@@ -29,7 +33,19 @@ export class AdminPanelComponent {
     }
 
     findEmail() {
+        //dd.aa.nn.1.kk@gmail.com
         console.log('email', this.email);
+        this.showUserTransactions = null;
+        if (this.email && this.email.length > 0) {
+            this.adminService.getUserTransactionsByEmail(this.email).subscribe(resp=> {
+                let response = resp.json();
+                if ('id' in response && 'transactions' in response) {
+                    this.userGuid = response.id;
+                    this.userTransactions = response.transactions;
+                    this.showUserTransactions = true;
+                }
+            })
+        }      
     }
 
     enterTokens() {
@@ -39,6 +55,9 @@ export class AdminPanelComponent {
         this.confirmExtraTokensDialogRef = this.dialog.open(ConfirmExtraTokensDialogComponent, config);
         this.confirmExtraTokensDialogRef.afterClosed().subscribe((result) => {
             if (result == true) {
+                this.adminService.setTokensToUser(this.userGuid, this.extraTokens).subscribe(resp=> {
+                    console.log("RESP", resp)
+                });
                 console.log(1123)
                 // this.referralService.changeReferralInfo(currencyAcronym, item.address).subscribe();
                 // item.isEditModeRefAddress = false;

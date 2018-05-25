@@ -7,13 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="dist\**" />
     <Compile Remove="e2e\**" />
+    <Compile Remove="src\**" />
     <Compile Remove="wwwroot\**" />
+    <Content Remove="dist\**" />
     <Content Remove="e2e\**" />
+    <Content Remove="src\**" />
     <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="dist\**" />
     <EmbeddedResource Remove="e2e\**" />
+    <EmbeddedResource Remove="src\**" />
     <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="dist\**" />
     <None Remove="e2e\**" />
+    <None Remove="src\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
