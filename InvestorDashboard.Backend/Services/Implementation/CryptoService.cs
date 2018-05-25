@@ -30,6 +30,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
         protected ITokenService TokenService { get; }
         protected IMapper Mapper { get; }
 
+        protected Func<CryptoAddress, bool> ReferralTransferAddressSelector
+        {
+            get => x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled;
+        }
+
         private Expression<Func<CryptoAddress, bool>> InboundAddressSelector
         {
             get => x => x.Currency == Settings.Value.Currency
@@ -37,11 +42,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 && x.User.ExternalId == null
                 && x.User.EmailConfirmed
                 && (!x.IsDisabled || Settings.Value.ImportDisabledAddressesTransactions);
-        }
-
-        private Func<CryptoAddress, bool> ReferralTransferAddressSelector
-        {
-            get => x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Referral && !x.IsDisabled;
         }
 
         protected CryptoService(
@@ -122,7 +122,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                         using (var ctx = CreateContext())
                         {
-                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash && x.CryptoAddressId == address.Id && x.Index == transaction.Index))
+                            if (!ctx.CryptoTransactions.Any(x => x.Hash == transaction.Hash && x.CryptoAddressId == address.Id && x.Direction == transaction.Direction))
                             {
                                 transaction.CryptoAddressId = address.Id;
 
@@ -170,11 +170,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
+                var destination = await EnsureInternalDestinationAddress(ctx);
+
                 if (!ReferralSettings.Value.IsDisabled)
                 {
-                    var transactions = GetReferralTransferAddresses(ctx);
-
-                    foreach (var tx in transactions)
+                    foreach (var tx in GetReferralTransferAddresses(ctx))
                     {
                         var inbound = tx.First().CryptoAddress;
                         var referral = inbound.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector);
@@ -188,8 +188,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             await ctx.SaveChangesAsync();
                         }
 
-                        var destination = await EnsureInternalDestinationAddress(ctx);
-
                         (hash, adjustedAmount, success) = await PublishTransaction(inbound, destination.Address, balance - value);
                         if (success)
                         {
@@ -199,12 +197,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
 
-                var address = await EnsureInternalDestinationAddress(ctx);
-                var source = GetTransferTransactions(ctx);
-
-                foreach (var tx in source)
+                foreach (var tx in GetTransferTransactions(ctx))
                 {
-                    var (hash, adjustedAmount, success) = await PublishTransaction(tx.CryptoAddress, address.Address);
+                    var (hash, adjustedAmount, success) = await PublishTransaction(tx.CryptoAddress, destination.Address);
                     if (success)
                     {
                         tx.IsSpent = true;
@@ -303,6 +298,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected async Task<CryptoAddress> EnsureInternalDestinationAddress(ApplicationDbContext ctx)
         {
+            if (ctx.Users.All(x => x.Id != Settings.Value.InternalTransferUserId))
+            {
+                throw new InvalidOperationException($"Invalid user id for internal transfer: {Settings.Value.InternalTransferUserId}.");
+            }
+
             CryptoAddress GetInternalCryptoAddress()
             {
                 return ctx.CryptoAddresses
@@ -329,7 +329,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         x => x.UserId == Settings.Value.InternalTransferUserId
                         && x.Currency == Settings.Value.Currency
                         && x.Type == CryptoAddressType.Internal
-                        && !x.IsDisabled && x.Address == record.Address))
+                        && !x.IsDisabled 
+                        && x.Address == record.Address))
                     {
                         await CreateAddressInternal(Settings.Value.InternalTransferUserId, CryptoAddressType.Internal, record.Address);
                     }
@@ -353,7 +354,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(ctx));
             }
 
-            return ctx.CryptoTransactions
+            var a = ctx.CryptoTransactions
                 .Include(x => x.CryptoAddress)
                 .ThenInclude(x => x.User)
                 .ThenInclude(x => x.ReferralUser)
@@ -365,7 +366,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     && x.CryptoAddress.Type == CryptoAddressType.Investment
                     && x.CryptoAddress.User.ExternalId == null
                     && x.CryptoAddress.User.ReferralUserId != null)
-                .ToArray()
+                .ToArray();
+
+            return a
                 .Where(x => x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(ReferralTransferAddressSelector))
                 .GroupBy(x => x.CryptoAddress.UserId)
                 .ToArray();
@@ -383,7 +386,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .Where(
                     x => !x.IsSpent
                     && x.ExternalId == null
-                    && x.Direction == CryptoTransactionDirection.Inbound
+                    && (x.Direction == CryptoTransactionDirection.Inbound || x.Direction == CryptoTransactionDirection.Change)
                     && x.CryptoAddress.Currency == Settings.Value.Currency
                     && !x.CryptoAddress.IsDisabled
                     && x.CryptoAddress.Type == CryptoAddressType.Investment
