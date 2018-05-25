@@ -255,8 +255,7 @@ namespace InvestorDashboard.Api.Controllers
                 return Unauthorized();
             }
 
-            var result = await GetManagementModel(email);
-            return Ok(result);
+            return Ok(await GetManagementModel(email));
         }
 
         [Authorize, HttpPost("management"), Produces("application/json")]
@@ -273,8 +272,7 @@ namespace InvestorDashboard.Api.Controllers
             }
 
             var email = await _internalUserService.AddManagementTransaction(model.Id, model.Amount);
-            var result = await GetManagementModel(email);
-            return Ok(result);
+            return Ok(await GetManagementModel(email));
         }
 
         private async Task<ManagementModel> GetManagementModel(string email)
@@ -296,6 +294,8 @@ namespace InvestorDashboard.Api.Controllers
                 && await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id);
 
             user.ThresholdExceeded = user.Balance > _tokenSettings.Value.BalanceThreshold;
+
+            user.IsAdmin = IsAdmin;
 
             return user;
         }
