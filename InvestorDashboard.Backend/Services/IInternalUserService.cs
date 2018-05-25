@@ -7,7 +7,8 @@ namespace InvestorDashboard.Backend.Services
     public interface IInternalUserService
     {
         Task SynchronizeInternalUsersData();
-        Task<(Guid Id, CryptoTransaction[] Transactions)> GetManagementTransactions(string email);
-        Task<string> AddManagementTransaction(Guid userId, long amount);
+        Task<(Guid Id, CryptoTransaction[] Transactions)?> GetManagementTransactions(string email);
+        Task<(Guid Id, CryptoTransaction[] Transactions)?> GetManagementTransactions(Guid userId);
+        Task AddManagementTransaction(Guid userId, long amount);
     }
 }

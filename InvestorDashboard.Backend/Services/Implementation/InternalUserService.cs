@@ -36,7 +36,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _genericAddressService = genericAddressService ?? throw new ArgumentNullException(nameof(genericAddressService));
         }
 
-        public async Task<(Guid Id, CryptoTransaction[] Transactions)> GetManagementTransactions(string email)
+        public async Task<(Guid Id, CryptoTransaction[] Transactions)?> GetManagementTransactions(string email)
         {
             if (email == null)
             {
@@ -45,27 +45,41 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var user = ctx.Users
+                var user = await ctx.Users
                     .Include(x => x.CryptoAddresses)
                     .ThenInclude(x => x.CryptoTransactions)
-                    .SingleOrDefault(x => x.Email == email.Trim());
+                    .SingleOrDefaultAsync(x => x.Email == email.Trim());
 
                 if (user == null)
                 {
-                    throw new InvalidOperationException($"User not found. Email: {email}.");
+                    Logger.LogError($"User not found. Email: {email}.");
+                    return null;
                 }
 
-                var transactions = user.CryptoAddresses
-                    .SingleOrDefault(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal && !x.IsDisabled)
-                    ?.CryptoTransactions
-                    .Where(x => x.Hash == _managementTransactionHash.ToString())
-                    .ToArray();
-
-                return (Id: Guid.Parse(user.Id), Transactions: transactions);
+                return GetManagementTransactionsInternal(user);
             }
         }
 
-        public async Task<string> AddManagementTransaction(Guid userId, long amount)
+        public async Task<(Guid Id, CryptoTransaction[] Transactions)?> GetManagementTransactions(Guid userId)
+        {
+            using (var ctx = CreateContext())
+            {
+                var user = await ctx.Users
+                    .Include(x => x.CryptoAddresses)
+                    .ThenInclude(x => x.CryptoTransactions)
+                    .SingleOrDefaultAsync(x => x.Id == userId.ToString());
+
+                if (user == null)
+                {
+                    Logger.LogError($"User not found. ID: {userId}.");
+                    return null;
+                }
+
+                return GetManagementTransactionsInternal(user);
+            }
+        }
+
+        public async Task AddManagementTransaction(Guid userId, long amount)
         {
             using (var ctx = CreateContext())
             {
@@ -76,7 +90,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 }
 
                 await CreateInternalTransaction(amount, Guid.NewGuid(), _managementTransactionHash, ctx, user);
-                return user.Email;
             }
         }
 
@@ -108,6 +121,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
+        }
+
+        private static (Guid Id, CryptoTransaction[] Transactions) GetManagementTransactionsInternal(ApplicationUser user)
+        {
+            var transactions = user.CryptoAddresses
+                .SingleOrDefault(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal && !x.IsDisabled)
+                ?.CryptoTransactions
+                .Where(x => x.Hash == _managementTransactionHash.ToString())
+                .ToArray();
+
+            return (Id: Guid.Parse(user.Id), Transactions: transactions);
         }
 
         private async Task CreateInternalTransaction(long amount, Guid externalId, Guid hash, ApplicationDbContext ctx, ApplicationUser user)

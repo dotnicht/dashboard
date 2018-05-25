@@ -255,15 +255,28 @@ namespace InvestorDashboard.Api.Controllers
                 return Unauthorized();
             }
 
-            return Ok(await GetManagementModel(email));
+            var result = await _internalUserService.GetManagementTransactions(email);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            var model = new ManagementModel
+            {
+                Id = result.Value.Id,
+                Transactions = _mapper.Map<ManagementModel.ManagementTransaction[]>(result.Value.Transactions)
+            };
+
+            return Ok(model);
         }
 
         [Authorize, HttpPost("management"), Produces("application/json")]
-        public async Task<IActionResult> PostManagementData(ManagementUpdateModel model)
+        public async Task<IActionResult> PostManagementData(ManagementUpdateModel updateModel)
         {
-            if (model == null)
+            if (updateModel == null)
             {
-                throw new ArgumentNullException(nameof(model));
+                throw new ArgumentNullException(nameof(updateModel));
             }
 
             if (!IsAdmin)
@@ -271,18 +284,21 @@ namespace InvestorDashboard.Api.Controllers
                 return Unauthorized();
             }
 
-            var email = await _internalUserService.AddManagementTransaction(model.Id, model.Amount);
-            return Ok(await GetManagementModel(email));
-        }
+            await _internalUserService.AddManagementTransaction(updateModel.Id, updateModel.Amount);
+            var result = await _internalUserService.GetManagementTransactions(updateModel.Id);
 
-        private async Task<ManagementModel> GetManagementModel(string email)
-        {
-            var (id, transactions) = await _internalUserService.GetManagementTransactions(email);
-            return new ManagementModel
+            if (result == null)
             {
-                Id = id,
-                Transactions = _mapper.Map<ManagementModel.ManagementTransaction[]>(transactions)
+                return NotFound();
+            }
+
+            var model = new ManagementModel
+            {
+                Id = result.Value.Id,
+                Transactions = _mapper.Map<ManagementModel.ManagementTransaction[]>(result.Value.Transactions)
             };
+
+            return Ok(model);
         }
 
         private async Task<ClientInfoModel> GetClientInfoModel()
