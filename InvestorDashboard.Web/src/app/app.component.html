@@ -84,7 +84,7 @@
                     <mat-icon>help</mat-icon>
                     <span>{{'mainMenu.Faq' | translate}}</span>
                   </button>
-                <button [routerLink]="['/admin-panel']" *ngIf="isUserLoggedIn && isAdmin" mat-button>
+                <button [routerLink]="['/admin-panel']"  mat-button routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
                         <mat-icon>control_point_duplicate</mat-icon>
                         <span>Admin Panel</span>
                       </button>
