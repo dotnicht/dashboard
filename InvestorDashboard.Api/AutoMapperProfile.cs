@@ -33,6 +33,8 @@ namespace InvestorDashboard.Api
 
             CreateMap<ApplicationUser, ClientInfoModel>();
             CreateMap<UserProfileViewModel, ApplicationUser>();
+
+            CreateMap<CryptoTransaction, ManagementModel.ManagementTransaction>();
         }
     }
 }
