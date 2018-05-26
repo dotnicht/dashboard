@@ -50,15 +50,23 @@ export class AdminPanelComponent {
 
     enterTokens() {
         let config = {
-            data: {kek: this.extraTokens}
+            data: {
+                extraTokens: this.extraTokens,
+                email: this.email
+            }
         }
         this.confirmExtraTokensDialogRef = this.dialog.open(ConfirmExtraTokensDialogComponent, config);
         this.confirmExtraTokensDialogRef.afterClosed().subscribe((result) => {
             if (result == true) {
                 this.adminService.setTokensToUser(this.userGuid, this.extraTokens).subscribe(resp=> {
-                    console.log("RESP", resp)
+                    let response = resp.json();
+                    if ('id' in response && 'transactions' in response) {
+                        this.userGuid = response['id'];
+                        this.userTransactions = response['transactions'];
+                        this.showUserTransactions = true;
+                    }
+
                 });
-                console.log(1123)
                 // this.referralService.changeReferralInfo(currencyAcronym, item.address).subscribe();
                 // item.isEditModeRefAddress = false;
                 // item.readonlyRefAddress = !item.isEditModeRefAddress;
