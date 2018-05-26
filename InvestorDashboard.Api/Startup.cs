@@ -49,7 +49,7 @@ namespace InvestorDashboard.Api
 
             services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString(ApplicationDbContext.DefaultConnectionStringName)));
 
-            services.Configure<MvcOptions>(options => options.Filters.Add(new RequireHttpsAttribute()));
+            //services.Configure<MvcOptions>(options => options.Filters.Add(new RequireHttpsAttribute()));
 
             // Register the OpenIddict services.
             services.AddOpenIddict(options =>
@@ -106,9 +106,9 @@ namespace InvestorDashboard.Api
 
             app.UseHangfireServer();
 
-            var options = new RewriteOptions().AddRedirectToHttps();
+            //var options = new RewriteOptions().AddRedirectToHttps();
 
-            app.UseRewriter(options);
+            //app.UseRewriter(options);
 
             app.UseCors(builder => builder
                 .AllowAnyOrigin()
