@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { DashboardComponent, AddedQuestionDialogComponent } from './dashboard.component';
+import { DashboardComponent, AddedQuestionDialogComponent, QrDialogComponent } from './dashboard.component';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { MaterialModule } from '../../app.material.module';
@@ -18,7 +18,8 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
         AddedQuestionDialogComponent,
         TransferComponent,
         SuccsessTransferDialogComponent,
-        FailedTransferDialogComponent
+        FailedTransferDialogComponent,
+        QrDialogComponent
     ],
     imports: [
         CommonModule,
@@ -43,7 +44,8 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
     entryComponents: [
         AddedQuestionDialogComponent,
         SuccsessTransferDialogComponent,
-        FailedTransferDialogComponent
+        FailedTransferDialogComponent,
+        QrDialogComponent
     ]
 })
 export class DashboardModule { }

@@ -21,9 +21,11 @@
     "dashboard": {
         "HTU_BTC": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> After receiving at least one confirmation of your transaction your balance will be updated within an hour.",
         "HTU_ETH": "<p>You need to transfer coins to this wallet number from your personal wallet. Please do not send from multisig wallet or smart contracts and exchanges like Bitstamp, Coinjar. Press COPY to copy wallet number to the clipboard.</p> After receiving at least one confirmation of your transaction your balance will be updated within an hour.",
+        "HTU_$":"<p>You need to transfer money from your bank account to the following accounts of Crystals Love LTD.</p>",
         "TokenCalc": "Token calculator",
         "MIN_BTC": "The minimum number of tokens to purchase is",
-        "MIN_ETH": "The minimum number of tokens to purchase is 0.1 ETH"
+        "MIN_ETH": "The minimum number of tokens to purchase is 0.1 ETH",
+        "MIN_$": "The minimum number of token purchase is 100 USD (100 EUR). Maximum is 10’000 USD (10 000 EUR)."
     },
     "languages": {
         "en": "Eng",

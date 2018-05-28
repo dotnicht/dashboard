@@ -19,13 +19,16 @@ import { ChangePasswordComponent, ChangePasswordDialogComponent } from '../../co
 import { SharedModule } from '../../app.shared.module';
 import { PapaParseModule } from 'ngx-papaparse';
 import { TfSettingsModule } from './tf_settings/tf_settings.module';
+import { EthAddressComponent } from './eth-address/eth-address.component';
 
 
 export const SETTINGS_ROUTES: Routes = [
-    { path: '', redirectTo: 'profile', pathMatch: 'full' },
+    // { path: '', redirectTo: 'profile', pathMatch: 'full' },
+    { path: '', redirectTo: 'eth_address', pathMatch: 'full' },
     { path: 'profile', component: UserInfoComponent },
     { path: '2fa', loadChildren: 'app/containers/settings/tf_settings/tf_settings.module#TfSettingsModule' },
-    { path: 'change_password', component: ChangePasswordComponent }
+    { path: 'change_password', component: ChangePasswordComponent },
+    { path: 'eth_address', component: EthAddressComponent }
 ];
 @NgModule({
     declarations: [
@@ -35,7 +38,8 @@ export const SETTINGS_ROUTES: Routes = [
         ChangePasswordComponent,
         ChangePasswordDialogComponent,
         SuccessKycMsgDialogComponent,
-        FailedKycMsgDialogComponent
+        FailedKycMsgDialogComponent,
+        EthAddressComponent
     ],
     imports: [
         CommonModule,

@@ -1,0 +1,8 @@
+<mat-card>
+  <mat-form-field>
+    <input matInput  placeholder="ETH address" [(ngModel)]="ethAddress">
+
+  </mat-form-field>
+
+  <button type="submit" (click)="update()" mat-raised-button color='primary'>{{'buttons.Save' | translate}}</button>
+</mat-card>

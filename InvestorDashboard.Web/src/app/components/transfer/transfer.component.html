@@ -1,43 +1,47 @@
 ﻿<div class="center-block">
 
-    <!-- <p>DataTrading smart contract address
+  <!-- <p>DataTrading smart contract address
     0x049a5bf874f241d94232137ef728a9c7dd0d7550</p> -->
-    <mat-card>
-        <h2>{{'transfer.Header' | translate}}</h2>
-        <mat-card-content *ngIf="!dashboard">
-            <mat-progress-bar color="primary" mode="indeterminate"> </mat-progress-bar>
-        </mat-card-content>
-        <mat-card-content *ngIf="dashboard">
-            <form #f="ngForm" novalidate (ngSubmit)="OnSubmit()" *ngIf="dashboard.clientInfoModel.isEligibleForTransfer">
-                <mat-form-field class="address">
-                    <input (blur)="validateAddress(transfer.address)" autocomplete="off" required matInput placeholder="{{'transfer.Address' | translate}}" type="text" [(ngModel)]="transfer.address" name="address" #address="ngModel">
-                </mat-form-field>
-                <br>
-                <mat-form-field>
-                    <input matInput [disabled]="sendEntire" (keyup)="validateValue($event)" placeholder="{{'transfer.Amount' | translate}}" [(ngModel)]="transfer.amount" type="number" name="amount" #amount="ngModel">
+  <mat-card>
+    <h2>{{'transfer.Header' | translate}}</h2>
+    <mat-card-content *ngIf="!dashboard">
+      <mat-progress-bar color="primary" mode="indeterminate"> </mat-progress-bar>
+    </mat-card-content>
+    <mat-card-content *ngIf="dashboard">
+      <form #f="ngForm" novalidate (ngSubmit)="OnSubmit()" *ngIf="dashboard.clientInfoModel.isEligibleForTransfer">
+        <mat-form-field class="address">
+          <input (blur)="validateAddress(transfer.address)" autocomplete="off" required matInput placeholder="{{'transfer.Address' | translate}}"
+            type="text" [(ngModel)]="transfer.address" name="address" #address="ngModel">
+        </mat-form-field>
+        <br>
+        <mat-form-field>
+          <input matInput [disabled]="sendEntire" (keyup)="validateValue($event)" placeholder="{{'transfer.Amount' | translate}}" [(ngModel)]="transfer.amount"
+            type="number" name="amount" #amount="ngModel">
 
-                </mat-form-field>
-                <br>
-                <mat-checkbox (change)="checkSendEntire($event)">{{'transfer.SendEntire' | translate}}</mat-checkbox>
-                <p>
-                    <span *ngIf="transfer.amount>0 && validAmount">{{transfer.amount}} will be transfered</span>
-                </p>
-                <div class="errors" *ngIf="errors">{{errors}}</div>
-                <div style="margin-top: 20px;">
-                    <button type="submit" [disabled]="!f.form.valid || isLoading || errors || !validAmount || !sended" mat-raised-button color="primary">
+        </mat-form-field>
+        <br>
+        <mat-checkbox (change)="checkSendEntire($event)">{{'transfer.SendEntire' | translate}}</mat-checkbox>
+        <p>
+          <span *ngIf="transfer.amount>0 && validAmount">{{transfer.amount}} will be transfered</span>
+        </p>
+        <div class="errors" *ngIf="errors">{{errors}}</div>
+        <div style="margin-top: 20px;">
+          <button type="submit" [disabled]="!f.form.valid || isLoading || errors || !validAmount || !sended" mat-raised-button color="primary">
             <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
             <span>{{'buttons.Send' | translate}}</span>
           </button>
-                </div>
-                <p>You have the opportunity to make 3 token transfers without inner fee. </p>
-            </form>
-            <div *ngIf="!dashboard.clientInfoModel.isEligibleForTransfer">
-                <p>Tokens will be created by Ethereum smart contract right after the token sale will be completed. Then you will be able to transfer tokens to any wallet supporting ERC20 standard. </p>
-                <p>For withdrawing airdrop tokens you should be a member of the <a href='https://t.me/racoinnews'>official telegram chat</a> until the end of the token sale (May 29th).</p>
-            </div>
-        </mat-card-content>
-    </mat-card>
-    <!-- <br>
+        </div>
+        <p>You have the opportunity to make 3 token transfers without inner fee. </p>
+      </form>
+      <div *ngIf="!dashboard.clientInfoModel.isEligibleForTransfer">
+        <p>Tokens will be created by Ethereum smart contract right after the token sale will be completed. Then you will be
+          able to transfer tokens to any wallet supporting ERC20 standard. </p>
+        <p>For withdrawing airdrop tokens you should be a member of the
+          <a href='https://t.me/racoinnews'>official telegram chat</a> until the end of the token sale (May 29th).</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <!-- <br>
   <mat-card>
     <mat-card-content>
         <div></div>
