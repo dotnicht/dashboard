@@ -10,7 +10,7 @@ import { AnonymousSubscription } from 'rxjs/Subscription';
 import 'rxjs/add/observable/timer';
 import { AuthService } from '../../services/auth.service';
 import { ClientInfo } from '../../models/client-info.model';
-import { MatDialogRef, MatDialog } from '@angular/material';
+import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 
 declare var QRCode: any;
@@ -26,6 +26,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
     public dashboard: Dashboard = new Dashboard();
 
+    isGenProcesing = false;
     public selectedPaymentType: PaymentType;
     public etherAddress: string;
     public Question: string;
@@ -38,6 +39,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     private subscription: any;
 
     addedQuestionDialogRef: MatDialogRef<AddedQuestionDialogComponent> | null;
+    qrDialogRef: MatDialogRef<QrDialogComponent> | null;
 
 
     /** dashboard ctor */
@@ -73,13 +75,29 @@ export class DashboardComponent implements OnDestroy, OnInit {
         }
     }
     openAddedQuestionDialog() {
-        let config = {
+        const config = {
             disableClose: true,
             hasBackdrop: false
         };
         this.addedQuestionDialogRef = this.dialog.open(AddedQuestionDialogComponent, config);
         this.addedQuestionDialogRef.afterClosed().subscribe(() => {
             this.Question = undefined;
+        });
+    }
+    openQrDialog() {
+        const config = {
+            hasBackdrop: true,
+            data: this.selectedPaymentType.address
+        };
+        this.qrDialogRef = this.dialog.open(QrDialogComponent, config);
+
+    }
+    generateAddress() {
+        this.isGenProcesing = true;
+        this.dashboardService.generateAddresses().subscribe(data => {
+            this.selectedPaymentType = null;
+            this.isGenProcesing = false;
+            this.loadData();
         });
     }
     qrInitialize(data: string) {
@@ -210,4 +228,41 @@ export class AddedQuestionDialogComponent {
         this.dialogRef.close();
     }
 
+}
+
+@Component({
+    selector: 'app-qr-dialog',
+    template: `
+    <div id="qrCode" class="qrCode"></div>
+    `
+})
+export class QrDialogComponent {
+
+    qrData: string;
+    constructor(public dialogRef: MatDialogRef<QrDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.qrData = data;
+
+    }
+    ngOnInit() {
+
+        this.qrInitialize(this.qrData);
+
+    }
+    close() {
+        this.dialogRef.close();
+    }
+    qrInitialize(data: string) {
+        if (document.getElementById('qrCode')) {
+            document.getElementById('qrCode').innerHTML = '';
+            let qrCode = new QRCode(document.getElementById('qrCode'), {
+                text: data,
+                width: 300,
+                height: 300
+            });
+            document.getElementById('qrCode').getElementsByTagName('img')[0].style.display = 'none';
+            document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
+
+        }
+    }
 }

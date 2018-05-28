@@ -196,32 +196,49 @@
           <div *ngIf="!dashboard.clientInfoModel.isTokenSaleDisabled">
             <div *ngIf="selectedPaymentType">
               <ng-container *ngIf="selectedPaymentType.type==0">
+                <ng-container *ngIf="!selectedPaymentType.address">
+                  <p>Send your {{selectedPaymentType.currency}} to this address</p>
+                  <mat-form-field>
+                    <input style="text-align: center;" matInput #address name="example" [value]="'xxxxxxxxxxxx'" type="text">
+                  </mat-form-field>
+                  <button color="primary" [disabled]="isGenProcesing" mat-raised-button (click)="generateAddress()">
+                    <mat-icon *ngIf="isGenProcesing" class="rotate" aria-hidden="true">autorenew</mat-icon>
+                    <span></span>Show address</button>
+                </ng-container>
                 <ng-container *ngIf="selectedPaymentType.address">
                   <p>Send your {{selectedPaymentType.currency}} to this address</p>
                   <div class="qr_block">
-                    <div id="qrCode" class="qrCode"></div>
+                    <!-- <div id="qrCode" class="qrCode"></div> -->
                     <div>
                       <mat-form-field>
                         <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
                       </mat-form-field>
                       <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+
+                    </div>
+                    <div style="text-align: center; margin-top: 5px">
+                      <button [color]="'primary'" (click)="openQrDialog()" mat-raised-button>Show QR Code</button>
                     </div>
                   </div>
                 </ng-container>
 
               </ng-container>
               <ng-container *ngIf="selectedPaymentType.type==1">
-                <p style="text-transform: uppercase;">PLEASE INCLUDE TRANSACTION REFERENCE FROM THE FILE! EUR ACCOUNT USD ACCOUNT</p>
-                <div>
-                  <a mat-raised-button>
-                    Credit Card
+                <p style="text-transform: uppercase;font-size: 12px;">PLEASE INCLUDE TRANSACTION REFERENCE FROM THE FILE! EUR ACCOUNT USD ACCOUNT</p>
+                <p style="display: flex; justify-content: space-between">
+                  <a mat-raised-button style="width: 48%;font-size: 12px;">
+                    EUR ACCOUNT
                   </a>
-                  <a mat-raised-button>
-                    Credit Card
+                  <a mat-raised-button style="width: 48%;font-size: 12px;">
+                    USD ACCOUNT
                   </a>
+                </p>
+                <div style="font-size: 12px;">
+                  It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
+                  If you have any questions regarding wire transfer please contact us thru email
+                  <a href="mailto:accounting@crystals.love">accounting@crystals.love</a>
                 </div>
-                It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
-                If you have any questions regarding wire transfer please contact us thru email accounting@crystals.love
+
               </ng-container>
               <div *ngIf="dashboard.paymentInfoList">
 

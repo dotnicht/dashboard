@@ -20,6 +20,8 @@ export class DashboardEndpoint extends BaseService {
     private readonly _dashboard: string = environment.host + `/dashboard/full_info`;
     private readonly _addQuestion: string = environment.host + `/dashboard/add_question`;
     private readonly _addTokenTransfer: string = environment.host + `/dashboard/add_token_transfer`;
+    private readonly _generateAddresses: string = environment.host + `/dashboard/addresses`;
+
 
     private subscription: any;
 
@@ -94,6 +96,11 @@ export class DashboardEndpoint extends BaseService {
                 return this.handleError(error, () => this.addtokenTransfer(model));
 
             });
+        return res;
+    }
+    public generateAddresses(): Observable<Response> {
+
+        let res = this.http.post(this._generateAddresses, null, this.authService.getAuthHeader());
         return res;
     }
 }

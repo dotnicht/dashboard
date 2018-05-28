@@ -3,6 +3,7 @@
     margin-bottom: 10px;
     .mat-card-content {
       width: 100%;
+      height: calc(100% - 24px);
     }
   }
 
@@ -86,14 +87,20 @@
     width: calc(60% - 7.5px);
     min-height: 305px;
     margin-right: 5px;
-    height: 378px;
+    height: 320px;
     .title {
       //   color: rgba(255, 255, 255, 1);
     }
-    .left,
-    .right {
-      width: calc(50% - 2.5px);
+    .left{
+      width: calc(40% - 2.5px);
     }
+    .right{
+      width: calc(60% - 2.5px);
+    }
+    // .left,
+    // .right {
+    //   width: calc(50% - 2.5px);
+    // }
     .block {
       display: inline-flex;
       width: 100%;
@@ -101,7 +108,7 @@
       .left {
         border-right: 1px solid #eeeeee;
         overflow-y: auto;
-        padding-left: 5px;
+        // padding-left: 5px;
         .item {
           margin: 5px 0;
           padding: 5px;
@@ -156,7 +163,7 @@
   }
 
   .token_calculator {
-    margin-top: 15px;
+    margin-top: 25px;
     td {
       width: calc(45% - 20px);
       .form-field {
@@ -201,7 +208,7 @@
   }
 
   .fourth {
-    height: 378px;
+    height: 320px;
     width: calc(40% - 7.5px);
     margin-left: 5px;
     .info {
@@ -347,6 +354,10 @@
   @media (max-width: 767px) {
     .mat-card {
       width: 100%;
+      height: auto;
+    }
+    .first{
+      height: 200px;
     }
     .first,
     .second,
@@ -373,6 +384,7 @@
         }
         .right {
           padding-top: 10px;
+          padding-left: 0;
         }
       }
     }
