@@ -268,11 +268,11 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("token"), Produces("application/json")]
-        public async Task<IActionResult> PostTokenAddressData([FromBody]string address)
+        public async Task<IActionResult> PostTokenAddressData([FromBody]UpdateTokenAddressData address)
         {
             if (ApplicationUser != null)
             {
-                await _genericAddressService.UpdateAddress(ApplicationUser.Id, Currency.ETH, CryptoAddressType.Token, address);
+                await _genericAddressService.UpdateAddress(ApplicationUser.Id, Currency.ETH, CryptoAddressType.Token, address.Address);
                 return Ok(await GetTokenAddress());
             }
 
