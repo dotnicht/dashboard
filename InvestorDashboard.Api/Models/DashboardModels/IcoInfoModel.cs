@@ -1,3 +1,4 @@
+using InvestorDashboard.Backend.Database.Models;
 using System.Collections.Generic;
 
 namespace InvestorDashboard.Api.Models.DashboardModels
@@ -18,7 +19,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
 
         public class CurrencyValue
         {
-            public string Currency { get; set; }
+            public Currency Currency { get; set; }
             public decimal Value { get; set; }
         }
     }
