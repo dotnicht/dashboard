@@ -377,22 +377,25 @@ namespace InvestorDashboard.Api.Controllers
                 return new PaymentInfoModel[0];
             }
 
-            var addresses = await ApplicationUser.CryptoAddresses
-                .ToAsyncEnumerable()
-                .Where(x => !x.IsDisabled && x.Type == CryptoAddressType.Investment)
+            var paymentInfo =_cryptoServices.Where(x => !x.Settings.Value.IsDisabled)
+                .Select(x => new PaymentInfoModel
+                {
+                    Currency = x.Settings.Value.Currency,
+                    Confirmations = x.Settings.Value.Confirmations,
+                    IsDisabled = x.Settings.Value.IsDisabled
+                })
                 .ToArray();
 
-            var paymentInfo = addresses
-                .Join(_cryptoServices.Where(x => !x.Settings.Value.IsDisabled), x => x.Currency, x => x.Settings.Value.Currency, (x, y) => new { Address = x, y.Settings })
-                .Select(async x => new PaymentInfoModel
+            foreach (var method in paymentInfo)
+            {
+                if (!method.IsDisabled)
                 {
-                    Currency = x.Address.Currency.ToString(),
-                    Address = x.Address.Address,
-                    Rate = await _exchangeRateService.GetExchangeRate(x.Address.Currency, _tokenSettings.Value.Currency),
-                    Confirmations = x.Settings.Value.Confirmations
-                })
-                .Select(m => m.Result)
-                .ToArray();
+                    method.Rate = await _exchangeRateService.GetExchangeRate(method.Currency, _tokenSettings.Value.Currency);
+                    method.Address = ApplicationUser.CryptoAddresses
+                        .SingleOrDefault(x => x.Currency == method.Currency && !x.IsDisabled && x.Type == CryptoAddressType.Investment)
+                        ?.Address;
+                }
+            }
 
             return paymentInfo;
         }
