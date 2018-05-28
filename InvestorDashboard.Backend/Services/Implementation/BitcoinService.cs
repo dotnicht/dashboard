@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Protocol;
 using QBitNinja.Client;
+using QBitNinja.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -189,10 +190,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
-        protected override Task<long> GetCurrentBlockIndex()
+        protected override async Task<long> GetCurrentBlockIndex()
         {
-            var index = _chain.Value.ToEnumerable(false).Last().Height;
-            return Task.FromResult((long)index);
+            var client = new QBitNinjaClient(Network);
+            var block = await client.GetBlock(new BlockFeature(SpecialFeature.Last), true, false);
+            return block.AdditionalInformation.Height;
         }
 
         protected override async Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
