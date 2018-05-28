@@ -15,6 +15,13 @@ import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 
 declare var QRCode: any;
 
+export class Timer {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+}
+
 @Component({
     selector: 'app-dashboard',
     templateUrl: './dashboard.component.html',
@@ -35,6 +42,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public isCopied = false;
     public calculatorFromBtc = true;
     public selectedVideo: any;
+
+    timer: Timer;
 
     private subscription: any;
 
@@ -66,6 +75,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
         this.loadData();
         this.chooseVideo();
         this.loadData();
+
+        setInterval(() => { this.updateTimer(); }, 1000);
         //this.subscribeToData();
     }
 
@@ -99,6 +110,22 @@ export class DashboardComponent implements OnDestroy, OnInit {
             this.isGenProcesing = false;
             this.loadData();
         });
+    }
+    updateTimer() {
+        const endDate = new Date('2018/06/12 12:00:00').getTime();
+
+        const d = new Date();
+        const localTime = d.getTime();
+        const localOffset = d.getTimezoneOffset() * 60000;
+        const utc = localTime + localOffset;
+
+        const today = new Date(utc).getTime();
+        const day = Math.floor((endDate - today) / (24 * 60 * 60 * 1000));
+        const hour = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const min = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 1000)) % 60;
+        const sec = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / 1000) % 60 % 60;
+
+        this.timer = { days: day, hours: hour, minutes: min, seconds: sec } as Timer;
     }
     qrInitialize(data: string) {
         if (document.getElementById('qrCode')) {

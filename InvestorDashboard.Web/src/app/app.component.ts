@@ -74,9 +74,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (window.location.pathname == "/presale") {
-      window.location.href = 'http://www.racoin.io/';
-    }
+    // if (window.location.pathname == "/presale") {
+    //   window.location.href = 'http://www.racoin.io/';
+    // }
     if (isPlatformBrowser) {
       this.year = new Date().getFullYear();
       this.resizeService.width = window.innerWidth;

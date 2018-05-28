@@ -226,6 +226,7 @@ export class AccountEndpoint extends BaseService {
     }
 
     updateEthAddress(address: string) {
+
         const res = this.http.post(this._updateEthAddress,
             JSON.stringify({ address: address }), this.authService.getAuthHeader(ContentType.JSON));
         return res;

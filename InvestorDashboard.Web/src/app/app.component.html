@@ -1,169 +1,192 @@
 <mat-drawer-container fullscreen *ngIf="showMainContainer">
-    <mat-drawer #start mode="push" class="example-container">
+  <mat-drawer #start mode="push" class="example-container">
 
-        <mat-nav-list>
-            <app-client-info *ngIf="isUserLoggedIn"></app-client-info>
-            <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" *ngIf="!isUserLoggedIn" [routerLink]="['/login']" (click)="start.close()">
-                <mat-icon mat-list-icon class="mat-24">account_circle</mat-icon>
-                <span mat-line>{{'mainMenu.Login' | translate}}</span>
-            </a>
+    <mat-nav-list>
+      <app-client-info *ngIf="isUserLoggedIn"></app-client-info>
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        *ngIf="!isUserLoggedIn" [routerLink]="['/login']" (click)="start.close()">
+        <mat-icon mat-list-icon class="mat-24">account_circle</mat-icon>
+        <span mat-line>{{'mainMenu.Login' | translate}}</span>
+      </a>
 
-            <!-- <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+      <!-- <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
         href="http://www.data-trading.com/" (click)="start.close()">
         <mat-icon mat-list-icon>home</mat-icon>
         <span mat-line>{{'mainMenu.Home' | translate}}</span>
       </a> -->
-            <a mat-list-item target="_blank" href="http://www.racoin.io/" (click)="start.close()">
-                <mat-icon mat-list-icon>info</mat-icon>
-                <span mat-line>Web site</span>
-            </a>
-            <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/transfer']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
-                (click)="start.close()">
-                <mat-icon mat-list-icon>swap_horiz</mat-icon>
-                <span mat-line>{{'mainMenu.Transfer' | translate}}</span>
-            </a>
+      <a mat-list-item target="_blank" href="http://crystals.io" (click)="start.close()">
+        <mat-icon mat-list-icon>info</mat-icon>
+        <span mat-line>Web site</span>
+      </a>
+      <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        [routerLink]="['/transfer']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+        (click)="start.close()">
+        <mat-icon mat-list-icon>swap_horiz</mat-icon>
+        <span mat-line>{{'mainMenu.Transfer' | translate}}</span>
+      </a>
 
-            <a *ngIf="isUserLoggedIn && !isReferralSystemDisabled" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/referral']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
-                (click)="start.close()">
-                <mat-icon mat-list-icon>swap_horiz</mat-icon>
-                <span mat-line>{{'mainMenu.Referral' | translate}}</span>
-            </a>
-            <a *ngIf="isUserLoggedIn && isAdmin" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/admin-panel']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
-                (click)="start.close()">
-                <mat-icon mat-list-icon>control_point_duplicate</mat-icon>
-                <span mat-line>Admin Panel</span>
-            </a>
-            <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/dashboard']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
-                (click)="start.close()">
-                <mat-icon mat-list-icon>dashboard</mat-icon>
-                <span mat-line>{{'mainMenu.Dashboard' | translate}}</span>
-            </a>
-            <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/faq']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')" (click)="start.close()">
-                <mat-icon mat-list-icon>help</mat-icon>
-                <span mat-line>{{'mainMenu.Faq' | translate}}</span>
-            </a>
+      <a *ngIf="isUserLoggedIn && !isReferralSystemDisabled" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive"
+        [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1" [routerLink]="['/referral']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+        (click)="start.close()">
+        <mat-icon mat-list-icon>swap_horiz</mat-icon>
+        <span mat-line>{{'mainMenu.Referral' | translate}}</span>
+      </a>
+      <a *ngIf="isUserLoggedIn && isAdmin" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        [routerLink]="['/admin-panel']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+        (click)="start.close()">
+        <mat-icon mat-list-icon>control_point_duplicate</mat-icon>
+        <span mat-line>Admin Panel</span>
+      </a>
+      <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        [routerLink]="['/dashboard']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+        (click)="start.close()">
+        <mat-icon mat-list-icon>dashboard</mat-icon>
+        <span mat-line>{{'mainMenu.Dashboard' | translate}}</span>
+      </a>
+      <a mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
+        [routerLink]="['/faq']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')" (click)="start.close()">
+        <mat-icon mat-list-icon>help</mat-icon>
+        <span mat-line>{{'mainMenu.Faq' | translate}}</span>
+      </a>
 
-        </mat-nav-list>
-        <!--<hr />
+    </mat-nav-list>
+    <!--<hr />
     <button mat-button (click)="start.close()">Close</button>-->
-    </mat-drawer>
-    <mat-toolbar color="primary">
+  </mat-drawer>
+  <mat-toolbar color="primary">
 
-        <button *ngIf="isTab" class="side-menu-btn" mat-icon-button (click)="start.open()">
+    <button *ngIf="isTab" class="side-menu-btn" mat-icon-button (click)="start.open()">
       <mat-icon>menu</mat-icon>
     </button>
 
-        <div class="main-toolbar">
-            <!-- <h2>{{appTitle}}</h2> -->
-            <!-- <a target="_blank" href="https://data-trading.com"><img src="assets/img/logo.svg" style="width: 120px;"></a> -->
+    <div class="main-toolbar">
+      <!-- <h2>{{appTitle}}</h2> -->
+      <!-- <a target="_blank" href="https://data-trading.com"><img src="assets/img/logo.svg" style="width: 120px;"></a> -->
 
-            <div class="logo"> <img src="assets/img/logo.svg" style="width: 35px;"><img src="assets/img/logo_name.svg" style="width: 80px;
-                margin-left: 5px;"></div>
+      <div class="logo">
+        <img src="assets/img/logo.svg" style="width: 35px;">
+        <img src="assets/img/logo_name.svg" style="width: 80px;
+                margin-left: 5px;">
+      </div>
 
-            <ng-container *ngIf="!isTab">
+      <ng-container *ngIf="!isTab">
 
-                <a target="_blank" href="http://www.racoin.io/">
-                    <button mat-button>
-                        <mat-icon>home</mat-icon><span>Web site</span>
-                    </button>
-                </a>
+        <a target="_blank" href="http://crystals.io">
+          <button mat-button>
+            <mat-icon>home</mat-icon>
+            <span>Web site</span>
+          </button>
+        </a>
 
-                <button *ngIf="isUserLoggedIn" mat-button [disabled]="routerLinkActiveInstance.isActive" [routerLink]="['/dashboard']" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
-                    <mat-icon>dashboard</mat-icon>
-                    <span>{{'mainMenu.Dashboard' | translate}}</span>
-                  </button>
-                <button *ngIf="isUserLoggedIn" [routerLink]="['/transfer']" mat-button [disabled]="routerLinkActiveInstance.isActive" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
-                    <mat-icon>swap_horiz</mat-icon>
-                    <span>{{'mainMenu.Transfer' | translate}}</span>
-                  </button>
-                <button *ngIf="isUserLoggedIn && !isReferralSystemDisabled" [routerLink]="['/referral']" mat-button [disabled]="routerLinkActiveInstance.isActive" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
-                    <mat-icon>swap_horiz</mat-icon>
-                    <span>{{'mainMenu.Referral' | translate}}</span>
-                  </button>
-                <button mat-button [routerLink]="['/faq']" [queryParams]="queryParams" routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
-                    <mat-icon>help</mat-icon>
-                    <span>{{'mainMenu.Faq' | translate}}</span>
-                  </button>
-                <button *ngIf="isUserLoggedIn" [routerLink]="['/admin-panel']"  mat-button routerLinkActive #routerLinkActiveInstance="routerLinkActive" [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
-                        <mat-icon>control_point_duplicate</mat-icon>
-                        <span>Admin Panel</span>
-                      </button>
-                <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
-                    <mat-icon>account_circle</mat-icon>
-                    <span>{{userName}}</span>
-                  </button>
-                <mat-menu #userMenu="matMenu">
-                    <app-client-info></app-client-info>
-                </mat-menu>
-                <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" [queryParams]="queryParams" mat-button>
-                    <mat-icon>account_circle</mat-icon>
-                    <span>{{'mainMenu.Login' | translate}}</span>
-                  </button>
+        <button *ngIf="isUserLoggedIn" mat-button [disabled]="routerLinkActiveInstance.isActive" [routerLink]="['/dashboard']" routerLinkActive
+          #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <mat-icon>dashboard</mat-icon>
+          <span>{{'mainMenu.Dashboard' | translate}}</span>
+        </button>
+        <button *ngIf="isUserLoggedIn" [routerLink]="['/settings/eth_address']" mat-button [disabled]="routerLinkActiveInstance.isActive"
+          routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <img src="assets/images/EthLogo.svg" style="width: 12px;">
+          <span>ETH Address</span>
+        </button>
+        <button *ngIf="isUserLoggedIn && !isReferralSystemDisabled" [routerLink]="['/referral']" mat-button [disabled]="routerLinkActiveInstance.isActive"
+          routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <mat-icon>swap_horiz</mat-icon>
+          <span>{{'mainMenu.Referral' | translate}}</span>
+        </button>
+        <button mat-button [routerLink]="['/faq']" [queryParams]="queryParams" routerLinkActive #routerLinkActiveInstance="routerLinkActive"
+          [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <mat-icon>help</mat-icon>
+          <span>{{'mainMenu.Faq' | translate}}</span>
+        </button>
+        <button *ngIf="isUserLoggedIn && isAdmin" [routerLink]="['/admin-panel']" mat-button routerLinkActive #routerLinkActiveInstance="routerLinkActive"
+          [disabled]="routerLinkActiveInstance.isActive" [attr.class]="'mat-button '+(routerLinkActiveInstance.isActive ? 'active' : '')">
+          <mat-icon>control_point_duplicate</mat-icon>
+          <span>Admin Panel</span>
+        </button>
+        <button *ngIf="isUserLoggedIn" mat-button [mat-menu-trigger-for]="userMenu">
+          <mat-icon>account_circle</mat-icon>
+          <span>{{userName}}</span>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <app-client-info></app-client-info>
+        </mat-menu>
+        <button *ngIf="!isUserLoggedIn" [routerLink]="['/login']" [queryParams]="queryParams" mat-button>
+          <mat-icon>account_circle</mat-icon>
+          <span>{{'mainMenu.Login' | translate}}</span>
+        </button>
 
-            </ng-container>
+      </ng-container>
 
 
-        </div>
-    </mat-toolbar>
-    <div class="main-content">
-        <router-outlet></router-outlet>
-        <!-- <div class="push"></div> -->
     </div>
+  </mat-toolbar>
+  <div class="main-content">
+    <router-outlet></router-outlet>
+    <!-- <div class="push"></div> -->
+  </div>
 
-    <mat-toolbar class="footer" color="primary">
-        <div class="main-content">
-            <div class="block">
-                <div style="display: flex; align-items: center;">
-                    <img class="icon " src="assets/img/logo.svg " style="width: 55px; ">
-                    <div *ngIf="!isTab && !isMobile" class="copyright ">&#169; {{year}}</div>
-                </div>
-            </div>
-            <div class="block">
-                <a href="https://www.youtube.com/channel/UCtyGrvHTO7LCa4IAJyjMUdw" target="_blank" class="icon-link">
-                    <img class="icon" src="assets/img/social_icons/youtube.svg">
-                    <div style="padding-top: 5px;">
-                        <div *ngIf="!isTab && !isMobile">Youtube</div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="block">
-                <a href="https://www.facebook.com/RAcoin-1348409231971565/" target="_blank" class="icon-link">
-                    <img class="icon" src="assets/img/social_icons/facebook.svg">
-                    <div style="padding-top: 5px;">
-                        <div *ngIf="!isTab && !isMobile">Facebook</div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="block">
-                <a href="https://twitter.com/RAcoinNews" target="_blank" class="icon-link">
-                    <img class="icon" src="assets/img/social_icons/twitter.svg">
-                    <div style="padding-top: 5px;">
-                        <div *ngIf="!isTab && !isMobile">Twitter</div>
-                    </div>
-                </a>
-            </div>
-            <div class="block">
-                <a href="https://www.reddit.com/user/RAcoinNews/" target="_blank" class="icon-link">
-                    <img class="icon" src="assets/img/social_icons/reddit.svg">
-                    <div style="padding-top: 5px;">
-                        <div *ngIf="!isTab && !isMobile">Reddit</div>
-                    </div>
-                </a>
-            </div>
-            <div class="block">
-                <a href="https://t.me/racoinnews" target="_blank" class="icon-link">
-                    <img class="icon" src="assets/img/social_icons/telegram.svg">
-                    <div style="padding-top: 5px;">
-                        <div *ngIf="!isTab && !isMobile">Telegram</div>
-                    </div>
-                </a>
-            </div>
+  <mat-toolbar class="footer" color="primary">
+    <div class="main-content">
+      <div class="block">
+        <div style="display: flex; align-items: center;">
+          <img class="icon " src="assets/img/logo.svg " style="width: 55px; ">
+          <div *ngIf="!isTab && !isMobile" class="copyright ">&#169; {{year}}</div>
         </div>
-    </mat-toolbar>
+      </div>
+      <div class="block">
+        <a href="https://www.youtube.com/channel/UCaDYASGwty-8NZZTxfWfTNw" target="_blank" class="icon-link">
+          <img class="icon" src="assets/img/social_icons/youtube.svg">
+          <div style="padding-top: 5px;">
+            <div *ngIf="!isTab && !isMobile">Youtube</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="block">
+        <a href="https://www.facebook.com/223869261716130/" target="_blank" class="icon-link">
+          <img class="icon" src="assets/img/social_icons/facebook.svg">
+          <div style="padding-top: 5px;">
+            <div *ngIf="!isTab && !isMobile">Facebook</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="block">
+        <a href="https://twitter.com/Crystals_io" target="_blank" class="icon-link">
+          <img class="icon" src="assets/img/social_icons/twitter.svg">
+          <div style="padding-top: 5px;">
+            <div *ngIf="!isTab && !isMobile">Twitter</div>
+          </div>
+        </a>
+      </div>
+      <div class="block">
+        <a href="https://www.reddit.com/r/Crystals_io" target="_blank" class="icon-link">
+          <img class="icon" src="assets/img/social_icons/reddit.svg">
+          <div style="padding-top: 5px;">
+            <div *ngIf="!isTab && !isMobile">Reddit</div>
+          </div>
+        </a>
+      </div>
+      <div class="block">
+        <a href="https://t.me/Crystals_io" target="_blank" class="icon-link">
+          <img class="icon" src="assets/img/social_icons/telegram.svg">
+          <div style="padding-top: 5px;">
+            <div *ngIf="!isTab && !isMobile">Telegram</div>
+          </div>
+        </a>
+      </div>
+      <div class="block">
+        <a href="https://medium.com/@crystals_io" target="_blank" class="icon-link">
+          <img class="icon" src="assets/img/social_icons/medium.svg">
+          <div style="padding-top: 5px;">
+            <div *ngIf="!isTab && !isMobile">Medium</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </mat-toolbar>
 </mat-drawer-container>
 
 <div *ngIf="!showMainContainer ">
-    <router-outlet></router-outlet>
+  <router-outlet></router-outlet>
 </div>

@@ -63,14 +63,14 @@
 
   <mat-card class="second">
     <mat-card-content>
-      <div class="right" *ngIf="false">
+      <!-- <div class="right" *ngIf="false">
         <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale starts on
           <div style="margin: 3px 0;"> April 28th, 2018</div>
-        </div>
+        </div> -->
         <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
-      </div>
-      <div class="left">
-        <div style="display: inline-block;"></div>
+      <!-- </div> -->
+      <!-- <div class="left">
+        <div style="display: inline-block;"></div> -->
         <!-- <div class="item">
                     <img class="color-block" src="assets/img/avatar.svg">
                     <div class="value">{{dashboard.icoInfoModel.totalInvestors}}</div>
@@ -93,14 +93,24 @@
         <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
         <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}}  -->
         <!-- </div> -->
-        <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
+
+        <!-- <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
           <div class="item">
             <img class="color-block" [src]="currency.img">
             <div class="value">{{'clientInfo.Total' | translate}} {{currency.currency}}</div>
             <div class="title">{{currency.value}}</div>
           </div>
-        </div>
+        </div> -->
 
+
+      <!-- </div> -->
+      <div style="text-align: center; width: 100%;">
+        <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
+        <p style="font-size: 32px;margin-top: 15px;color: #fc537f;"><b>25%</b></p>
+        <p style="font-size: 20px;margin-top:30px;">ending in</p>
+        <p style="font-size: 34px;margin-top: 15px;font-weight: bold;color:#fc537f;" *ngIf="timer">
+          {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}}
+        </p>
       </div>
     </mat-card-content>
   </mat-card>
@@ -135,19 +145,19 @@
       <div class="content">
         <span>Find more at</span>
         <div class="social">
-          <a href="https://www.facebook.com/DataTrading" target="_blank">
+          <a href="https://www.facebook.com/223869261716130/" target="_blank">
             <img src="assets/img/round_a/facebook.svg">
           </a>
-          <a href="https://bitcointalk.org/index.php?topic=2306909.new#new" target="_blank">
+          <a href="https://bitcointalk.org/index.php?topic=3775626" target="_blank">
             <img src="assets/img/round_a/bitcoin.svg">
           </a>
-          <a href="https://t.me/datatradingENG" target="_blank">
+          <a href="https://t.me/Crystals_io" target="_blank">
             <img src="assets/img/round_a/telegram.svg">
           </a>
-          <a href="https://twitter.com/datatrading_" target="_blank">
+          <a href="https://twitter.com/Crystals_io" target="_blank">
             <img src="assets/img/round_a/twitter.svg">
           </a>
-          <a href="https://www.youtube.com/channel/UC6QWQbo8AFxG0ghmbihdBDA" target="_blank">
+          <a href="https://www.youtube.com/channel/UCaDYASGwty-8NZZTxfWfTNw" target="_blank">
             <img src="assets/img/round_a/youtube.svg">
           </a>
         </div>
@@ -286,7 +296,7 @@
             <p>Sorry, payment is not available at this time.
             </p>
             If you have any questions you can contact with us at
-            <a href="mailto:support@racoin.io">support@racoin.io</a>
+            <a href="mailto:support@crystals.systems">support@crystals.systems</a>
           </div>
 
         </div>

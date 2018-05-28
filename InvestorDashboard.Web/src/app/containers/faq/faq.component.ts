@@ -19,10 +19,10 @@ export class FaqComponent implements OnInit {
 
     /** Called by Angular after faq component initialized */
     ngOnInit(): void {
-        this.getPictures().subscribe(data=> {
-            console.log('data', data.json())
-            this.pictures = data.json();
-        });
+        // this.getPictures().subscribe(data=> {
+        //     console.log('data', data.json())
+        //     this.pictures = data.json();
+        // });
 
     }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AccountEndpoint } from '../../../services/account-endpoint.service';
-const ethereum_address = require('ethereum-address');
+
 @Component({
   selector: 'app-eth-address',
   templateUrl: './eth-address.component.html',

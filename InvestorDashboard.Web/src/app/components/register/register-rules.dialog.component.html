@@ -1,6 +1,6 @@
 <h2 style="margin-left: 24px">Register rules</h2>
 
-<div style="height: 300px;overflow-y: auto;padding: 0 24px;">
+<div style="height: 250px;overflow-y: auto;padding: 0 24px;">
   <p *ngFor="let option of _acceptRules">
     <mat-checkbox [(ngModel)]="option.checked" name="rule"   color="primary">
       <div [innerHTML]="option.name"></div>

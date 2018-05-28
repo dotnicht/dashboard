@@ -177,9 +177,9 @@
         },
         "register": {
             "rules": {
-                "first": "I confirm hereby that I am not a citizen/permanent resident/company or representing company of any jurisdiction, where purchase of crypto tokens is illegal, restricted or requires special accreditation.",
-                "second": "Check here to confirm that you have read and understand the <a href='https://www.crystals.io/CrystalsTSA.pdf' target='blank'>Token Sale Agreement</a> and <a href='https://www.crystals.io/CrystalsAML.pdf' target='blank'>Privacy and AML/KYC Policy</a> and expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
-                "third": "Check here to confirm that you have read and understand the Terms of Token Saleand expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
+                "first": "Check here to confirm that you are NOT a citizen, or any permanent living permit holder of USA or China.",
+                "second": "Check here to confirm that you have read and agreed with <a href='https://www.crystals.io/CrystalsTSA.pdf' target='blank'>Token Sale Agreement</a> and <a href='https://www.crystals.io/CrystalsAML.pdf' target='blank'>Privacy and AML/KYC Policy</a> and expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
+                "third": "Check here to confirm that you have read and understand the Terms of Token Sale and expressly accept all terms, conditions, obligations, affirmations, representations and warranties described in these Terms and agree to be bound by them.",
                 "fourth": "Check here to confirm that you have read and understand the <a href='https://www.crystals.io/whitepaper.pdf' target='blank'>White Paper</a>."
             }
         },
