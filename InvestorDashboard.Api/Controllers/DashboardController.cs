@@ -361,7 +361,7 @@ namespace InvestorDashboard.Api.Controllers
 
             result.TotalCoinsBought = items.First().Value.TotalCoinsBoughts;
             result.Currencies = items
-                .Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key.ToString(), Value = x.Value.TotalInvested })
+                .Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key, Value = x.Value.TotalInvested })
                 .ToList();
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
