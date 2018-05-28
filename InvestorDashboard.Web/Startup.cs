@@ -23,9 +23,9 @@ namespace InvestorDashboard.Web
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IHostingEnvironment env)
     {
-      //var options = new RewriteOptions().AddRedirectToHttps();
+      var options = new RewriteOptions().AddRedirectToHttps();
 
-      //app.UseRewriter(options);
+      app.UseRewriter(options);
 
       if (env.IsDevelopment())
       {
