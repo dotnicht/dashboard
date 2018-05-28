@@ -124,6 +124,18 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
+        [Authorize, HttpPost("addresses")]
+        public async Task<IActionResult> PostCreateAddresses()
+        {
+            if (ApplicationUser != null)
+            {
+                await _genericAddressService.CreateMissingAddresses(ApplicationUser.Id, true);
+                return Ok();
+            }
+
+            return Unauthorized(); ;
+        }
+
         [Authorize, HttpGet("client_info"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
         public async Task<IActionResult> GetClientInfo()
         {

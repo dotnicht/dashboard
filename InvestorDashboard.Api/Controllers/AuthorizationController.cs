@@ -119,8 +119,7 @@ namespace InvestorDashboard.Api.Controllers
 
                     if (result.Succeeded)
                     {
-                        BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));
-                        BackgroundJob.Enqueue(() => _genericAddressService.CreateMissingAddresses(appUser.Id, true));
+                        BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));                        
                         BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
                         BackgroundJob.Enqueue(() => _kycService.UpdateKycTransactions(appUser.Id));
 

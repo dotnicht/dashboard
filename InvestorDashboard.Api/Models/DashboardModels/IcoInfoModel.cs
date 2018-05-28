@@ -4,6 +4,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
 {
     public class IcoInfoModel
     {
+        public string Currency { get; set; }
         public string TokenName { get; set; }
         public string ContractAddress { get; set; }
         public long TotalCoinsBought { get; set; }
