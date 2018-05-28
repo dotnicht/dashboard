@@ -28,6 +28,8 @@ export class AccountEndpoint extends BaseService {
     private readonly _tfaReset: string = environment.host + '/account/tfa_reset';
     private readonly _resendEmailConfirmCode: string = environment.host + '/connect/resend_email_confirm_code';
 
+    private readonly _updateEthAddress: string = environment.host + '/dashboard/token';
+
 
     get usersUrl() { return this._usersUrl; }
     get currentUserUrl() { return this._currentUserUrl; }
@@ -51,7 +53,7 @@ export class AccountEndpoint extends BaseService {
             });
         return res;
     }
-   resendEmailConfirmCodeEndpoint(form: ResendEmailConfirmCode): Observable<Response> {
+    resendEmailConfirmCodeEndpoint(form: ResendEmailConfirmCode): Observable<Response> {
         const res = this.http.post(this._resendEmailConfirmCode, form)
             .map((response: Response) => {
                 return response;
@@ -220,6 +222,12 @@ export class AccountEndpoint extends BaseService {
             .catch(error => {
                 return this.handleError(error, () => this.TfResetEndpoint());
             });
+        return res;
+    }
+
+    updateEthAddress(address: string) {
+        const res = this.http.post(this._updateEthAddress,
+            JSON.stringify({ address: address }), this.authService.getAuthHeader(ContentType.JSON));
         return res;
     }
 }

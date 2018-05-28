@@ -8,6 +8,8 @@ export class PaymentType {
     faq: string;
     minimum: string;
     eth_to_btc: number;
+    title: string;
+    type: number;
 }
 
 export class IcoInfo {
@@ -24,6 +26,7 @@ export class IcoInfo {
     kycBonus: number;
     // bonusPercentage: number;
     currencies: { currency: string, value: number, img: string }[];
+    progressPercent: number;
     constructor() {
         this.totalCoins = 0;
         this.totalInvestors = 0;

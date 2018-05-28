@@ -1,4 +1,4 @@
-<div>
+<div style="flex-wrap: wrap;display: flex;">
   <mat-card class="first">
     <mat-card-content>
       <!-- <div class="block"> -->
@@ -8,21 +8,31 @@
         <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
         <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
       </h4>
-      <!-- <p *ngIf="dashboard.clientInfoModel.bonusBalance > 0" style="font-size: 18px;">+ {{dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}} bonuses</p> -->
-      <div>
 
-      </div>
-      <div class="ether-addres">
-        <!-- <div>{{'clientInfo.MyEtherAddress' | translate}}:</div>
-                {{dashboard.icoInfoModel.contractAddress}} -->
-        <!-- 0x049a5bf874f241d94232137ef728a9c7dd0d7550 -->
-      </div>
+      <div class="meet-your-model-form token-bar" *ngIf="dashboard.icoInfoModel.totalCoins">
+        <div class="tokenbar-middle">
+          <div class="statistics">
+            <div class="statistics-line" [style.background]="'linear-gradient(to right, #606eac '+dashboard.icoInfoModel.progressPercent+'%, #bec4df '+dashboard.icoInfoModel.progressPercent+'%, #bec4df 100%)'">
+              <div class="statistics-current" [style.left]="dashboard.icoInfoModel.progressPercent+'%'">
+                <span id="collected-funds">${{dashboard.icoInfoModel.totalCoinsBought}}</span>
+              </div>
 
-      <div>
+              <div class="statistics-hard" data-hard-cap="15000000">
+                <div class="statistics-hard-circle"></div>
+                <div class="statistics-hard-data">
+                  <span>${{dashboard.icoInfoModel.totalCoins}}</span>
+                  <span>Pre sale hard cap</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <div>
         Presale progress: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}}%
         <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
         </mat-progress-bar>
-      </div>
+      </div> -->
       <!-- </div> -->
       <!-- <div class="right">
                     we pay BTC for referrals BUTTON TO REF PAGE. JUST REDIRECT
@@ -31,9 +41,26 @@
 
     </mat-card-content>
   </mat-card>
+
   <mat-card class="first-two">
-    <div>test</div>
+    <div style="text-align: center; width: 100%">
+      <div style="font-size: 30px; line-height: 1;">
+        <p>
+          <b> We pay BTC </b>
+
+        </p>
+        <p>
+          <b> for REFERRALS!</b>
+        </p>
+      </div>
+
+      <div style="margin-top: 30px;">
+        <button mat-raised-button [routerLink]="['/referral']">GET YOUR BTC</button>
+      </div>
+
+    </div>
   </mat-card>
+
   <mat-card class="second">
     <mat-card-content>
       <div class="right" *ngIf="false">
@@ -148,32 +175,54 @@
 
   <mat-card class="third" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
-      <div class="title">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
+      <div class="title" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
       <div class="block">
-        <div class="left">
-          <button (click)="changePayment(type)" [attr.class]="selectedPaymentType.currency==type.currency?'item mat-raised-button':'item mat-raised-button active'"
-            mat-button *ngFor="let type of dashboard.paymentInfoList">
-            <img class="currency-icon" [src]="type.image">
+        <div class="left" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">
+          <button (click)="changePayment(type)" class="item" [class.active]="selectedPaymentType.currency!=type.currency" mat-raised-button
+            *ngFor="let type of dashboard.paymentInfoList">
+            <img class="currency-icon" [src]="type.image+'-icon-'+(selectedPaymentType.currency!=type.currency?'pink':'white')+'.svg'">
             <!-- <div class="currency-icon"></div> -->
-            <div class="value">{{type.currency}}</div>
-            <div class="title">1 {{type.currency}} = {{type.rate}} </div>
-
+            <div class="value">{{type.type==0?type.currency:type.title}}</div>
+            <div class="title">1 {{type.currency}} = {{type.rate}} {{dashboard.icoInfoModel.tokenName}}</div>
           </button>
+          <!-- <button class="item" mat-raised-button>
+            Credit Card
+          </button> -->
+          <!-- <button class="item" mat-raised-button>
+            Wire Transfer
+          </button> -->
         </div>
-        <div class="right">
+        <div class="right" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">
           <div *ngIf="!dashboard.clientInfoModel.isTokenSaleDisabled">
             <div *ngIf="selectedPaymentType">
-              <p>Send your {{selectedPaymentType.currency}} to this address</p>
-              <div class="qr_block">
-                <div id="qrCode" class="qrCode"></div>
-                <div>
-                  <mat-form-field>
-                    <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
-                  </mat-form-field>
-                  <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
-                </div>
-              </div>
+              <ng-container *ngIf="selectedPaymentType.type==0">
+                <ng-container *ngIf="selectedPaymentType.address">
+                  <p>Send your {{selectedPaymentType.currency}} to this address</p>
+                  <div class="qr_block">
+                    <div id="qrCode" class="qrCode"></div>
+                    <div>
+                      <mat-form-field>
+                        <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
+                      </mat-form-field>
+                      <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+                    </div>
+                  </div>
+                </ng-container>
 
+              </ng-container>
+              <ng-container *ngIf="selectedPaymentType.type==1">
+                <p style="text-transform: uppercase;">PLEASE INCLUDE TRANSACTION REFERENCE FROM THE FILE! EUR ACCOUNT USD ACCOUNT</p>
+                <div>
+                  <a mat-raised-button>
+                    Credit Card
+                  </a>
+                  <a mat-raised-button>
+                    Credit Card
+                  </a>
+                </div>
+                It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
+                If you have any questions regarding wire transfer please contact us thru email accounting@crystals.love
+              </ng-container>
               <div *ngIf="dashboard.paymentInfoList">
 
                 <div class="token_calculator">
@@ -208,6 +257,8 @@
                   </table>
                 </div>
               </div>
+
+
             </div>
             <div *ngIf="!selectedPaymentType">
               <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>
@@ -227,7 +278,7 @@
   </mat-card>
   <mat-card class="fourth" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
-      <div class="info" style="display: inline-table;">
+      <div class="info">
         <div class="info-container" *ngIf="selectedPaymentType">
           <div class="header">Payment method:
             <b>{{selectedPaymentType.currency}}</b>

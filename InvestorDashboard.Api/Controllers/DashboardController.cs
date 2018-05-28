@@ -268,7 +268,7 @@ namespace InvestorDashboard.Api.Controllers
         }
 
         [Authorize, HttpPost("token"), Produces("application/json")]
-        public async Task<IActionResult> PostTokenAddressData(string address)
+        public async Task<IActionResult> PostTokenAddressData([FromBody]string address)
         {
             if (ApplicationUser != null)
             {

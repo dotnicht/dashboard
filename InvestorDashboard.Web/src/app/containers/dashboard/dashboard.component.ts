@@ -145,13 +145,15 @@ export class DashboardComponent implements OnDestroy, OnInit {
                 db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
                 // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
                 db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
+                db.icoInfoModel.progressPercent = Math.round((db.icoInfoModel.totalCoinsBought / db.icoInfoModel.totalCoins) * 100) / 100;
 
                 db.paymentInfoList.forEach(element => {
-                    element.image = `assets/img/${element.currency}.svg`;
+                    element.image = `assets/img/${element.currency.toLowerCase()}`;
                     element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
                     element.eth_to_btc = Math.round(0.1 / element.rate * 100000) / 100000;
                     element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
                     element.minimum = this.translationService.getTranslation(`dashboard.MIN_${element.currency}`);
+                    element.type = 0;
                 });
 
                 db.icoInfoModel.currencies.forEach(element => {
@@ -166,6 +168,13 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     }
 
                 }
+                db.paymentInfoList.push({
+                    currency: '$',
+                    image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
+                    rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
+                    minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
+                    faq: this.translationService.getTranslation(`dashboard.HTU_$`)
+                } as PaymentType);
                 // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
                 db.clientInfoModel = this.clientInfoService.clientInfo;
                 this.dashboard = db;
@@ -173,7 +182,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         }
         // this.subscribeToData();
     }
-    
+
     private subscribeToData(): void {
         this.subscription = setInterval(() => { this.loadData(); }, 30000);
     }
