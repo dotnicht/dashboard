@@ -50,7 +50,7 @@ export class ReferralComponent implements OnDestroy, OnInit {
     }
 
     ngOnInit() {
-        this.dashboardService.getDashboard().subscribe();
+        // this.dashboardService.getDashboard().subscribe();
         this.observableList.push(this.dashboardService.dashboard$.subscribe(model => {
             this.dashboard = model;
         }));

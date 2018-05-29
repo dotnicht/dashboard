@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, AfterViewInit } from '@angular/core';
+import { Component, OnInit, HostListener, AfterViewInit, OnDestroy } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router, NavigationStart } from '@angular/router';
 import { ResizeService } from './services/resize.service';
@@ -14,13 +14,14 @@ import { CookieService } from 'ngx-cookie-service';
 import { ReferralService } from './services/referral.service';
 import { Observable } from 'rxjs/Observable';
 import { Utilities } from './services/utilities';
+import { DashboardEndpoint } from './services/dashboard-endpoint.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   isMobile: boolean;
   isTab: boolean;
 
@@ -31,6 +32,8 @@ export class AppComponent implements OnInit {
   isReferralSystemDisabled = true;
   isAdmin = false;
   queryParams: any = null;
+
+  observableList = [];
 
   public year: number;
   get showMainContainer() {
@@ -43,6 +46,7 @@ export class AppComponent implements OnInit {
   constructor(
     private domSanitizer: DomSanitizer,
     private storageManager: LocalStoreManager,
+    private dashboardService: DashboardEndpoint,
     private authService: AuthService,
     private accountService: AccountService,
     private configurations: ConfigurationService,
@@ -53,7 +57,7 @@ export class AppComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private cookieService: CookieService,
-    private clientInfoEndpointService: ClientInfoEndpointService,
+    // private clientInfoEndpointService: ClientInfoEndpointService,
     private location: Location,
     private referralService: ReferralService
   ) {
@@ -86,17 +90,25 @@ export class AppComponent implements OnInit {
     this.otherService.showMainComponent = true;
     this.isUserLoggedIn = this.authService.isLoggedIn;
 
-    this.clientInfoEndpointService.icoInfo$.subscribe(data => {
-      this.isReferralSystemDisabled = data.isReferralSystemDisabled;
-      
-    });
+    this.observableList.push(this.dashboardService.dashboard$.subscribe(m => {
+      this.isReferralSystemDisabled = m.icoInfoModel.isReferralSystemDisabled;
+      this.isAdmin = m.clientInfoModel.isAdmin;
+    }));
 
-    this.clientInfoEndpointService.clientInfo$.subscribe(data => {
-     this.isAdmin = data.isAdmin;
-    });
+    // this.clientInfoEndpointService.icoInfo$.subscribe(data => {
+    //   this.isReferralSystemDisabled = data.isReferralSystemDisabled;
+
+    // });
+
+    // this.clientInfoEndpointService.clientInfo$.subscribe(data => {
+    //   this.isAdmin = data.isAdmin;
+    // });
 
     this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
       this.isUserLoggedIn = isLoggedIn;
+      if (isLoggedIn) {
+        this.dashboardService.getDashboard().subscribe();
+      }
     });
 
     // this.router.events.subscribe(event => {
@@ -111,6 +123,11 @@ export class AppComponent implements OnInit {
   }
 
 
+  ngOnDestroy(): void {
+    this.observableList.map((el) => {
+      el.unsubscribe();
+    });
+  }
 
   get userName(): string {
     return this.authService.currentUser ? this.authService.currentUser.userName : '';

@@ -43,8 +43,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public calculatorFromBtc = true;
     public selectedVideo: any;
 
-    timer: Timer = new Timer();
-    // timer = '';
+    timer = '00 : 00 : 00 : 00';
+    timerInterval: any;
 
     private observableList = [];
 
@@ -77,57 +77,35 @@ export class DashboardComponent implements OnDestroy, OnInit {
         });
     }
     ngOnInit(): void {
-        this.loadData();
+        // this.loadData();
         this.chooseVideo();
 
 
 
         this.observableList.push(this.dashboardService.dashboard$.subscribe(model => {
             let db = model;
-            db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
-            // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
-            db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
-            db.icoInfoModel.progressPercent = Math.round((db.icoInfoModel.totalCoins / db.icoInfoModel.totalCoinsBought) * 100) / 100;
-            db.icoInfoModel.progressTotal = Math.round(db.icoInfoModel.totalCoins * db.icoInfoModel.tokenPrice * 100) / 100;
-            db.icoInfoModel.progressTotalBought = Math.round(db.icoInfoModel.totalCoinsBought * db.icoInfoModel.tokenPrice * 100) / 100;
+            if (db.paymentInfoList) {
+                if (db.paymentInfoList.length > 0) {
+                    if (this.selectedPaymentType == undefined) {
+                        this.changePayment(db.paymentInfoList[0]);
+                    }
 
-            db.paymentInfoList.forEach(element => {
-                element.image = `assets/img/${element.currency.toLowerCase()}`;
-                element.title = element.currency;
-                element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
-                element.eth_to_btc = Math.round(0.1 / element.rate * 100000) / 100000;
-                element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
-                element.minimum = this.translationService.getTranslation(`dashboard.MIN_${element.currency}`);
-                element.type = 0;
-            });
-
-            db.icoInfoModel.currencies.forEach(element => {
-                element.img = `assets/img/${element.currency}.svg`;
-            });
-
-            if (db.paymentInfoList.length > 0) {
-                if (this.selectedPaymentType == undefined) {
-                    this.changePayment(db.paymentInfoList[0]);
-                } else {
-                    //this.changePayment(db.paymentInfoList[0])
                 }
-
+                db.paymentInfoList.push({
+                    currency: '$',
+                    image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
+                    rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
+                    minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
+                    faq: this.translationService.getTranslation(`dashboard.HTU_$`)
+                } as PaymentType);
+                this.dashboard = db;
+                this.timerInterval = setInterval(() => { this.updateTimer(); }, 1000);
             }
-            db.paymentInfoList.push({
-                currency: '$',
-                image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
-                rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
-                minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
-                faq: this.translationService.getTranslation(`dashboard.HTU_$`)
-            } as PaymentType);
-            // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
-            db.clientInfoModel = this.clientInfoService.clientInfo;
-            this.dashboard = db;
-            setInterval(() => { this.updateTimer(); }, 1000);
         }));
     }
 
-    public ngOnDestroy(): void {
+    ngOnDestroy(): void {
+        clearInterval(this.timerInterval);
         this.observableList.map((el) => {
             el.unsubscribe();
         });
@@ -178,12 +156,12 @@ export class DashboardComponent implements OnDestroy, OnInit {
         const utc = localTime + localOffset;
 
         const today = new Date(utc).getTime();
-        const day = Math.floor((endDate - today) / (24 * 60 * 60 * 1000));
-        const hour = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-        const min = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 1000)) % 60;
-        const sec = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / 1000) % 60 % 60;
-
-        this.timer = { days: day, hours: hour, minutes: min, seconds: sec } as Timer;
+        const day = Math.floor((endDate - today) / (24 * 60 * 60 * 1000)).toString();
+        const hour = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)).toString();
+        const min = (Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 1000)) % 60).toString();
+        const sec = (Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / 1000) % 60 % 60).toString();
+        this.timer = `${day.length == 1 ? '0' : ''}${day} : ${hour.length == 1 ? '0' : ''}${hour} : ${min.length == 1 ? '0' : ''}${min} : ${sec.length == 1 ? '0' : ''}${sec}`;
+        // this.timer = { days: day, hours: hour, minutes: min, seconds: sec } as Timer;
     }
     qrInitialize(data: string) {
         if (document.getElementById('qrCode')) {

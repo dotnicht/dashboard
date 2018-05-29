@@ -13,13 +13,14 @@ import { Dashboard } from '../../models/dashboard.models';
     styleUrls: ['./client_info.component.scss']
 })
 
-export class ClientInfoComponent implements OnDestroy, OnInit, AfterViewInit {
+export class ClientInfoComponent implements OnDestroy, OnInit {
 
     @ViewChild('start') public sideNav: ElementRef;
 
+    clientInfo: ClientInfo = new ClientInfo();
     currency: string;
 
-    private clientInfoSubscription: any;
+    observableList = [];
 
     get isTab(): boolean {
         return this.resizeService.isTab;
@@ -30,23 +31,28 @@ export class ClientInfoComponent implements OnDestroy, OnInit, AfterViewInit {
         private dashboardService: DashboardEndpoint,
         private resizeService: ResizeService) {
     }
-    get clientInfo() {
-        return this.clientInfoService.clientInfo;
-    }
+    // get clientInfo() {
+    //     return this.clientInfoService.clientInfo;
+    // }
     ngOnInit(): void {
-        this.refreshData();
-        this.subscribeToClientInfoData();
+        // this.refreshData();
+
+        this.observableList.push(this.dashboardService.dashboard$.subscribe(model => {
+            const db = model;
+            this.clientInfo = model.clientInfoModel;
+            this.clientInfo.balance = Math.round(this.clientInfo.balance * 100) / 100;
+            this.clientInfo.bonusBalance = Math.round(this.clientInfo.bonusBalance * 100) / 100;
+            this.clientInfo.summary = Math.round((this.clientInfo.balance + this.clientInfo.bonusBalance) * 100) / 100;
+            this.currency = db.icoInfoModel.tokenName;
+        }));
 
     }
-    ngOnDestroy() {
-        clearInterval(this.clientInfoSubscription);
-    }
-    ngAfterViewInit() {
-        this.dashboardService.getDashboard().subscribe(data => {
-            const db = data.json() as Dashboard;
-            this.currency = db.icoInfoModel.tokenName;
+    ngOnDestroy(): void {
+        this.observableList.map((el) => {
+            el.unsubscribe();
         });
     }
+
     logout() {
         this.authService.logout();
         this.authService.redirectLogoutUser();
@@ -60,7 +66,5 @@ export class ClientInfoComponent implements OnDestroy, OnInit, AfterViewInit {
             this.clientInfoService.updateClientInfo();
         }
     }
-    private subscribeToClientInfoData(): void {
-        //this.clientInfoSubscription = setInterval(() => { this.refreshData(); }, 30000);
-    }
+
 }

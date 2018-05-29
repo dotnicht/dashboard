@@ -11,6 +11,7 @@ import { BaseService } from './base.service';
 import { environment } from '../../environments/environment';
 import { TokenTransfer } from '../models/tokenTransfer.model';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { AppTranslationService } from './app-translation.service';
 
 
 @Injectable()
@@ -23,12 +24,13 @@ export class DashboardEndpoint extends BaseService {
     private readonly _addTokenTransfer: string = environment.host + `/dashboard/add_token_transfer`;
     private readonly _generateAddresses: string = environment.host + `/dashboard/addresses`;
 
-    private dashboardSource = new Subject<Dashboard>();
+    private dashboardSource = new BehaviorSubject<Dashboard>(new Dashboard());
     dashboard$ = this.dashboardSource.asObservable();
 
     private subscription: any;
 
-    constructor(authService: AuthService, http: Http, private configurations: ConfigurationService) {
+    constructor(authService: AuthService, http: Http, private configurations: ConfigurationService,
+        private translationService: AppTranslationService) {
 
         super(authService, http);
     }
@@ -39,7 +41,33 @@ export class DashboardEndpoint extends BaseService {
         // return dashboard;
         let res = this.http.get(this._dashboard, this.authService.getAuthHeader())
             .map((response) => {
-                this.dashboardSource.next(response.json() as Dashboard);
+                const db = response.json() as Dashboard;
+                db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
+                // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
+                db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
+                db.icoInfoModel.progressPercent = Math.round((db.icoInfoModel.totalCoins / db.icoInfoModel.totalCoinsBought) * 100) / 100;
+                db.icoInfoModel.progressTotal = Math.round(db.icoInfoModel.totalCoins * db.icoInfoModel.tokenPrice * 100) / 100;
+                db.icoInfoModel.progressTotalBought = Math.round(db.icoInfoModel.totalCoinsBought * db.icoInfoModel.tokenPrice * 100) / 100;
+
+                db.paymentInfoList.forEach(element => {
+                    element.image = `assets/img/${element.currency.toLowerCase()}`;
+                    element.title = element.currency;
+                    element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
+                    element.eth_to_btc = Math.round(0.1 / element.rate * 100000) / 100000;
+                    element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
+                    element.minimum = this.translationService.getTranslation(`dashboard.MIN_${element.currency}`);
+                    element.type = 0;
+                });
+
+                db.icoInfoModel.currencies.forEach(element => {
+                    element.img = `assets/img/${element.currency}.svg`;
+                });
+
+
+                // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
+                // db.clientInfoModel = this.clientInfoService.clientInfo;
+
+                this.dashboardSource.next(db);
                 return response;
             })
             .catch(error => {
