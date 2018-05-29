@@ -25,6 +25,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<string> GetSecret(string secretName)
         {
+            if (_options.Value.ForceDefaults)
+            {
+                return _options.Value.Defaults[secretName];
+            }
+
             using (var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(GetToken)))
             {
                 var secret = await keyVaultClient.GetSecretAsync(_options.Value.SecretUri, secretName);

@@ -1,4 +1,5 @@
 using InvestorDashboard.Backend.Database.Models;
+using System;
 using System.Collections.Generic;
 
 namespace InvestorDashboard.Api.Models.DashboardModels
@@ -13,6 +14,9 @@ namespace InvestorDashboard.Api.Models.DashboardModels
         public decimal TokenPrice { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsReferralSystemDisabled { get; set; }
+        public decimal ReferralBonus { get; set; }
+        public decimal Bonus { get; set; }
+        public DateTime? BonusValidUntil { get; set; }
         public bool IsKycSystemDisabled { get; set; }
         public long? KycBonus { get; set; }
         public List<CurrencyValue> Currencies { get; set; }

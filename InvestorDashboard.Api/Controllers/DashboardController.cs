@@ -366,6 +366,14 @@ namespace InvestorDashboard.Api.Controllers
 
             result.ContractAddress = _ethereumSettings.Value.ContractAddress;
             result.IsReferralSystemDisabled = _referralSettings.Value.IsDisabled;
+            result.ReferralBonus = _referralSettings.Value.Reward;
+
+            if (_tokenSettings.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
+            {
+                var bonus = _tokenSettings.Value.Bonus.Schedule.FirstOrDefault(x => (x.Start == null || x.Start >= DateTime.UtcNow) && (x.End == null || x.End < DateTime.UtcNow));
+                result.Bonus = bonus.Amount;
+                result.BonusValidUntil = bonus.End;
+            }
 
             return result;
         }
