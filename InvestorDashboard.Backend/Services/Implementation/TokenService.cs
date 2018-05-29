@@ -168,20 +168,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .ToArray();
 
                 var balance = 0L;
+                var bonus = 0L;
 
                 foreach (var tx in inboundTx)
                 {
                     var ex = await _exchangeRateService.GetExchangeRate(tx.CryptoAddress.Currency, _options.Value.Currency, tx.Timestamp);
-                    balance += (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
+                    var value = (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
+                    balance += value;
+                    if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
+                    {
+                        foreach (var item in _options.Value.Bonus.Schedule)
+                        {
+                            if ((item.Start == null || tx.Timestamp > item.Start.Value) && (item.End == null || tx.Timestamp < item.End.Value))
+                            {
+                                bonus += (long)Math.Ceiling(value * item.Amount);
+                            }
+                        }
+                    }
                 }
 
-                var bonus = 0L;
-
-                if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
-                {
-                    // TODO: reimplement schedule bonus system.
-                }
-                else if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Percentage)
+                if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Percentage)
                 {
                     foreach (var item in _options.Value.Bonus.Percentage)
                     {

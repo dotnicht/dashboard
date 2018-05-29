@@ -120,8 +120,9 @@ namespace InvestorDashboard.Api.Controllers
                     if (result.Succeeded)
                     {
                         BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));                        
-                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
-                        BackgroundJob.Enqueue(() => _kycService.UpdateKycTransactions(appUser.Id));
+                        // TODO: configure.
+                        // BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
+                        // BackgroundJob.Enqueue(() => _kycService.UpdateKycTransactions(appUser.Id));
 
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");
