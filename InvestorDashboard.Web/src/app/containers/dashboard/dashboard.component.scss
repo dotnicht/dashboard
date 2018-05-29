@@ -1,5 +1,4 @@
 ﻿  .mat-card {
-
     margin-bottom: 10px;
     .mat-card-content {
       width: 100%;
@@ -91,13 +90,12 @@
     .title {
       //   color: rgba(255, 255, 255, 1);
     }
-    .left{
+    .left {
       width: calc(40% - 2.5px);
     }
-    .right{
+    .right {
       width: calc(60% - 2.5px);
-    }
-    // .left,
+    } // .left,
     // .right {
     //   width: calc(50% - 2.5px);
     // }
@@ -107,8 +105,7 @@
       height: 100%;
       .left {
         border-right: 1px solid #eeeeee;
-        overflow-y: auto;
-        // padding-left: 5px;
+        overflow-y: auto; // padding-left: 5px;
         .item {
           margin: 5px 0;
           padding: 5px;
@@ -119,7 +116,7 @@
           &.mat-raised-button {
             // border: 1px solid #eeeeee;
             // box-shadow: none;
-            border-radius: 5px;
+            // border-radius: 5px;
             background-color: #fc537f !important;
             &.active {
               background-color: #e5dcfa !important;
@@ -356,7 +353,7 @@
       width: 100%;
       height: auto;
     }
-    .first{
+    .first {
       height: 200px;
     }
     .first,
@@ -438,7 +435,7 @@
     padding: 5px 10px;
     color: #fff;
     position: absolute;
-    top: -34px;
+    top: -26px;
     right: 50%;
     transform: translateX(50%);
   }
@@ -498,4 +495,5 @@
 
   .statistics-hard {
     right: 0;
+    top: 23px;
   }

@@ -67,16 +67,16 @@
         <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale starts on
           <div style="margin: 3px 0;"> April 28th, 2018</div>
         </div> -->
-        <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
+      <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
       <!-- </div> -->
       <!-- <div class="left">
         <div style="display: inline-block;"></div> -->
-        <!-- <div class="item">
+      <!-- <div class="item">
                     <img class="color-block" src="assets/img/avatar.svg">
                     <div class="value">{{dashboard.icoInfoModel.totalInvestors}}</div>
                     <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
                 </div> -->
-        <!-- <div class="item">
+      <!-- <div class="item">
           <img class="color-block" src="assets/img/wallet.svg">
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
@@ -86,15 +86,15 @@
           <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} </div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div> -->
-        <!-- <div style="margin-bottom: 25px;">
+      <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div> -->
-        <!-- <div style="margin-top: 20px;" > -->
-        <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
-        <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}}  -->
-        <!-- </div> -->
+      <!-- <div style="margin-top: 20px;" > -->
+      <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
+      <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}}  -->
+      <!-- </div> -->
 
-        <!-- <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
+      <!-- <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
           <div class="item">
             <img class="color-block" [src]="currency.img">
             <div class="value">{{'clientInfo.Total' | translate}} {{currency.currency}}</div>
@@ -106,7 +106,9 @@
       <!-- </div> -->
       <div style="text-align: center; width: 100%;">
         <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
-        <p style="font-size: 32px;margin-top: 15px;color: #fc537f;"><b>25%</b></p>
+        <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
+          <b>25%</b>
+        </p>
         <p style="font-size: 20px;margin-top:30px;">ending in</p>
         <p style="font-size: 34px;margin-top: 15px;font-weight: bold;color:#fc537f;" *ngIf="timer">
           {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}}
@@ -234,24 +236,19 @@
 
               </ng-container>
               <ng-container *ngIf="selectedPaymentType.type==1">
-                <p style="text-transform: uppercase;font-size: 12px;">PLEASE INCLUDE TRANSACTION REFERENCE FROM THE FILE! EUR ACCOUNT USD ACCOUNT</p>
+                <p style="text-transform: uppercase;font-size: 12px;">Please select your currency:</p>
                 <p style="display: flex; justify-content: space-between">
-                  <a mat-raised-button style="width: 48%;font-size: 12px;">
+                  <a mat-raised-button style="width: 48%;font-size: 12px;" (click)="openEurDialog()">
                     EUR ACCOUNT
                   </a>
-                  <a mat-raised-button style="width: 48%;font-size: 12px;">
+                  <a mat-raised-button style="width: 48%;font-size: 12px;" (click)="openUsdDialog()">
                     USD ACCOUNT
                   </a>
                 </p>
-                <div style="font-size: 12px;">
-                  It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
-                  If you have any questions regarding wire transfer please contact us thru email
-                  <a href="mailto:accounting@crystals.love">accounting@crystals.love</a>
-                </div>
+
 
               </ng-container>
               <div *ngIf="dashboard.paymentInfoList">
-
                 <div class="token_calculator">
                   Calculate your purchase:
                   <table cellspacing="0" style="width: 100%">
@@ -284,7 +281,14 @@
                   </table>
                 </div>
               </div>
+              <ng-container *ngIf="selectedPaymentType.type==1">
 
+                <div style="font-size: 12px;">
+                  It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
+
+                </div>
+
+              </ng-container>
 
             </div>
             <div *ngIf="!selectedPaymentType">
@@ -308,7 +312,7 @@
       <div class="info">
         <div class="info-container" *ngIf="selectedPaymentType">
           <div class="header">Payment method:
-            <b>{{selectedPaymentType.currency}}</b>
+            <b>{{selectedPaymentType.title}}</b>
           </div>
           <div class="header">
             <b>{{selectedPaymentType.minimum}}

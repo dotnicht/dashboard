@@ -16,10 +16,10 @@ import { DOCUMENT, DomSanitizer } from '@angular/platform-browser';
 declare var QRCode: any;
 
 export class Timer {
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
+    days = 0;
+    hours = 0;
+    minutes = 0;
+    seconds = 0;
 }
 
 @Component({
@@ -43,11 +43,15 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public calculatorFromBtc = true;
     public selectedVideo: any;
 
-    timer: Timer;
+    timer: Timer = new Timer();
 
-    private subscription: any;
+    private observableList = [];
 
     addedQuestionDialogRef: MatDialogRef<AddedQuestionDialogComponent> | null;
+    eurDialogRef: MatDialogRef<EurDialogComponent> | null;
+    usdDialogRef: MatDialogRef<UsdDialogComponent> | null;
+
+
     qrDialogRef: MatDialogRef<QrDialogComponent> | null;
 
 
@@ -74,16 +78,58 @@ export class DashboardComponent implements OnDestroy, OnInit {
     ngOnInit(): void {
         this.loadData();
         this.chooseVideo();
-        this.loadData();
 
-        setInterval(() => { this.updateTimer(); }, 1000);
-        //this.subscribeToData();
+
+
+        this.observableList.push(this.dashboardService.dashboard$.subscribe(model => {
+            let db = model;
+            db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
+            // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
+            db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
+            db.icoInfoModel.progressPercent = Math.round((db.icoInfoModel.totalCoins / db.icoInfoModel.totalCoinsBought) * 100) / 100;
+            db.icoInfoModel.progressTotal = Math.round(db.icoInfoModel.totalCoins * db.icoInfoModel.tokenPrice * 100) / 100;
+            db.icoInfoModel.progressTotalBought = Math.round(db.icoInfoModel.totalCoinsBought * db.icoInfoModel.tokenPrice * 100) / 100;
+
+            db.paymentInfoList.forEach(element => {
+                element.image = `assets/img/${element.currency.toLowerCase()}`;
+                element.title = element.currency;
+                element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
+                element.eth_to_btc = Math.round(0.1 / element.rate * 100000) / 100000;
+                element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
+                element.minimum = this.translationService.getTranslation(`dashboard.MIN_${element.currency}`);
+                element.type = 0;
+            });
+
+            db.icoInfoModel.currencies.forEach(element => {
+                element.img = `assets/img/${element.currency}.svg`;
+            });
+
+            if (db.paymentInfoList.length > 0) {
+                if (this.selectedPaymentType == undefined) {
+                    this.changePayment(db.paymentInfoList[0]);
+                } else {
+                    //this.changePayment(db.paymentInfoList[0])
+                }
+
+            }
+            db.paymentInfoList.push({
+                currency: '$',
+                image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
+                rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
+                minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
+                faq: this.translationService.getTranslation(`dashboard.HTU_$`)
+            } as PaymentType);
+            // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
+            db.clientInfoModel = this.clientInfoService.clientInfo;
+            this.dashboard = db;
+            setInterval(() => { this.updateTimer(); }, 1000);
+        }));
     }
 
     public ngOnDestroy(): void {
-        if (this.subscription) {
-            clearInterval(this.subscription);
-        }
+        this.observableList.map((el) => {
+            el.unsubscribe();
+        });
     }
     openAddedQuestionDialog() {
         const config = {
@@ -101,7 +147,18 @@ export class DashboardComponent implements OnDestroy, OnInit {
             data: this.selectedPaymentType.address
         };
         this.qrDialogRef = this.dialog.open(QrDialogComponent, config);
-
+    }
+    openEurDialog() {
+        const config = {
+            hasBackdrop: true
+        };
+        this.eurDialogRef = this.dialog.open(EurDialogComponent, config);
+    }
+    openUsdDialog() {
+        const config = {
+            hasBackdrop: true
+        };
+        this.usdDialogRef = this.dialog.open(UsdDialogComponent, config);
     }
     generateAddress() {
         this.isGenProcesing = true;
@@ -112,7 +169,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
         });
     }
     updateTimer() {
-        const endDate = new Date('2018/06/12 12:00:00').getTime();
+        const endDate = new Date(this.dashboard.icoInfoModel.bonusValidUntil).getTime();
 
         const d = new Date();
         const localTime = d.getTime();
@@ -185,53 +242,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     }
     loadData() {
         if (this.authService.isLoggedIn) {
-            this.dashboardService.getDashboard().subscribe(model => {
-                let db = model.json() as Dashboard;
-                db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
-                // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
-                db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
-                db.icoInfoModel.progressPercent = Math.round((db.icoInfoModel.totalCoinsBought / db.icoInfoModel.totalCoins) * 100) / 100;
-                db.icoInfoModel.progressTotal = Math.round(db.icoInfoModel.totalCoins * db.icoInfoModel.tokenPrice * 100) / 100;
-                db.icoInfoModel.progressTotalBought = Math.round(db.icoInfoModel.totalCoinsBought * db.icoInfoModel.tokenPrice * 100) / 100;
-
-                db.paymentInfoList.forEach(element => {
-                    element.image = `assets/img/${element.currency.toLowerCase()}`;
-                    element.faq = this.translationService.getTranslation(`dashboard.HTU_${element.currency}`);
-                    element.eth_to_btc = Math.round(0.1 / element.rate * 100000) / 100000;
-                    element.rate = Math.round((element.rate / db.icoInfoModel.tokenPrice) * 100) / 100;
-                    element.minimum = this.translationService.getTranslation(`dashboard.MIN_${element.currency}`);
-                    element.type = 0;
-                });
-
-                db.icoInfoModel.currencies.forEach(element => {
-                    element.img = `assets/img/${element.currency}.svg`;
-                });
-
-                if (db.paymentInfoList.length > 0) {
-                    if (this.selectedPaymentType == undefined) {
-                        this.changePayment(db.paymentInfoList[0]);
-                    } else {
-                        //this.changePayment(db.paymentInfoList[0])
-                    }
-
-                }
-                db.paymentInfoList.push({
-                    currency: '$',
-                    image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
-                    rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
-                    minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
-                    faq: this.translationService.getTranslation(`dashboard.HTU_$`)
-                } as PaymentType);
-                // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
-                db.clientInfoModel = this.clientInfoService.clientInfo;
-                this.dashboard = db;
-            });
+            this.dashboardService.getDashboard().subscribe();
         }
-        // this.subscribeToData();
-    }
-
-    private subscribeToData(): void {
-        this.subscription = setInterval(() => { this.loadData(); }, 30000);
     }
 
 
@@ -266,17 +278,13 @@ export class AddedQuestionDialogComponent {
     `
 })
 export class QrDialogComponent {
-
     qrData: string;
     constructor(public dialogRef: MatDialogRef<QrDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.qrData = data;
-
     }
     ngOnInit() {
-
         this.qrInitialize(this.qrData);
-
     }
     close() {
         this.dialogRef.close();
@@ -291,7 +299,39 @@ export class QrDialogComponent {
             });
             document.getElementById('qrCode').getElementsByTagName('img')[0].style.display = 'none';
             document.getElementById('qrCode').getElementsByTagName('canvas')[0].style.display = 'block';
-
         }
+    }
+}
+@Component({
+    selector: 'app-eur-dialog',
+    templateUrl: './eur.component.html',
+})
+export class EurDialogComponent implements OnInit {
+    qrData: string;
+    constructor(public dialogRef: MatDialogRef<EurDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.qrData = data;
+    }
+    ngOnInit() {
+    }
+    close() {
+        this.dialogRef.close();
+    }
+}
+
+@Component({
+    selector: 'app-usd-dialog',
+    templateUrl: './usd.component.html',
+})
+export class UsdDialogComponent implements OnInit {
+    qrData: string;
+    constructor(public dialogRef: MatDialogRef<UsdDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.qrData = data;
+    }
+    ngOnInit() {
+    }
+    close() {
+        this.dialogRef.close();
     }
 }

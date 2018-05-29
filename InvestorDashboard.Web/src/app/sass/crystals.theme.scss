@@ -140,4 +140,7 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
   .mat-checkbox-checkmark-path {
     stroke: white !important;
   }
+  .mat-raised-button {
+    border-radius: 28px;
+  }
 }

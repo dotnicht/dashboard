@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { BaseService } from './base.service';
 import { environment } from '../../environments/environment';
 import { TokenTransfer } from '../models/tokenTransfer.model';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 
 @Injectable()
@@ -22,6 +23,8 @@ export class DashboardEndpoint extends BaseService {
     private readonly _addTokenTransfer: string = environment.host + `/dashboard/add_token_transfer`;
     private readonly _generateAddresses: string = environment.host + `/dashboard/addresses`;
 
+    private dashboardSource = new Subject<Dashboard>();
+    dashboard$ = this.dashboardSource.asObservable();
 
     private subscription: any;
 
@@ -30,12 +33,13 @@ export class DashboardEndpoint extends BaseService {
         super(authService, http);
     }
 
-    public getDashboard(): Observable<Response> {
+    public getDashboard() {
         // let dashboard = new Dashboard();
 
         // return dashboard;
         let res = this.http.get(this._dashboard, this.authService.getAuthHeader())
-            .map((response: Response) => {
+            .map((response) => {
+                this.dashboardSource.next(response.json() as Dashboard);
                 return response;
             })
             .catch(error => {
