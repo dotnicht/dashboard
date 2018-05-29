@@ -4,5 +4,11 @@
     {
         public bool IsTestNet { get; set; }
         public bool UseSingleTransferTransaction { get; set; }
+        public Fee TransactionFee { get; set; }
+
+        public enum Fee
+        {
+            Fastest, HalfHour, Hour
+        }
     }
 }

@@ -23,6 +23,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private static Lazy<ConcurrentChain> _chain = new Lazy<ConcurrentChain>(() => _node.Value.GetChain(), LazyThreadSafetyMode.ExecutionAndPublication);
         private static Lazy<Node> _node = new Lazy<Node>(GetNode, LazyThreadSafetyMode.ExecutionAndPublication);
 
+        private static Dictionary<BitcoinSettings.Fee, Func<EarnResponse, int>> _mapping = new Dictionary<BitcoinSettings.Fee, Func<EarnResponse, int>>
+        {
+            { BitcoinSettings.Fee.Fastest, x => x.FastestFee },
+            { BitcoinSettings.Fee.HalfHour, x => x.HalfHourFee },
+            { BitcoinSettings.Fee.Hour, x => x.HourFee },
+        };
+
         private static Network Network
         {
             get
@@ -250,8 +257,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var script = new BitcoinPubKeyAddress(address.Address, Network);
             var balance = await client.GetBalance(script);
             return new BigInteger(balance.Operations.Sum(x => x.Amount));
-            //var balance = await client.GetBalanceSummary(script);
-            //return new BigInteger(balance.Confirmed.Amount.Satoshi);
         }
 
         private static Node GetNode()
@@ -264,7 +269,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private async Task<Money> CalculateFee(Transaction transaction)
         {
             var response = await RestService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
-            var fee = Money.Satoshis(response.FastestFee * transaction.GetVirtualSize());
+            var fee = Money.Satoshis(_mapping[_bitcoinSettings.Value.TransactionFee](response) * transaction.GetVirtualSize());
             return fee;
         }
 
