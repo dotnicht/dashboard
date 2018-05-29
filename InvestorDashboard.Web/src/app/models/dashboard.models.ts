@@ -27,6 +27,8 @@ export class IcoInfo {
     // bonusPercentage: number;
     currencies: { currency: string, value: number, img: string }[];
     progressPercent: number;
+    progressTotal: number;
+    progressTotalBought: number;
     constructor() {
         this.totalCoins = 0;
         this.totalInvestors = 0;

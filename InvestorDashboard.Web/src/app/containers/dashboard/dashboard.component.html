@@ -14,13 +14,13 @@
           <div class="statistics">
             <div class="statistics-line" [style.background]="'linear-gradient(to right, #606eac '+dashboard.icoInfoModel.progressPercent+'%, #bec4df '+dashboard.icoInfoModel.progressPercent+'%, #bec4df 100%)'">
               <div class="statistics-current" [style.left]="dashboard.icoInfoModel.progressPercent+'%'">
-                <span id="collected-funds">${{dashboard.icoInfoModel.totalCoinsBought}}</span>
+                <span id="collected-funds">${{dashboard.icoInfoModel.progressTotalBought}}</span>
               </div>
 
               <div class="statistics-hard" data-hard-cap="15000000">
                 <div class="statistics-hard-circle"></div>
                 <div class="statistics-hard-data">
-                  <span>${{dashboard.icoInfoModel.totalCoins}}</span>
+                  <span>${{dashboard.icoInfoModel.progressTotal}}</span>
                   <span>Pre sale hard cap</span>
                 </div>
               </div>
