@@ -103,6 +103,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var addr = BitcoinAddress.Create(address, Network).ScriptPubKey;
 
+            // TODO: handle change.
+
             return balance.Operations
                 .Select(
                     x => new CryptoTransaction
@@ -110,9 +112,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Hash = x.TransactionId.ToString(),
                         Timestamp = x.FirstSeen.UtcDateTime,
                         Amount = x.Amount.Satoshi.ToString(),
-                        Direction = x.SpentCoins.All(y => y.TxOut.ScriptPubKey == addr)
-                            ? CryptoTransactionDirection.Change
-                            : CryptoTransactionDirection.Inbound
+                        Direction = CryptoTransactionDirection.Inbound
                     })
                 .ToArray();
         }

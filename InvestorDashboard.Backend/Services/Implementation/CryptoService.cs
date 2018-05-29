@@ -118,7 +118,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
                     {
-                        Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
+                        Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address.Address}.");
 
                         using (var ctx = CreateContext())
                         {
