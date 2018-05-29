@@ -29,6 +29,10 @@ export class IcoInfo {
     progressPercent: number;
     progressTotal: number;
     progressTotalBought: number;
+
+    bonusValidUntil: Date;
+    bonus: number;
+    referralBonus: number;
     constructor() {
         this.totalCoins = 0;
         this.totalInvestors = 0;

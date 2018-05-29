@@ -19,10 +19,11 @@
         <span mat-line>Web site</span>
       </a>
       <a *ngIf="isUserLoggedIn" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive" [attr.tabindex]="routerLinkActiveInstance.isActive ? 0 : -1"
-        [routerLink]="['/transfer']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
+        [routerLink]="['/settings/eth_address']" [attr.class]="'mat-list-item '+(routerLinkActiveInstance.isActive ? 'disabled' : '')"
         (click)="start.close()">
-        <mat-icon mat-list-icon>swap_horiz</mat-icon>
-        <span mat-line>{{'mainMenu.Transfer' | translate}}</span>
+        <!-- <mat-icon mat-list-icon>swap_horiz</mat-icon> -->
+        <img mat-list-icon src="assets/images/EthLogo.svg" style="width: 23px;">
+        <span mat-line>ETH Address</span>
       </a>
 
       <a *ngIf="isUserLoggedIn && !isReferralSystemDisabled" mat-list-item routerLinkActive #routerLinkActiveInstance="routerLinkActive"

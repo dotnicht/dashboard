@@ -1,4 +1,4 @@
-﻿import { Component, Inject } from '@angular/core';
+﻿import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { ReferralInfo } from '../../models/referral/referral-info.model';
 import { ReferralService } from '../../services/referral.service';
 import { ReferralCurrencyItem } from '../../models/referral/referral-currency-item.model';
@@ -6,6 +6,8 @@ import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/platform-browser';
 import { ClientInfoEndpointService } from '../../services/client-info.service';
+import { DashboardEndpoint } from '../../services/dashboard-endpoint.service';
+import { Dashboard } from '../../models/dashboard.models';
 
 
 @Component({
@@ -14,10 +16,11 @@ import { ClientInfoEndpointService } from '../../services/client-info.service';
     styleUrls: ['./referral.component.scss']
 })
 /** referral component*/
-export class ReferralComponent {
+export class ReferralComponent implements OnDestroy, OnInit {
     /** referral ctor */
     confirmChangingAddressDialogRef: MatDialogRef<ConfirmChangingAddressDialogComponent> | null;
-        
+    dashboard: Dashboard = new Dashboard();
+    private observableList = [];
     config = {
         data: {},
     };
@@ -32,6 +35,7 @@ export class ReferralComponent {
     public referralLinkIsCopied: boolean = false;
 
     constructor(private referralService: ReferralService,
+        private dashboardService: DashboardEndpoint,
         private dialog: MatDialog,
         @Inject(DOCUMENT) doc: any) {
 
@@ -46,6 +50,10 @@ export class ReferralComponent {
     }
 
     ngOnInit() {
+        this.dashboardService.getDashboard().subscribe();
+        this.observableList.push(this.dashboardService.dashboard$.subscribe(model => {
+            this.dashboard = model;
+        }));
         this.referralService.getReferralInfo().subscribe((data: ReferralInfo) => {
             this.referralInfo = data;
             for (let item of this.referralInfo.items) {
@@ -55,7 +63,11 @@ export class ReferralComponent {
         });
 
     }
-
+    ngOnDestroy(): void {
+        this.observableList.map((el) => {
+            el.unsubscribe();
+        });
+    }
     copyToClipboard(copiedElement: string) {
         if (copiedElement.toUpperCase() == 'REF_LINK') {
             this.referralLinkIsCopied = true;
@@ -108,7 +120,7 @@ export class ReferralComponent {
         item.isEditModeRefAddress = true;
         item.readonlyRefAddress = !item.isEditModeRefAddress;
     }
-    
+
     private cancel(currencyAcronym: string) {
         currencyAcronym = currencyAcronym.toUpperCase();
         let item = this.referralInfo.items.find((item) => {
@@ -134,7 +146,7 @@ export class ReferralComponent {
 
         this.config.data['newAddress'] = item.address;
         this.config.data['remove'] = true;
-        
+
         this.confirmChangingAddressDialogRef = this.dialog.open(ConfirmChangingAddressDialogComponent, this.config);
         this.confirmChangingAddressDialogRef.afterClosed().subscribe((result) => {
             if (result == true) {
