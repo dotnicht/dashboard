@@ -375,7 +375,7 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     result.Bonus = bonus.Amount;
                     result.BonusValidUntil = bonus.End;
-                }                
+                }
             }
 
             return result;
