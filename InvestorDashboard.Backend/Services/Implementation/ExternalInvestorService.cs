@@ -49,7 +49,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var records = _resourceService.GetCsvRecords<ExternalInvestorDataRecord>("ExternalInvestorData.csv");
 
             records = records
-                .Where(x => x.DateTime < DateTime.UtcNow)
+                .Where(x => x.DateTime.ToUniversalTime() < DateTime.UtcNow)
                 .ToArray();
 
             foreach (var record in records)
