@@ -147,7 +147,7 @@ namespace InvestorDashboard.Api.Controllers
             return Unauthorized();
         }
 
-        [Authorize, HttpGet("full_info"), ResponseCache(Duration = 30, VaryByHeader = "Authorization", Location = ResponseCacheLocation.Client)]
+        [Authorize, HttpGet("full_info")]
         public async Task<IActionResult> GetDashboard()
         {
             if (ApplicationUser != null)
