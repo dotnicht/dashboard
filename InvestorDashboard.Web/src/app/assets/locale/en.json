@@ -20,7 +20,7 @@
     },
     "dashboard": {
         "HTU_BTC": "<p>You need to transfer coins to this wallet number from your personal wallet, multisig wallet or exchange. Press COPY to copy wallet number to the clipboard.</p> After receiving at least one confirmation of your transaction your balance will be updated within an hour.",
-        "HTU_ETH": "<p>You need to transfer coins to this wallet number from your personal wallet. Please do not send from multisig wallet or smart contracts and exchanges like Bitstamp, Coinjar. Press COPY to copy wallet number to the clipboard.</p> After receiving at least one confirmation of your transaction your balance will be updated within an hour.",
+        "HTU_ETH": "<p>Please transfer coins to our wallet from your personal wallet. Do not send from multisig wallet or smart contracts and exchanges like Bitstamp, Coinjar. Press COPY to copy wallet number to the clipboard.</p> After receiving at least one confirmation of your transaction your balance will be updated within an hour.",
         "HTU_$":"<p>You need to transfer money from your bank account to the following accounts of Crystals Love LTD.</p>",
         "TokenCalc": "Token calculator",
         "MIN_BTC": "The minimum number of tokens to purchase is",

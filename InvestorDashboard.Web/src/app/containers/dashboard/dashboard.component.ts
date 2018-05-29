@@ -191,6 +191,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
                 // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
                 db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
                 db.icoInfoModel.progressPercent = Math.round((db.icoInfoModel.totalCoinsBought / db.icoInfoModel.totalCoins) * 100) / 100;
+                db.icoInfoModel.progressTotal = Math.round(db.icoInfoModel.totalCoins * db.icoInfoModel.tokenPrice * 100) / 100;
+                db.icoInfoModel.progressTotalBought = Math.round(db.icoInfoModel.totalCoinsBought * db.icoInfoModel.tokenPrice * 100) / 100;
 
                 db.paymentInfoList.forEach(element => {
                     element.image = `assets/img/${element.currency.toLowerCase()}`;
