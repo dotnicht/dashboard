@@ -1,0 +1,9 @@
+.mat-form-field {
+  width: 50%;
+}
+
+@media (max-width: 767px) {
+  .mat-form-field {
+    width: 100%
+  }
+}

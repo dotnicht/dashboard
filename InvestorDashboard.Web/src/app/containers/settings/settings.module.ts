@@ -27,7 +27,7 @@ export const SETTINGS_ROUTES: Routes = [
     { path: '', redirectTo: 'eth_address', pathMatch: 'full' },
     { path: 'profile', component: UserInfoComponent },
     { path: '2fa', loadChildren: 'app/containers/settings/tf_settings/tf_settings.module#TfSettingsModule' },
-    { path: 'change_password', component: ChangePasswordComponent },
+    // { path: 'change_password', component: ChangePasswordComponent },
     { path: 'eth_address', component: EthAddressComponent }
 ];
 @NgModule({

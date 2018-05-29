@@ -143,4 +143,16 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
   .mat-raised-button {
     border-radius: 28px;
   }
+  .mat-list,
+  .mat-nav-list,
+  .mat-selection-list {
+    padding-top: 0;
+    background-color: #f1f3ff;
+    .mat-list-item-content {
+      color: black;
+    }
+  }
+  .mat-drawer.mat-drawer-push {
+    background-color: #f1f3ff;
+  }
 }

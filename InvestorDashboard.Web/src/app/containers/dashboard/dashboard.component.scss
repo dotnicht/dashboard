@@ -319,6 +319,13 @@
     }
   }
 
+  .timer {
+    font-size: 34px;
+    margin-top: 15px;
+    font-weight: bold;
+    color: #fc537f;
+  }
+
   @media (min-width: 1024px) {
     .third {
       .block {
@@ -346,9 +353,15 @@
       margin-left: 0;
       margin-right: 0;
     }
+    .timer {
+      font-size: 24px;
+    }
   }
 
   @media (max-width: 767px) {
+    .timer {
+      font-size: 34px;
+    }
     .mat-card {
       width: 100%;
       height: auto;

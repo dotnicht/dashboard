@@ -4,6 +4,12 @@
 
 .mat-card {
   padding-bottom: 0;
+  border-radius: 0;
+  background: #e5dcfa;
+  color: black;
+  .mat-card-subtitle {
+    color: black;
+  }
 }
 
 hr {

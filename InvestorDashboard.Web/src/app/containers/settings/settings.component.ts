@@ -12,7 +12,7 @@ export class SettingsComponent implements OnInit {
         // { label: 'Profile', link: 'profile' },
         // { label: '2FA', link: '2fa' },
         { label: 'ETH Address', link: 'eth_address' },
-        { label: 'Password', link: 'change_password' }
+        // { label: 'Password', link: 'change_password' }
     ];
     tabNavBackground: any = undefined;
     /** settings ctor */

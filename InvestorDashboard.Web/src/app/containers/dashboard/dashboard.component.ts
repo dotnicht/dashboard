@@ -44,6 +44,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     public selectedVideo: any;
 
     timer: Timer = new Timer();
+    // timer = '';
 
     private observableList = [];
 

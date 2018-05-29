@@ -109,8 +109,8 @@
         <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
           <b>25%</b>
         </p>
-        <p style="font-size: 20px;margin-top:30px;">ending in</p>
-        <p style="font-size: 34px;margin-top: 15px;font-weight: bold;color:#fc537f;" *ngIf="timer">
+        <p style="font-size: 20px;margin-top:30px;">is ending in</p>
+        <p class="timer" *ngIf="timer">
           {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}}
         </p>
       </div>
