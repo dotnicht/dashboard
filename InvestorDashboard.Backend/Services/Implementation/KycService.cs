@@ -265,7 +265,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 Amount = amount.ToString(),
                 Hash = hash.ToString(),
                 Direction = CryptoTransactionDirection.Internal,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.UtcNow,
+                ExternalId = Guid.NewGuid()
             };
 
             return ctx.CryptoTransactions.Add(tx).Entity;
