@@ -60,13 +60,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
             if (_bitcoinSettings.Value.UseSingleTransferTransaction)
             {
                 var transaction = new Transaction();
+                var client = new QBitNinjaClient(Network);
                 using (var ctx = CreateContext())
                 {
                     var destination = GetInternalDestinationAddress();
 
                     foreach (var tx in GetTransferTransactions(ctx))
                     {
-                        // TODO: fill inputs.
+                        var secret = new BitcoinEncryptedSecretNoEC(tx.CryptoAddress.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
+                        var balance = await client.GetBalance(secret, true);
+                        foreach (var coin in balance.Operations.SelectMany(x => x.ReceivedCoins))
+                        {
+                            transaction.AddInput(new TxIn(coin.Outpoint, secret.GetAddress().ScriptPubKey));
+                        }
                     }
 
                     if (!ReferralSettings.Value.IsDisabled)
