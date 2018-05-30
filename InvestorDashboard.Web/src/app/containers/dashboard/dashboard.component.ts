@@ -98,7 +98,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
     chooseVideo() {
         const list = [
-            'https://www.youtube.com/embed/YgY6o1LNlq4',
+            'https://www.youtube.com/embed/1guqqp9txMM',
             'https://www.youtube.com/embed/IF8sihjNO_M',
             'https://www.youtube.com/embed/EuJCTbdF54s'
         ];
