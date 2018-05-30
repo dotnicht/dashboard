@@ -99,22 +99,11 @@ export class RegisterComponent implements OnInit {
             this.queryParams = this.referralService.queryParams;
         }
 
-        if (this.authService.isLoggedIn) {
-            if (Object.keys(this.referralService.queryParams).length != 0) {
-                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams });
-            }
-            else {
-                this.router.navigate(['/login']);
-            }
-        }
-
         this.currentLocationService.getCurrentIpLocation().subscribe(data => {
             this.country = data.country;
             // this.country = 'CN';
             console.log(data.country);
         });
-
-
 
         this.captchaService.generateGuidEndpoint().subscribe(data => {
             const value = data as { Guid: string };

@@ -63,6 +63,7 @@ export class AuthService {
             if (data.authReady) {
                 this.loggedIn = data.tokens != null;
                 if (data.tokens == null) {
+                    console.log('test')
                     this.router.navigate(['/login']);
                 }
             }
