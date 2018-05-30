@@ -10,10 +10,11 @@ import { environment } from '../../environments/environment';
 import { ForgotPassWord, ChangePassWord, ResetPassword } from '../models/user-edit.model';
 import { ResendEmailConfirmCode } from '../components/controls/resend-email-confirm-code/resend-email-confirm-code.component';
 import { ContentType } from '../models/content-type-enum.model';
+import { HttpClient } from '@angular/common/http';
 
 
 @Injectable()
-export class AccountEndpoint extends BaseService {
+export class AccountEndpoint {
 
     private readonly _usersUrl: string = environment.host + '/account/users';
     private readonly _currentUserUrl: string = environment.host + '/account/users/me';
@@ -36,88 +37,44 @@ export class AccountEndpoint extends BaseService {
     get currentUserPreferencesUrl() { return this._currentUserPreferencesUrl; }
 
 
-    constructor(http: Http, authService: AuthService, private configurations: ConfigurationService) {
-
-        super(authService, http);
+    constructor(private http: HttpClient, private authService: AuthService, private configurations: ConfigurationService) {
     }
 
 
-    forgotPasswordEndpoint(form: ForgotPassWord): Observable<Response> {
-        const res = this.http.post(this._forgotPasswordUrl, form)
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.forgotPasswordEndpoint(form));
-
-            });
+    forgotPasswordEndpoint(form: ForgotPassWord) {
+        const res = this.http.post(this._forgotPasswordUrl, form);
         return res;
     }
-    resendEmailConfirmCodeEndpoint(form: ResendEmailConfirmCode): Observable<Response> {
-        const res = this.http.post(this._resendEmailConfirmCode, form)
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.forgotPasswordEndpoint(form));
-
-            });
+    resendEmailConfirmCodeEndpoint(form: ResendEmailConfirmCode) {
+        const res = this.http.post(this._resendEmailConfirmCode, form);
         return res;
     }
-    changePasswordEndpoint(form: ChangePassWord): Observable<Response> {
+    changePasswordEndpoint(form: ChangePassWord) {
         console.log(form);
-        const res = this.http.post(this._changePasswordUrl, form, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.changePasswordEndpoint(form));
-
-            });
+        const res = this.http.post(this._changePasswordUrl, form, this.authService.getAuthHeader());
         return res;
     }
-    resetPasswordEndpoint(form: ResetPassword): Observable<Response> {
+    resetPasswordEndpoint(form: ResetPassword) {
         console.log(form);
-        const res = this.http.post(this._resetPasswordUrl, form, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.resetPasswordEndpoint(form));
-
-            });
+        const res = this.http.post(this._resetPasswordUrl, form, this.authService.getAuthHeader());
         return res;
     }
 
-    getUserEndpoint(userId?: string): Observable<Response> {
+    getUserEndpoint(userId?: string) {
         const endpointUrl = userId ? `${this.usersUrl}/${userId}` : this.currentUserUrl;
 
-        const res = this.http.get(endpointUrl, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.getUserEndpoint(userId));
-
-            });
+        const res = this.http.get(endpointUrl, this.authService.getAuthHeader());
         return res;
     }
 
-    getUpdateUserEndpoint(userObject: any, userId?: string): Observable<Response> {
+    getUpdateUserEndpoint(userObject: any, userId?: string) {
         const endpointUrl = this.currentUserUrl;
-        return this.http.put(endpointUrl, JSON.stringify(userObject), this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.getUpdateUserEndpoint(userObject, userId));
-            });
+        return this.http.put(endpointUrl, JSON.stringify(userObject), this.authService.getAuthHeader());
     }
 
-    getPatchUpdateUserEndpoint(patch: {}, userId?: string): Observable<Response>;
-    getPatchUpdateUserEndpoint(value: any, op: string, path: string, from?: any, userId?: string): Observable<Response>;
-    getPatchUpdateUserEndpoint(valueOrPatch: any, opOrUserId?: string, path?: string, from?: any, userId?: string): Observable<Response> {
+    getPatchUpdateUserEndpoint(patch: {}, userId?: string);
+    getPatchUpdateUserEndpoint(value: any, op: string, path: string, from?: any, userId?: string);
+    getPatchUpdateUserEndpoint(valueOrPatch: any, opOrUserId?: string, path?: string, from?: any, userId?: string) {
         let endpointUrl: string;
         let patchDocument: {};
 
@@ -131,115 +88,53 @@ export class AccountEndpoint extends BaseService {
             patchDocument = valueOrPatch;
         }
 
-        return this.http.patch(endpointUrl, JSON.stringify(patchDocument), this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.getPatchUpdateUserEndpoint(valueOrPatch, opOrUserId, path, from, userId));
-            });
+        return this.http.patch(endpointUrl, JSON.stringify(patchDocument), this.authService.getAuthHeader());
     }
 
 
-    getUserPreferencesEndpoint(): Observable<Response> {
+    getUserPreferencesEndpoint() {
 
-        return this.http.get(this.currentUserPreferencesUrl, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.getUserPreferencesEndpoint());
-            });
+        return this.http.get(this.currentUserPreferencesUrl, this.authService.getAuthHeader());
     }
 
-    getUpdateUserPreferencesEndpoint(configuration: string): Observable<Response> {
-        return this.http.put(this.currentUserPreferencesUrl, JSON.stringify(configuration), this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.getUpdateUserPreferencesEndpoint(configuration));
-            });
+    getUpdateUserPreferencesEndpoint(configuration: string) {
+        return this.http.put(this.currentUserPreferencesUrl, JSON.stringify(configuration), this.authService.getAuthHeader());
     }
 
 
-    TfGetActivationDataEndpoint(): Observable<Response> {
-        const res = this.http.get(this._tfaEnableUrl, this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfGetActivationDataEndpoint());
-
-            });
+    TfGetActivationDataEndpoint() {
+        const res = this.http.get(this._tfaEnableUrl, this.authService.getAuthHeader());
         return res;
     }
-    TfPostActivationDataEndpoint(code: string): Observable<Response> {
-        const res = this.http.post(this._tfaEnableUrl, JSON.stringify({ code: code }), this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfPostActivationDataEndpoint(code));
-            });
+    TfPostActivationDataEndpoint(code: string) {
+        const res = this.http.post(this._tfaEnableUrl, JSON.stringify({ code: code }), this.authService.getAuthHeader());
         return res;
     }
-    TfaDataEndpoint(): Observable<Response> {
-        const res = this.http.get(this._tfaUrl, this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfaDataEndpoint());
-            });
+    TfaDataEndpoint() {
+        const res = this.http.get(this._tfaUrl, this.authService.getAuthHeader());
         return res;
     }
-    TfGetRecoveryCodesEndpoint(): Observable<Response> {
-        const res = this.http.get(this._tfaGetRecoveryCodes, this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfGetRecoveryCodesEndpoint());
-            });
+    TfGetRecoveryCodesEndpoint() {
+        const res = this.http.get(this._tfaGetRecoveryCodes, this.authService.getAuthHeader());
         return res;
     }
-    TfDisableEndpoint(): Observable<Response> {
-        const res = this.http.post(this._tfaDisable, null, this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfDisableEndpoint());
-            });
+    TfDisableEndpoint() {
+        const res = this.http.post(this._tfaDisable, null, this.authService.getAuthHeader());
         return res;
     }
-    TfResetEndpoint(): Observable<Response> {
-        const res = this.http.post(this._tfaReset, null, this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfResetEndpoint());
-            });
+    TfResetEndpoint() {
+        const res = this.http.post(this._tfaReset, null, this.authService.getAuthHeader());
         return res;
     }
 
     updateEthAddress(address: string) {
 
         const res = this.http.post(this._ethAddress,
-            JSON.stringify({ address: address }), this.authService.getAuthHeader(ContentType.JSON))
-            .map((response: Response) => {
-                return response.json();
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.TfResetEndpoint());
-            });
+            JSON.stringify({ address: address }), this.authService.getAuthHeader());
         return res;
     }
     getEthAddress() {
-
-        const res = this.http.get(this._ethAddress, this.authService.getAuthHeader(ContentType.JSON));
+        const res = this.http.get(this._ethAddress, this.authService.getAuthHeader());
         return res;
     }
 }

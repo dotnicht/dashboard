@@ -16,7 +16,7 @@ export class EthAddressComponent implements OnInit {
 
   ngOnInit() {
     this.accountEndpoint.getEthAddress().subscribe(data => {
-      this.ethAddress = data.json() as string;
+      this.ethAddress = data as string;
     }, error => {
       console.log(error)
     });

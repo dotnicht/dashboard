@@ -98,10 +98,10 @@ export class RegisterComponent implements OnInit {
         if (Object.keys(this.referralService.queryParams).length != 0) {
             this.queryParams = this.referralService.queryParams;
         }
-        
+
         if (this.authService.isLoggedIn) {
             if (Object.keys(this.referralService.queryParams).length != 0) {
-                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams  });
+                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams });
             }
             else {
                 this.router.navigate(['/login']);
@@ -117,7 +117,7 @@ export class RegisterComponent implements OnInit {
 
 
         this.captchaService.generateGuidEndpoint().subscribe(data => {
-            const value = data.json() as { Guid: string };
+            const value = data as { Guid: string };
             this.guid = value.Guid;
             this.captchaUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`https://dp-captcha2.azurewebsites.net/captcha?lang=en-EN&captchaId=${this.guid}`);
             // setTimeout(() => {
@@ -135,9 +135,6 @@ export class RegisterComponent implements OnInit {
         //this.registerForm.confirmPassword = '123456_Kol';
 
 
-
-    }
-    ngAfterViewInit() {
 
     }
     openEmailConfirmDialog(): void {
@@ -182,18 +179,18 @@ export class RegisterComponent implements OnInit {
                     this.registerForm.reCaptchaToken = this.guid;
                 }
 
-                if (this.activatedRoute.snapshot.queryParams['ref']){
+                if (this.activatedRoute.snapshot.queryParams['ref']) {
                     this.registerForm.referral = this.activatedRoute.snapshot.queryParams['ref'];
                 }
 
-                if (this.activatedRoute.snapshot.queryParams['utm_source']){
+                if (this.activatedRoute.snapshot.queryParams['utm_source']) {
                     this.registerForm.utmSource = this.activatedRoute.snapshot.queryParams['utm_source'];
                 }
 
                 if (this.referralService.startUrl) {
                     this.registerForm.startUrl = this.referralService.startUrl;
                 }
-                
+
                 this.referralService.startUrl = '';
                 this.referralService.queryParams = {};
 

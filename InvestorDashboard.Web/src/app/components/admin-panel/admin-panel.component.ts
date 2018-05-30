@@ -37,15 +37,15 @@ export class AdminPanelComponent {
         console.log('email', this.email);
         this.showUserTransactions = null;
         if (this.email && this.email.length > 0) {
-            this.adminService.getUserTransactionsByEmail(this.email).subscribe(resp=> {
-                let response = resp.json();
+            this.adminService.getUserTransactionsByEmail(this.email).subscribe(resp => {
+                let response = resp;
                 if ('id' in response && 'transactions' in response) {
                     this.userGuid = response.id;
                     this.userTransactions = response.transactions;
                     this.showUserTransactions = true;
                 }
             })
-        }      
+        }
     }
 
     enterTokens() {
@@ -58,8 +58,8 @@ export class AdminPanelComponent {
         this.confirmExtraTokensDialogRef = this.dialog.open(ConfirmExtraTokensDialogComponent, config);
         this.confirmExtraTokensDialogRef.afterClosed().subscribe((result) => {
             if (result == true) {
-                this.adminService.setTokensToUser(this.userGuid, this.extraTokens).subscribe(resp=> {
-                    let response = resp.json();
+                this.adminService.setTokensToUser(this.userGuid, this.extraTokens).subscribe(resp => {
+                    let response = resp;
                     if ('id' in response && 'transactions' in response) {
                         this.userGuid = response['id'];
                         this.userTransactions = response['transactions'];

@@ -55,16 +55,12 @@ export class ClientInfoComponent implements OnDestroy, OnInit {
 
     logout() {
         this.authService.logout();
-        this.authService.redirectLogoutUser();
+        // this.authService.redirectLogoutUser();
     }
 
     get userName(): string {
-        return this.authService.currentUser ? this.authService.currentUser.userName : '';
+        return this.authService.currentUser ? this.authService.currentUser.email : '';
     }
-    private refreshData() {
-        if (this.authService.isLoggedIn && !this.authService.isSessionExpired) {
-            this.clientInfoService.updateClientInfo();
-        }
-    }
+
 
 }

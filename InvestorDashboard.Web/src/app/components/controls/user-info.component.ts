@@ -43,7 +43,7 @@ export class UserInfoComponent implements OnInit {
     @Input()
     isViewOnly: boolean;
     isLoading = true;
-    
+
     private countryCodes: CountryCode[];
     private countries: Country[] = [];
     private isEditMode = false;
@@ -393,14 +393,14 @@ export class UserInfoComponent implements OnInit {
     }
 
     private refreshLoggedInUser() {
-        this.accountService.refreshLoggedInUser()
-            .subscribe(user => {
-                this.loadCurrentUserData();
-            },
-                error => {
-                    // this.alertService.resetStickyMessage();
-                    // this.alertService.showStickyMessage('Refresh failed', 'An error occured whilst refreshing logged in user information from the server', MessageSeverity.error, error);
-                });
+        // this.accountService.refreshLoggedInUser()
+        //     .subscribe(user => {
+        //         this.loadCurrentUserData();
+        //     },
+        //         error => {
+        //             // this.alertService.resetStickyMessage();
+        //             // this.alertService.showStickyMessage('Refresh failed', 'An error occured whilst refreshing logged in user information from the server', MessageSeverity.error, error);
+        //         });
     }
 
     private changePassword() {
@@ -453,8 +453,8 @@ export class UserInfoComponent implements OnInit {
         for (let field in responseStatuses) {
             if (!('kycStatus' in this.user) || responseStatuses[field].status != this.user.kycStatus[field].status) {
                 let message = this.getKycStatusMessage(field, responseStatuses[field].status.toString(), responseStatuses[field].amount);
-                if (message) { 
-                    messages.push(message); 
+                if (message) {
+                    messages.push(message);
                 }
             }
         }

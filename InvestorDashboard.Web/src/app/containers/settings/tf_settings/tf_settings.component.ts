@@ -46,8 +46,8 @@ export class TfSettingsComponent implements OnInit {
     }
     updateTabs(index?: number) {
         this.accountEndpoint.TfaDataEndpoint().subscribe(data => {
-            this.tfa = data.json() as TwoFactorAuthenticationModel;
-            this.tfa.recoveryCodesLeft=0;
+            this.tfa = data as TwoFactorAuthenticationModel;
+            this.tfa.recoveryCodesLeft = 0;
             this.switchTab(index);
         });
     }

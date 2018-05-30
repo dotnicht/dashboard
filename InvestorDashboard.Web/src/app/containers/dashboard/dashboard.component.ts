@@ -91,13 +91,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     }
 
                 }
-                db.paymentInfoList.push({
-                    currency: '$',
-                    image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
-                    rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
-                    minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
-                    faq: this.translationService.getTranslation(`dashboard.HTU_$`)
-                } as PaymentType);
+               
                 this.dashboard = db;
                 this.timerInterval = setInterval(() => { this.updateTimer(); }, 1000);
             }

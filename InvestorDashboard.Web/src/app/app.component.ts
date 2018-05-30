@@ -88,7 +88,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isTab = this.resizeService.isTab;
     }
     this.otherService.showMainComponent = true;
-    this.isUserLoggedIn = this.authService.isLoggedIn;
+    // this.isUserLoggedIn = this.authService.isLoggedIn;
 
     this.observableList.push(this.dashboardService.dashboard$.subscribe(m => {
       this.isReferralSystemDisabled = m.icoInfoModel.isReferralSystemDisabled;
@@ -104,12 +104,22 @@ export class AppComponent implements OnInit, OnDestroy {
     //   this.isAdmin = data.isAdmin;
     // });
 
-    this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
-      this.isUserLoggedIn = isLoggedIn;
-      if (isLoggedIn) {
-        this.dashboardService.getDashboard().subscribe();
+    this.authService.state$.subscribe(data => {
+      this.isUserLoggedIn = data.tokens != null;
+      if (data.tokens != null) {
+        if (data.authReady) {
+          this.dashboardService.getDashboard().subscribe();
+        }
       }
     });
+    this.authService.init().subscribe();
+
+    // this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
+    //   this.isUserLoggedIn = isLoggedIn;
+    //   if (isLoggedIn) {
+    //     this.dashboardService.getDashboard().subscribe();
+    //   }
+    // });
 
     // this.router.events.subscribe(event => {
     //   if (event instanceof NavigationStart) {
@@ -130,7 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   get userName(): string {
-    return this.authService.currentUser ? this.authService.currentUser.userName : '';
+    return this.authService.currentUser ? this.authService.currentUser.email : '';
   }
 
   @HostListener('window:resize', ['$event'])

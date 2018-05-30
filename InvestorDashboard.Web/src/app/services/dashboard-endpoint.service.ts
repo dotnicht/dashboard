@@ -12,10 +12,11 @@ import { environment } from '../../environments/environment';
 import { TokenTransfer } from '../models/tokenTransfer.model';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { AppTranslationService } from './app-translation.service';
+import { HttpClient } from '@angular/common/http';
 
 
 @Injectable()
-export class DashboardEndpoint extends BaseService {
+export class DashboardEndpoint {
 
     private readonly _icoInfoUrl: string = environment.host + `/dashboard/ico_status`;
     private readonly _paymentTypesUrl: string = environment.host + `/dashboard/payment_status`;
@@ -29,10 +30,9 @@ export class DashboardEndpoint extends BaseService {
 
     private subscription: any;
 
-    constructor(authService: AuthService, http: Http, private configurations: ConfigurationService,
+    constructor(private authService: AuthService, private http: HttpClient, private configurations: ConfigurationService,
         private translationService: AppTranslationService) {
 
-        super(authService, http);
     }
 
     public getDashboard() {
@@ -41,7 +41,7 @@ export class DashboardEndpoint extends BaseService {
         // return dashboard;
         let res = this.http.get(this._dashboard, this.authService.getAuthHeader())
             .map((response) => {
-                const db = response.json() as Dashboard;
+                const db = response as Dashboard;
                 db.icoInfoModel.totalCoinsBoughtPercent = Math.round((db.icoInfoModel.totalCoinsBought * 100 / db.icoInfoModel.totalCoins) * 100) / 100;
                 // db.icoInfoModel.totalUsdInvested = Math.round(db.icoInfoModel.totalUsdInvested * 100) / 100;
                 db.icoInfoModel.totalCoinsBought = Math.round(db.icoInfoModel.totalCoinsBought * 100) / 100;
@@ -63,74 +63,43 @@ export class DashboardEndpoint extends BaseService {
                     element.img = `assets/img/${element.currency}.svg`;
                 });
 
-
+                db.paymentInfoList.push({
+                    currency: '$',
+                    image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
+                    rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
+                    minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
+                    faq: this.translationService.getTranslation(`dashboard.HTU_$`)
+                } as PaymentType);
                 // this.etherAddress = db.paymentInfoList.filter(x => x.currency == 'ETH')[0].address;
                 // db.clientInfoModel = this.clientInfoService.clientInfo;
 
                 this.dashboardSource.next(db);
                 return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.getDashboard());
-
             });
         return res;
     }
 
-    public getIcoInfo(): Observable<Response> {
+    public getIcoInfo() {
 
-        let res = this.http.get(this._icoInfoUrl, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.getIcoInfo());
-
-            });
+        let res = this.http.get<IcoInfo>(this._icoInfoUrl, this.authService.getAuthHeader());
         return res;
     }
-    public getPaymentTypes(): Observable<Response> {
-        let res = this.http.get(this._paymentTypesUrl, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.getPaymentTypes());
-
-            });
+    public getPaymentTypes() {
+        let res = this.http.get(this._paymentTypesUrl, this.authService.getAuthHeader());
         return res;
     }
 
-    public addQuestion(text: string): Observable<Response> {
+    public addQuestion(text: string) {
 
-        let res = this.http.post(this._addQuestion, { Message: text }, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.addQuestion(text));
-
-            });
+        let res = this.http.post(this._addQuestion, { Message: text }, this.authService.getAuthHeader());
         return res;
     }
-    public addtokenTransfer(model: TokenTransfer): Observable<Response> {
+    public addtokenTransfer(model: TokenTransfer) {
 
-        let res = this.http.post(this._addTokenTransfer, model, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.addtokenTransfer(model));
-
-            });
+        let res = this.http.post(this._addTokenTransfer, model, this.authService.getAuthHeader());
         return res;
     }
-    public generateAddresses(): Observable<Response> {
+    public generateAddresses() {
 
         let res = this.http.post(this._generateAddresses, null, this.authService.getAuthHeader());
         return res;
