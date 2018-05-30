@@ -50,6 +50,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task UpdateKycTransactions(string userId = null)
         {
+            if (_options.Value.Bonus.IsKycBonusDisabled)
+            {
+                return;
+            }
+
             if (userId == null)
             {
                 using (var ctx = CreateContext())

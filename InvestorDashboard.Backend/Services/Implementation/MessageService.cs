@@ -115,7 +115,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var sb = new StringBuilder();
 
-            sb.AppendLine($"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
+            sb.AppendLine($"Environment: {Configuration.Environment}");
 
             if (items.Any())
             {

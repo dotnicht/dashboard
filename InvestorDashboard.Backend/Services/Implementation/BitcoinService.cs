@@ -62,7 +62,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var transaction = new Transaction();
                 using (var ctx = CreateContext())
                 {
-                    var destination = await EnsureInternalDestinationAddress(ctx);
+                    var destination = GetInternalDestinationAddress();
 
                     foreach (var tx in GetTransferTransactions(ctx))
                     {

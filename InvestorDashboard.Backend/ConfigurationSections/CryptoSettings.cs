@@ -11,7 +11,6 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public bool SkipAddressCreationOnDisabled { get; set; }
         public bool ImportDisabledAddressesTransactions { get; set; }
         public Uri NodeAddress { get; set; }
-        public string InternalTransferUserId { get; set; }
         public byte Denomination { get; set; }
         public bool UseDirectBlockAccess { get; set; }
         public TimeSpan? LegacyTransactionRefreshTimeout { get; set; }

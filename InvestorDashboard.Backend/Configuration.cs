@@ -13,6 +13,13 @@ namespace InvestorDashboard.Backend
 {
     public static class Configuration
     {
+        private const string _environmentVariableName = "ASPNETCORE_ENVIRONMENT";
+
+        public static EnvironmentValue Environment
+        {
+            get => Enum.Parse<EnvironmentValue>(System.Environment.GetEnvironmentVariable(_environmentVariableName)); 
+        }
+
         public static void Configure(IServiceCollection services, IConfigurationRoot configuration)
         {
             if (services == null)
@@ -84,6 +91,11 @@ namespace InvestorDashboard.Backend
                 options.ClaimsIdentity.UserIdClaimType = OpenIdConnectConstants.Claims.Subject;
                 options.ClaimsIdentity.RoleClaimType = OpenIdConnectConstants.Claims.Role;
             });
+        }
+
+        public enum EnvironmentValue
+        {
+            Development, Production
         }
     }
 }

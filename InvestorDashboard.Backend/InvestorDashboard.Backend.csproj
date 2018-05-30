@@ -7,15 +7,15 @@
 
   <ItemGroup>
     <None Remove="Services\Implementation\Data\ContractAbi.json" />
-    <None Remove="Services\Implementation\Data\InternalCryptoAddressData.csv" />
     <None Remove="Services\Implementation\Data\MasterKeyStore.json" />
+    <None Remove="Services\Implementation\Data\TransferAddressData.csv" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Services\Implementation\Data\ContractAbi.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Services\Implementation\Data\InternalCryptoAddressData.csv">
+    <EmbeddedResource Include="Services\Implementation\Data\TransferAddressData.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

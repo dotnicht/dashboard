@@ -1,11 +1,7 @@
-﻿using AspNet.Security.OpenIdConnect.Primitives;
-using AutoMapper;
-using Hangfire;
+﻿using AutoMapper;
 using InvestorDashboard.Backend;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database;
-using InvestorDashboard.Backend.Database.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +32,7 @@ namespace InvestorDashboard.Console
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", false, true)
+                .AddJsonFile($"appsettings.{Configuration.Environment}.json", false, true)
                 .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
