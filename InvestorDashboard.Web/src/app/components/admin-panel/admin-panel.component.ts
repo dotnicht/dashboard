@@ -15,7 +15,7 @@ export class AdminPanelComponent {
     email: string;
     extraTokens: number;
     private userGuid: string;
-    userTransactions: any[];
+    userTransactions = [];
     showUserTransactions: boolean;
 
     constructor(private dialog: MatDialog,
@@ -33,7 +33,6 @@ export class AdminPanelComponent {
     }
 
     findEmail() {
-        //dd.aa.nn.1.kk@gmail.com
         console.log('email', this.email);
         this.showUserTransactions = null;
         if (this.email && this.email.length > 0) {
@@ -41,10 +40,13 @@ export class AdminPanelComponent {
                 let response = resp;
                 if ('id' in response && 'transactions' in response) {
                     this.userGuid = response.id;
-                    this.userTransactions = response.transactions;
+                    if (response.transactions) {
+                        this.userTransactions = response.transactions;
+                    }
+
                     this.showUserTransactions = true;
                 }
-            })
+            });
         }
     }
 
