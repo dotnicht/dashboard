@@ -61,17 +61,27 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 var transaction = new Transaction();
                 var client = new QBitNinjaClient(Network);
+                var value = Money.Zero;
+
+                var secrets = new List<ISecret>();
+                var coins = new List<ICoin>();
+
                 using (var ctx = CreateContext())
                 {
-                    var destination = GetInternalDestinationAddress();
+                    var address = GetInternalDestinationAddress();
 
                     foreach (var tx in GetTransferTransactions(ctx))
                     {
                         var secret = new BitcoinEncryptedSecretNoEC(tx.CryptoAddress.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
                         var balance = await client.GetBalance(secret, true);
+
+                        secrets.Add(secret);
+
                         foreach (var coin in balance.Operations.SelectMany(x => x.ReceivedCoins))
                         {
                             transaction.AddInput(new TxIn(coin.Outpoint, secret.GetAddress().ScriptPubKey));
+                            value += coin.TxOut.Value;
+                            coins.Add(coin);
                         }
                     }
 
@@ -83,7 +93,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         }
                     }
 
-                    // TODO: fill transfer outputs.
+                    await AdjustAmountAndPublish(transaction, secrets.ToArray(), coins.ToArray(), value, address);
                 }
             }
             else
@@ -153,13 +163,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 }
             }
 
-            var destination = new TxOut
-            {
-                ScriptPubKey = BitcoinAddress.Create(destinationAddress, Network).ScriptPubKey
-            };
-
-            transaction.AddOutput(destination);
-
             var change = value - money;
             if (change > 0)
             {
@@ -170,29 +173,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 });
             }
 
-            var fee = await CalculateFee(transaction);
-
-            if (value > fee)
-            {
-                var adjustedAmount = value - fee;
-                destination.Value = adjustedAmount;
-                transaction.Sign(secret, coins);
-
-                Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
-
-                _node.Value.SendMessage(new InvPayload(transaction));
-                _node.Value.SendMessage(new TxPayload(transaction));
-                await Task.Delay(TimeSpan.FromSeconds(5));
-
-                return (Hash: transaction.GetHash().ToString(), AdjustedAmount: adjustedAmount.Satoshi, Success: true);
-            }
-
-            if (value > 0)
-            {
-                Logger.LogWarning($"Transaction publish failed. Address: {address.Address}. Value: {value}. Fee: {fee}.");
-            }
-
-            return (Hash: null, AdjustedAmount: 0, Success: false);
+            return await AdjustAmountAndPublish(transaction, new[] { secret }, coins, value, destinationAddress);
         }
 
         protected override Task<long> GetCurrentBlockIndex()
@@ -214,11 +195,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
             foreach (var tx in block.Transactions)
             {
                 var hash = tx.GetHash().ToString();
+
                 // TODO: remove for loop.
+
                 for (var i = 0; i < tx.Outputs.Count; i++)
                 {
                     var destination = tx.Outputs[i].ScriptPubKey.GetDestinationAddress(Network)?.ToString();
                     var address = addresses.SingleOrDefault(x => x.Address == destination);
+
                     if (address != null)
                     {
                         using (var ctx = CreateContext())
@@ -265,11 +249,40 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return node;
         }
 
-        private async Task<Money> CalculateFee(Transaction transaction)
+        private async Task<(string Hash, BigInteger AdjustedAmount, bool Success)> AdjustAmountAndPublish(Transaction transaction, ISecret[] secrets, ICoin[] coins, Money value, string address)
         {
+            var destination = new TxOut
+            {
+                ScriptPubKey = BitcoinAddress.Create(address, Network).ScriptPubKey
+            };
+
+            transaction.AddOutput(destination);
+
             var response = await RestService.GetAsync<EarnResponse>(new Uri("https://bitcoinfees.earn.com/api/v1/fees/recommended"));
             var fee = Money.Satoshis(response.FastestFee * transaction.GetVirtualSize());
-            return fee;
+
+            if (value > fee)
+            {
+                var adjustedAmount = value - fee;
+                destination.Value = adjustedAmount;
+                transaction.Sign(secrets, coins);
+
+                Logger.LogDebug($"Publishing transaction {transaction.ToHex()}");
+
+                _node.Value.SendMessage(new InvPayload(transaction));
+                _node.Value.SendMessage(new TxPayload(transaction));
+
+                await Task.Delay(TimeSpan.FromSeconds(5));
+
+                return (Hash: transaction.GetHash().ToString(), AdjustedAmount: adjustedAmount.Satoshi, Success: true);
+            }
+
+            if (value > 0)
+            {
+                Logger.LogWarning($"Transaction publish failed. Value: {value}. Fee: {fee}.");
+            }
+
+            return (Hash: null, AdjustedAmount: 0, Success: false);
         }
 
         private class EarnResponse
