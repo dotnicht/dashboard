@@ -37,9 +37,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .ToDictionaryAsync(x => x.Hash, x => _calculationService.ToDecimalValue(x.Amount, currency));
 
                 var tx = ctx.CryptoTransactions
-                    .Where(x => x.CryptoAddress.Currency == currency && x.CryptoAddress.User.ReferralUserId == userId);
+                    .Where(
+                        x => x.CryptoAddress.Currency == currency 
+                        && x.CryptoAddress.Type == CryptoAddressType.Investment 
+                        && x.CryptoAddress.User.ReferralUserId == userId 
+                        && x.Direction == CryptoTransactionDirection.Inbound);
 
-                var pending = await tx.Where(x => x.IsReferralPaid == false)
+                var pending = await tx.Where(x => !x.IsReferralPaid)
                     .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
                     .SumAsync();
 

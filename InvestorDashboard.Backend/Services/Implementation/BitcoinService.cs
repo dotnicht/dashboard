@@ -109,6 +109,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 CryptoAddressId = tx.CryptoAddressId
                             };
 
+                            if (tx.IsReferralPaid)
+                            {
+                                var referral = new CryptoTransaction
+                                {
+                                    Hash = hash,
+                                    Amount = adjustedAmount.ToString(),
+                                    Timestamp = DateTime.UtcNow,
+                                    Direction = CryptoTransactionDirection.Referral,
+                                    CryptoAddressId = tx.CryptoAddressId
+                                };
+
+                                ctx.CryptoTransactions.Add(referral);
+                            }
+
                             ctx.CryptoTransactions.Add(transfer);
                         }
 
