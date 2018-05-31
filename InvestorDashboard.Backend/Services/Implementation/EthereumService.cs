@@ -39,8 +39,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
         }
 
-        protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
+        protected override (string Address, string PrivateKey) GenerateKeys(string password)
         {
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             var policy = Policy
                 .Handle<ArgumentException>()
                 .Retry(10, (e, i) => Logger.LogError(e, $"Key generation failed. Retry attempt: {i}."));
@@ -51,7 +56,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var address = ecKey.GetPublicAddress();
                 var bytes = ecKey.GetPrivateKeyAsBytes();
                 var service = new KeyStorePbkdf2Service();
-                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, bytes, address);
+                var privateKey = service.EncryptAndGenerateKeyStoreAsJson(password, bytes, address);
                 return (Address: address, PrivateKey: privateKey);
             });
         }

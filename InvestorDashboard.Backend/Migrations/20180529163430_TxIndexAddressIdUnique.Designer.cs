@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180529163430_TxIndexAddressIdUnique")]
+    partial class TxIndexAddressIdUnique
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,7 +184,8 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("Currency", "Type", "IsDisabled", "UserId");
+                    b.HasIndex("Currency", "Type", "IsDisabled", "UserId")
+                        .IsUnique();
 
                     b.ToTable("CryptoAddresses");
                 });

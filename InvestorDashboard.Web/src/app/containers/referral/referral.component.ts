@@ -29,7 +29,7 @@ export class ReferralComponent implements OnDestroy, OnInit {
     public CURRENCIES =
         {
             'BTC': 'Bitcoin',
-            'ETH': 'Etherium'
+            'ETH': 'Ethereum'
         };
 
     public referralLinkIsCopied: boolean = false;

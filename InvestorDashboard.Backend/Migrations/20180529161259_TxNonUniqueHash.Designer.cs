@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180529161259_TxNonUniqueHash")]
+    partial class TxNonUniqueHash
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,7 +184,8 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("Currency", "Type", "IsDisabled", "UserId");
+                    b.HasIndex("Currency", "Type", "IsDisabled", "UserId")
+                        .IsUnique();
 
                     b.ToTable("CryptoAddresses");
                 });
@@ -227,9 +229,7 @@ namespace InvestorDashboard.Backend.Migrations
                         .IsUnique()
                         .HasFilter("[ExternalId] IS NOT NULL");
 
-                    b.HasIndex("Hash", "Direction", "ExternalId", "CryptoAddressId")
-                        .IsUnique()
-                        .HasFilter("[Hash] IS NOT NULL AND [ExternalId] IS NOT NULL");
+                    b.HasIndex("Hash", "Direction", "ExternalId");
 
                     b.ToTable("CryptoTransactions");
                 });

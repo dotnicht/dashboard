@@ -20,6 +20,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
 
         public class BonusSettings
         {
+            public bool IsKycBonusDisabled { get; set; }
             public Dictionary<BonusCriterion, KycBonusItem> KycBonuses { get; set; }
             public BonusSystem System { get; set; }
             public ScheduleItem[] Schedule { get; set; }

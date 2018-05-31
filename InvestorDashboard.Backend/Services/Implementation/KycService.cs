@@ -50,6 +50,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public async Task UpdateKycTransactions(string userId = null)
         {
+            if (_options.Value.Bonus.IsKycBonusDisabled)
+            {
+                return;
+            }
+
             if (userId == null)
             {
                 using (var ctx = CreateContext())
@@ -265,7 +270,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 Amount = amount.ToString(),
                 Hash = hash.ToString(),
                 Direction = CryptoTransactionDirection.Internal,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.UtcNow,
+                ExternalId = Guid.NewGuid()
             };
 
             return ctx.CryptoTransactions.Add(tx).Entity;
