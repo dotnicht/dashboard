@@ -68,8 +68,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 using (var ctx = CreateContext())
                 {
-                    var address = GetInternalDestinationAddress();
-
                     foreach (var tx in GetTransferTransactions(ctx))
                     {
                         var secret = new BitcoinEncryptedSecretNoEC(tx.CryptoAddress.PrivateKey, Network).GetSecret(KeyVaultService.InvestorKeyStoreEncryptionPassword);
@@ -87,13 +85,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                     if (!ReferralSettings.Value.IsDisabled)
                     {
-                        foreach (var tx in GetReferralTransferAddresses(ctx))
+                        foreach (var addr in GetReferralTransferAddresses(ctx))
                         {
-                            // TODO: fill referral inputs.
+                            var amount = Money.Satoshis(addr.Sum(x => long.Parse(x.Amount)) * ReferralSettings.Value.Reward);
+                            value -= amount;
+                            transaction.AddOutput(amount, BitcoinAddress.Create(addr.Key, Network));
                         }
                     }
 
-                    await AdjustAmountAndPublish(transaction, secrets.ToArray(), coins.ToArray(), value, address);
+                    await AdjustAmountAndPublish(transaction, secrets.ToArray(), coins.ToArray(), value, GetInternalDestinationAddress());
                 }
             }
             else

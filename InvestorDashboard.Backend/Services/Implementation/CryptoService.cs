@@ -328,7 +328,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     && x.CryptoAddress.User.ReferralUserId != null)
                 .ToArray()
                 .Where(x => x.CryptoAddress.User.ReferralUser.CryptoAddresses.Any(ReferralTransferAddressSelector))
-                .GroupBy(x => x.CryptoAddress.UserId)
+                .GroupBy(x => x.CryptoAddress.User.ReferralUser.CryptoAddresses.Single(ReferralTransferAddressSelector).Address)
                 .ToArray();
         }
 
