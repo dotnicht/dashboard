@@ -80,6 +80,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             value += coin.TxOut.Value;
                             coins.Add(coin);
                         }
+
+                        tx.IsSpent = true;
                     }
 
                     if (!ReferralSettings.Value.IsDisabled)
@@ -89,10 +91,29 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             var amount = Money.Satoshis(addr.Sum(x => long.Parse(x.Amount)) * ReferralSettings.Value.Reward);
                             value -= amount;
                             transaction.AddOutput(amount, BitcoinAddress.Create(addr.Key, Network));
+                            addr.ToList().ForEach(x => x.IsReferralPaid = true);
                         }
                     }
 
-                    await AdjustAmountAndPublish(transaction, secrets.ToArray(), coins.ToArray(), value, GetInternalDestinationAddress());
+                    var (hash, adjustedAmount, success) = await AdjustAmountAndPublish(transaction, secrets.ToArray(), coins.ToArray(), value, GetInternalDestinationAddress());
+                    if (success)
+                    {
+                        foreach (var tx in GetTransferTransactions(ctx))
+                        {
+                            var transfer = new CryptoTransaction
+                            {
+                                Hash = hash,
+                                Amount = adjustedAmount.ToString(),
+                                Timestamp = DateTime.UtcNow,
+                                Direction = CryptoTransactionDirection.Internal,
+                                CryptoAddressId = tx.CryptoAddressId
+                            };
+
+                            ctx.CryptoTransactions.Add(transfer);
+                        }
+
+                        await ctx.SaveChangesAsync();
+                    }
                 }
             }
             else
@@ -124,9 +145,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Hash = x.TransactionId.ToString(),
                         Timestamp = x.FirstSeen.UtcDateTime,
                         Amount = x.Amount.Satoshi.ToString(),
-                        Direction = x.SpentCoins.All(y => y.TxOut.ScriptPubKey == addr)
-                            ? CryptoTransactionDirection.Change
-                            : CryptoTransactionDirection.Inbound
+                        Direction = CryptoTransactionDirection.Inbound
                     })
                 .ToArray();
         }
@@ -144,6 +163,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var balance = new BigInteger(coins.Sum(x => x.TxOut.Value));
             amount = amount ?? balance;
+
             if (amount > balance)
             {
                 throw new InvalidOperationException($"Low balance. Requested: {amount}. Actual: {balance}.");
@@ -163,6 +183,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var change = value - money;
+
             if (change > 0)
             {
                 transaction.AddOutput(new TxOut
