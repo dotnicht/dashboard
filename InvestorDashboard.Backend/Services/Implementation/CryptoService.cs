@@ -85,7 +85,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (new ElapsedTimer(Logger, $"CreateCryptoAddress. Currency: {Settings.Value.Currency}. User: {userId}."))
             {
-                var (address, privateKey) = GenerateKeys(password);
+                var (address, privateKey) = GenerateKeys(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword);
                 return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);
             }
         }
@@ -352,7 +352,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 .ToArray();
         }
 
-        protected abstract (string Address, string PrivateKey) GenerateKeys(string password = null);
+        protected abstract (string Address, string PrivateKey) GenerateKeys(string password);
         protected abstract Task<IEnumerable<CryptoTransaction>> GetTransactionsFromBlockchain(string address);
         protected abstract Task<(string Hash, BigInteger AdjustedAmount, bool Success)> PublishTransactionInternal(CryptoAddress sourceAddress, string destinationAddress, BigInteger? amount = null);
         protected abstract Task<long> GetCurrentBlockIndex();

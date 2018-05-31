@@ -122,11 +122,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected override (string Address, string PrivateKey) GenerateKeys(string password = null)
+        protected override (string Address, string PrivateKey) GenerateKeys(string password)
         {
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             var privateKey = new Key();
             var address = privateKey.PubKey.GetAddress(Network).ToString();
-            var encrypted = privateKey.GetEncryptedBitcoinSecret(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword, Network).ToString();
+            var encrypted = privateKey.GetEncryptedBitcoinSecret(password, Network).ToString();
             return (Address: address, PrivateKey: encrypted);
         }
 
@@ -135,8 +140,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var client = new QBitNinjaClient(Network);
             var script = new BitcoinPubKeyAddress(address, Network);
             var balance = await client.GetBalance(script, true);
-
-            var addr = BitcoinAddress.Create(address, Network).ScriptPubKey;
 
             return balance.Operations
                 .Select(
