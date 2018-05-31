@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using InvestorDashboard.Backend.ConfigurationSections;
 using InvestorDashboard.Backend.Database.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
