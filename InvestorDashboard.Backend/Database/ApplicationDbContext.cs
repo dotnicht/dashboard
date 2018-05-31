@@ -66,7 +66,7 @@ namespace InvestorDashboard.Backend.Database
 
             builder.Entity<DashboardHistoryItem>()
                 .HasIndex(x => new { x.Created, x.Currency })
-                .IsUnique();
+                .IsUnique(true);
 
             builder.Entity<ExchangeRate>()
                 .HasIndex(x => x.Created)

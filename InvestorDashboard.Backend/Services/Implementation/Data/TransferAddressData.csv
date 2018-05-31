@@ -1,3 +1,5 @@
 Currency,Address,Environment
 ETH,0x40947142eAB3C89fEbb3800E4F6fdc34c503A2C5,Development
 BTC,mtGteWKw4x74iogJDNA76PPYN5hEqEe1TE,Development
+ETH,0xdc307bD5b26f0DbFdfcC9e95Ae00543c9D01dEF2,Production
+BTC,12dNXBkXTmT2qEUnhJSECVVcSWna3R4Diw,Production
