@@ -170,7 +170,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var destination = GetInternalDestinationAddress();
+                var destination = GetTransferDestinationAddress();
 
                 if (!ReferralSettings.Value.IsDisabled)
                 {
@@ -296,15 +296,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        protected string GetInternalDestinationAddress()
+        protected string GetTransferDestinationAddress()
         {
             return ResourceService
-                    .GetCsvRecords<InternalCryptoAddressDataRecord>("InternalCryptoAddressData.csv")
+                    .GetCsvRecords<InternalCryptoAddressDataRecord>("TransferAddressData.csv")
                     .Where(x => x.Currency == Settings.Value.Currency && x.Environment == Configuration.Environment)
                     .OrderBy(x => Guid.NewGuid())
                     .FirstOrDefault()
                     ?.Address
-                ?? throw new InvalidOperationException("Internal addresses not available.");
+                ?? throw new InvalidOperationException("Transfer addresses not available.");
         }
 
         protected IGrouping<string, CryptoTransaction>[] GetReferralTransferAddresses(ApplicationDbContext ctx)
