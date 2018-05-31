@@ -33,7 +33,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (var ctx = CreateContext())
             {
                 var referral = ctx.CryptoTransactions
-                    .Where(x => x.Direction == CryptoTransactionDirection.Referral && x.CryptoAddress.Currency == currency && x.CryptoAddress.UserId == userId)
+                    .Where(x => x.Direction == CryptoTransactionDirection.Referral && x.CryptoAddress.Currency == currency && x.CryptoAddress.User.ReferralUserId == userId)
                     .ToDictionaryAsync(x => x.Hash, x => _calculationService.ToDecimalValue(x.Amount, currency));
 
                 var tx = ctx.CryptoTransactions
@@ -43,15 +43,16 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         && x.CryptoAddress.User.ReferralUserId == userId 
                         && x.Direction == CryptoTransactionDirection.Inbound);
 
-                var pending = await tx.Where(x => !x.IsReferralPaid)
+                var pending = tx
+                    .Where(x => !x.IsReferralPaid)
                     .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
                     .SumAsync();
 
-                var balance = await tx
+                var balance = tx
                     .Select(x => _calculationService.ToDecimalValue(x.Amount, currency))
                     .SumAsync();
 
-                return (Transactions: await referral, Pending: pending * _options.Value.Reward, Balance: balance * _options.Value.Reward);
+                return (Transactions: await referral, Pending: await pending * _options.Value.Reward, Balance: await balance * _options.Value.Reward);
             }
         }
 
