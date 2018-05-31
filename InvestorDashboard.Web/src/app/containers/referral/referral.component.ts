@@ -26,7 +26,7 @@ export class ReferralComponent {
     public CURRENCIES =
         {
             'BTC': 'Bitcoin',
-            'ETH': 'Etherium'
+            'ETH': 'Ethereum'
         };
 
     public referralLinkIsCopied: boolean = false;
