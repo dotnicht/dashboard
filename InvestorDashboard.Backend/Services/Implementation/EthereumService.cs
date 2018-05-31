@@ -67,7 +67,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             foreach (var action in new[] { "txlist", "txlistinternal" })
             {
-                var uri = new Uri($"http://ropsten.etherscan.io/api?module=account&action={action}&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
+                var uri = new Uri($"http://etherscan.io/api?module=account&action={action}&address={address}&startblock=0&endblock=99999999&sort=asc&apikey=QJZXTMH6PUTG4S3IA4H5URIIXT9TYUGI7P");
 
                 try
                 {
