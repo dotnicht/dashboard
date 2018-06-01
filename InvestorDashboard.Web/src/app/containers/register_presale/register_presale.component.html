@@ -32,7 +32,7 @@
 
                                 </mat-form-field>
                                 <mat-form-field>
-                                    <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
+                                    <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password" #password="ngModel" minlength="1" required reverse="true">
 
                                 </mat-form-field>
                                 <mat-form-field>
@@ -51,9 +51,9 @@
                                         </p>
                                     </div>
                                     <div *ngIf="password.invalid && (password.dirty || password.touched)">
-                                        <p *ngIf="password.errors.minlength">Min length is 8</p>
-                                        <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
-                                            <br/> 1 LowerCase Alphabet, 1 Number</p>
+                                        <!-- <p *ngIf="password.errors.minlength">Min length is 1</p> -->
+                                        <!-- <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
+                                            <br/> 1 LowerCase Alphabet, 1 Number</p> -->
                                     </div>
 
                                     <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
@@ -161,7 +161,7 @@
 
                             </mat-form-field>
                             <mat-form-field>
-                                <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password" #password="ngModel" minlength="8" required reverse="true" pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])).{8,}$">
+                                <input matInput autocomplete="off" type="password" name="password" validateEqual="confirmPassword" placeholder="Enter password" [(ngModel)]="registerForm.password" #password="ngModel" minlength="1" required reverse="true">
 
                             </mat-form-field>
                             <mat-form-field>
@@ -180,9 +180,9 @@
                                     </p>
                                 </div>
                                 <div *ngIf="password.invalid && (password.dirty || password.touched)">
-                                    <p *ngIf="password.errors.minlength">Min length is 8</p>
-                                    <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
-                                        <br/> 1 LowerCase Alphabet, 1 Number</p>
+                                    <!-- <p *ngIf="password.errors.minlength">Min length is 1</p> -->
+                                    <!-- <p *ngIf="password.errors.pattern">Password must contain: 1 UpperCase Alphabet,
+                                        <br/> 1 LowerCase Alphabet, 1 Number</p> -->
                                 </div>
 
                                 <p *ngIf="confirmPassword.invalid && (confirmPassword.dirty || confirmPassword.touched)"> Password mismatch</p>
