@@ -22,11 +22,11 @@ export class TfaComponent {
     verify() {
         console.log(this.tfc);
 
-        this.authService.loginWithTfa(this.tfc.value).subscribe(data => {
-            this.router.navigate(['/']);
-        },
-            errors => {
-                this.errors = Utilities.findHttpResponseMessage('error_description', errors);
-            });
+        // this.authService.loginWithTfa(this.tfc.value).subscribe(data => {
+        //     this.router.navigate(['/']);
+        // },
+        //     errors => {
+        //         this.errors = Utilities.findHttpResponseMessage('error_description', errors);
+        //     });
     }
 }

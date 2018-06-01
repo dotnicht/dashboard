@@ -33,84 +33,75 @@ export class LoginComponent implements OnInit, OnDestroy {
         if (Object.keys(this.referralService.queryParams).length != 0) {
             this.queryParams = this.referralService.queryParams;
         }
-        
+
         if (this.authService.isLoggedIn) {
             if (Object.keys(this.referralService.queryParams).length != 0) {
-                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams  });
-            }
-            else {
+                this.router.navigate(['/login'], { queryParams: this.referralService.queryParams });
+            } else {
                 this.router.navigate(['/login']);
             }
         }
 
-        this.userLogin.rememberMe = this.authService.rememberMe;
-
-        if (this.getShouldRedirect()) {
-            this.authService.redirectLoginUser();
-        }
-        else {
-            this.loginStatusSubscription = this.authService.getLoginStatusEvent().subscribe(isLoggedIn => {
-                if (this.getShouldRedirect()) {
-                    this.authService.redirectLoginUser();
+        this.loginStatusSubscription = this.authService.state$.subscribe(data => {
+            if (data.tokens != null) {
+                if (data.authReady) {
+                    this.router.navigate(['/']);
                 }
-            });
-        }
+            }
+        });
+
     }
     ngOnDestroy() {
-        if (this.loginStatusSubscription)
+        if (this.loginStatusSubscription) {
             this.loginStatusSubscription.unsubscribe();
+        }
     }
 
-
-    getShouldRedirect() {
-        return !this.isModal && this.authService.isLoggedIn && !this.authService.isSessionExpired;
-    }
 
     login() {
         this.isLoading = true;
         this.errorMsg = '';
         this.authService.login(this.userLogin)
             .subscribe(
-            user => {
-                const _user = user as User;
+                user => {
+                    const _user = user as User;
 
-                setTimeout(() => {
-                    //this.alertService.stopLoadingMessage();
+                    setTimeout(() => {
+                        //this.alertService.stopLoadingMessage();
+                        this.isLoading = false;
+                        this.reset();
+                        // if (_user.twoFactorEnabled) {
+                        //     this.router.navigate(['/tfa']);
+                        // }
+                        //this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
+                    }, 500);
+                },
+                error => {
                     this.isLoading = false;
-                    this.reset();
-                    console.log(_user);
-                    if (_user.twoFactorEnabled) {
-                        this.router.navigate(['/tfa']);
+                    // this.alertService.stopLoadingMessage();
+
+                    if (Utilities.checkNoNetwork(error)) {
+                        //this.alertService.showStickyMessage(Utilities.noNetworkMessageCaption, Utilities.noNetworkMessageDetail, MessageSeverity.error, error);
                     }
-                    //this.alertService.showMessage('Login', `Welcome ${user.userName}!`, MessageSeverity.success);
-                }, 500);
-            },
-            error => {
-                this.isLoading = false;
-                // this.alertService.stopLoadingMessage();
-
-                if (Utilities.checkNoNetwork(error)) {
-                    //this.alertService.showStickyMessage(Utilities.noNetworkMessageCaption, Utilities.noNetworkMessageDetail, MessageSeverity.error, error);
-                }
-                else {
-                    let errorMessage = Utilities.findHttpResponseMessage('error_description', error);
+                    else {
+                        let errorMessage = Utilities.findHttpResponseMessage('error_description', error);
 
 
-                    const errorType = Utilities.findHttpResponseMessage('error', error);
-                    console.log(errorType);
-                    if (errorType == 'confirm_email') {
-                        this.showConfirmEmailLink = true;
+                        const errorType = Utilities.findHttpResponseMessage('error', error);
+                        console.log(errorType);
+                        if (errorType == 'confirm_email') {
+                            this.showConfirmEmailLink = true;
+                        }
+                        if (errorMessage) {
+                            // this.alertService.showStickyMessage('Unable to login', errorMessage, MessageSeverity.error, error);
+                            this.errorMsg = errorMessage;
+                        } else {
+                            this.errorMsg = 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
+                        }
+
                     }
-                    if (errorMessage) {
-                        // this.alertService.showStickyMessage('Unable to login', errorMessage, MessageSeverity.error, error);
-                        this.errorMsg = errorMessage;
-                    }
-                    else
-                        this.errorMsg = 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status;
-                    // this.alertService.showStickyMessage('Unable to login', 'An error occured whilst logging in, please try again later.\nError: ' + error.statusText || error.status, MessageSeverity.error, error);
-                }
 
-            });
+                });
     }
 
     reset() {

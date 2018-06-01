@@ -1,15 +1,15 @@
 <div style="flex-wrap: wrap;display: flex;">
-    <mat-card class="first">
-        <mat-card-content>
-            <!-- <div class="block"> -->
-            <!-- <div class="left"> -->
-            <h4>{{'clientInfo.Balance' | translate}}:
-                <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance + dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}}</p>
-                <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
-                <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
-            </h4>
-
-            <!-- <div class="meet-your-model-form token-bar" *ngIf="dashboard.icoInfoModel.totalCoins">
+  <mat-card class="first">
+    <mat-card-content>
+      <!-- <div class="block"> -->
+      <!-- <div class="left"> -->
+      <h4>{{'clientInfo.Balance' | translate}}:
+        <p style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance + dashboard.clientInfoModel.bonusBalance}} {{dashboard.icoInfoModel.tokenName}}</p>
+        <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
+        <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
+      </h4>
+<!-- 
+      <div class="meet-your-model-form token-bar" *ngIf="dashboard.icoInfoModel.totalCoins">
         <div class="tokenbar-middle">
           <div class="statistics">
             <div class="statistics-line" [style.background]="'linear-gradient(to right, #606eac '+dashboard.icoInfoModel.progressPercent+'%, #bec4df '+dashboard.icoInfoModel.progressPercent+'%, #bec4df 100%)'">
@@ -28,55 +28,55 @@
           </div>
         </div>
       </div> -->
-            <!-- <div>
+      <!-- <div>
         Presale progress: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}}%
         <mat-progress-bar mode="determinate" [value]="dashboard.icoInfoModel.totalCoinsBoughtPercent" [color]="'primary'">
         </mat-progress-bar>
       </div> -->
-            <!-- </div> -->
-            <!-- <div class="right">
+      <!-- </div> -->
+      <!-- <div class="right">
                     we pay BTC for referrals BUTTON TO REF PAGE. JUST REDIRECT
                 </div>
             </div> -->
 
-        </mat-card-content>
-    </mat-card>
+    </mat-card-content>
+  </mat-card>
 
-    <mat-card class="first-two">
-        <div style="text-align: center; width: 100%">
-            <div style="font-size: 30px; line-height: 1;">
-                <p>
-                    <b> We pay BTC </b>
+  <mat-card class="first-two">
+    <div style="text-align: center; width: 100%">
+      <div style="font-size: 30px; line-height: 1;">
+        <p>
+          <b> We pay BTC </b>
 
-                </p>
-                <p>
-                    <b> for REFERRALS!</b>
-                </p>
-            </div>
+        </p>
+        <p>
+          <b> for REFERRALS!</b>
+        </p>
+      </div>
 
-            <div style="margin-top: 30px;">
-                <button mat-raised-button [routerLink]="['/referral']">GET YOUR BTC</button>
-            </div>
+      <div style="margin-top: 30px;">
+        <button mat-raised-button [routerLink]="['/referral']">GET YOUR BTC</button>
+      </div>
 
-        </div>
-    </mat-card>
+    </div>
+  </mat-card>
 
-    <mat-card class="second">
-        <mat-card-content>
-            <!-- <div class="right" *ngIf="false">
+  <mat-card class="second">
+    <mat-card-content>
+      <!-- <div class="right" *ngIf="false">
         <div style="margin-top: 0;margin-bottom: 58px;font-weight: bold; font-size: 18px;">Token sale starts on
           <div style="margin: 3px 0;"> April 28th, 2018</div>
         </div> -->
-            <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
-            <!-- </div> -->
-            <!-- <div class="left">
+      <!-- <p style="font-size: 20px;">Bonus {{dashboard.icoInfoModel.bonusPercentage}}% </p> -->
+      <!-- </div> -->
+      <!-- <div class="left">
         <div style="display: inline-block;"></div> -->
-            <!-- <div class="item">
+      <!-- <div class="item">
                     <img class="color-block" src="assets/img/avatar.svg">
                     <div class="value">{{dashboard.icoInfoModel.totalInvestors}}</div>
                     <div class="title">{{'clientInfo.TotalInvestors' | translate}}</div>
                 </div> -->
-            <!-- <div class="item">
+      <!-- <div class="item">
           <img class="color-block" src="assets/img/wallet.svg">
           <div class="value">{{dashboard.icoInfoModel.totalUsdInvested}}</div>
           <div class="title">{{'clientInfo.TotalUSD' | translate}}</div>
@@ -86,15 +86,15 @@
           <div class="value">{{dashboard.icoInfoModel.totalCoinsBought}} </div>
           <div class="title">{{'clientInfo.TotalCoins' | translate}}</div>
         </div> -->
-            <!-- <div style="margin-bottom: 25px;">
+      <!-- <div style="margin-bottom: 25px;">
           {{'clientInfo.IcoHasStarted' | translate}}
         </div> -->
-            <!-- <div style="margin-top: 20px;" > -->
-            <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
-            <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}}  -->
-            <!-- </div> -->
+      <!-- <div style="margin-top: 20px;" > -->
+      <!-- <p>{{'clientInfo.TotalInvestments' | translate}}: {{dashboard.icoInfoModel.totalCoinsBoughtPercent}} %</p> -->
+      <!-- {{dashboard.icoInfoModel.totalCoinsBought}} / {{dashboard.icoInfoModel.totalCoins}}  -->
+      <!-- </div> -->
 
-            <!-- <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
+      <!-- <div *ngFor="let currency of dashboard.icoInfoModel.currencies">
           <div class="item">
             <img class="color-block" [src]="currency.img">
             <div class="value">{{'clientInfo.Total' | translate}} {{currency.currency}}</div>
@@ -103,228 +103,229 @@
         </div> -->
 
 
-            <!-- </div> -->
-            <div style="text-align: center; width: 100%;">
-                <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
-                <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
-                    <b>25%</b>
-                </p>
-                <p style="font-size: 20px;margin-top:30px;">is ending in</p>
-                <p class="timer">
-                    <!-- {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}} -->
-                    {{timer}}
-                </p>
-            </div>
-        </mat-card-content>
-    </mat-card>
+      <!-- </div> -->
+      <div style="text-align: center; width: 100%;">
+        <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
+        <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
+          <b>25%</b>
+        </p>
+        <p style="font-size: 20px;margin-top:30px;">is ending in</p>
+        <p class="timer">
+          <!-- {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}} -->
+          {{timer}}
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
 
-    <mat-card class="fifth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
-        <mat-card-content>
-            <iframe id="video" width="100%" height="280" [src]="selectedVideo" frameborder="0" allowfullscreen></iframe>
-        </mat-card-content>
-    </mat-card>
-    <mat-card class="sixth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
-        <mat-card-content>
-            <div class="content">
-                <p style="font-size: 28px;">Pre-sale is finished</p>
+  <mat-card class="fifth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <iframe id="video" width="100%" height="280" [src]="selectedVideo" frameborder="0" allowfullscreen></iframe>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="sixth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <div class="content">
+        <p style="font-size: 28px;">Pre-sale is finished</p>
 
-                <p style="font-size: 20px;">
-                    <span *ngFor="let currency of dashboard.icoInfoModel.currencies; let last = last">
+        <p style="font-size: 20px;">
+          <span *ngFor="let currency of dashboard.icoInfoModel.currencies; let last = last">
             {{currency.value}} {{currency.currency}}
             <span *ngIf="!last"> and </span>
-                    </span> gathered
-                </p>
-                <p style="font-size: 18px;">Token sale starts on April 28th, 2018</p>
-                <img style="width: 60px;margin-top: 20px; margin: 0 auto;" src="assets/img/round_a/placeholder.svg">
-                <div class="line"></div>
-                <!-- <img width="100%" height="100%" src="assets/img/round_a/round_a.svg"> -->
-            </div>
+          </span> gathered
+        </p>
+        <p style="font-size: 18px;">Token sale starts on April 28th, 2018</p>
+        <img style="width: 60px;margin-top: 20px; margin: 0 auto;" src="assets/img/round_a/placeholder.svg">
+        <div class="line"></div>
+        <!-- <img width="100%" height="100%" src="assets/img/round_a/round_a.svg"> -->
+      </div>
 
-        </mat-card-content>
-    </mat-card>
-    <mat-card class="seventh" *ngIf="false">
-        <mat-card-content>
-            <div class="content">
-                <span>Find more at</span>
-                <div class="social">
-                    <a href="https://www.facebook.com/223869261716130/" target="_blank">
-                        <img src="assets/img/round_a/facebook.svg">
-                    </a>
-                    <a href="https://bitcointalk.org/index.php?topic=3775626" target="_blank">
-                        <img src="assets/img/round_a/bitcoin.svg">
-                    </a>
-                    <a href="https://t.me/Crystals_io" target="_blank">
-                        <img src="assets/img/round_a/telegram.svg">
-                    </a>
-                    <a href="https://twitter.com/Crystals_io" target="_blank">
-                        <img src="assets/img/round_a/twitter.svg">
-                    </a>
-                    <a href="https://www.youtube.com/channel/UCaDYASGwty-8NZZTxfWfTNw" target="_blank">
-                        <img src="assets/img/round_a/youtube.svg">
-                    </a>
-                </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="seventh" *ngIf="false">
+    <mat-card-content>
+      <div class="content">
+        <span>Find more at</span>
+        <div class="social">
+          <a href="https://www.facebook.com/223869261716130/" target="_blank">
+            <img src="assets/img/round_a/facebook.svg">
+          </a>
+          <a href="https://bitcointalk.org/index.php?topic=3775626" target="_blank">
+            <img src="assets/img/round_a/bitcoin.svg">
+          </a>
+          <a href="https://t.me/Crystals_io" target="_blank">
+            <img src="assets/img/round_a/telegram.svg">
+          </a>
+          <a href="https://twitter.com/Crystals_io" target="_blank">
+            <img src="assets/img/round_a/twitter.svg">
+          </a>
+          <a href="https://www.youtube.com/channel/UCaDYASGwty-8NZZTxfWfTNw" target="_blank">
+            <img src="assets/img/round_a/youtube.svg">
+          </a>
+        </div>
 
-            </div>
+      </div>
 
-        </mat-card-content>
+    </mat-card-content>
 
-    </mat-card>
-    <mat-card class="eighth" *ngIf="false">
-        <mat-card-content>
-            <div class="content">
-                <form style="display: flex;" #f="ngForm" novalidate (ngSubmit)="addQuestion()">
-                    <!-- <mat-form-field class="msg">
+  </mat-card>
+  <mat-card class="eighth" *ngIf="false">
+    <mat-card-content>
+      <div class="content">
+        <form style="display: flex;" #f="ngForm" novalidate (ngSubmit)="addQuestion()">
+          <!-- <mat-form-field class="msg">
             <textarea matInput matAutosizeMaxRows="1" id="question" type="text" name="question" placeholder="Enter your question" [(ngModel)]="Question" #question="ngModel"
               required></textarea>
           </mat-form-field> -->
-                    <textarea rows="1" name="question" placeholder="Enter your question" [(ngModel)]="Question" #question="ngModel" required></textarea>
-                    <button type="submit" [disabled]="!f.form.valid" mat-raised-button color='primary'>{{'buttons.Send' | translate}}</button>
-                </form>
-            </div>
-        </mat-card-content>
+          <textarea rows="1" name="question" placeholder="Enter your question" [(ngModel)]="Question" #question="ngModel" required></textarea>
+          <button type="submit" [disabled]="!f.form.valid" mat-raised-button color='primary'>{{'buttons.Send' | translate}}</button>
+        </form>
+      </div>
+    </mat-card-content>
 
-    </mat-card>
+  </mat-card>
 
-    <mat-card class="third" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
-        <mat-card-content>
-            <div class="title" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
-            <div class="block">
-                <div class="left" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">
-                    <button (click)="changePayment(type)" class="item" [class.active]="selectedPaymentType.currency!=type.currency" mat-raised-button *ngFor="let type of dashboard.paymentInfoList">
+  <mat-card class="third" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <div class="title" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">{{'clientInfo.ChoosePaymentMethod' | translate}}</div>
+      <div class="block">
+        <div class="left" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">
+          <button (click)="changePayment(type)" class="item" [class.active]="selectedPaymentType.currency!=type.currency" mat-raised-button
+            *ngFor="let type of dashboard.paymentInfoList">
             <img class="currency-icon" [src]="type.image+'-icon-'+(selectedPaymentType.currency!=type.currency?'pink':'white')+'.svg'">
             <!-- <div class="currency-icon"></div> -->
             <div class="value">{{type.type==0?type.currency:type.title}}</div>
             <div class="title">1 {{type.currency}} = {{type.rate}} {{dashboard.icoInfoModel.tokenName}}</div>
           </button>
-                    <!-- <button class="item" mat-raised-button>
+          <!-- <button class="item" mat-raised-button>
             Credit Card
           </button> -->
-                    <!-- <button class="item" mat-raised-button>
+          <!-- <button class="item" mat-raised-button>
             Wire Transfer
           </button> -->
-                </div>
-                <div class="right" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">
-                    <div *ngIf="!dashboard.clientInfoModel.isTokenSaleDisabled">
-                        <div *ngIf="selectedPaymentType">
-                            <ng-container *ngIf="selectedPaymentType.type==0">
-                                <ng-container *ngIf="!selectedPaymentType.address">
-                                    <p>Send your {{selectedPaymentType.currency}} to this address</p>
-                                    <mat-form-field>
-                                        <input style="text-align: center;" matInput #address name="example" [value]="'xxxxxxxxxxxx'" type="text">
-                                    </mat-form-field>
-                                    <button color="primary" [disabled]="isGenProcesing" mat-raised-button (click)="generateAddress()">
+        </div>
+        <div class="right" *ngIf="dashboard.paymentInfoList && dashboard.paymentInfoList.length>1">
+          <div *ngIf="!dashboard.clientInfoModel.isTokenSaleDisabled">
+            <div *ngIf="selectedPaymentType">
+              <ng-container *ngIf="selectedPaymentType.type==0">
+                <ng-container *ngIf="!selectedPaymentType.address">
+                  <p>Send your {{selectedPaymentType.currency}} to this address</p>
+                  <mat-form-field>
+                    <input style="text-align: center;" matInput #address name="example" [value]="'xxxxxxxxxxxx'" type="text">
+                  </mat-form-field>
+                  <button color="primary" [disabled]="isGenProcesing" mat-raised-button (click)="generateAddress()">
                     <mat-icon *ngIf="isGenProcesing" class="rotate" aria-hidden="true">autorenew</mat-icon>
                     <span></span>Show address</button>
-                                </ng-container>
-                                <ng-container *ngIf="selectedPaymentType.address">
-                                    <p>Send your {{selectedPaymentType.currency}} to this address</p>
-                                    <div class="qr_block">
-                                        <!-- <div id="qrCode" class="qrCode"></div> -->
-                                        <div>
-                                            <mat-form-field>
-                                                <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
-                                            </mat-form-field>
-                                            <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
+                </ng-container>
+                <ng-container *ngIf="selectedPaymentType.address">
+                  <p>Send your {{selectedPaymentType.currency}} to this address</p>
+                  <div class="qr_block">
+                    <!-- <div id="qrCode" class="qrCode"></div> -->
+                    <div>
+                      <mat-form-field>
+                        <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
+                      </mat-form-field>
+                      <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
 
-                                        </div>
-                                        <div style="text-align: center; margin-top: 5px">
-                                            <button [color]="'primary'" (click)="openQrDialog()" mat-raised-button>Show QR Code</button>
-                                        </div>
-                                    </div>
-                                </ng-container>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px">
+                      <button [color]="'primary'" (click)="openQrDialog()" mat-raised-button>Show QR Code</button>
+                    </div>
+                  </div>
+                </ng-container>
 
-                            </ng-container>
-                            <ng-container *ngIf="selectedPaymentType.type==1">
-                                <p style="text-transform: uppercase;font-size: 12px;">Please select your currency:</p>
-                                <p style="display: flex; justify-content: space-between">
-                                    <a mat-raised-button style="width: 48%;font-size: 12px;" (click)="openEurDialog()">
+              </ng-container>
+              <ng-container *ngIf="selectedPaymentType.type==1">
+                <p style="text-transform: uppercase;font-size: 12px;">Please select your currency:</p>
+                <p style="display: flex; justify-content: space-between">
+                  <a mat-raised-button style="width: 48%;font-size: 12px;" (click)="openEurDialog()">
                     EUR ACCOUNT
                   </a>
-                                    <a mat-raised-button style="width: 48%;font-size: 12px;" (click)="openUsdDialog()">
+                  <a mat-raised-button style="width: 48%;font-size: 12px;" (click)="openUsdDialog()">
                     USD ACCOUNT
                   </a>
-                                </p>
+                </p>
 
 
-                            </ng-container>
-                            <div *ngIf="dashboard.paymentInfoList">
-                                <div class="token_calculator">
-                                    Calculate your purchase:
-                                    <table cellspacing="0" style="width: 100%">
-                                        <tbody>
+              </ng-container>
+              <div *ngIf="dashboard.paymentInfoList">
+                <div class="token_calculator">
+                  Calculate your purchase:
+                  <table cellspacing="0" style="width: 100%">
+                    <tbody>
 
-                                            <tr>
-                                                <td>
-                                                    <div class="form-field">
-                                                        <div class="input-field">
-                                                            <input [(ngModel)]="calculateValue" pattern="\d*" type="number" min="1">
-                                                        </div>
-                                                        <span>{{calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
-                                                    </div>
-                                                </td>
-                                                <td style="text-align: center;">
-                                                    <button (click)="toogleCalculator()" mat-icon-button>
+                      <tr>
+                        <td>
+                          <div class="form-field">
+                            <div class="input-field">
+                              <input [(ngModel)]="calculateValue" pattern="\d*" type="number" min="1">
+                            </div>
+                            <span>{{calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
+                          </div>
+                        </td>
+                        <td style="text-align: center;">
+                          <button (click)="toogleCalculator()" mat-icon-button>
                             <mat-icon>swap_horiz</mat-icon>
                           </button>
-                                                </td>
-                                                <td>
-                                                    <div class="form-field">
-                                                        <div class="input-field">
-                                                            <input disabled [(ngModel)]="calculatorFromBtc?selectedPaymentType.rate*calculateValue:calculateValue/selectedPaymentType.rate">
-                                                        </div>
-                                                        <span>{{!calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                        </td>
+                        <td>
+                          <div class="form-field">
+                            <div class="input-field">
+                              <input disabled [(ngModel)]="calculatorFromBtc?selectedPaymentType.rate*calculateValue:calculateValue/selectedPaymentType.rate">
                             </div>
-                            <ng-container *ngIf="selectedPaymentType.type==1">
+                            <span>{{!calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <ng-container *ngIf="selectedPaymentType.type==1">
 
-                                <div style="font-size: 12px;">
-                                    It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
-
-                                </div>
-
-                            </ng-container>
-
-                        </div>
-                        <div *ngIf="!selectedPaymentType">
-                            <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>
-                        </div>
-
-                    </div>
-                    <div *ngIf="dashboard.clientInfoModel.isTokenSaleDisabled">
-                        <p>Sorry, payment is not available at this time.
-                        </p>
-                        If you have any questions you can contact with us at
-                        <a href="mailto:support@crystals.systems">support@crystals.systems</a>
-                    </div>
+                <div style="font-size: 12px;">
+                  It usually takes from 5 to 7 days for bank to process the transfer. You balance will be updated once transaction is completed.
 
                 </div>
+
+              </ng-container>
+
             </div>
-        </mat-card-content>
-    </mat-card>
-    <mat-card class="fourth" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
-        <mat-card-content>
-            <div class="info">
-                <div class="info-container" *ngIf="selectedPaymentType">
-                    <div class="header">Payment method:
-                        <b>{{selectedPaymentType.title}}</b>
-                    </div>
-                    <div class="header">
-                        <b>{{selectedPaymentType.minimum}}
+            <div *ngIf="!selectedPaymentType">
+              <mat-progress-spinner style="margin: 0 auto;" mode="indeterminate" color="private"></mat-progress-spinner>
+            </div>
+
+          </div>
+          <div *ngIf="dashboard.clientInfoModel.isTokenSaleDisabled">
+            <p>Sorry, payment is not available at this time.
+            </p>
+            If you have any questions you can contact with us at
+            <a href="mailto:support@crystals.systems">support@crystals.systems</a>
+          </div>
+
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="fourth" *ngIf="!dashboard.icoInfoModel.isTokenSaleDisabled">
+    <mat-card-content>
+      <div class="info">
+        <div class="info-container" *ngIf="selectedPaymentType">
+          <div class="header">Payment method:
+            <b>{{selectedPaymentType.title}}</b>
+          </div>
+          <div class="header">
+            <b>{{selectedPaymentType.minimum}}
               <b *ngIf="selectedPaymentType.currency == 'BTC'">{{selectedPaymentType.eth_to_btc}} {{selectedPaymentType.currency}}</b>
-                        </b>
-                    </div>
-                    <div class="header">How to use:</div>
-                    <div [innerHTML]="selectedPaymentType.faq"></div>
-                </div>
-            </div>
-        </mat-card-content>
-    </mat-card>
+            </b>
+          </div>
+          <div class="header">How to use:</div>
+          <div [innerHTML]="selectedPaymentType.faq"></div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>
 <div>
 

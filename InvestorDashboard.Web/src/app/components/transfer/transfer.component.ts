@@ -59,23 +59,22 @@ export class TransferComponent implements OnInit {
             const config = {
                 disableClose: true,
                 hasBackdrop: false,
-                data: resp.json()
+                data: resp
             };
             this.sended = true;
             this.succsessTransferDialogRef = this.dialog.open(SuccsessTransferDialogComponent, config);
 
-        },
-            error => {
-                console.log(error);
-                this.sended = true;
-                this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
+        }, error => {
+            console.log(error);
+            this.sended = true;
+            this.failedTransferDialogRef = this.dialog.open(FailedTransferDialogComponent);
 
-            });
+        });
     }
     ngOnInit() {
 
         this.dashboardService.getDashboard().subscribe(model => {
-            const db = model.json() as Dashboard;
+            const db = model as Dashboard;
             if (!environment.production) {
                 // this.transfer.address = '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe';
                 // db.clientInfoModel.balance = 5.82;

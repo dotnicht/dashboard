@@ -14,9 +14,10 @@ import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { Subscription } from 'rxjs/Subscription';
 import { DashboardEndpoint } from './dashboard-endpoint.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
-export class ClientInfoEndpointService extends BaseService implements OnInit {
+export class ClientInfoEndpointService implements OnInit {
 
     public clientInfo: ClientInfo = new ClientInfo();
     public icoInfo$ = new BehaviorSubject(new IcoInfo());
@@ -26,9 +27,7 @@ export class ClientInfoEndpointService extends BaseService implements OnInit {
 
     private readonly _clientInfoUrl: string = environment.host + '/dashboard/client_info';
 
-    constructor(http: Http, authService: AuthService, private dashboardEndpoint: DashboardEndpoint) {
-
-        super(authService, http);
+    constructor(private http: HttpClient, private authService: AuthService, private dashboardEndpoint: DashboardEndpoint) {
 
     }
     ngOnInit(): void {
@@ -39,7 +38,7 @@ export class ClientInfoEndpointService extends BaseService implements OnInit {
     public updateClientInfo() {
 
         this.getClientInfoEndpoint().subscribe(info => {
-            let model = info.json() as ClientInfo;
+            let model = info;
             // model.isTokenSaleDisabled=true;
             model.balance = Math.round(model.balance * 100) / 100;
             model.bonusBalance = Math.round(model.bonusBalance * 100) / 100;
@@ -49,23 +48,15 @@ export class ClientInfoEndpointService extends BaseService implements OnInit {
 
         });
         this.dashboardEndpoint.getIcoInfo().subscribe(data => {
-            this.icoInfo$.next(data.json() as IcoInfo);
+            this.icoInfo$.next(data as IcoInfo);
 
         });
     }
     // protected handleError(error, continuation: () => Observable<any>)  {
     //     return '';
     // }
-    private getClientInfoEndpoint(): Observable<Response> {
-        let res = this.http.get(this._clientInfoUrl, this.authService.getAuthHeader())
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-
-                return this.handleError(error, () => this.authService.refreshLogin());
-
-            });
+    private getClientInfoEndpoint() {
+        let res = this.http.get<ClientInfo>(this._clientInfoUrl, this.authService.getAuthHeader());
         return res;
     }
 

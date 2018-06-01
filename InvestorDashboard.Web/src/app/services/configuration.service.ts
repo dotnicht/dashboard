@@ -104,10 +104,6 @@ export class ConfigurationService {
         this.localStorage.deleteData(DBkeys.LANGUAGE);
         this.localStorage.deleteData(DBkeys.HOME_URL);
         this.localStorage.deleteData(DBkeys.THEME);
-        this.localStorage.deleteData(DBkeys.SHOW_DASHBOARD_STATISTICS);
-        this.localStorage.deleteData(DBkeys.SHOW_DASHBOARD_NOTIFICATIONS);
-        this.localStorage.deleteData(DBkeys.SHOW_DASHBOARD_TODO);
-        this.localStorage.deleteData(DBkeys.SHOW_DASHBOARD_BANNER);
 
         this.resetLanguage();
     }

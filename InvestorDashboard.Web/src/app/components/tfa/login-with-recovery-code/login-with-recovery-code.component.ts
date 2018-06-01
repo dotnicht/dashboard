@@ -22,11 +22,11 @@ export class LoginWithRecoveryCodeComponent {
 
     }
     OnSubmit() {
-        this.authService.loginWithRecoveryCode(this.recoveryCode.value).subscribe(data => {
-            this.router.navigate(['/']);
-        },
-            errors => {
-                this.errors = Utilities.findHttpResponseMessage('error_description', errors);
-            });
+        // this.authService.loginWithRecoveryCode(this.recoveryCode.value).subscribe(data => {
+        //     this.router.navigate(['/']);
+        // },
+        //     errors => {
+        //         this.errors = Utilities.findHttpResponseMessage('error_description', errors);
+        //     });
     }
 }

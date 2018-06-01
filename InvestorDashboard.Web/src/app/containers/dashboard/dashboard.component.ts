@@ -89,15 +89,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
                     if (this.selectedPaymentType == undefined) {
                         this.changePayment(db.paymentInfoList[0]);
                     }
-
                 }
-                db.paymentInfoList.push({
-                    currency: '$',
-                    image: `assets/img/dolar`, title: 'Wire Transfer', type: 1,
-                    rate: Math.round((1 / db.icoInfoModel.tokenPrice) * 100) / 100,
-                    minimum: this.translationService.getTranslation(`dashboard.MIN_$`),
-                    faq: this.translationService.getTranslation(`dashboard.HTU_$`)
-                } as PaymentType);
+
                 this.dashboard = db;
                 this.timerInterval = setInterval(() => { this.updateTimer(); }, 1000);
             }
@@ -155,7 +148,12 @@ export class DashboardComponent implements OnDestroy, OnInit {
         const localOffset = d.getTimezoneOffset() * 60000;
         const utc = localTime + localOffset;
 
-        const today = new Date(utc).getTime();
+
+
+
+        const today = new Date().getTime();
+
+
         const day = Math.floor((endDate - today) / (24 * 60 * 60 * 1000)).toString();
         const hour = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)).toString();
         const min = (Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 1000)) % 60).toString();

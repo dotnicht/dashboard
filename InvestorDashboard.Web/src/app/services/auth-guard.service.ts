@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { ReferralService } from './referral.service';
 import { IcoInfo } from '../models/dashboard.models';
 import { ClientInfoEndpointService } from './client-info.service';
+import { DashboardEndpoint } from './dashboard-endpoint.service';
 
 
 @Injectable()
@@ -16,16 +17,22 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
 
     constructor(
         private authService: AuthService,
+        private dashboardService: DashboardEndpoint,
         private router: Router,
         private referralService: ReferralService,
         private clientInfoEndpointService: ClientInfoEndpointService
     ) {
-        this.clientInfoEndpointService.icoInfo$.subscribe(data => {
-            this.isReferralSystemDisabled = data.isReferralSystemDisabled;
-        })
-        this.clientInfoEndpointService.clientInfo$.subscribe(data => {
-            this.isAdmin = data.isAdmin;
-           });
+        // this.clientInfoEndpointService.icoInfo$.subscribe(data => {
+        //     this.isReferralSystemDisabled = data.isReferralSystemDisabled;
+        // })
+        // this.clientInfoEndpointService.clientInfo$.subscribe(data => {
+        //     this.isAdmin = data.isAdmin;
+        // });
+        this.dashboardService.dashboard$.subscribe(m => {
+            console.log(m.clientInfoModel.isAdmin)
+            this.isReferralSystemDisabled = m.icoInfoModel.isReferralSystemDisabled;
+            this.isAdmin = m.clientInfoModel.isAdmin;
+        });
     }
 
 
@@ -45,7 +52,7 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     }
 
     checkLogin(url: string): boolean {
-        if (this.authService.isLoggedIn) {
+        if (this.authService.loggedIn) {
             if (url == '/referral' && this.isReferralSystemDisabled) {
                 this.router.navigate(['/dashboard']);
                 return false;
@@ -57,8 +64,8 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
             }
             return true;
         }
-        
-        this.authService.loginRedirectUrl = url;
+
+        // this.authService.loginRedirectUrl = url;
         this.router.navigate(['/login']);
 
         return false;
