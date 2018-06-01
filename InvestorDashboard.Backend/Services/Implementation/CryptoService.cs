@@ -86,7 +86,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (new ElapsedTimer(Logger, $"CreateCryptoAddress. Currency: {Settings.Value.Currency}. User: {userId}."))
             {
                 var (address, privateKey) = GenerateKeys(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword);
-                return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);
+                return await CreateAddressInternal(userId, address, privateKey);
             }
         }
 
@@ -401,11 +401,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)
+        private async Task<CryptoAddress> CreateAddressInternal(string userId, string address, string privateKey = null)
         {
             using (var ctx = CreateContext())
             {
-                var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == Settings.Value.Currency && x.Type == addressType && x.UserId == userId && !x.IsDisabled);
+                var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.UserId == userId && !x.IsDisabled);
 
                 if (entity != null)
                 {
@@ -417,15 +417,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     UserId = userId,
                     Currency = Settings.Value.Currency,
-                    Type = addressType,
+                    Type = CryptoAddressType.Investment,
                     Address = address,
-                    PrivateKey = privateKey
+                    PrivateKey = privateKey,
+                    StartBlockIndex = await GetCurrentBlockIndex()
                 };
-
-                if (addressType == CryptoAddressType.Investment)
-                {
-                    entity.StartBlockIndex = await GetCurrentBlockIndex();
-                }
 
                 await ctx.CryptoAddresses.AddAsync(entity);
                 await ctx.SaveChangesAsync();

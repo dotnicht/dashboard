@@ -96,6 +96,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
 
                     var (hash, adjustedAmount, success) = await AdjustAmountAndPublish(transaction, secrets.ToArray(), coins.ToArray(), value, GetTransferDestinationAddress());
+
                     if (success)
                     {
                         foreach (var tx in GetTransferTransactions(ctx))
@@ -111,6 +112,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                             if (tx.IsReferralPaid)
                             {
+                                // TODO: adjust tx value.
                                 var referral = new CryptoTransaction
                                 {
                                     Hash = hash,
