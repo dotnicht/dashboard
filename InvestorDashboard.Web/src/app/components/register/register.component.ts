@@ -33,7 +33,7 @@ export class RegisterComponent implements OnInit {
     queryParams: any = null;
 
     registerRules: RegisterRules[] = [
-        { name: this.translationService.getTranslation('users.register.rules.first'), checked: false },
+        // { name: this.translationService.getTranslation('users.register.rules.first'), checked: false },
         { name: this.translationService.getTranslation('users.register.rules.second'), checked: false },
         // { name: this.translationService.getTranslation('users.register.rules.third'), checked: false },
         { name: this.translationService.getTranslation('users.register.rules.fourth'), checked: false }
