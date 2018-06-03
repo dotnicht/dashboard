@@ -21,6 +21,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IOptions<EthereumSettings> _ethereumSettings;
 
+        private Web3 _web3;
+        private Web3 Web3 { get => _web3 ?? (_web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString())); }
+
         public EthereumService(
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
@@ -79,23 +82,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
 
                     var confirmed = result.Result
-                        .Where(x => string.IsNullOrWhiteSpace(x.Confirmations) || int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations)
+                        .Where(x => string.Equals(address, x.To, StringComparison.InvariantCultureIgnoreCase) && (string.IsNullOrWhiteSpace(x.Confirmations) || int.Parse(x.Confirmations) >= _ethereumSettings.Value.Confirmations))
                         .ToArray();
 
-                    var mapped = Mapper.Map<CryptoTransaction[]>(confirmed);
-
-                    foreach (var tx in mapped)
+                    foreach (var tx in Mapper.Map<CryptoTransaction[]>(confirmed))
                     {
-                        // TODO: adjust direction to include outbound transactions.
-                        var source = confirmed.Single(x => string.Equals(x.Hash, tx.Hash, StringComparison.InvariantCultureIgnoreCase));
-                        tx.Direction = string.Equals(source.To, address, StringComparison.InvariantCultureIgnoreCase)
-                            ? CryptoTransactionDirection.Inbound
-                            : string.Equals(source.From, address, StringComparison.InvariantCultureIgnoreCase)
-                                ? CryptoTransactionDirection.Internal
-                                : throw new InvalidOperationException($"Unable to determine transaction direction. Hash: {tx.Hash}.");
+                        tx.Direction = CryptoTransactionDirection.Inbound;
+                        transactions.Add(tx);
                     }
-
-                    transactions.AddRange(mapped);
                 }
                 catch (Exception ex)
                 {
@@ -136,15 +130,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<long> GetCurrentBlockIndex()
         {
-            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-            var result = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+            var result = await Web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
             return (long)result.Value;
         }
 
         protected override async Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
         {
-            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-            var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
+            var block = await Web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(index));
 
             foreach (var tx in block.Transactions)
             {
@@ -164,6 +156,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 Amount = tx.Value.Value.ToString()
                             };
 
+                            ctx.Attach(address);
+                            address.LastBlockIndex = index;
+
                             await ctx.CryptoTransactions.AddAsync(transaction);
                             await ctx.SaveChangesAsync();
                         }
@@ -174,8 +169,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         protected override async Task<BigInteger> GetBalance(CryptoAddress address)
         {
-            var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-            var balance = await web3.Eth.GetBalance.SendRequestAsync(address.Address);
+            var balance = await Web3.Eth.GetBalance.SendRequestAsync(address.Address);
             return balance.Value;
         }
 

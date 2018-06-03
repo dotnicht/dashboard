@@ -116,7 +116,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 using (new ElapsedTimer(Logger, $"GetTransactionsFromBlockchain. Currency: {Settings.Value.Currency}. Address: {address.Address}."))
                 {
-                    foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
+                    foreach (var transaction in await policy.Execute(async () => await GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
                     {
                         Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address}.");
 
@@ -255,8 +255,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .ToArrayAsync();
             }
 
-            var index = 0;
-            var result = new ConcurrentQueue<CryptoAddress>();
+            var count = 0;
+            var index = await GetCurrentBlockIndex();
+
+            const string addressKey = "address";
+
+            var policy = Policy
+                .Handle<Exception>()
+                .Retry(10, 
+                async (e, i, c) => 
+                {
+                    Logger.LogError(e, $"Balance retrieve failed. Currency: {Settings.Value.Currency}. Address: {c[addressKey]}. Retry attempt: {i}.");
+                    await Task.Delay(TimeSpan.FromMinutes(1));
+                });
 
             using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
             {
@@ -264,35 +275,43 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 {
                     try
                     {
-                        var balance = (await GetBalance(x)).ToString();
-                        if (x.Balance != balance)
+                        var balance = await policy.Execute(async () => await GetBalance(x), new Dictionary<string, object> { { addressKey, x.Address } });
+                        if (balance != BigInteger.Parse(x.Balance))
                         {
                             using (var ctx = CreateContext())
                             {
+                                foreach (var tx in await GetTransactionsFromBlockchain(x.Address))
+                                {
+                                    if (!ctx.CryptoTransactions.Any(y => y.Hash == tx.Hash && y.Direction == CryptoTransactionDirection.Inbound && y.CryptoAddressId == x.Id))
+                                    {
+                                        tx.CryptoAddressId = x.Id;
+                                        ctx.CryptoTransactions.Add(tx);
+                                    }
+                                }
+
                                 ctx.Attach(x);
-                                x.Balance = balance;
+                                x.Balance = balance.ToString();
+                                x.LastBlockIndex = index;
+
                                 await ctx.SaveChangesAsync();
-                                result.Enqueue(x);
+
+                                await TokenService.RefreshTokenBalance(x.UserId);
                             }
                         }
 
-                        Interlocked.Increment(ref index);
+                        Interlocked.Increment(ref count);
 
-                        if (index % 1000 == 0)
+                        if (count % 1000 == 0)
                         {
-                            Logger.LogInformation($"Proccessing {index} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
+                            Logger.LogInformation($"Proccessing {count} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
                         }
                     }
                     catch (Exception ex)
                     {
                         Logger.LogError(ex, $"An error occurred while checking {Settings.Value.Currency} balance for address {x.Address}.");
+                        throw;
                     }
                 });
-            }
-
-            using (var ctx = CreateContext())
-            {
-                await RefreshTransactionsFromBlockchainInternal(result.ToArray(), ctx);
             }
         }
 
