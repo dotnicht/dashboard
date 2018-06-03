@@ -153,7 +153,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                                 Direction = CryptoTransactionDirection.Inbound,
                                 Timestamp = DateTimeOffset.FromUnixTimeSeconds((long)block.Timestamp.Value).UtcDateTime,
                                 Hash = tx.TransactionHash,
-                                Amount = tx.Value.Value.ToString()
+                                Amount = tx.Value.Value.ToString(),
+                                BlockIndex = index
                             };
 
                             ctx.Attach(address);

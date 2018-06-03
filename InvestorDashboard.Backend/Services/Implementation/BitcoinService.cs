@@ -164,6 +164,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Hash = x.TransactionId.ToString(),
                         Timestamp = x.FirstSeen.UtcDateTime,
                         Amount = x.Amount.Satoshi.ToString(),
+                        BlockIndex = x.Height,
                         Direction = CryptoTransactionDirection.Inbound
                     })
                 .ToArray();
@@ -221,7 +222,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return Task.FromResult((long)index);
         }
 
-        protected override async Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
+        protected override Task ProccessBlock(long index, IEnumerable<CryptoAddress> addresses)
         {
             if (addresses == null)
             {
@@ -231,39 +232,39 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var header = _chain.Value.GetBlock((int)index);
             var block = _node.Value.GetBlocks(new[] { header.Header.GetHash() }).Single();
 
-            foreach (var tx in block.Transactions)
+            Parallel.ForEach(addresses, x =>
             {
-                var hash = tx.GetHash().ToString();
+                var address = new BitcoinPubKeyAddress(x.Address, Network);
+                var transactions = block.Transactions.Where(y => y.Outputs.Any(z => z.ScriptPubKey.GetDestinationAddress(Network) == address));
 
-                // TODO: remove for loop.
-
-                for (var i = 0; i < tx.Outputs.Count; i++)
+                using (var ctx = CreateContext())
                 {
-                    var destination = tx.Outputs[i].ScriptPubKey.GetDestinationAddress(Network)?.ToString();
-                    var address = addresses.SingleOrDefault(x => x.Address == destination);
-
-                    if (address != null)
+                    foreach (var tx in transactions)
                     {
-                        using (var ctx = CreateContext())
+                        var hash = tx.GetHash().ToString();
+                        if (!ctx.CryptoTransactions.Any(y => y.Hash == hash && y.Direction == CryptoTransactionDirection.Inbound && y.CryptoAddressId == x.Id))
                         {
-                            if (ctx.CryptoTransactions.SingleOrDefault(x => x.Hash == hash && x.Direction == CryptoTransactionDirection.Inbound) == null)
+                            var transaction = new CryptoTransaction
                             {
-                                var transaction = new CryptoTransaction
-                                {
-                                    CryptoAddressId = address.Id,
-                                    Direction = CryptoTransactionDirection.Inbound,
-                                    Timestamp = header.Header.BlockTime.UtcDateTime,
-                                    Hash = hash,
-                                    Amount = tx.Outputs[i].Value.Satoshi.ToString()
-                                };
+                                CryptoAddressId = x.Id,
+                                Direction = CryptoTransactionDirection.Inbound,
+                                Timestamp = header.Header.BlockTime.UtcDateTime,
+                                BlockIndex = header.Height,
+                                Hash = hash,
+                                Amount = tx.Outputs
+                                    .Where(y => y.ScriptPubKey.GetDestinationAddress(Network) == address)
+                                    .Sum(y => y.Value)
+                                    .ToString()
+                            };
 
-                                await ctx.CryptoTransactions.AddAsync(transaction);
-                                await ctx.SaveChangesAsync();
-                            }
+                            ctx.CryptoTransactions.Add(transaction);
+                            ctx.SaveChanges();
                         }
                     }
                 }
-            }
+            });
+
+            return Task.CompletedTask;
         }
 
         protected override async Task<BigInteger> GetBalance(CryptoAddress address)
