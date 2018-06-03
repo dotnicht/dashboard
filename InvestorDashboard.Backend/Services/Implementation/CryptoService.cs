@@ -14,6 +14,7 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using Z.EntityFramework.Plus;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -337,6 +338,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         throw;
                     }
                 });
+            }
+
+            using (var ctx = CreateContext())
+            {
+                ctx.CryptoAddresses
+                    .Where(InboundAddressSelector)
+                    .Where(x => x.StartBlockIndex < index)
+                    .Update(x => new CryptoAddress { LastBlockIndex = index });
             }
         }
 
