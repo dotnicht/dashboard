@@ -279,7 +279,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             //var balance = await client.GetBalance(script);
             //return new BigInteger(balance.Operations.Sum(x => x.Amount));
             var balance = await client.GetBalanceSummary(script);
-            await Task.Delay(TimeSpan.FromMilliseconds(10));
             return new BigInteger(balance.Confirmed.Amount.Satoshi);
         }
 

@@ -284,58 +284,40 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var count = 0;
             var index = await GetCurrentBlockIndex();
 
-            const string addressKey = "address";
-
-            var policy = Policy
-                .Handle<Exception>()
-                .Retry(10, 
-                async (e, i, c) => 
-                {
-                    Logger.LogError(e, $"Balance retrieve failed. Currency: {Settings.Value.Currency}. Address: {c[addressKey]}. Retry attempt: {i}.");
-                    await Task.Delay(TimeSpan.FromMinutes(1));
-                });
-
             using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
             {
                 Parallel.ForEach(addresses, new ParallelOptions { MaxDegreeOfParallelism = Settings.Value.MaxDegreeOfParallelism }, async x =>
                 {
-                    try
+                    var balance = await GetBalance(x);
+                    if (balance != BigInteger.Parse(x.Balance))
                     {
-                        var balance = await policy.Execute(async () => await GetBalance(x), new Dictionary<string, object> { { addressKey, x.Address } });
-                        if (balance != BigInteger.Parse(x.Balance))
+                        using (var ctx = CreateContext())
                         {
-                            using (var ctx = CreateContext())
+                            foreach (var tx in await GetTransactionsFromBlockchain(x.Address))
                             {
-                                foreach (var tx in await GetTransactionsFromBlockchain(x.Address))
+                                if (!ctx.CryptoTransactions.Any(y => y.Hash == tx.Hash && y.Direction == CryptoTransactionDirection.Inbound && y.CryptoAddressId == x.Id))
                                 {
-                                    if (!ctx.CryptoTransactions.Any(y => y.Hash == tx.Hash && y.Direction == CryptoTransactionDirection.Inbound && y.CryptoAddressId == x.Id))
-                                    {
-                                        tx.CryptoAddressId = x.Id;
-                                        ctx.CryptoTransactions.Add(tx);
-                                    }
+                                    tx.CryptoAddressId = x.Id;
+                                    ctx.CryptoTransactions.Add(tx);
                                 }
-
-                                ctx.Attach(x);
-                                x.Balance = balance.ToString();
-                                x.LastBlockIndex = index;
-
-                                await ctx.SaveChangesAsync();
-
-                                await TokenService.RefreshTokenBalance(x.UserId);
                             }
-                        }
 
-                        Interlocked.Increment(ref count);
+                            ctx.Attach(x);
+                            x.Balance = balance.ToString();
+                            x.LastBlockIndex = index;
 
-                        if (count % 1000 == 0)
-                        {
-                            Logger.LogInformation($"Proccessing {count} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
+                            await ctx.SaveChangesAsync();
+
+                            await TokenService.RefreshTokenBalance(x.UserId);
                         }
                     }
-                    catch (Exception ex)
+
+                    Interlocked.Increment(ref count);
+
+                    if (count % 1000 == 0)
                     {
-                        Logger.LogError(ex, $"An error occurred while checking {Settings.Value.Currency} balance for address {x.Address}.");
-                        throw;
+                        Logger.LogInformation($"Proccessing {count} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
+                        await Task.Delay(TimeSpan.FromMinutes(1));
                     }
                 });
             }
