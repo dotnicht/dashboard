@@ -1,10 +1,8 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
-using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nethereum.Contracts;
-using Nethereum.Util;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using System;
@@ -20,6 +18,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private readonly IResourceService _resourceService;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
 
+        private Web3 _web3;
+        private Web3 Web3 { get => _web3 ?? (_web3 = new Web3(Account, _ethereumSettings.Value.NodeAddress.ToString())); }
+
+        private Account _account;
+        private Account Account { get => _account ?? (_account = Account.LoadFromKeyStore(_resourceService.GetResourceString("MasterKeyStore.json"), _keyVaultService.MasterKeyStoreEncryptionPassword)); }
+
         public SmartContractService(
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory, 
@@ -33,7 +37,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
         }
 
-        public async Task<(string Hash, bool Success)> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, decimal amount)
+        public async Task<(string Hash, bool Success)> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, BigInteger amount)
         {
             if (sourceAddress == null)
             {
@@ -53,26 +57,20 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException("Destination address is invalid for token transfer.");
             }
 
-            try
-            {
-                var transfer = await GetSmartContractFunction("transferFrom");
-                var window = Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds);
-
-                if (await transfer.Web3.Personal.UnlockAccount.SendRequestAsync(transfer.Account.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, window))
-                {
-                    var hash = await transfer.Function.SendTransactionAsync(transfer.Account.Address, sourceAddress.Address, destinationAddress, UnitConversion.Convert.ToWei(amount));
-                    return (Hash: hash, Success: true);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "An error occurred while transfering tokens.");
-            }
-
-            return (Hash: null, Success: false);
+            return await SendSmartContractTransaction("transferFrom", sourceAddress.Address, destinationAddress, amount);
         }
 
-        public async Task<decimal> CallSmartContractBalanceOfFunction(string address)
+        public async Task<(string Hash, bool Success)> CallSmartContractMintTokensFunction(string destinationAddress, BigInteger amount)
+        {
+            if (destinationAddress == null)
+            {
+                throw new ArgumentNullException(nameof(destinationAddress));
+            }
+
+            return await SendSmartContractTransaction("mintTokens", destinationAddress, amount);
+        }
+
+        public async Task<BigInteger> CallSmartContractBalanceOfFunction(string address)
         {
             if (address == null)
             {
@@ -80,7 +78,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             var balance = await GetSmartContractFunction("balanceOf");
-            return UnitConversion.Convert.FromWei(await balance.Function.CallAsync<BigInteger>(address));
+            return await balance.CallAsync<BigInteger>(address);
         }
 
         public async Task RefreshOutboundTransactions()
@@ -99,29 +97,46 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 foreach (var tx in transactions)
                 {
-                    var web3 = new Web3(_ethereumSettings.Value.NodeAddress.ToString());
-                    var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+                    var transaction = await Web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(tx.Hash);
+                    var receipt = await Web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
 
-                    if (receipt != null)
+                    if (transaction == null || receipt != null)
                     {
-                        tx.IsFailed = !Convert.ToBoolean(receipt.Status.Value);
+                        tx.IsFailed = transaction == null || !Convert.ToBoolean(receipt.Status.Value);
                         await ctx.SaveChangesAsync();
                     }
                 }
             }
         }
 
-        private async Task<(Function Function, Web3 Web3, Account Account)> GetSmartContractFunction(string name)
+        private async Task<(string Hash, bool Success)> SendSmartContractTransaction(string functionName, params object[] functionInput)
         {
-            var account = Account.LoadFromKeyStore(_resourceService.GetResourceString("MasterKeyStore.json"), _keyVaultService.MasterKeyStoreEncryptionPassword);
-            var web3 = new Web3(account, _ethereumSettings.Value.NodeAddress.ToString());
+            try
+            {
+                var transfer = await GetSmartContractFunction("transferFrom");
+                var window = Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds);
 
-            web3.TransactionManager.DefaultGas = _ethereumSettings.Value.DefaultGas;
-            web3.TransactionManager.DefaultGasPrice = await web3.Eth.GasPrice.SendRequestAsync();
+                if (await Web3.Personal.UnlockAccount.SendRequestAsync(Account.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, window))
+                {
+                    var hash = await transfer.SendTransactionAsync(Account.Address, functionInput);
+                    return (Hash: hash, Success: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"An error occurred while calling smart contract function {functionName}.");
+            }
 
-            var contract = web3.Eth.GetContract(_resourceService.GetResourceString("ContractAbi.json"), _ethereumSettings.Value.ContractAddress);
+            return (Hash: null, Success: false);
 
-            return (Function: contract.GetFunction(name), Web3: web3, Account: account);
+        }
+
+        private async Task<Function> GetSmartContractFunction(string name)
+        {
+            Web3.TransactionManager.DefaultGas = _ethereumSettings.Value.DefaultGas;
+            Web3.TransactionManager.DefaultGasPrice = await Web3.Eth.GasPrice.SendRequestAsync();
+            var contract = Web3.Eth.GetContract(_resourceService.GetResourceString("ContractAbi.json"), _ethereumSettings.Value.ContractAddress);
+            return contract.GetFunction(name);
         }
     }
 }
