@@ -100,7 +100,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var user = ctx.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
+                await RefreshTokenBalanceInternal(userId);
+
+                var user = ctx.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);                
 
                 var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
                 var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.Token);
@@ -123,7 +125,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
                 }
 
-                var result = await _smartContractService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount);
+                var result = _options.Value.IsDirectMintingDisabled
+                    ? await _smartContractService.CallSmartContractTransferFromFunction(ethAddress, destinationAddress, amount)
+                    : await _smartContractService.CallSmartContractMintTokensFunction(destinationAddress, amount);
 
                 if (result.Success)
                 {

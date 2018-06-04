@@ -128,7 +128,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
 
             return (Hash: null, Success: false);
-
         }
 
         private async Task<Function> GetSmartContractFunction(string name)
