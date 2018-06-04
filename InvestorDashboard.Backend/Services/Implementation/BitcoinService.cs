@@ -5,10 +5,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Protocol;
+using Polly;
 using QBitNinja.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -157,6 +159,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
             var script = new BitcoinPubKeyAddress(address, Network);
             var balance = await client.GetBalance(script, true);
 
+            if (Settings.Value.LegacyTransactionRefreshTimeout != null)
+            {
+                await Task.Delay(Settings.Value.LegacyTransactionRefreshTimeout.Value);
+            }
+
             return balance.Operations
                 .Select(
                     x => new CryptoTransaction
@@ -274,12 +281,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(address));
             }
 
-            var client = new QBitNinjaClient(Network);
-            var script = new BitcoinPubKeyAddress(address.Address, Network);
-            var balance = await client.GetBalance(script);
-            return new BigInteger(balance.Operations.Sum(x => x.Amount));
-            //var balance = await client.GetBalanceSummary(script);
-            //return new BigInteger(balance.Confirmed.Amount.Satoshi);
+            var policy = Policy
+                .Handle<HttpRequestException>()
+                .WaitAndRetryForeverAsync(x => TimeSpan.FromMinutes(x));
+
+            return await policy.ExecuteAsync(async () =>
+            {
+
+                var client = new QBitNinjaClient(Network);
+                var script = new BitcoinPubKeyAddress(address.Address, Network);
+                var balance = await client.GetBalance(script);
+                return new BigInteger(balance.Operations.Sum(x => x.Amount));
+            });
         }
 
         private static Node GetNode()

@@ -105,6 +105,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         Type = CryptoAddressType.Investment,
                         Address = address,
                         PrivateKey = privateKey,
+                        Balance = 0.ToString(),
                         StartBlockIndex = await GetCurrentBlockIndex()
                     };
 
@@ -286,40 +287,39 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
             {
-                Parallel.ForEach(addresses, new ParallelOptions { MaxDegreeOfParallelism = Settings.Value.MaxDegreeOfParallelism }, async x =>
+                foreach (var address in addresses)
                 {
-                    var balance = await GetBalance(x);
-                    if (balance != BigInteger.Parse(x.Balance))
+                    var balance = await GetBalance(address);
+                    if (balance != BigInteger.Parse(address.Balance))
                     {
                         using (var ctx = CreateContext())
                         {
-                            foreach (var tx in await GetTransactionsFromBlockchain(x.Address))
+                            foreach (var tx in await GetTransactionsFromBlockchain(address.Address))
                             {
-                                if (!ctx.CryptoTransactions.Any(y => y.Hash == tx.Hash && y.Direction == CryptoTransactionDirection.Inbound && y.CryptoAddressId == x.Id))
+                                if (!ctx.CryptoTransactions.Any(x => x.Hash == tx.Hash && x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddressId == address.Id))
                                 {
-                                    tx.CryptoAddressId = x.Id;
+                                    tx.CryptoAddressId = address.Id;
                                     ctx.CryptoTransactions.Add(tx);
                                 }
                             }
 
-                            ctx.Attach(x);
-                            x.Balance = balance.ToString();
-                            x.LastBlockIndex = index;
+                            ctx.Attach(address);
+                            address.Balance = balance.ToString();
+                            address.LastBlockIndex = index;
 
                             await ctx.SaveChangesAsync();
 
-                            await TokenService.RefreshTokenBalance(x.UserId);
+                            await TokenService.RefreshTokenBalance(address.UserId);
                         }
                     }
 
-                    Interlocked.Increment(ref count);
+                    count++;
 
                     if (count % 1000 == 0)
                     {
                         Logger.LogInformation($"Proccessing {count} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
-                        await Task.Delay(TimeSpan.FromMinutes(1));
                     }
-                });
+                }
             }
 
             using (var ctx = CreateContext())
