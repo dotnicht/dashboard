@@ -3,6 +3,7 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nethereum.Contracts;
+using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using System;
@@ -16,6 +17,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
     {
         private readonly IKeyVaultService _keyVaultService;
         private readonly IResourceService _resourceService;
+        private readonly ILogger<SmartContractService> _logger;
         private readonly IOptions<EthereumSettings> _ethereumSettings;
 
         private Web3 _web3;
@@ -29,11 +31,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
             ILoggerFactory loggerFactory, 
             IKeyVaultService keyVaultService, 
             IResourceService resourceService, 
+            ILogger<SmartContractService> logger,
             IOptions<EthereumSettings> ethereumSettings) 
             : base(serviceProvider, loggerFactory)
         {
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _ethereumSettings = ethereumSettings ?? throw new ArgumentNullException(nameof(ethereumSettings));
         }
 
@@ -57,7 +61,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException("Destination address is invalid for token transfer.");
             }
 
-            return await SendSmartContractTransaction("transferFrom", sourceAddress.Address, destinationAddress, amount);
+            return await SendSmartContractTransaction("transferFrom", sourceAddress.Address, destinationAddress, amount * _ethereumSettings.Value.Denomination);
         }
 
         public async Task<(string Hash, bool Success)> CallSmartContractMintTokensFunction(string destinationAddress, BigInteger amount)
@@ -67,7 +71,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            return await SendSmartContractTransaction("mintTokens", destinationAddress, amount);
+            return await SendSmartContractTransaction("mintTokensWithIncludingInJackpot", destinationAddress, amount * _ethereumSettings.Value.Denomination);
         }
 
         public async Task<BigInteger> CallSmartContractBalanceOfFunction(string address)
@@ -111,9 +115,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private async Task<(string Hash, bool Success)> SendSmartContractTransaction(string functionName, params object[] functionInput)
         {
+            if (functionInput == null)
+            {
+                throw new ArgumentNullException(nameof(functionInput));
+            }
+
             try
             {
-                var transfer = await GetSmartContractFunction("transferFrom");
+                var transfer = await GetSmartContractFunction(functionName);
                 var window = Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds);
 
                 if (await Web3.Personal.UnlockAccount.SendRequestAsync(Account.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, window))

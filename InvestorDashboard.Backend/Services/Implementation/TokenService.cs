@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -71,15 +74,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
+                var user = ctx.Users.Single(x => x.Id == userId);
+
                 var count = await ctx.CryptoTransactions
                     .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token)
                     .CountAsync();
 
-                return count < _options.Value.OutboundTransactionsLimit;
+                return user.IsEligibleForTransfer && count < _options.Value.OutboundTransactionsLimit;
             }
         }
 
-        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, long amount)
+        public async Task<(string Hash, bool Success)> Transfer(string userId, string destinationAddress, BigInteger amount)
         {
             if (destinationAddress == null)
             {
@@ -102,10 +107,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 await RefreshTokenBalanceInternal(userId);
 
-                var user = ctx.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);                
+                var user = ctx.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
 
                 var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
-                var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Transfer && !x.IsDisabled && x.Currency == Currency.Token);
+                var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Currency.Token);
 
                 if (ethAddress == null || tokenAddress == null)
                 {
@@ -113,16 +118,37 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     return (Hash: null, Success: false);
                 }
 
+                var tx = new CryptoTransaction
+                {
+                    CryptoAddressId = tokenAddress.Id,
+                    Amount = amount.ToString(),
+                    Timestamp = DateTime.UtcNow,
+                    Direction = CryptoTransactionDirection.Outbound
+                };
+
+                ctx.CryptoTransactions.Add(tx);
+                ctx.SaveChanges();
+
+                await RefreshTokenBalance(userId);
+
+                using (var context = CreateContext())
+                {
+                    user = context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
+                }
+
                 if (user.Balance + user.BonusBalance < amount)
                 {
                     throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
                 }
 
-                var balance = await _smartContractService.CallSmartContractBalanceOfFunction(ethAddress.Address);
-
-                if (balance < amount)
+                if (_options.Value.IsDirectMintingDisabled)
                 {
-                    throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
+                    var balance = await _smartContractService.CallSmartContractBalanceOfFunction(ethAddress.Address);
+
+                    if (balance < amount)
+                    {
+                        throw new InvalidOperationException($"Actual smart contract balance is lower than requested transfer amount.");
+                    }
                 }
 
                 var result = _options.Value.IsDirectMintingDisabled
@@ -131,21 +157,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (result.Success)
                 {
-                    var tx = new CryptoTransaction
-                    {
-                        CryptoAddressId = tokenAddress.Id,
-                        Amount = amount.ToString(),
-                        Timestamp = DateTime.UtcNow,
-                        Direction = CryptoTransactionDirection.Outbound,
-                        Hash = result.Hash
-                    };
-
-                    await ctx.CryptoTransactions.AddAsync(tx);
-                    await ctx.SaveChangesAsync();
+                    tx.Hash = result.Hash;
+                    ctx.SaveChanges();
 
                     await RefreshTokenBalanceInternal(userId);
 
                     return result;
+                }
+                else
+                {
+                    tx.IsFailed = true;
+                    ctx.SaveChanges();
                 }
             }
 
@@ -205,9 +227,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .Sum(x => long.Parse(x.Amount));
 
                 var outbound = user.CryptoAddresses
-                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer)
+                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal)
                         ?.CryptoTransactions
-                        ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && x.IsFailed == false)
+                        ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && (x.IsFailed == null || !x.IsFailed.Value))
                         ?.ToArray()
                         ?.Sum(x => long.Parse(x.Amount))
                     ?? 0;
