@@ -5,7 +5,7 @@
         Investment = 0,
         Refund = 1,
         Internal = 2,
-        Transfer = 3,
         Referral = 4
+        // TODO: update back ints. 
     }
 }

@@ -31,7 +31,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
             _exchangeRateService = exchangeRateService ?? throw new ArgumentNullException(nameof(exchangeRateService));
-            _calculationService = calculationService;
+            _calculationService = calculationService ?? throw new ArgumentNullException(nameof(calculationService));
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
@@ -77,10 +77,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 var user = ctx.Users.Single(x => x.Id == userId);
 
                 var count = await ctx.CryptoTransactions
-                    .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token)
+                    .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token && x.Direction == CryptoTransactionDirection.Outbound)
                     .CountAsync();
 
-                return user.IsEligibleForTransfer && count < _options.Value.OutboundTransactionsLimit;
+                return user.IsEligibleForTransfer && count <= _options.Value.OutboundTransactionsLimit;
             }
         }
 

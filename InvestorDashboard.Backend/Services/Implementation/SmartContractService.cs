@@ -3,7 +3,6 @@ using InvestorDashboard.Backend.Database.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nethereum.Contracts;
-using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 using Nethereum.Web3.Accounts;
 using System;
@@ -28,11 +27,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         public SmartContractService(
             IServiceProvider serviceProvider,
-            ILoggerFactory loggerFactory, 
-            IKeyVaultService keyVaultService, 
-            IResourceService resourceService, 
+            ILoggerFactory loggerFactory,
+            IKeyVaultService keyVaultService,
+            IResourceService resourceService,
             ILogger<SmartContractService> logger,
-            IOptions<EthereumSettings> ethereumSettings) 
+            IOptions<EthereumSettings> ethereumSettings)
             : base(serviceProvider, loggerFactory)
         {
             _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
@@ -61,7 +60,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new InvalidOperationException("Destination address is invalid for token transfer.");
             }
 
-            return await SendSmartContractTransaction("transferFrom", sourceAddress.Address, destinationAddress, amount * _ethereumSettings.Value.Denomination);
+            return await SendSmartContractTransaction("transferFrom", sourceAddress.Address, destinationAddress, amount * new BigInteger(Math.Pow(10, _ethereumSettings.Value.Denomination)));
         }
 
         public async Task<(string Hash, bool Success)> CallSmartContractMintTokensFunction(string destinationAddress, BigInteger amount)
@@ -71,7 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            return await SendSmartContractTransaction("mintTokensWithIncludingInJackpot", destinationAddress, amount * _ethereumSettings.Value.Denomination);
+            return await SendSmartContractTransaction("mintTokensWithIncludingInJackpot", destinationAddress, amount * new BigInteger(Math.Pow(10, _ethereumSettings.Value.Denomination)));
         }
 
         public async Task<BigInteger> CallSmartContractBalanceOfFunction(string address)
@@ -93,21 +92,26 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .Where(
                         x => x.Direction == CryptoTransactionDirection.Outbound
                         && x.IsFailed == null
-                        && x.ExternalId == null
-                        && x.CryptoAddress.Address == null
                         && x.CryptoAddress.Currency == Currency.Token
-                        && x.CryptoAddress.Type == CryptoAddressType.Transfer)
+                        && x.CryptoAddress.Type == CryptoAddressType.Internal)
                     .ToArray();
 
                 foreach (var tx in transactions)
                 {
-                    var transaction = await Web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(tx.Hash);
-                    var receipt = await Web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
-
-                    if (transaction == null || receipt != null)
+                    try
                     {
-                        tx.IsFailed = transaction == null || !Convert.ToBoolean(receipt.Status.Value);
-                        await ctx.SaveChangesAsync();
+                        var transaction = await Web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(tx.Hash);
+                        var receipt = await Web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
+
+                        if (transaction == null || receipt != null)
+                        {
+                            tx.IsFailed = transaction == null || receipt.Status.Value == 0;
+                            await ctx.SaveChangesAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"An error occurred while checking transaction receipt. Hash: {tx.Hash}.");
                     }
                 }
             }
@@ -123,13 +127,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
             try
             {
                 var transfer = await GetSmartContractFunction(functionName);
-                var window = Convert.ToInt32(_ethereumSettings.Value.AccountUnlockWindow.TotalSeconds);
-
-                if (await Web3.Personal.UnlockAccount.SendRequestAsync(Account.Address, _keyVaultService.MasterKeyStoreEncryptionPassword, window))
-                {
-                    var hash = await transfer.SendTransactionAsync(Account.Address, functionInput);
-                    return (Hash: hash, Success: true);
-                }
+                var hash = await transfer.SendTransactionAsync(Account.Address, functionInput);
+                return (Hash: hash, Success: true);
             }
             catch (Exception ex)
             {

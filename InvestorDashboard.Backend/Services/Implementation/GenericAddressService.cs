@@ -74,13 +74,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"User not found with ID {userId}.");
                 }
 
-                if (includeInternal && !user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Transfer && !x.IsDisabled))
+                if (includeInternal && !user.CryptoAddresses.Any(x => x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal && !x.IsDisabled))
                 {
                     var address = new CryptoAddress
                     {
                         Currency = Currency.Token,
                         UserId = user.Id,
-                        Type = CryptoAddressType.Transfer
+                        Type = CryptoAddressType.Internal
                     };
 
                     await ctx.CryptoAddresses.AddAsync(address);
