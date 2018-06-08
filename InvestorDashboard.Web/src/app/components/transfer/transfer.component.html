@@ -13,23 +13,37 @@
                     <input (blur)="validateAddress(transfer.address)" autocomplete="off" required matInput placeholder="{{'transfer.Address' | translate}}" type="text" [(ngModel)]="transfer.address" name="address" #address="ngModel">
                 </mat-form-field>
                 <br>
-                <mat-form-field>
-                    <input matInput [disabled]="sendEntire" (keyup)="validateValue($event)" placeholder="{{'transfer.Amount' | translate}}" [(ngModel)]="transfer.amount" type="number" name="amount" #amount="ngModel">
 
-                </mat-form-field>
-                <br>
-                <mat-checkbox (change)="checkSendEntire($event)">{{'transfer.SendEntire' | translate}}</mat-checkbox>
-                <p>
-                    <span *ngIf="transfer.amount>0 && validAmount">{{transfer.amount}} will be transfered</span>
-                </p>
-                <div class="errors" *ngIf="errors">{{errors}}</div>
-                <div style="margin-top: 20px;">
-                    <button type="submit" [disabled]="!f.form.valid || isLoading || errors || !validAmount || !sended" mat-raised-button color="primary">
+                <ng-container *ngIf="dashboard.clientInfoModel.isInvestor">
+                    <mat-form-field>
+                        <input matInput [disabled]="sendEntire" (keyup)="validateValue($event)" placeholder="{{'transfer.Amount' | translate}}" [(ngModel)]="transfer.amount" type="number" name="amount" #amount="ngModel">
+
+                    </mat-form-field>
+                    <br>
+                    <mat-checkbox (change)="checkSendEntire($event)">{{'transfer.SendEntire' | translate}}</mat-checkbox>
+                    <p>
+                        <span *ngIf="transfer.amount>0 && validAmount">{{transfer.amount}} will be transfered</span>
+                    </p>
+                    <div class="errors" *ngIf="errors">{{errors}}</div>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" [disabled]="!f.form.valid || isLoading || errors || !validAmount || !sended" mat-raised-button color="primary">
             <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
             <span>{{'buttons.Send' | translate}}</span>
           </button>
-                </div>
-                <p>You have the opportunity to make 3 token transfers without inner fee. </p>
+                    </div>
+                    <p>You have the opportunity to make 3 token transfers without inner fee. </p>
+                </ng-container>
+
+                <ng-container *ngIf="!dashboard.clientInfoModel.isInvestor">
+                    <div style="width: 100%;">
+                        <label style="font-weight: unset;">Available tokens amount for transfer: </label>
+                        <span>{{dashboard.clientInfoModel.tokensAvailableForTransfer}}</span>
+                    </div>
+                    <button type="submit" [disabled]="!f.form.valid || isLoading || !sended" mat-raised-button color="primary">
+                            <mat-icon *ngIf="isLoading" class="rotate" aria-hidden="true">autorenew</mat-icon>
+                            <span>Send All Available</span>
+                          </button>
+                </ng-container>
             </form>
             <div *ngIf="!dashboard.clientInfoModel.isEligibleForTransfer">
                 <p>Tokens will be created by Ethereum smart contract right after the token sale will be completed. Then you will be able to transfer tokens to any wallet supporting ERC20 standard. </p>

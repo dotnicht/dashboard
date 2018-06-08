@@ -8,5 +8,7 @@
         public bool ThresholdExceeded { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsEligibleForTransfer { get; set; }
+        public bool IsInvestor { get; set; }
+        public long TokensAvailableForTransfer { get; set; }
     }
 }
