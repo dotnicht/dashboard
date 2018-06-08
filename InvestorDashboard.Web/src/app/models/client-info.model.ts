@@ -6,6 +6,8 @@ export class ClientInfo {
     isTokenSaleDisabled: boolean;
     isEligibleForTransfer: boolean;
     thresholdExceeded: boolean;
+    isInvestor: boolean;
+    tokensAvailableForTransfer: number;
 
     constructor() {
         this.balance = 0;

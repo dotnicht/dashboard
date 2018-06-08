@@ -50,6 +50,9 @@ export class TransferComponent implements OnInit {
         }
     }
     OnSubmit() {
+        if (!this.dashboard.clientInfoModel.isInvestor) {
+            this.transfer.amount = this.dashboard.clientInfoModel.tokensAvailableForTransfer;
+        }
 
         console.log(this.transfer);
         this.sended = false;
