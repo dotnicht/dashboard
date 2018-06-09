@@ -58,7 +58,7 @@ namespace InvestorDashboard.Backend.Database
 
             builder.Entity<CryptoTransaction>()
                 .HasIndex(x => x.ExternalId)
-                .IsUnique();
+                .IsUnique(false);
 
             builder.Entity<CryptoAddress>()
                 .HasIndex(x => new { x.Currency, x.Type, x.IsDisabled, x.UserId })

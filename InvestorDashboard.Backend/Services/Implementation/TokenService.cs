@@ -1,14 +1,11 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
-using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Backend.Services.Implementation
@@ -109,6 +106,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 var user = ctx.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
 
+                CheckBalance(amount, user);
+
                 var ethAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Investment && !x.IsDisabled && x.Currency == Currency.ETH);
                 var tokenAddress = user.CryptoAddresses.SingleOrDefault(x => x.Type == CryptoAddressType.Internal && !x.IsDisabled && x.Currency == Currency.Token);
 
@@ -118,12 +117,30 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     return (Hash: null, Success: false);
                 }
 
+                var hash = Guid.Parse("F4F982BC-D5CD-444D-AED0-9C8226B0178A");
+
+                if (!user.IsInvestor)
+                {
+                    amount = string.IsNullOrWhiteSpace(user.TelegramUsername) 
+                        && await ctx.CryptoTransactions.AnyAsync(x => x.ExternalId == hash && x.CryptoAddress.UserId == userId)
+                            ? 0
+                            : _options.Value.NonInvestorTransferLimit;
+
+                    if (amount <= 0)
+                    {
+                        user.IsEligibleForTransfer = false;
+                        ctx.SaveChanges();
+                        throw new InvalidOperationException($"Transfer not allowed for user {userId}.");
+                    }
+                }
+
                 var tx = new CryptoTransaction
                 {
                     CryptoAddressId = tokenAddress.Id,
                     Amount = amount.ToString(),
                     Timestamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Outbound
+                    Direction = CryptoTransactionDirection.Outbound,
+                    ExternalId = hash
                 };
 
                 ctx.CryptoTransactions.Add(tx);
@@ -131,15 +148,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 await RefreshTokenBalance(userId);
 
-                using (var context = CreateContext())
-                {
-                    user = context.Users.Include(x => x.CryptoAddresses).Single(x => x.Id == userId);
-                }
-
-                if (user.Balance + user.BonusBalance < amount)
-                {
-                    throw new InvalidOperationException($"Insufficient token balance for user {userId} to perform transfer to {destinationAddress}. Amount {amount}.");
-                }
+                CheckBalance(amount, user);
 
                 if (_options.Value.IsDirectMintingDisabled)
                 {
@@ -201,6 +210,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     balance += (long)Math.Ceiling(_calculationService.ToDecimalValue(tx.Amount, tx.CryptoAddress.Currency) * ex / _options.Value.Price);
                 }
 
+                if (inboundTx.Length > 0)
+                {
+                    user.IsInvestor = true;
+                    ctx.SaveChanges();
+                }
+
                 var bonus = 0L;
 
                 if (_options.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
@@ -233,6 +248,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         ?.ToArray()
                         ?.Sum(x => long.Parse(x.Amount))
                     ?? 0;
+
+                if (!user.IsInvestor)
+                {
+                    user.TokensAvailableForTransfer = _options.Value.NonInvestorTransferLimit - outbound;
+                }
+
+                ctx.SaveChanges();
 
                 var tempBalance = balance;
                 var tempBonus = bonus;
@@ -284,6 +306,14 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         await ctx.SaveChangesAsync();
                     }
                 }
+            }
+        }
+
+        private static void CheckBalance(BigInteger amount, ApplicationUser user)
+        {
+            if (user.Balance + user.BonusBalance < amount)
+            {
+                throw new InvalidOperationException($"Insufficient token balance for user {user.Id} to perform transfer. Amount {amount}.");
             }
         }
     }

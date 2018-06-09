@@ -16,6 +16,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public bool AutomaticallyEnableTokenTransfer { get; set; }
         public int OutboundTransactionsLimit { get; set; }
         public long BalanceThreshold { get; set; }
+        public long NonInvestorTransferLimit { get; set; }
         public BonusSettings Bonus { get; set; }
 
         public class BonusSettings
