@@ -62,7 +62,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             }
         }
 
-        public async Task<bool> IsUserEligibleForTransfer(string userId)
+        public Task<bool> IsUserEligibleForTransfer(string userId)
         {
             if (userId == null)
             {
@@ -71,13 +71,9 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             using (var ctx = CreateContext())
             {
-                var user = ctx.Users.Single(x => x.Id == userId);
-
-                var count = await ctx.CryptoTransactions
-                    .Where(x => x.CryptoAddress.UserId == userId && !x.CryptoAddress.IsDisabled && x.CryptoAddress.Currency == Currency.Token && x.Direction == CryptoTransactionDirection.Outbound)
-                    .CountAsync();
-
-                return user.IsEligibleForTransfer && count <= _options.Value.OutboundTransactionsLimit;
+                var user = ctx.Users.Include(x => x.CryptoAddresses).ThenInclude(x => x.CryptoTransactions).Single(x => x.Id == userId);
+                var count = GetUserOutboundTransactions(user).Count();
+                return Task.FromResult(user.IsEligibleForTransfer && count <= _options.Value.OutboundTransactionsLimit);
             }
         }
 
@@ -121,7 +117,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                 if (!user.IsInvestor)
                 {
-                    amount = string.IsNullOrWhiteSpace(user.TelegramUsername) 
+                    amount = string.IsNullOrWhiteSpace(user.TelegramUsername)
                         && await ctx.CryptoTransactions.AnyAsync(x => x.ExternalId == hash && x.CryptoAddress.UserId == userId)
                             ? 0
                             : _options.Value.NonInvestorTransferLimit;
@@ -241,11 +237,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .ToArray()
                     .Sum(x => long.Parse(x.Amount));
 
-                var outbound = user.CryptoAddresses
-                        .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal)
-                        ?.CryptoTransactions
-                        ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && (x.IsFailed == null || !x.IsFailed.Value))
-                        ?.ToArray()
+                var outbound = GetUserOutboundTransactions(user)
                         ?.Sum(x => long.Parse(x.Amount))
                     ?? 0;
 
@@ -307,6 +299,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
+        }
+
+        private CryptoTransaction[] GetUserOutboundTransactions(ApplicationUser user)
+        {
+            return user.CryptoAddresses
+                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal)
+                ?.CryptoTransactions
+                ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && (x.IsFailed == null || !x.IsFailed.Value))
+                ?.ToArray();
         }
 
         private static void CheckBalance(BigInteger amount, ApplicationUser user)
