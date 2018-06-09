@@ -179,6 +179,34 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return (Hash: null, Success: false);
         }
 
+        public async Task RefreshOutboundTransactions()
+        {
+            using (var ctx = CreateContext())
+            {
+                foreach (var user in ctx.Users.Include(x => x.CryptoAddresses).ThenInclude(x => x.CryptoTransactions))
+                {
+                    foreach (var tx in GetUserOutboundTransactions(user))
+                    {
+                        try
+                        {
+                            var result = await _smartContractService.GetTransactionReceipt(tx.Hash);
+
+                            if (result != null)
+                            {
+                                tx.IsFailed = result.Value;
+                                await ctx.SaveChangesAsync();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, $"An error occurred while checking transaction receipt. Hash: {tx.Hash}.");
+                        }
+                    }
+                }
+            }
+        }
+
+
         private async Task RefreshTokenBalanceInternal(string userId)
         {
             using (var ctx = CreateContext())

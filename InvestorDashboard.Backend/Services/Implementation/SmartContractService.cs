@@ -84,37 +84,15 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return await balance.CallAsync<BigInteger>(address);
         }
 
-        public async Task RefreshOutboundTransactions()
+        public async Task<bool?> GetTransactionReceipt(string hash)
         {
-            using (var ctx = CreateContext())
+            if (hash == null)
             {
-                var transactions = ctx.CryptoTransactions
-                    .Where(
-                        x => x.Direction == CryptoTransactionDirection.Outbound
-                        && x.IsFailed == null
-                        && x.CryptoAddress.Currency == Currency.Token
-                        && x.CryptoAddress.Type == CryptoAddressType.Internal)
-                    .ToArray();
-
-                foreach (var tx in transactions)
-                {
-                    try
-                    {
-                        var transaction = await Web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(tx.Hash);
-                        var receipt = await Web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(tx.Hash);
-
-                        if (transaction == null || receipt != null)
-                        {
-                            tx.IsFailed = transaction == null || receipt.Status.Value == 0;
-                            await ctx.SaveChangesAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, $"An error occurred while checking transaction receipt. Hash: {tx.Hash}.");
-                    }
-                }
+                throw new ArgumentNullException(nameof(hash));
             }
+
+            var receipt = await Web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(hash);
+            return receipt == null ? default(bool?) : receipt.Status.Value == 0;
         }
 
         private async Task<(string Hash, bool Success)> SendSmartContractTransaction(string functionName, params object[] functionInput)

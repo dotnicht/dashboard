@@ -9,6 +9,6 @@ namespace InvestorDashboard.Backend.Services
         Task<(string Hash, bool Success)> CallSmartContractTransferFromFunction(CryptoAddress sourceAddress, string destinationAddress, BigInteger amount);
         Task<(string Hash, bool Success)> CallSmartContractMintTokensFunction(string destinationAddress, BigInteger amount);
         Task<BigInteger> CallSmartContractBalanceOfFunction(string address);
-        Task RefreshOutboundTransactions();
+        Task<bool?> GetTransactionReceipt(string hash);
     }
 }
