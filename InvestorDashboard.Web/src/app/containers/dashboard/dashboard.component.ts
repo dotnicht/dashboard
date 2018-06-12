@@ -177,9 +177,9 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
     chooseVideo() {
         const list = [
-            'https://www.youtube.com/embed/1guqqp9txMM',
-            'https://www.youtube.com/embed/IF8sihjNO_M',
-            'https://www.youtube.com/embed/EuJCTbdF54s'
+            'https://www.youtube.com/embed/H8vzvH3hp18',
+            'https://www.youtube.com/embed/MU5J3PKNrGM',
+            'https://www.youtube.com/embed/473pVt9324U'
         ];
         const index = Math.floor((Math.random() * list.length));
 

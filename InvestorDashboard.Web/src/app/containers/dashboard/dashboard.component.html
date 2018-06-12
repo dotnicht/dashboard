@@ -8,7 +8,7 @@
         <!-- <p *ngIf="(dashboard.clientInfoModel.balance == 0) || (dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == true)" style="font-size: 35px; font-weight: bold;">{{dashboard.clientInfoModel.balance}} {{dashboard.icoInfoModel.tokenName}}</p> -->
         <!-- <p *ngIf="dashboard.clientInfoModel.balance > 0 && dashboard.clientInfoModel.thresholdExceeded == false" style="font-size: 22px; font-weight: bold;">Not reached the minimum volume</p> -->
       </h4>
-<!-- 
+      <!-- 
       <div class="meet-your-model-form token-bar" *ngIf="dashboard.icoInfoModel.totalCoins">
         <div class="tokenbar-middle">
           <div class="statistics">
@@ -109,11 +109,10 @@
         <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
           <b>25%</b>
         </p>
-        <p style="font-size: 20px;margin-top:30px;">is ending in</p>
+        <!-- <p style="font-size: 20px;margin-top:30px;">is ending in</p>
         <p class="timer">
-          <!-- {{timer.days}} : {{timer.hours}} : {{timer.minutes}} : {{timer.seconds}} -->
           {{timer}}
-        </p>
+        </p> -->
       </div>
     </mat-card-content>
   </mat-card>
@@ -127,7 +126,14 @@
   <mat-card class="sixth" *ngIf="dashboard.icoInfoModel.isTokenSaleDisabled">
     <mat-card-content>
       <div class="content">
-        <p style="font-size: 28px;">Pre-sale is finished</p>
+
+        <p style="font-size: 20px;">Thanks to your overwhelming support and participation! </p>
+        <p>Presale is just ended and it’s time to make a 7 day pause until the next stage, which begins on June, 19. Meanwhile,
+          follow our updates in social media and share your referral link with friends to get 5% bonus in BTC/ETH of their
+          investments.
+        </p>
+        <p>Watch how CRYSTALS is going big!</p>
+        <!-- <p style="font-size: 28px;">Pre-sale is finished</p>
 
         <p style="font-size: 20px;">
           <span *ngFor="let currency of dashboard.icoInfoModel.currencies; let last = last">
@@ -137,7 +143,7 @@
         </p>
         <p style="font-size: 18px;">Token sale starts on April 28th, 2018</p>
         <img style="width: 60px;margin-top: 20px; margin: 0 auto;" src="assets/img/round_a/placeholder.svg">
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <img width="100%" height="100%" src="assets/img/round_a/round_a.svg"> -->
       </div>
 
