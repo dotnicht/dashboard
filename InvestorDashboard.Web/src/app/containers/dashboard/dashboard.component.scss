@@ -296,7 +296,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-     
     }
   }
 
@@ -332,12 +331,17 @@
     .third {
       .block {
         .right {
+          .showqr {
+            width: 150px;
+          }
           .qr_block {
             .mat-form-field {
-              width: 150px;
+              //width: 150px;
+              width: 100%;
             }
             .mat-raised-button {
               width: auto;
+              text-align: center;
             }
           }
         }

@@ -33,6 +33,10 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
     public dashboard: Dashboard = new Dashboard();
 
+    bonusValidFrom: number;
+    bonusValidUntil: number;
+    dateNow: number;
+
     isGenProcesing = false;
     public selectedPaymentType: PaymentType;
     public etherAddress: string;
@@ -92,7 +96,13 @@ export class DashboardComponent implements OnDestroy, OnInit {
                 }
 
                 this.dashboard = db;
+                if (!this.dashboard.icoInfoModel.bonus) {
+                    this.dashboard.icoInfoModel.bonus = 0;
+                }
+                this.bonusValidFrom = new Date(this.dashboard.icoInfoModel.bonusValidFrom).getTime();
+                this.bonusValidUntil = new Date(this.dashboard.icoInfoModel.bonusValidUntil).getTime();
                 this.timerInterval = setInterval(() => { this.updateTimer(); }, 1000);
+
             }
         }));
     }
@@ -141,7 +151,14 @@ export class DashboardComponent implements OnDestroy, OnInit {
         });
     }
     updateTimer() {
-        const endDate = new Date(this.dashboard.icoInfoModel.bonusValidUntil).getTime();
+
+
+        let endDate = 0;
+        if (this.dateNow > this.bonusValidUntil && this.dateNow < this.bonusValidFrom) {
+            endDate = this.bonusValidFrom;
+        } else if (this.dateNow < this.bonusValidUntil) {
+            endDate = this.bonusValidUntil;
+        }
 
         const d = new Date();
         const localTime = d.getTime();
@@ -153,12 +170,16 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
         const today = new Date().getTime();
 
+        this.dateNow = today;
 
         const day = Math.floor((endDate - today) / (24 * 60 * 60 * 1000)).toString();
         const hour = Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)).toString();
         const min = (Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / (60 * 1000)) % 60).toString();
         const sec = (Math.floor(((endDate - today) % (24 * 60 * 60 * 1000)) / 1000) % 60 % 60).toString();
-        this.timer = `${day.length == 1 ? '0' : ''}${day} : ${hour.length == 1 ? '0' : ''}${hour} : ${min.length == 1 ? '0' : ''}${min} : ${sec.length == 1 ? '0' : ''}${sec}`;
+        if (parseInt(sec, 0) > -1) {
+            this.timer = `${day.length == 1 ? '0' : ''}${day} : ${hour.length == 1 ? '0' : ''}${hour} : ${min.length == 1 ? '0' : ''}${min} : ${sec.length == 1 ? '0' : ''}${sec}`;
+        }
+
         // this.timer = { days: day, hours: hour, minutes: min, seconds: sec } as Timer;
     }
     qrInitialize(data: string) {

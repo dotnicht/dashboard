@@ -105,10 +105,35 @@
 
       <!-- </div> -->
       <div style="text-align: center; width: 100%;">
-        <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
-        <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
-          <b>25%</b>
-        </p>
+
+
+        <ng-container *ngIf="dateNow>bonusValidUntil && dateNow<bonusValidFrom">
+          <h3>
+            Next round starts in
+            <p class="timer">
+              {{timer}}
+            </p>
+          </h3>
+        </ng-container>
+        <ng-container *ngIf="dateNow>bonusValidUntil && dateNow>bonusValidFrom">
+          <div>
+            <h2>
+              <b>Token sale is finished.
+                <br> Thanks everyone!</b>
+            </h2>
+          </div>
+
+        </ng-container>
+        <ng-container *ngIf="dateNow<bonusValidUntil">
+          <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
+          <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
+            <b>{{dashboard.icoInfoModel.bonus*100}}%</b>
+          </p>
+          <p style="font-size: 20px;margin-top:30px;">is ending in</p>
+          <p class="timer">
+            {{timer}}
+          </p>
+        </ng-container>
         <!-- <p style="font-size: 20px;margin-top:30px;">is ending in</p>
         <p class="timer">
           {{timer}}
@@ -133,6 +158,7 @@
           investments.
         </p>
         <p>Watch how CRYSTALS is going big!</p>
+
         <!-- <p style="font-size: 28px;">Pre-sale is finished</p>
 
         <p style="font-size: 20px;">
@@ -202,7 +228,7 @@
             <img class="currency-icon" [src]="type.image+'-icon-'+(selectedPaymentType.currency!=type.currency?'pink':'white')+'.svg'">
             <!-- <div class="currency-icon"></div> -->
             <div class="value">{{type.type==0?type.currency:type.title}}</div>
-            <div class="title">1 {{type.currency}} = {{type.rate}} {{dashboard.icoInfoModel.tokenName}}</div>
+            <div class="title">1 {{type.currency}} = {{(type.rate*(1 + dashboard.icoInfoModel.bonus))}} {{dashboard.icoInfoModel.tokenName}}</div>
           </button>
           <!-- <button class="item" mat-raised-button>
             Credit Card
@@ -228,16 +254,16 @@
                   <p>Send your {{selectedPaymentType.currency}} to this address</p>
                   <div class="qr_block">
                     <!-- <div id="qrCode" class="qrCode"></div> -->
-                    <div>
+                    <div style="display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;">
                       <mat-form-field>
                         <input matInput #address name="example" [value]="selectedPaymentType.address" type="text">
                       </mat-form-field>
                       <button [color]="'primary'" [ngxClipboard]="address" (cbOnSuccess)="isCopied = true" mat-raised-button>{{(!isCopied?'buttons.Copy':'buttons.Copied') | translate}}</button>
 
                     </div>
-                    <div style="text-align: center; margin-top: 5px">
-                      <button [color]="'primary'" (click)="openQrDialog()" mat-raised-button>Show QR Code</button>
-                    </div>
+
                   </div>
                 </ng-container>
 
@@ -278,7 +304,7 @@
                         <td>
                           <div class="form-field">
                             <div class="input-field">
-                              <input disabled [(ngModel)]="calculatorFromBtc?selectedPaymentType.rate*calculateValue:calculateValue/selectedPaymentType.rate">
+                              <input disabled [(ngModel)]="calculatorFromBtc?(selectedPaymentType.rate*calculateValue*(1 + dashboard.icoInfoModel.bonus)):calculateValue/(1 + dashboard.icoInfoModel.bonus)/selectedPaymentType.rate ">
                             </div>
                             <span>{{!calculatorFromBtc?selectedPaymentType.currency:'CRS'}}</span>
                           </div>
@@ -288,6 +314,11 @@
                   </table>
                 </div>
               </div>
+              <ng-container *ngIf="selectedPaymentType.type==0">
+                <div style="text-align: center; margin-top: 5px">
+                  <button [color]="'primary'" (click)="openQrDialog()" class="showqr" mat-raised-button>Show QR Code</button>
+                </div>
+              </ng-container>
               <ng-container *ngIf="selectedPaymentType.type==1">
 
                 <div style="font-size: 12px;">
