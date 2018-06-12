@@ -16,6 +16,7 @@ namespace InvestorDashboard.Api.Models.DashboardModels
         public bool IsReferralSystemDisabled { get; set; }
         public decimal ReferralBonus { get; set; }
         public decimal Bonus { get; set; }
+        public DateTime? BonusValidFrom { get; set; }
         public DateTime? BonusValidUntil { get; set; }
         public bool IsKycSystemDisabled { get; set; }
         public long? KycBonus { get; set; }
