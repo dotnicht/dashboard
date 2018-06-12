@@ -15,7 +15,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 export class FaqComponent implements OnInit {
     /** faq ctor */
     pictures: any;
-    constructor(private http: Http, private authService: AuthService, private sanitizer: DomSanitizer) { }
+    constructor(private http: HttpClient, private authService: AuthService, private sanitizer: DomSanitizer) { }
 
     /** Called by Angular after faq component initialized */
     ngOnInit(): void {
@@ -26,14 +26,8 @@ export class FaqComponent implements OnInit {
 
     }
 
-    getPictures(): Observable<Response> {
-        let resp = this.http.get(environment.host + '/dashboard/pictures', this.authService.getAuthHeader())
-            .map((response) => {
-                return response;
-            })
-            .catch(err => {
-                return Observable.throw(err);
-            });
+    getPictures() {
+        let resp = this.http.get(environment.host + '/dashboard/pictures', this.authService.getAuthHeader());
 
         return resp;
     }

@@ -20,64 +20,40 @@ export class ReferralService {
     constructor(private http: HttpClient, private authService: AuthService) {
     }
     getReferralInfo(): Observable<ReferralInfo> {
-        let httpOptions = {
-            headers: new HttpHeaders({
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.authService.accessToken}`,
-                'Accept': `application/vnd.iman.v1+json, application/json, text/plain, */*`,
-                'App-Version': ConfigurationService.appVersion
-            })
-        };
+        return this.http.get<ReferralInfo>(this.referralInfoUrl, this.authService.getAuthHeader())
+            .map((response) => {
+                let items = [];
+                for (let item of response['items']) {
+                    items.push(new ReferralCurrencyItem(
+                        item['address'],
+                        item['balance'],
+                        item['pending'],
+                        item['transactions'],
+                        item['currency']
+                    ));
+                }
 
-        return this.http.get<ReferralInfo>(this.referralInfoUrl, httpOptions)
-        .map((response) => {
-            let items = [];
-            for (let item of response['items']) {
-                items.push(new ReferralCurrencyItem(
-                    item['address'],
-                    item['balance'],
-                    item['pending'],
-                    item['transactions'],
-                    item['currency']
-                ));
-            }
-
-            return new ReferralInfo(
-                response['link'],
-                items,
-                response['count'],
-                response['tokens'],
-            );
-        });
+                return new ReferralInfo(
+                    response['link'],
+                    items,
+                    response['count'],
+                    response['tokens'],
+                );
+            });
     }
 
-    changeReferralInfo(currencyAcronym: string, refAddress: string = null): Observable<Response> {
-        let httpOptions = {
-            headers: new HttpHeaders({
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.authService.accessToken}`,
-                'Accept': `application/vnd.iman.v1+json, application/json, text/plain, */*`,
-                'App-Version': ConfigurationService.appVersion
-            })
-        };
+    changeReferralInfo(currencyAcronym: string, refAddress: string = null) {
 
         let postData = {
             currency: currencyAcronym,
             address: refAddress
         };
 
-        const res = this.http.post(this.referralInfoUrl, JSON.stringify(postData), httpOptions)
-            .map((response: Response) => {
-                return response;
-            })
-        // .catch(error => {
-        //     //return this.handleError(error, () => this.changeReferralInfo(form));
-
-        // });
+        const res = this.http.post(this.referralInfoUrl, JSON.stringify(postData), this.authService.getAuthHeader());
         return res;
     }
 
-    
+
 
 
 }

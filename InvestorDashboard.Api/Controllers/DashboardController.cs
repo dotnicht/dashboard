@@ -273,7 +273,7 @@ namespace InvestorDashboard.Api.Controllers
             if (ApplicationUser != null)
             {
                 await _genericAddressService.UpdateAddress(ApplicationUser.Id, Currency.ETH, CryptoAddressType.Token, address.Address);
-                return Ok(await GetTokenAddress());
+                return Ok();
             }
 
             return Unauthorized();

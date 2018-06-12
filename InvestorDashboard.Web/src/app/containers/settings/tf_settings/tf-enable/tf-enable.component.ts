@@ -29,7 +29,7 @@ export class TfEnableComponent implements OnInit {
 
     ngOnInit(): void {
         this.accountEndpoint.TfGetActivationDataEndpoint().subscribe(data => {
-            this.ea = data.json() as EnableAuthenticatorModel;
+            this.ea = data as EnableAuthenticatorModel;
             this.qrInitialize(this.ea.authenticatorUri);
         });
     }

@@ -8,30 +8,24 @@ import 'rxjs/add/operator/map';
 import { BaseService } from './base.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 
 @Injectable()
-export class CaptchaEndpoint extends BaseService {
+export class CaptchaEndpoint {
 
-    private readonly _generateGuidUrl: string = (environment.production?'https':'http' )+'://dp-captcha2.azurewebsites.net/api/captchaapi/generateguid';
+    private readonly _generateGuidUrl: string = (environment.production ? 'https' : 'http') + '://dp-captcha2.azurewebsites.net/api/captchaapi/generateguid';
 
-    constructor(http: Http, authService: AuthService) {
+    constructor(private http: HttpClient, private authService: AuthService) {
 
-        super(authService, http);
     }
 
     generateGuidEndpoint() {
         const header = new Headers();
         // header.append('Content-Type', 'text/html; charset=utf-8');
         // header.append('Access-Control-Allow-Origin', '*');
-        
-        const res = this.http.get(this._generateGuidUrl, { headers: header })
-            .map((response: Response) => {
-                return response;
-            })
-            .catch(error => {
-                return this.handleError(error, () => this.generateGuidEndpoint());
-            });
+
+        const res = this.http.get(this._generateGuidUrl);
         return res;
 
     }

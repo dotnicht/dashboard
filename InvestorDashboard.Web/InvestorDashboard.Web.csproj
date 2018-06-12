@@ -9,19 +9,15 @@
   <ItemGroup>
     <Compile Remove="dist\**" />
     <Compile Remove="e2e\**" />
-    <Compile Remove="src\**" />
     <Compile Remove="wwwroot\**" />
     <Content Remove="dist\**" />
     <Content Remove="e2e\**" />
-    <Content Remove="src\**" />
     <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="dist\**" />
     <EmbeddedResource Remove="e2e\**" />
-    <EmbeddedResource Remove="src\**" />
     <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="dist\**" />
     <None Remove="e2e\**" />
-    <None Remove="src\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
@@ -33,6 +29,10 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="src\assets\img\png\social_icons\" />
   </ItemGroup>
   <Target Name="DebugRunNg" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
     <!-- Ensure Node.js is installed -->

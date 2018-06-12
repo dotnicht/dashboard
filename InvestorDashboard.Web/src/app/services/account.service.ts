@@ -45,9 +45,9 @@ export class AccountService {
         return this.accountEndpoint.getUpdateUserPreferencesEndpoint(configuration);
     }
 
-    refreshLoggedInUser() {
-        return this.authService.refreshLogin();
-    }
+    // refreshLoggedInUser() {
+    //     return this.authService.refreshLogin();
+    // }
 
     get currentUser() {
         return this.authService.currentUser;

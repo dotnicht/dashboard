@@ -1,13 +1,15 @@
 export class UserLogin {
-    email: string;
+    username: string;
     password: string;
     rememberMe: boolean;
+    client_id = 'ID';
+    client_secret = '901564A5-E7FE-42CB-B10D-61EF6A8F3654';
     grant_type: string;
-    scope: string;
-    resource: string;
+    scope = 'openid email phone profile offline_access roles';
+    resource = window.location.origin;
 
-    constructor(email?: string, password?: string, rememberMe?: boolean) {
-        this.email = email;
+    constructor(username?: string, password?: string, rememberMe?: boolean) {
+        this.username = username;
         this.password = password;
         this.rememberMe = rememberMe;
     }
@@ -15,6 +17,14 @@ export class UserLogin {
 
 
 }
+
+// username: denis.skvortsow%40gmail.com
+// password: 123456Kol
+// client_id: ID
+// client_secret: 901564A5-E7FE-42CB-B10D-61EF6A8F3654
+// grant_type: password
+// scope: openid email phone profile offline_access roles
+// resource: https://crystals.systems
 
 export class User {
     public id: string;
@@ -55,12 +65,12 @@ export class User {
             this.twoFactorEnabled = twofactorenabled.toLowerCase() == 'true';
         }
         this.email = email;
-        this.firstName =firstName;
+        this.firstName = firstName;
         this.lastName = lastName;
-        this. phoneCode= phoneCode;
-        this. phoneNumber = phoneNumber;
-        this. photo = photo;
-        this. countryCode = countryCode;
+        this.phoneCode = phoneCode;
+        this.phoneNumber = phoneNumber;
+        this.photo = photo;
+        this.countryCode = countryCode;
     }
 
 
@@ -80,7 +90,7 @@ export class UserRegister {
     referral: string;
     utmSource: string;
     startUrl: string;
-    
+
     constructor(email?: string, password?: string, confirmPassword?: string) {
         this.email = email;
         this.password = password;
