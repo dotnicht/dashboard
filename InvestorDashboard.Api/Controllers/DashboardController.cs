@@ -370,7 +370,8 @@ namespace InvestorDashboard.Api.Controllers
 
             if (_tokenSettings.Value.Bonus.System == TokenSettings.BonusSettings.BonusSystem.Schedule)
             {
-                var bonus = _tokenSettings.Value.Bonus.Schedule.FirstOrDefault(x => (x.Start == null || x.Start <= DateTime.UtcNow) && (x.End == null || x.End > DateTime.UtcNow));
+                var bonus = _tokenSettings.Value.Bonus.Schedule.FirstOrDefault(x => (x.Start == null || x.Start <= DateTime.UtcNow) && (x.End == null || x.End > DateTime.UtcNow))
+                    ?? _tokenSettings.Value.Bonus.Schedule.FirstOrDefault(x => x.Start > DateTime.UtcNow && (x.End == null || x.End > DateTime.UtcNow));
 
                 if (bonus != null)
                 {
