@@ -95,6 +95,17 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return receipt == null ? default(bool?) : receipt.Status.Value == 0;
         }
 
+        public async Task<bool> TransactionExists(string hash)
+        {
+            if (hash == null)
+            {
+                throw new ArgumentNullException(nameof(hash));
+            }
+
+            var tx = await Web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(hash);
+            return tx != null;
+        }
+
         private async Task<(string Hash, bool Success)> SendSmartContractTransaction(string functionName, params object[] functionInput)
         {
             if (functionInput == null)

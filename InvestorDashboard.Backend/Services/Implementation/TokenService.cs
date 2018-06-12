@@ -1,4 +1,5 @@
 ﻿using InvestorDashboard.Backend.ConfigurationSections;
+using InvestorDashboard.Backend.Database;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class TokenService : ContextService, ITokenService
     {
+        private static Func<CryptoTransaction, bool> _outboundTransactionsSelector =
+            x => x.Direction == CryptoTransactionDirection.Outbound
+                && x.Hash != null
+                && (x.IsFailed == null || !x.IsFailed.Value);
+
         private readonly ISmartContractService _smartContractService;
         private readonly IExchangeRateService _exchangeRateService;
         private readonly ICalculationService _calculationService;
@@ -72,7 +78,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (var ctx = CreateContext())
             {
                 var user = ctx.Users.Include(x => x.CryptoAddresses).ThenInclude(x => x.CryptoTransactions).Single(x => x.Id == userId);
-                var count = GetUserOutboundTransactions(user).Count();
+
+                var count = user.CryptoAddresses
+                    .SelectMany(x => x.CryptoTransactions)
+                    .Where(_outboundTransactionsSelector)
+                    .Count(x => x.CryptoAddress.UserId == userId);
+
                 return Task.FromResult(user.IsEligibleForTransfer && count <= _options.Value.OutboundTransactionsLimit);
             }
         }
@@ -183,9 +194,25 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             using (var ctx = CreateContext())
             {
-                foreach (var user in ctx.Users.Include(x => x.CryptoAddresses).ThenInclude(x => x.CryptoTransactions))
+                var ids = ctx.Users
+                    .Where(x => x.ExternalId == null && x.EmailConfirmed)
+                    .Select(x => x.Id)
+                    .ToArray();
+
+                foreach (var id in ids)
                 {
-                    foreach (var tx in GetUserOutboundTransactions(user))
+                    var user = ctx.Users
+                        .Include(x => x.CryptoAddresses)
+                        .ThenInclude(x => x.CryptoTransactions)
+                        .Single(x => x.Id == id);
+
+                    var txs = user
+                        .CryptoAddresses
+                        .SelectMany(x => x.CryptoTransactions)
+                        .Where(_outboundTransactionsSelector)
+                        .Where(x => x.CryptoAddress.UserId == id);
+
+                    foreach (var tx in txs)
                     {
                         try
                         {
@@ -195,6 +222,18 @@ namespace InvestorDashboard.Backend.Services.Implementation
                             {
                                 tx.IsFailed = result.Value;
                                 await ctx.SaveChangesAsync();
+                            }
+                            else
+                            {
+                                Logger.LogWarning($"Receipt not available {tx.Hash}.");
+
+                                if (!await _smartContractService.TransactionExists(tx.Hash))
+                                {
+                                    Logger.LogWarning($"Tx not available {tx.Hash}.");
+
+                                    tx.IsFailed = true;
+                                    await ctx.SaveChangesAsync();
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -221,7 +260,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     throw new InvalidOperationException($"User not found with ID {userId}.");
                 }
 
-                var inboundTx = user.CryptoAddresses.Where(x => x.Type == CryptoAddressType.Investment && x.Currency != Currency.Token)
+                var inboundTx = user.CryptoAddresses
+                    .Where(x => x.Type == CryptoAddressType.Investment && x.Currency != Currency.Token)
                     .SelectMany(x => x.CryptoTransactions)
                     .Where(x => x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddress.Type == CryptoAddressType.Investment)
                     .ToArray();
@@ -265,9 +305,11 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .ToArray()
                     .Sum(x => long.Parse(x.Amount));
 
-                var outbound = GetUserOutboundTransactions(user)
-                        ?.Sum(x => long.Parse(x.Amount))
-                    ?? 0;
+                var outbound = user.CryptoAddresses
+                    .Where(x => x.Type == CryptoAddressType.Internal && x.Currency == Currency.Token)
+                    .SelectMany(x => x.CryptoTransactions)
+                    .Where(_outboundTransactionsSelector)
+                    .Sum(x => long.Parse(x.Amount));
 
                 if (!user.IsInvestor)
                 {
@@ -327,15 +369,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     }
                 }
             }
-        }
-
-        private CryptoTransaction[] GetUserOutboundTransactions(ApplicationUser user)
-        {
-            return user.CryptoAddresses
-                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.Token && x.Type == CryptoAddressType.Internal)
-                ?.CryptoTransactions
-                ?.Where(x => x.Direction == CryptoTransactionDirection.Outbound && x.Hash != null && (x.IsFailed == null || !x.IsFailed.Value))
-                ?.ToArray();
         }
 
         private static void CheckBalance(BigInteger amount, ApplicationUser user)

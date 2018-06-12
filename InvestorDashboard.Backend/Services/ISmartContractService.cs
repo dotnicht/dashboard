@@ -10,5 +10,6 @@ namespace InvestorDashboard.Backend.Services
         Task<(string Hash, bool Success)> CallSmartContractMintTokensFunction(string destinationAddress, BigInteger amount);
         Task<BigInteger> CallSmartContractBalanceOfFunction(string address);
         Task<bool?> GetTransactionReceipt(string hash);
+        Task<bool> TransactionExists(string hash);
     }
 }
