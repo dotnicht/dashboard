@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace InvestorDashboard.Api.Controllers
@@ -179,10 +180,16 @@ namespace InvestorDashboard.Api.Controllers
         [Authorize, HttpPost("add_token_transfer"), Produces("application/json")]
         public async Task<IActionResult> AddTokenTransfer([FromBody]TokenTransferModel transfer)
         {
+            if (transfer == null)
+            {
+                throw new ArgumentNullException(nameof(transfer));
+            }
+
+            _logger.LogInformation($"Transfer request. User: {ApplicationUser.Id}. Address: {transfer.Address}. Amount: {transfer.Amount}.");
+
             if (await _tokenService.IsUserEligibleForTransfer(ApplicationUser.Id))
             {
-                var (hash, success) = await _tokenService.Transfer(ApplicationUser.Id, transfer.Address, transfer.Amount);
-
+                var (hash, success) = await _tokenService.Transfer(ApplicationUser.Id, transfer.Address, BigInteger.Parse(transfer.Amount));
                 if (success)
                 {
                     return Ok(hash);

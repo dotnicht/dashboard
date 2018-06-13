@@ -10,17 +10,17 @@ namespace InvestorDashboard.Console.Jobs
 {
     public class RefreshOutboundTransactionsJob : JobBase
     {
-        private readonly ISmartContractService _smartContractService;
+        private readonly ITokenService _tokenService;
 
-        public RefreshOutboundTransactionsJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, ISmartContractService smartContractService)
+        public RefreshOutboundTransactionsJob(ILoggerFactory loggerFactory, IOptions<JobsSettings> options, ITokenService tokenService)
             : base(loggerFactory, options)
         {
-            _smartContractService = smartContractService ?? throw new ArgumentNullException(nameof(smartContractService));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         protected override async Task ExecuteInternal(IJobExecutionContext context)
         {
-            await _smartContractService.RefreshOutboundTransactions();
+            await _tokenService.RefreshOutboundTransactions();
         }
     }
 }
