@@ -154,9 +154,9 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
 
         let endDate = 0;
-        if (this.dateNow > this.bonusValidUntil && this.dateNow < this.bonusValidFrom) {
+        if (this.dateNow < this.bonusValidFrom) {
             endDate = this.bonusValidFrom;
-        } else if (this.dateNow < this.bonusValidUntil) {
+        } else if (this.dateNow > this.bonusValidFrom && this.dateNow <= this.bonusValidUntil) {
             endDate = this.bonusValidUntil;
         }
 
