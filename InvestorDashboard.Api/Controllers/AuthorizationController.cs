@@ -414,7 +414,7 @@ namespace InvestorDashboard.Api.Controllers
             Debug.Assert(request.IsTokenRequest(),
               "The OpenIddict binder for ASP.NET Core MVC is not registered. " +
               "Make sure services.AddOpenIddict().AddMvcBinders() is correctly called.");
-            request.Username = System.Web.HttpUtility.UrlDecode(request.Username);
+            request.Username = HttpUtility.UrlDecode(request.Username);
             try
             {
                 if (request.IsPasswordGrantType())

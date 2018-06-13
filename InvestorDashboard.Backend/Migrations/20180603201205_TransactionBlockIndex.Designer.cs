@@ -12,9 +12,10 @@ using System;
 namespace InvestorDashboard.Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180603201205_TransactionBlockIndex")]
+    partial class TransactionBlockIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,8 +86,6 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<bool>("IsEligibleForTransfer");
 
-                    b.Property<bool>("IsInvestor");
-
                     b.Property<bool>("IsNotified");
 
                     b.Property<bool>("IsTokenSaleDisabled");
@@ -124,8 +123,6 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<string>("SecurityStamp");
 
                     b.Property<string>("TelegramUsername");
-
-                    b.Property<long?>("TokensAvailableForTransfer");
 
                     b.Property<bool>("TwoFactorEnabled");
 
@@ -187,7 +184,8 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("Currency", "Type", "IsDisabled", "UserId");
+                    b.HasIndex("Currency", "Type", "IsDisabled", "UserId")
+                        .IsUnique();
 
                     b.ToTable("CryptoAddresses");
                 });
@@ -229,7 +227,9 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.HasIndex("CryptoAddressId");
 
-                    b.HasIndex("ExternalId");
+                    b.HasIndex("ExternalId")
+                        .IsUnique()
+                        .HasFilter("[ExternalId] IS NOT NULL");
 
                     b.HasIndex("Hash", "Direction", "ExternalId", "CryptoAddressId")
                         .IsUnique()

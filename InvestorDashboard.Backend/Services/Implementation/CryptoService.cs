@@ -14,6 +14,7 @@ using System.Linq.Expressions;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using Z.EntityFramework.Plus;
 
 namespace InvestorDashboard.Backend.Services.Implementation
 {
@@ -86,7 +87,33 @@ namespace InvestorDashboard.Backend.Services.Implementation
             using (new ElapsedTimer(Logger, $"CreateCryptoAddress. Currency: {Settings.Value.Currency}. User: {userId}."))
             {
                 var (address, privateKey) = GenerateKeys(password ?? KeyVaultService.InvestorKeyStoreEncryptionPassword);
-                return await CreateAddressInternal(userId, CryptoAddressType.Investment, address, privateKey);
+
+                using (var ctx = CreateContext())
+                {
+                    var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == Settings.Value.Currency && x.Type == CryptoAddressType.Investment && x.UserId == userId && !x.IsDisabled);
+
+                    if (entity != null)
+                    {
+                        Logger.LogWarning($"Address already exists for user {userId} and currency {Settings.Value.Currency}.");
+                        return entity;
+                    }
+
+                    entity = new CryptoAddress
+                    {
+                        UserId = userId,
+                        Currency = Settings.Value.Currency,
+                        Type = CryptoAddressType.Investment,
+                        Address = address,
+                        PrivateKey = privateKey,
+                        Balance = 0.ToString(),
+                        StartBlockIndex = await GetCurrentBlockIndex()
+                    };
+
+                    await ctx.CryptoAddresses.AddAsync(entity);
+                    await ctx.SaveChangesAsync();
+
+                    return entity;
+                }
             }
         }
 
@@ -116,7 +143,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
             {
                 using (new ElapsedTimer(Logger, $"GetTransactionsFromBlockchain. Currency: {Settings.Value.Currency}. Address: {address.Address}."))
                 {
-                    foreach (var transaction in await policy.Execute(() => GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
+                    foreach (var transaction in await policy.Execute(async () => await GetTransactionsFromBlockchain(address.Address), new Dictionary<string, object> { { addressKey, address } }))
                     {
                         Logger.LogInformation($"Received {Settings.Value.Currency} transaction list for address {address.Address}.");
 
@@ -255,44 +282,52 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .ToArrayAsync();
             }
 
-            var index = 0;
-            var result = new ConcurrentQueue<CryptoAddress>();
+            var count = 0;
+            var index = await GetCurrentBlockIndex();
 
             using (var elapsed = new ElapsedTimer(Logger, $"RefreshTransactionsByBalance. Currency: {Settings.Value.Currency}. Addresses: {addresses.Count()}."))
             {
-                Parallel.ForEach(addresses, new ParallelOptions { MaxDegreeOfParallelism = Settings.Value.MaxDegreeOfParallelism }, async x =>
+                foreach (var address in addresses)
                 {
-                    try
+                    var balance = await GetBalance(address);
+                    if (balance != BigInteger.Parse(address.Balance))
                     {
-                        var balance = (await GetBalance(x)).ToString();
-                        if (x.Balance != balance)
+                        using (var ctx = CreateContext())
                         {
-                            using (var ctx = CreateContext())
+                            foreach (var tx in await GetTransactionsFromBlockchain(address.Address))
                             {
-                                ctx.Attach(x);
-                                x.Balance = balance;
-                                await ctx.SaveChangesAsync();
-                                result.Enqueue(x);
+                                if (!ctx.CryptoTransactions.Any(x => x.Hash == tx.Hash && x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddressId == address.Id))
+                                {
+                                    tx.CryptoAddressId = address.Id;
+                                    ctx.CryptoTransactions.Add(tx);
+                                }
                             }
-                        }
 
-                        Interlocked.Increment(ref index);
+                            ctx.Attach(address);
+                            address.Balance = balance.ToString();
+                            address.LastBlockIndex = index;
 
-                        if (index % 1000 == 0)
-                        {
-                            Logger.LogInformation($"Proccessing {index} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
+                            await ctx.SaveChangesAsync();
+
+                            await TokenService.RefreshTokenBalance(address.UserId);
                         }
                     }
-                    catch (Exception ex)
+
+                    count++;
+
+                    if (count % 1000 == 0)
                     {
-                        Logger.LogError(ex, $"An error occurred while checking {Settings.Value.Currency} balance for address {x.Address}.");
+                        Logger.LogInformation($"Proccessing {count} {Settings.Value.Currency} addresses elapsed {elapsed.Stopwatch.Elapsed}.");
                     }
-                });
+                }
             }
 
             using (var ctx = CreateContext())
             {
-                await RefreshTransactionsFromBlockchainInternal(result.ToArray(), ctx);
+                ctx.CryptoAddresses
+                    .Where(InboundAddressSelector)
+                    .Where(x => x.StartBlockIndex < index)
+                    .Update(x => new CryptoAddress { LastBlockIndex = index });
             }
         }
 
@@ -381,56 +416,13 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         .Union(item)
                         .Distinct();
 
-                    await ProccessBlockAndUpdateAddresses(item.Key, lastAddresses, ctx);
+                    await ProccessBlock(item.Key, lastAddresses);
                 }
 
                 for (var i = lastIndex + 1; i <= index; i++)
                 {
-                    await ProccessBlockAndUpdateAddresses(i, lastAddresses, ctx);
+                    await ProccessBlock(i, lastAddresses);
                 }
-            }
-        }
-
-        private async Task ProccessBlockAndUpdateAddresses(long index, IEnumerable<CryptoAddress> addresses, ApplicationDbContext context)
-        {
-            using (new ElapsedTimer(Logger, $"ProccessBlockAndUpdateAddresses. Currency: {Settings.Value.Currency}. Block: {index}. Addresses: {addresses.Count()}"))
-            {
-                await ProccessBlock(index, addresses);
-                addresses.ToList().ForEach(x => x.LastBlockIndex = index);
-                await context.SaveChangesAsync();
-            }
-        }
-
-        private async Task<CryptoAddress> CreateAddressInternal(string userId, CryptoAddressType addressType, string address, string privateKey = null)
-        {
-            using (var ctx = CreateContext())
-            {
-                var entity = ctx.CryptoAddresses.SingleOrDefault(x => x.Currency == Settings.Value.Currency && x.Type == addressType && x.UserId == userId && !x.IsDisabled);
-
-                if (entity != null)
-                {
-                    Logger.LogWarning($"Address already exists for user {userId} and currency {Settings.Value.Currency}.");
-                    return entity;
-                }
-
-                entity = new CryptoAddress
-                {
-                    UserId = userId,
-                    Currency = Settings.Value.Currency,
-                    Type = addressType,
-                    Address = address,
-                    PrivateKey = privateKey
-                };
-
-                if (addressType == CryptoAddressType.Investment)
-                {
-                    entity.StartBlockIndex = await GetCurrentBlockIndex();
-                }
-
-                await ctx.CryptoAddresses.AddAsync(entity);
-                await ctx.SaveChangesAsync();
-
-                return entity;
             }
         }
 

@@ -24,6 +24,8 @@ namespace InvestorDashboard.Backend.Database.Models
         public bool IsEligibleForTransfer { get; set; }
         public bool HasDuplicateKycData { get; set; }
         public bool IgnoreDuplicateKycData { get; set; }
+        public bool IsInvestor { get; set; }
+        public long? TokensAvailableForTransfer { get; set; }
         public bool UseNewBonusSystem { get; set; }
         public string ClickId { get; set; }
         public string UtmSource { get; set; }

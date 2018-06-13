@@ -15,6 +15,7 @@ namespace InvestorDashboard.Backend.Database.Models
         public CryptoTransactionDirection Direction { get; set; }
         public string Hash { get; set; }
         public string Amount { get; set; }
+        public long? BlockIndex { get; set; }
         public DateTime Timestamp { get; set; }
         public Guid? ExternalId { get; set; }
         public bool IsNotified { get; set; }

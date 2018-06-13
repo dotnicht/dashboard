@@ -12,10 +12,11 @@ namespace InvestorDashboard.Backend.ConfigurationSections
         public long TotalCoins { get; set; }
         public bool IsTokenSaleDisabled { get; set; }
         public bool IsTokenTransferDisabled { get; set; }
-        public bool IsKycSystemDisabled { get; set; }
+        public bool IsDirectMintingDisabled { get; set; }
         public bool AutomaticallyEnableTokenTransfer { get; set; }
         public int OutboundTransactionsLimit { get; set; }
         public long BalanceThreshold { get; set; }
+        public long NonInvestorTransferLimit { get; set; }
         public BonusSettings Bonus { get; set; }
 
         public class BonusSettings

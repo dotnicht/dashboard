@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using static InvestorDashboard.Backend.ConfigurationSections.TokenSettings.BonusSettings;
 
@@ -17,6 +18,8 @@ namespace InvestorDashboard.Backend.Services.Implementation
     internal class KycService : ContextService, IKycService
     {
         private static readonly Guid _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4");
+        private static readonly Guid _actionTransactionHash = Guid.Parse("F4F982BC-D5CD-444D-AED0-9C8226B0178A");
+
         private static readonly Dictionary<BonusCriterion, Func<ApplicationUser, string>[]> _bonusMapping
             = new Dictionary<BonusCriterion, Func<ApplicationUser, string>[]>
         {
@@ -170,6 +173,19 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
             var user = await _userManager.FindByIdAsync(userId);
             return GetUserKycDataStatusInternal(user);
+        }
+
+        public async Task<BigInteger> GetAllowedNonInvestorTransferAmount(string userId)
+        {
+            using (var ctx = CreateContext())
+            {
+                var user = ctx.Users.Single(x => x.Id == userId);
+                var hash = _actionTransactionHash.ToString();
+                return _bonusMapping[BonusCriterion.Telegram].All(x => !string.IsNullOrWhiteSpace(x(user)))
+                    && await ctx.CryptoTransactions.AnyAsync(x => x.Hash == hash && x.CryptoAddress.UserId == userId)
+                        ? 0
+                        : _options.Value.NonInvestorTransferLimit;
+            }
         }
 
         private async Task UpdateKycTransactionInternal(string userId)
