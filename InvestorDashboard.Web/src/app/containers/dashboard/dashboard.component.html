@@ -107,7 +107,7 @@
       <div style="text-align: center; width: 100%;">
 
 
-        <ng-container *ngIf="dateNow>bonusValidUntil && dateNow<bonusValidFrom">
+        <ng-container *ngIf="dateNow<bonusValidFrom">
           <h3>
             Next round starts in
             <p class="timer">
@@ -115,7 +115,7 @@
             </p>
           </h3>
         </ng-container>
-        <ng-container *ngIf="dateNow>bonusValidUntil && dateNow>bonusValidFrom">
+        <!-- <ng-container *ngIf="dateNow>bonusValidUntil && dateNow>bonusValidFrom">
           <div>
             <h2>
               <b>Token sale is finished.
@@ -123,8 +123,8 @@
             </h2>
           </div>
 
-        </ng-container>
-        <ng-container *ngIf="dateNow<bonusValidUntil">
+        </ng-container> -->
+        <ng-container *ngIf="dateNow>bonusValidFrom && dateNow<=bonusValidUntil">
           <p style="font-size: 20px;margin-top: 10px;">Current pre-sale bonus</p>
           <p style="font-size: 32px;margin-top: 15px;color: #fc537f;">
             <b>{{dashboard.icoInfoModel.bonus*100}}%</b>
