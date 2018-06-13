@@ -114,15 +114,13 @@ namespace InvestorDashboard.Api.Controllers
                 {
                     user.UserName = user.Email;
                     var appUser = _mapper.Map<ApplicationUser>(user);
-                    appUser.UseNewBonusSystem = true;
                     var result = await _userManager.CreateAsync(appUser, user.Password);
 
                     if (result.Succeeded)
                     {
-                        BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));                        
-                        // TODO: configure.
-                        // BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
-                        // BackgroundJob.Enqueue(() => _kycService.UpdateKycTransactions(appUser.Id));
+                        BackgroundJob.Enqueue(() => _referralService.PopulateReferralData(appUser.Id, user.Referral));
+                        BackgroundJob.Enqueue(() => _affiliateService.NotifyUserRegistered(appUser.Id));
+                        BackgroundJob.Enqueue(() => _kycService.UpdateKycTransactions(appUser.Id));
 
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                         var emailBody = Render("EmailBody", $"{Request.Scheme}://{Request.Host}/api/connect/confirm_email?userId={appUser.Id}&code={HttpUtility.UrlEncode(code)}");

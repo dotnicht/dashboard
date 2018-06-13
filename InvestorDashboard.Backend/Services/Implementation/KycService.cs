@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using static InvestorDashboard.Backend.ConfigurationSections.TokenSettings.BonusSettings;
 
@@ -17,9 +16,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class KycService : ContextService, IKycService
     {
-        private static readonly Guid _kycTransactionHash = Guid.Parse("EBEE4A26-E2B6-42CE-BBF1-D933E70679B4");
-        private static readonly Guid _actionTransactionHash = Guid.Parse("F4F982BC-D5CD-444D-AED0-9C8226B0178A");
-
         private static readonly Dictionary<BonusCriterion, Func<ApplicationUser, string>[]> _bonusMapping
             = new Dictionary<BonusCriterion, Func<ApplicationUser, string>[]>
         {
@@ -175,65 +171,31 @@ namespace InvestorDashboard.Backend.Services.Implementation
             return GetUserKycDataStatusInternal(user);
         }
 
-        public async Task<BigInteger> GetAllowedNonInvestorTransferAmount(string userId)
-        {
-            using (var ctx = CreateContext())
-            {
-                var user = ctx.Users.Single(x => x.Id == userId);
-                var hash = _actionTransactionHash.ToString();
-                return _bonusMapping[BonusCriterion.Telegram].All(x => !string.IsNullOrWhiteSpace(x(user)))
-                    && await ctx.CryptoTransactions.AnyAsync(x => x.Hash == hash && x.CryptoAddress.UserId == userId)
-                        ? 0
-                        : _options.Value.NonInvestorTransferLimit;
-            }
-        }
-
         private async Task UpdateKycTransactionInternal(string userId)
         {
             using (var ctx = CreateContext())
             {
                 var user = EnsureUser(userId, ctx);
 
-                if (!user.UseNewBonusSystem)
+                foreach (var item in _bonusMapping)
                 {
-                    if (user.KycBonus != null)
-                    {
-                        await EnsureInternalTransaction(ctx, user, new KycBonusItem { Hash = _kycTransactionHash, Amount = user.KycBonus.Value }, !IsUserLegacyProfileFilled(user));
-                    }
-
-                    var hash = _options.Value.Bonus.KycBonuses.Select(x => x.Value.Hash).ToArray();
-                    foreach (var tx in await GetKycTransactionsInternal(userId, ctx, hash))
-                    {
-                        tx.IsInactive = true;
-                    }
+                    var status = item.Value.Any(x => string.IsNullOrWhiteSpace(x(user)));
+                    await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], status);
                 }
-                else
+
+                var registration = await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
+
+                if (registration.SingleOrDefault() == null)
                 {
-                    foreach (var tx in await GetKycTransactionsInternal(userId, ctx, _kycTransactionHash))
-                    {
-                        tx.IsInactive = true;
-                    }
+                    await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
+                }
 
-                    foreach (var item in _bonusMapping)
-                    {
-                        var status = item.Value.Any(x => string.IsNullOrWhiteSpace(x(user)));
-                        await EnsureInternalTransaction(ctx, user, _options.Value.Bonus.KycBonuses[item.Key], status);
-                    }
+                var referrals = await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
+                var referralsCount = ctx.Users.Count(x => x.EmailConfirmed && x.ReferralUserId == user.Id);
 
-                    var registration = await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
-
-                    if (registration.SingleOrDefault() == null)
-                    {
-                        await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Registration].Hash);
-                    }
-
-                    var referrals = await GetKycTransactionsInternal(userId, ctx, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
-                    var referralsCount = ctx.Users.Count(x => x.EmailConfirmed && x.ReferralUserId == user.Id);
-
-                    for (var i = 0; i < referralsCount - referrals.Count(); i++)
-                    {
-                        await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
-                    }
+                for (var i = 0; i < referralsCount - referrals.Count(); i++)
+                {
+                    await AddBonusTransaction(ctx, user, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Amount, _options.Value.Bonus.KycBonuses[BonusCriterion.Referral].Hash);
                 }
 
                 await ctx.SaveChangesAsync();
@@ -295,20 +257,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
         private Dictionary<BonusCriterion, (bool Status, long Amount)> GetUserKycDataStatusInternal(ApplicationUser user)
         {
-            return user.UseNewBonusSystem
-                ? _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount))
-                : new Dictionary<BonusCriterion, (bool Status, long Amount)>
-                {
-                    { BonusCriterion.Legacy, (Status: IsUserLegacyProfileFilled(user), Amount: user.KycBonus ?? throw new InvalidOperationException($"Invalid KYC data detacted for user {user.Id}.")) }
-                };
-        }
-
-        private static bool IsUserLegacyProfileFilled(ApplicationUser user)
-        {
-            return _bonusMapping
-                .Where(x => x.Key != BonusCriterion.Telegram)
-                .SelectMany(x => x.Value)
-                .All(x => !string.IsNullOrWhiteSpace(x(user)));
+            return _bonusMapping.ToDictionary(x => x.Key, x => (Status: x.Value.All(y => !string.IsNullOrWhiteSpace(y(user))), Amount: _options.Value.Bonus.KycBonuses[x.Key].Amount));
         }
 
         private static ApplicationUser EnsureUser(string userId, ApplicationDbContext context)

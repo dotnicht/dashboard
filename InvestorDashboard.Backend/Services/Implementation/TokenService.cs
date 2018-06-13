@@ -124,30 +124,12 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     return (Hash: null, Success: false);
                 }
 
-                var hash = Guid.Parse("F4F982BC-D5CD-444D-AED0-9C8226B0178A");
-
-                if (!user.IsInvestor)
-                {
-                    amount = string.IsNullOrWhiteSpace(user.TelegramUsername)
-                        && await ctx.CryptoTransactions.AnyAsync(x => x.ExternalId == hash && x.CryptoAddress.UserId == userId)
-                            ? 0
-                            : _options.Value.NonInvestorTransferLimit;
-
-                    if (amount <= 0)
-                    {
-                        user.IsEligibleForTransfer = false;
-                        ctx.SaveChanges();
-                        throw new InvalidOperationException($"Transfer not allowed for user {userId}.");
-                    }
-                }
-
                 var tx = new CryptoTransaction
                 {
                     CryptoAddressId = tokenAddress.Id,
                     Amount = amount.ToString(),
                     Timestamp = DateTime.UtcNow,
-                    Direction = CryptoTransactionDirection.Outbound,
-                    ExternalId = hash
+                    Direction = CryptoTransactionDirection.Outbound
                 };
 
                 ctx.CryptoTransactions.Add(tx);
@@ -280,7 +262,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                         {
                             if ((item.Start == null || tx.Timestamp > item.Start.Value) && (item.End == null || tx.Timestamp < item.End.Value))
                             {
-                                bonus += (long)Math.Ceiling(value * item.Amount);
+                                bonus += (long)Math.Ceiling(value * (user.ReferralUserId == null ? item.Amount : item.RefferalAmount ?? item.Amount));
                             }
                         }
                     }
@@ -292,7 +274,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     {
                         if ((item.Lower == null || balance >= item.Lower) && (item.Upper == null || balance < item.Upper))
                         {
-                            bonus = (long)Math.Ceiling(balance * item.Amount);
+                            bonus = (long)Math.Ceiling(balance * (user.ReferralUserId == null ? item.Amount : item.RefferalAmount ?? item.Amount));
                             break;
                         }
                     }
@@ -310,11 +292,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
                     .SelectMany(x => x.CryptoTransactions)
                     .Where(_outboundTransactionsSelector)
                     .Sum(x => long.Parse(x.Amount));
-
-                if (!user.IsInvestor)
-                {
-                    user.TokensAvailableForTransfer = _options.Value.NonInvestorTransferLimit - outbound;
-                }
 
                 ctx.SaveChanges();
 
@@ -375,7 +352,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         {
             if (user.Balance + user.BonusBalance < amount)
             {
-                throw new InvalidOperationException($"Insufficient token balance for user {user.Id} to perform transfer. Amount {amount}.");
+                throw new InvalidOperationException($"Insufficient token balance for user {user.Id} to perform transfer. Requested amount {amount}.");
             }
         }
     }

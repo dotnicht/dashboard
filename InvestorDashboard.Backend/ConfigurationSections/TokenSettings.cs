@@ -33,8 +33,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
                 Referral,
                 Telegram,
                 Photo,
-                Profile,
-                Legacy
+                Profile
             }
 
             public class KycBonusItem
@@ -55,6 +54,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
                 public DateTime? Start { get; set; }
                 public DateTime? End { get; set; }
                 public decimal Amount { get; set; }
+                public decimal? RefferalAmount { get; set; }
             }
 
             public class PercentageItem
@@ -62,6 +62,7 @@ namespace InvestorDashboard.Backend.ConfigurationSections
                 public long? Lower { get; set; }
                 public long? Upper { get; set; }
                 public decimal Amount { get; set; }
+                public decimal? RefferalAmount { get; set; }
             }
         }
     }

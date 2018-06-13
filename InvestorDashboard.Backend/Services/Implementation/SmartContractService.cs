@@ -70,7 +70,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 throw new ArgumentNullException(nameof(destinationAddress));
             }
 
-            return await SendSmartContractTransaction("mintTokensWithIncludingInJackpot", destinationAddress, amount * new BigInteger(Math.Pow(10, _ethereumSettings.Value.Denomination)));
+            return await SendSmartContractTransaction("mintTokens", destinationAddress, amount * new BigInteger(Math.Pow(10, _ethereumSettings.Value.Denomination)));
         }
 
         public async Task<BigInteger> CallSmartContractBalanceOfFunction(string address)

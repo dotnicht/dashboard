@@ -279,7 +279,7 @@ namespace InvestorDashboard.Api.Controllers
         {
             if (ApplicationUser != null)
             {
-                await _genericAddressService.UpdateAddress(ApplicationUser.Id, Currency.ETH, CryptoAddressType.Token, address.Address);
+                await _genericAddressService.UpdateAddress(ApplicationUser.Id, Currency.ETH, CryptoAddressType.Internal, address.Address);
                 return Ok();
             }
 
@@ -424,7 +424,7 @@ namespace InvestorDashboard.Api.Controllers
         private async Task<string> GetTokenAddress()
         {
             return (await ApplicationUser.CryptoAddresses.ToAsyncEnumerable()
-                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Token))
+                .SingleOrDefault(x => !x.IsDisabled && x.Currency == Currency.ETH && x.Type == CryptoAddressType.Internal))
                 ?.Address;
         }
     }
