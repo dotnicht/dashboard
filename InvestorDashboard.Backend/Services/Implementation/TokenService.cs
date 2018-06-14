@@ -13,7 +13,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
 {
     internal class TokenService : ContextService, ITokenService
     {
-        private static Func<CryptoTransaction, bool> _outboundTransactionsSelector =
+        private static readonly Func<CryptoTransaction, bool> _outboundTransactionsSelector =
             x => x.Direction == CryptoTransactionDirection.Outbound
                 && x.Hash != null
                 && (x.IsFailed == null || !x.IsFailed.Value);

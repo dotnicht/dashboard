@@ -290,10 +290,10 @@ namespace InvestorDashboard.Backend.Services.Implementation
                 foreach (var address in addresses)
                 {
                     var balance = await GetBalance(address);
-                    if (balance != BigInteger.Parse(address.Balance))
+                    if (address.Balance == null || balance != BigInteger.Parse(address.Balance))
                     {
                         using (var ctx = CreateContext())
-                        {
+                        {                            
                             foreach (var tx in await GetTransactionsFromBlockchain(address.Address))
                             {
                                 if (!ctx.CryptoTransactions.Any(x => x.Hash == tx.Hash && x.Direction == CryptoTransactionDirection.Inbound && x.CryptoAddressId == address.Id))
@@ -305,7 +305,6 @@ namespace InvestorDashboard.Backend.Services.Implementation
 
                             ctx.Attach(address);
                             address.Balance = balance.ToString();
-                            address.LastBlockIndex = index;
 
                             await ctx.SaveChangesAsync();
 

@@ -24,7 +24,7 @@ namespace InvestorDashboard.Backend.Services.Implementation
         private static Lazy<ConcurrentChain> _chain = new Lazy<ConcurrentChain>(() => _node.Value.GetChain(), LazyThreadSafetyMode.ExecutionAndPublication);
         private static Lazy<Node> _node = new Lazy<Node>(GetNode, LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private static Dictionary<BitcoinSettings.Fee, Func<EarnResponse, int>> _mapping = new Dictionary<BitcoinSettings.Fee, Func<EarnResponse, int>>
+        private static readonly Dictionary<BitcoinSettings.Fee, Func<EarnResponse, int>> _mapping = new Dictionary<BitcoinSettings.Fee, Func<EarnResponse, int>>
         {
             { BitcoinSettings.Fee.Fastest, x => x.FastestFee },
             { BitcoinSettings.Fee.HalfHour, x => x.HalfHourFee },
