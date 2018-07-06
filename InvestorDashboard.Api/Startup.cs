@@ -47,8 +47,6 @@ namespace InvestorDashboard.Api
 
             ApplicationDbContext.Initialize(services, Configuration);
 
-            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString(ApplicationDbContext.DefaultConnectionStringName)));
-
             services.Configure<MvcOptions>(options => options.Filters.Add(new RequireHttpsAttribute()));
 
             // Register the OpenIddict services.
@@ -140,36 +138,14 @@ namespace InvestorDashboard.Api
 
                 if (await manager.FindByClientIdAsync("ID", cancellationToken) == null)
                 {
-                    var application = new OpenIddictApplication
+                    var descriptor = new OpenIddictApplicationDescriptor
                     {
                         ClientId = "ID",
                         DisplayName = "Investor Dashboard",
-                        PostLogoutRedirectUris = "http://localhost:49295/signout-callback-oidc",
-                        RedirectUris = "http://localhost:49295/signin-oidc"
+                        ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654"
                     };
 
-                    await manager.CreateAsync(application, "901564A5-E7FE-42CB-B10D-61EF6A8F3654", cancellationToken);
-                }
-
-                // To test this sample with Postman, use the following settings:
-                //
-                // * Authorization URL: http://localhost:49295/connect/authorize
-                // * Access token URL: http://localhost:49295/connect/token
-                // * Client ID: postman
-                // * Client secret: [blank] (not used with public clients)
-                // * Scope: openid email profile roles
-                // * Grant type: authorization code
-                // * Request access token locally: yes
-                if (await manager.FindByClientIdAsync("postman", cancellationToken) == null)
-                {
-                    var application = new OpenIddictApplication
-                    {
-                        ClientId = "postman",
-                        DisplayName = "Postman",
-                        RedirectUris = "https://www.getpostman.com/oauth2/callback"
-                    };
-
-                    await manager.CreateAsync(application, cancellationToken);
+                    await manager.CreateAsync(descriptor, cancellationToken);
                 }
             }
         }

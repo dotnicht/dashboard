@@ -419,23 +419,33 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("ClientId");
+                    b.Property<string>("ClientId")
+                        .IsRequired();
 
                     b.Property<string>("ClientSecret");
 
+                    b.Property<string>("ConcurrencyToken")
+                        .IsConcurrencyToken();
+
+                    b.Property<string>("ConsentType");
+
                     b.Property<string>("DisplayName");
+
+                    b.Property<string>("Permissions");
 
                     b.Property<string>("PostLogoutRedirectUris");
 
+                    b.Property<string>("Properties");
+
                     b.Property<string>("RedirectUris");
 
-                    b.Property<string>("Type");
+                    b.Property<string>("Type")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId")
-                        .IsUnique()
-                        .HasFilter("[ClientId] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("OpenIddictApplications");
                 });
@@ -447,11 +457,21 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<string>("ApplicationId");
 
+                    b.Property<string>("ConcurrencyToken")
+                        .IsConcurrencyToken();
+
+                    b.Property<string>("Properties");
+
                     b.Property<string>("Scopes");
 
-                    b.Property<string>("Status");
+                    b.Property<string>("Status")
+                        .IsRequired();
 
-                    b.Property<string>("Subject");
+                    b.Property<string>("Subject")
+                        .IsRequired();
+
+                    b.Property<string>("Type")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -465,9 +485,24 @@ namespace InvestorDashboard.Backend.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("ConcurrencyToken")
+                        .IsConcurrencyToken();
+
                     b.Property<string>("Description");
 
+                    b.Property<string>("DisplayName");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("Properties");
+
+                    b.Property<string>("Resources");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("OpenIddictScopes");
                 });
@@ -481,19 +516,26 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.Property<string>("AuthorizationId");
 
-                    b.Property<string>("Ciphertext");
+                    b.Property<string>("ConcurrencyToken")
+                        .IsConcurrencyToken();
 
                     b.Property<DateTimeOffset?>("CreationDate");
 
                     b.Property<DateTimeOffset?>("ExpirationDate");
 
-                    b.Property<string>("Hash");
+                    b.Property<string>("Payload");
+
+                    b.Property<string>("Properties");
+
+                    b.Property<string>("ReferenceId");
 
                     b.Property<string>("Status");
 
-                    b.Property<string>("Subject");
+                    b.Property<string>("Subject")
+                        .IsRequired();
 
-                    b.Property<string>("Type");
+                    b.Property<string>("Type")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -501,9 +543,9 @@ namespace InvestorDashboard.Backend.Migrations
 
                     b.HasIndex("AuthorizationId");
 
-                    b.HasIndex("Hash")
+                    b.HasIndex("ReferenceId")
                         .IsUnique()
-                        .HasFilter("[Hash] IS NOT NULL");
+                        .HasFilter("[ReferenceId] IS NOT NULL");
 
                     b.ToTable("OpenIddictTokens");
                 });

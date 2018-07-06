@@ -1,3 +1,4 @@
+using Hangfire;
 using InvestorDashboard.Backend.Database.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,6 @@ namespace InvestorDashboard.Backend.Database
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
-        public const string DefaultConnectionStringName = "DefaultConnection";
-
         public DbSet<CryptoTransaction> CryptoTransactions { get; set; }
         public DbSet<CryptoAddress> CryptoAddresses { get; set; }
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
@@ -37,13 +36,17 @@ namespace InvestorDashboard.Backend.Database
                 throw new ArgumentNullException(nameof(configuration));
             }
 
+            var connection = configuration.GetConnectionString("DefaultConnection");
+
             serviceCollection.AddDbContext<ApplicationDbContext>(x =>
             {
-                x.UseSqlServer(configuration.GetConnectionString(DefaultConnectionStringName), y => y.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name));
+                x.UseSqlServer(connection, y => y.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name));
                 x.UseOpenIddict();
             }, ServiceLifetime.Transient);
 
             serviceCollection.BuildServiceProvider().GetRequiredService<ApplicationDbContext>().Database.Migrate();
+
+            serviceCollection.AddHangfire(x => x.UseSqlServerStorage(connection));
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
