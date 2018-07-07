@@ -366,7 +366,11 @@ namespace InvestorDashboard.Api.Controllers
 
             var items = await _dashboardHistoryService.GetHistoryItems();
 
-            result.TotalCoinsBought = items.First().Value.TotalCoinsBoughts;
+            if (items.Any())
+            {
+                result.TotalCoinsBought = items.First().Value.TotalCoinsBoughts;
+            }
+
             result.Currencies = items
                 .Select(x => new IcoInfoModel.CurrencyValue { Currency = x.Key, Value = x.Value.TotalInvested })
                 .ToList();
